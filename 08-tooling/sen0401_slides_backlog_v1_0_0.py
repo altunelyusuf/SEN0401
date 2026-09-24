@@ -146,7 +146,7 @@ ex:Commit a backlog:Commitment ; rdfs:label "This register commits to chapters t
     backlog:commitsToGoal ex:G_DecksTeachTheBook ; backlog:commitsToObjective ex:Obj_DecksRenewed ; backlog:commitsToDefinitionOfDone ex:DoD .
 ex:Session_Opening a backlog:RegisterSession ; rdfs:label "The session that built this register"@en ;
     backlog:sessionFor ex:Backlog ; backlog:sessionConductedBy "cme-session" ;
-    backlog:sessionStartedAt "2026-09-24T22:19:17"^^xsd:dateTime ; backlog:sessionEndedAt "__SESS_END__"^^xsd:dateTime ;
+    backlog:sessionStartedAt "2026-09-24T22:19:17"^^xsd:dateTime ; backlog:sessionEndedAt "2026-09-24T22:20:36"^^xsd:dateTime ;
     backlog:stateVerifiedAtStart true ;
     backlog:hasSessionScopeNote "Built on 2026-09-25 when the owner made SEN0401's chapter 1 the most urgent work, for its 09:00 class; SEN0401 is not yet registered with CME." ;
     backlog:changedItem ex:Init_Slides .
