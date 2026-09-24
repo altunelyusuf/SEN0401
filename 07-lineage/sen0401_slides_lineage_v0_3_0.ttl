@@ -7,12 +7,12 @@
 
 <http://example.org/sen0401-slides-lineage> a owl:Ontology ;
     rdfs:label "Delivery lineage for renewing the SEN0401 lecture decks"@en ;
-    owl:versionInfo "0.2.0" ; dcterms:identifier "sen0401_slides_lineage" .
+    owl:versionInfo "0.3.0" ; dcterms:identifier "sen0401_slides_lineage" .
 
 ex:Lineage a backlog:Lineage ;
     rdfs:label "First lineage run for the SEN0401 decks"@en ;
     backlog:lineageForMission ex:Mission ; backlog:lineageOrdinal 1 ; backlog:lineageArchived false ;
-    backlog:hasLineageStatus backlog:LS_Scoped ;
+    backlog:hasLineageStatus backlog:LS_Goaled ;
     backlog:adoptsObligationSet backlog:OS_SDLC_v2 ; backlog:adoptionRecordedAtOpen true .
 
 ex:Mission a backlog:Mission ;
@@ -416,11 +416,59 @@ ex:Gap_InteractivePage_ActiveUse a backlog:BlueprintGap ; rdfs:label "No coverag
 ex:Gap_InteractivePage_SuspensionException a backlog:BlueprintGap ; rdfs:label "No coverage yet for the InteractivePage at the suspension or exception stage"@en ; backlog:gapForEntity ex:DE_InteractivePage ; backlog:gapForStage backlog:Stage_SuspensionException ; backlog:hasGapReason "Admitted work that covers it arrives at the Backlog stage." .
 ex:Gap_InteractivePage_Termination a backlog:BlueprintGap ; rdfs:label "No coverage yet for the InteractivePage at the termination stage"@en ; backlog:gapForEntity ex:DE_InteractivePage ; backlog:gapForStage backlog:Stage_Termination ; backlog:hasGapReason "Admitted work that covers it arrives at the Backlog stage." .
 
+ex:G_DecksTeachTheBook a backlog:Goal ;
+    rdfs:label "Every deck teaches what the 3rd edition teaches"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:derivesFromScope ex:Scope ; backlog:goalCoversArea ex:Area_Deck ;
+    backlog:contributesToMission ex:Mission ; backlog:hasGoalFacing backlog:Facing_Mission ;
+    backlog:hasIntentOrigin backlog:IOrigin_OwnerStated ; backlog:decidedBy backlog:Owner ;
+    backlog:hasGoalRationale "Derived from the scope's deck area, and from the owner's request of 2026-09-24 for renewed decks, research and interactive pages together." ;
+    backlog:producedByStage ex:Out_Goal .
+
+ex:G_ResearchBehindEveryDeck a backlog:Goal ;
+    rdfs:label "Every renewed deck rests on a recorded research run"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:derivesFromScope ex:Scope ; backlog:goalCoversArea ex:Area_Research ;
+    backlog:contributesToMission ex:Mission ; backlog:hasGoalFacing backlog:Facing_Scope ;
+    backlog:hasIntentOrigin backlog:IOrigin_OwnerStated ; backlog:decidedBy backlog:Owner ;
+    backlog:hasGoalRationale "Derived from the scope's research area, and from the owner's request of 2026-09-24 for renewed decks, research and interactive pages together." ;
+    backlog:producedByStage ex:Out_Goal .
+
+ex:G_PageForEveryDeck a backlog:Goal ;
+    rdfs:label "Every renewed deck has its interactive page"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:derivesFromScope ex:Scope ; backlog:goalCoversArea ex:Area_Page ;
+    backlog:contributesToMission ex:Mission ; backlog:hasGoalFacing backlog:Facing_Containment ;
+    backlog:hasIntentOrigin backlog:IOrigin_OwnerStated ; backlog:decidedBy backlog:Owner ;
+    backlog:hasGoalRationale "Derived from the scope's page area, and from the owner's request of 2026-09-24 for renewed decks, research and interactive pages together." ;
+    backlog:producedByStage ex:Out_Goal .
+
+ex:G_NothingUntaughtRenewed a backlog:Goal ;
+    rdfs:label "No deck follows the superseded structure"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:derivesFromScope ex:Scope ; backlog:goalCoversArea ex:Area_Deck ;
+    backlog:guardsExclusion ex:Excl_OldStructure ;
+    backlog:contributesToMission ex:Mission ; backlog:hasGoalFacing backlog:Facing_Exclusion ;
+    backlog:hasIntentOrigin backlog:IOrigin_OwnerStated ; backlog:decidedBy backlog:Owner ;
+    backlog:hasGoalRationale "Derived from the scope's deck area, and from the owner's request of 2026-09-24 for renewed decks, research and interactive pages together." ;
+    backlog:producedByStage ex:Out_Goal .
+
+ex:Spec a backlog:Specification ;
+    rdfs:label "What a renewed chapter is"@en ; backlog:belongsToLineage ex:Lineage ; backlog:specifiesGoal ex:G_DecksTeachTheBook ;
+    backlog:hasSpecificationText "A chapter is renewed when: its deck uses the edition's own terms, order and code, every command or code example on it is reproduced from the book or run and checked; every claim beyond the book traces to a source recorded by the chapter's RDODI run; it is described as a teaching material aligned to the course outcomes it serves; and its interactive page carries the research results." ;
+    backlog:hasIntentOrigin backlog:IOrigin_OwnerStated ; backlog:decidedBy backlog:Owner ; backlog:producedByStage ex:Out_Goal .
+ex:Scen_Renewed a backlog:TestScenario ; rdfs:label "A renewed chapter's examples match the book"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:scenarioKind backlog:Scen_Nominal ; backlog:scenarioOf ex:Spec ;
+    backlog:hasScenarioText "Given a renewed deck, when every example on it is checked against the book at tag third_edition_print1 and every executable one is run, then each matches what its slide shows." .
+ex:Scen_StaleCodeRefused a backlog:TestScenario ; rdfs:label "A deck carrying superseded content is refused"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:scenarioKind backlog:Scen_Rejection ; backlog:scenarioOf ex:Spec ;
+    backlog:hasScenarioText "Given a deck carrying a claim or example taken from the 2nd edition that the 3rd edition changed, when the deck is checked, then it is refused and the item named." .
+ex:Model_UseCase a backlog:ModelArtifact ; rdfs:label "Who uses the renewed chapters"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:hasModelKind backlog:Kind_UseCaseDiagram ; backlog:hasModelLevel backlog:Level_Analysis ;
+    backlog:declaresState "The instructor presents a deck in class and uses its research notes; a student reads the deck and works through the interactive page before and after class; the CME session builds each chapter's research, deck and page and checks them before they are taught." ;
+    backlog:describesItem ex:G_DecksTeachTheBook .
+
 ex:Out_Mission a backlog:StageOutput ;
     rdfs:label "Closure of the Mission stage"@en ;
     backlog:belongsToLineage ex:Lineage ;
     backlog:outputOfStage backlog:Stage_Mission ;
-    backlog:hasStateDigest "64c5e444dd734c98f810e2955f211f017e46effbf07a1b9af5fc51d3e8b01ef1" ;
+    backlog:hasStateDigest "eb6c9c83b2c962333c8f4c0681d3de7b815cb9fd4c862f5909bf6d024952683d" ;
     backlog:closedAtCommit "fc121ee" .
 
 ex:Out_Scope a backlog:StageOutput ;
@@ -428,5 +476,13 @@ ex:Out_Scope a backlog:StageOutput ;
     backlog:belongsToLineage ex:Lineage ;
     backlog:outputOfStage backlog:Stage_Scope ;
     backlog:consumesOutput ex:Out_Mission ;
-    backlog:hasStateDigest "6a69c5d9ccf0cb9ed779c0f6e693240bf95f32bfeae629be89df754b52e1d436" ;
+    backlog:hasStateDigest "926928f9828a396650015a1e4c3624e6e4d5040b16e70a33101bf3b8f6d002f8" ;
+    backlog:closedAtCommit "2d4e175" .
+
+ex:Out_Goal a backlog:StageOutput ;
+    rdfs:label "Closure of the Goal stage"@en ;
+    backlog:belongsToLineage ex:Lineage ;
+    backlog:outputOfStage backlog:Stage_Goal ;
+    backlog:consumesOutput ex:Out_Scope ;
+    backlog:hasStateDigest "d432d4ec3fad7cad56af560db64284e001270335a9b63f9c587557218c75cb6e" ;
     backlog:closedAtCommit "PENDING" .
