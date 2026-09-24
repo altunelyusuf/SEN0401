@@ -7,11 +7,11 @@ from sen0401_slides_stages_v1_0_0 import CHAPTERS, KIND, cid
 # (business value, time criticality, risk reduction, job size). Chapter 1's were proposed and
 # approved; chapter 2 was added by the owner at approval and takes the same components, since it is
 # taught in the same class.
-PLANNED_AT = "2026-09-24T20:15:47"
+PLANNED_AT = "2026-09-24T22:23:59"
 WSJF = {"Research": (13, 20, 13, 3), "Page": (13, 20, 5, 3), "Deck": (20, 20, 8, 5)}
-PLANNED = set()
+PLANNED = {1}
 # Started items, at the clock time each began. The kick-off was declared by the owner.
-STARTED = {}
+STARTED = {("Research", 1): "2026-09-24T22:23:59"}
 # Re-scoring after the latest completion (BP-D11), at the clock time it was done; components unchanged.
 RESCORED_AT = ""
 
@@ -129,7 +129,7 @@ def backlog_block():
     L = ['''
 ex:Backlog a backlog:Backlog ; rdfs:label "Work admitted for renewing SEN0401's chapters"@en ;
     backlog:hasIdentifier "Backlog_SEN0401_Slides" ; backlog:belongsToLineage ex:Lineage ; backlog:isRegisterRoot true ;
-    backlog:hasState backlog:Proposed ; backlog:producedByStage ex:Out_Backlog ;
+    backlog:hasState backlog:InProgress ; backlog:producedByStage ex:Out_Backlog ;
     backlog:appliesDefinitionOfDone ex:DoD ; backlog:hasCommitment ex:Commit ; backlog:hasMember ex:Init_Slides .
 ex:DoD a backlog:DefinitionOfDone ; rdfs:label "What finished means for a renewed chapter"@en ; backlog:belongsToLineage ex:Lineage ;
     backlog:hasDoDCriterion ex:DoD_CodeRuns, ex:DoD_Sourced, ex:DoD_TruthfulDates .
@@ -150,6 +150,10 @@ ex:Session_Opening a backlog:RegisterSession ; rdfs:label "The session that buil
     backlog:stateVerifiedAtStart true ;
     backlog:hasSessionScopeNote "Built on 2026-09-25 when the owner made SEN0401's chapter 1 the most urgent work, for its 09:00 class; SEN0401 is not yet registered with CME." ;
     backlog:changedItem ex:Init_Slides .
+ex:Kickoff a backlog:TransitionEvent ; rdfs:label "Kick-off: the owner declared execution begun"@en ;
+    backlog:transitionedItem ex:ST_Research_Ch01 ; backlog:viaTransition backlog:T_Start ;
+    backlog:transitionedAt "2026-09-24T22:23:59"^^xsd:dateTime ; backlog:transitionedBy backlog:Owner ;
+    backlog:hasTransitionNote "Declared by the owner in the words 'Approve and kick off', approving the proposed plan in the same message: chapter 1's three stories scored as SEN0414's were, an iteration ending at the 09:00 class, research first. Planning and kick-off are recorded at the same clock time because the owner gave them in one reply." .
 ex:Init_Slides a backlog:Initiative ; rdfs:label "Renew SEN0401's taught chapters"@en ; backlog:hasIdentifier "Init_Slides" ; backlog:hasTitle "Renew SEN0401's chapters" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
     backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasInitiativeKind backlog:InitKind_Development ;
