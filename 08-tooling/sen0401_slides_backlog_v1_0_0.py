@@ -11,12 +11,13 @@ PLANNED_AT = "2026-09-24T22:23:59"
 WSJF = {"Research": (13, 20, 13, 3), "Page": (13, 20, 5, 3), "Deck": (20, 20, 8, 5)}
 PLANNED = {1}
 # Started items, at the clock time each began. The kick-off was declared by the owner.
-STARTED = {("Research", 1): "2026-09-24T22:23:59"}
+STARTED = {("Research", 1): "2026-09-24T22:23:59", ("Page", 1): "2026-09-24T22:28:51"}
 # Re-scoring after the latest completion (BP-D11), at the clock time it was done; components unchanged.
-RESCORED_AT = ""
+RESCORED_AT = "2026-09-24T22:28:51"
 
 # Finished items and the evidence each closed on. Times from the clock or from commits only.
-DONE = {}
+DONE = {("Research", 1): {"finished": "2026-09-24T22:28:23", "closed": "2026-09-24T22:28:51", "release": "sen0401-v0.7.0 (a69f51d)",
+    "spec": "RDODI procedure v1.6.0, Stages 1-3 for Mastering Bitcoin's chapter 1, built by 08-tooling/sen0401_rdodi_build_v1_0_0.py from sen0401_ch01_rdodi_data_v1_0_0.py. All gates PASS after two fixes: RDODI's citation detector could not read W3C as an author (a digit in the name), so W3C is cited as World Wide Web Consortium; and one of the chapter's sections was not named in the document. Stage1.A-B, Stage2.A, C and H, Stage3.A, B, F, E.cov, E.sub and src with RDODI's validator functions; Stage1.C-E, Stage2.B (HermiT consistent), D-G, Stage3.C-E (coverage 25/25), G and H as direct checks."}}
 
 REFINED = {
     "Research": "Settled: RDODI's four-stage procedure v1.6.0 on the chapter's subject, with its Pedagogy and Professional Standards stage and the Courseware profile; the research record lists every source a later claim rests on.",
