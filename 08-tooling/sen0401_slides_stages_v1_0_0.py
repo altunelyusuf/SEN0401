@@ -112,7 +112,7 @@ ex:CP_%s a backlog:ObjectiveCheckpoint ; rdfs:label "Reading after chapter 1 is 
 ex:Obs0_%s a backlog:MetricObservation ; rdfs:label "Baseline, before any work"@en ;
     backlog:observesMetric ex:%s ; backlog:observationFor ex:%s ; backlog:hasObservedValue "%d"^^xsd:decimal ;
     backlog:observedAt "%s"^^xsd:dateTime ; backlog:observedDuringCeremony true ;
-    backlog:hasObservationMethod "Read from the course repository at sen0414-v2.0.0: seventeen existing decks, all made for the 1st edition, none renewed, no research run, no interactive page." .
+    backlog:hasObservationMethod "Read from the SEN0401 repository, created empty on 2026-09-24 and holding only this lineage: no deck, no research run, no interactive page." .
 ''' % (i, what.capitalize(), b, t, g, m, what, b, t, d, i, mv, m, what, i, (1 if t else 0), i, m, i, b, BASE_AT, ))
     L.append('''
 ex:Model_Activity a backlog:ModelArtifact ; rdfs:label "How one chapter is renewed"@en ; backlog:belongsToLineage ex:Lineage ;

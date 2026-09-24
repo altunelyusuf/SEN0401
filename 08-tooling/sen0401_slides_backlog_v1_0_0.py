@@ -3,7 +3,7 @@ tasks are produced by planning, and only for what is planned into an iteration."
 from sen0401_slides_stages_v1_0_0 import CHAPTERS, KIND, cid
 
 # Planning of 2026-09-24, approved by the owner: chapters 1 and 2 in the first iteration, until
-# SEN0401's class at 14:00 Istanbul (11:00 UTC) on 2026-09-25. WSJF components are
+# SEN0401's class at 09:00 Istanbul (06:00 UTC) on 2026-09-25. WSJF components are
 # (business value, time criticality, risk reduction, job size). Chapter 1's were proposed and
 # approved; chapter 2 was added by the owner at approval and takes the same components, since it is
 # taught in the same class.
