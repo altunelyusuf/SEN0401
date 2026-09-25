@@ -4,6 +4,7 @@ records every v2 widget - and marks it tested only if its v2 browser test passed
 import json, os, sys
 N = sys.argv[1]; P = os.path.join(os.path.dirname(os.path.abspath(__file__)), "%s-page" % N)
 NUM = N; N = ("ch%s" % N) if N.isdigit() else N  # a numbered chapter, or a named supplement such as "numbers"
+P = os.path.join(os.path.dirname(os.path.abspath(__file__)), "%s-page" % N)  # recomputed after N is normalised
 d = json.load(open(os.path.join(P, "page_data_v2.json"))); t = json.load(open(os.path.join(P, "test_results_v2.json")))
 W = []
 for n in d["nodes"]:

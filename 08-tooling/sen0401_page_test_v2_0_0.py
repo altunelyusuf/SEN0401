@@ -6,7 +6,7 @@ import json, os, sys, time
 from playwright.sync_api import sync_playwright
 N = sys.argv[1]; REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NUM = N; N = ("ch%s" % N) if N.isdigit() else N  # a numbered chapter, or a named supplement such as "numbers"
-page_path = os.environ.get("PAGE", os.path.join(REPO, "03-materials", N, "page", "sen0401_%s_page_v2_1_0.html" % N))
+page_path = os.environ.get("PAGE", os.path.join(REPO, "03-materials", N, "page", "sen0401_%s_page_v%s.html" % (N, os.environ.get("PAGE_VER", "2_1_0"))))
 d = json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "page_data_v2.json")))
 AXE = "/home/claude/Ontologies/rdodi-ecosystem/07-pedagogy-professional-stage/lib/axe.min.js"
 R = {"widgets": {}, "features": {}, "gates": {}}

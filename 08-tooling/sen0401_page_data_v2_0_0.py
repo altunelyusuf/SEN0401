@@ -90,7 +90,10 @@ title = next(str(o) for s, o in D.subject_objects(RDFS.label) if str(s).endswith
 DISC = os.path.join(REPO, "08-tooling", "%s-page" % N, "discussion.json")
 EXTRA = os.path.join(REPO, "08-tooling", "%s-page" % N, "extra.html")
 data_extra = open(EXTRA).read() if os.path.exists(EXTRA) else ""
-data = {"discussion": json.load(open(DISC)) if os.path.exists(DISC) else [], "research_file": os.path.basename(f("research")), "chapter": int(NUM) if NUM.isdigit() else None, "unit": json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "unit.json"))) if not NUM.isdigit() else None, "title": title, "python": pyver, "nodes": nodes, "relations": rels, "agents": agents, "refs": refs}
+SEN = rdflib.Namespace("http://example.org/sen0401#")
+findings = sorted(((str(R.value(f, RDFS.label)), str(R.value(f, SEN.findingText))) for f in R.subjects(RDF.type, SEN.Finding)), key=lambda x: x[0])
+COURSE = json.load(open(os.path.join(REPO, "08-tooling", "course_page_config.json")))
+data = {"course": COURSE, "discussion": json.load(open(DISC)) if os.path.exists(DISC) else [], "research_file": os.path.basename(f("research")), "chapter": int(NUM) if NUM.isdigit() else None, "unit": json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "unit.json"))) if not NUM.isdigit() else None, "title": title, "python": pyver, "nodes": nodes, "relations": rels, "agents": agents, "findings": findings, "refs": refs}
 out = os.path.join(REPO, "08-tooling", "%s-page" % N); os.makedirs(out, exist_ok=True)
 json.dump(data, open(os.path.join(out, "page_data_v2.json"), "w"), indent=1)
 open(os.path.join(out, "extra_resolved.html"), "w").write(data_extra)

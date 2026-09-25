@@ -138,6 +138,12 @@ ex:Iter_1 a backlog:Iteration ; rdfs:label "First iteration: chapter 1, before t
 
 
 FEEDBACK = """
+ex:Finding_PagesV3OwnerRules a backlog:RetrospectiveFinding ;
+    rdfs:label "All three SEN0401 pages rebuilt to the owner's page rules"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Page_Ch01, ex:ST_Page_Ch02, ex:ST_Page_Numbers ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "The owner's review of the Bitcoin in numbers page found four faults and made them rules for every course page: code on the page must really run - the published version showed stored results, so edits changed nothing; agents must answer from their own slice of the ontology and corpus - they gave near-identical answers; a menu click must change the main area first, with the detail card only on explicit request; and the tab row must be the sub-menu of the selected top-level item, not mixed with it. The chapter 1 and 2 pages shared the same design and the same faults." ;
+    backlog:hasRemedy "All three pages rebuilt as version 3 from course_page_template_v3_0_0.html, byte-identical to SEN0414's, with SEN0401's own text in course_page_config.json - so the two courses no longer fork their page template. Python runs in Brython, which loads as plain scripts and so also works when published; agents receive only their own concepts, relations, computed results and the research findings; clicks move the main area and details open only on request; one top menu with each subject's tabs as its sub-menu. At 2026-09-25T11:05:41 every rule check in 08-tooling/sen0401_page_test_v3_0_0.py passed on all three pages, every widget included (52, 36 and 23, the nine charts among them), with 0 console errors and 0 WCAG 2 AA violations; a stale-value fixture was refused on each. Two tooling faults surfaced and were fixed: the record script built its folder path before normalising the unit name, and the ABox builder read the objectives' explanatory note as an objective." .
+
 ex:G_ChaptersSeenInData a backlog:Goal ;
     rdfs:label "Chapters 1 and 2 are seen in the network's real data"@en ;
     backlog:belongsToLineage ex:Lineage ; backlog:derivesFromScope ex:Scope ; backlog:goalCoversArea ex:Area_Page ;

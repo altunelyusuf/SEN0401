@@ -7,6 +7,7 @@ NUM = N; N = ("ch%s" % N) if N.isdigit() else N  # a numbered chapter, or a name
 UNITL = ("chapter %d" % int(NUM)) if NUM.isdigit() else json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "unit.json")))["label"]
 rec = json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "build_record.json")))
 OBJ = json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "objectives.json")))
+OBJ = {k: v for k, v in OBJ.items() if not k.startswith("_")}  # "_note" and similar are page text, not objectives
 tr = json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "test_results.json")))
 BASE = "http://example.org/sen0401/%s" % N
 q = lambda t: t.replace("\\", "\\\\").replace('"', "'")
