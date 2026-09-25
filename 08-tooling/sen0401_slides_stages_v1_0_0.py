@@ -81,9 +81,9 @@ ex:Model_UseCase a backlog:ModelArtifact ; rdfs:label "Who uses the renewed chap
     return "".join(L)
 
 
-OBJS = [("Obj_DecksRenewed", "G_DecksTeachTheBook", "Met_DecksRenewed", "renewed decks passing the chapter check", 0, 16, "Dir_Increase"),
-        ("Obj_ResearchRecorded", "G_ResearchBehindEveryDeck", "Met_ResearchRecorded", "chapters with a completed RDODI run", 0, 16, "Dir_Increase"),
-        ("Obj_PagesBuilt", "G_PageForEveryDeck", "Met_PagesBuilt", "chapters with an interactive page carrying their research", 0, 16, "Dir_Increase"),
+OBJS = [("Obj_DecksRenewed", "G_DecksTeachTheBook", "Met_DecksRenewed", "renewed decks passing the chapter check", 0, len(CHAPTERS), "Dir_Increase"),
+        ("Obj_ResearchRecorded", "G_ResearchBehindEveryDeck", "Met_ResearchRecorded", "chapters with a completed RDODI run", 0, len(CHAPTERS), "Dir_Increase"),
+        ("Obj_PagesBuilt", "G_PageForEveryDeck", "Met_PagesBuilt", "chapters with an interactive page carrying their research", 0, len(CHAPTERS), "Dir_Increase"),
         ("Obj_NoUntaughtWork", "G_NothingUntaughtRenewed", "Met_UntaughtWork", "renewal items following the superseded structure", 0, 0, "Dir_Hold")]
 MOVERS = {"Obj_DecksRenewed": "Deck", "Obj_ResearchRecorded": "Research", "Obj_PagesBuilt": "Page"}
 BASE_AT = "__BASE_AT__"

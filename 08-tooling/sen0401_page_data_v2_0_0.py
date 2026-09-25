@@ -7,14 +7,15 @@ import json, os, re, subprocess, sys
 import rdflib
 from rdflib import RDF, RDFS, OWL
 N, PY = sys.argv[1], sys.argv[2]
+NUM = N; N = ("ch%s" % N) if N.isdigit() else N  # a numbered chapter, or a named supplement such as "numbers"
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-RD = os.path.join(REPO, "03-materials", "ch%s" % N, "rdodi"); import glob
-f = lambda p: sorted(glob.glob(os.path.join(RD, "sen0401_ch%s_%s_v*.ttl" % (N, p))), key=lambda x: [int(v) for v in x.rsplit("_v",1)[1][:-4].split("_")])[-1]
+RD = os.path.join(REPO, "03-materials", N, "rdodi"); import glob
+f = lambda p: sorted(glob.glob(os.path.join(RD, "sen0401_%s_%s_v*.ttl" % (N, p))), key=lambda x: [int(v) for v in x.rsplit("_v",1)[1][:-4].split("_")])[-1]
 T = rdflib.Graph(); T.parse(f("domain_tbox"), format="turtle"); A = rdflib.Graph(); A.parse(f("domain_abox"), format="turtle")
 D = rdflib.Graph(); D.parse(f("document"), format="turtle"); R = rdflib.Graph(); R.parse(f("research"), format="turtle")
 DOC = rdflib.Namespace("http://example.org/rdodi/document-ontology#"); SK = rdflib.namespace.SKOS; DC = rdflib.namespace.DCTERMS
 RDN = rdflib.Namespace("http://example.org/rdodi/domain-ontology#"); RES = rdflib.Namespace("http://example.org/rdodi/research-ontology#")
-BASE = "http://example.org/sen0401/ch%s" % N; CH = rdflib.Namespace(BASE + "#")
+BASE = "http://example.org/sen0401/%s" % N; CH = rdflib.Namespace(BASE + "#")
 pyver = subprocess.run([PY, "--version"], capture_output=True, text=True).stdout.strip()
 
 EXEC = r'''
@@ -58,6 +59,8 @@ for c in order:
         er = A.value(X, RDN.hasErrorCondition)
         if er is not None:
             e = str(A.value(er, RDFS.label)).split(" raises ")[0]; node["error"] = {"code": e, "out": ex(e)["out"]}
+        chart = A.value(X, rdflib.URIRef("http://example.org/sen0401#hasChartCanvas"))
+        if chart is not None: node["chart"] = str(chart)
         own = A.value(X, CH.hasOwner)
         if own is not None: node["owner"] = str(own).split("#")[-1].replace("X_", "")
     nodes.append(node)
@@ -84,10 +87,13 @@ agents = [{"id": "agent-" + n["id"], "name": AGENT.get(n["id"], n["label"] + " a
            "covers": [m["id"] for m in nodes if m["parent"] == n["id"]] + [n["id"]]} for n in nodes if n["level"] == 2]
 refs = sorted((str(R.value(p, RDFS.label)), str(R.value(p, DC.source))) for p in R.subjects(RDF.type, RES.Publication))
 title = next(str(o) for s, o in D.subject_objects(RDFS.label) if str(s).endswith("#Document"))
-DISC = os.path.join(REPO, "08-tooling", "ch%s-page" % N, "discussion.json")
-data = {"discussion": json.load(open(DISC)) if os.path.exists(DISC) else [], "research_file": os.path.basename(f("research")), "chapter": int(N), "title": title, "python": pyver, "nodes": nodes, "relations": rels, "agents": agents, "refs": refs}
-out = os.path.join(REPO, "08-tooling", "ch%s-page" % N); os.makedirs(out, exist_ok=True)
+DISC = os.path.join(REPO, "08-tooling", "%s-page" % N, "discussion.json")
+EXTRA = os.path.join(REPO, "08-tooling", "%s-page" % N, "extra.html")
+data_extra = open(EXTRA).read() if os.path.exists(EXTRA) else ""
+data = {"discussion": json.load(open(DISC)) if os.path.exists(DISC) else [], "research_file": os.path.basename(f("research")), "chapter": int(NUM) if NUM.isdigit() else None, "unit": json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "unit.json"))) if not NUM.isdigit() else None, "title": title, "python": pyver, "nodes": nodes, "relations": rels, "agents": agents, "refs": refs}
+out = os.path.join(REPO, "08-tooling", "%s-page" % N); os.makedirs(out, exist_ok=True)
 json.dump(data, open(os.path.join(out, "page_data_v2.json"), "w"), indent=1)
+open(os.path.join(out, "extra_resolved.html"), "w").write(data_extra)
 print("chapter %s: %d concepts, %d relations (%d stated, %d co-mentions), %d agents, %d executed examples with ast trees, under %s" % (
     N, len(nodes), len(rels), sum(1 for r in rels if r["type"] != "mentions"), sum(1 for r in rels if r["type"] == "mentions"),
     len(agents), sum(1 for n in nodes if "io" in n), pyver))

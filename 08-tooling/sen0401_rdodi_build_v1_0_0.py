@@ -7,10 +7,14 @@ a finding, not left implicit."""
 import importlib, os, sys
 D = importlib.import_module(sys.argv[1]); VER = sys.argv[2]
 V = getattr(D, "VERSION", "1_0_0"); VD = V.replace("_", ".")
-N = "%02d" % D.CH
+# a unit is a numbered chapter or a named supplement (D.CH a string, e.g. "numbers")
+N = ("ch%02d" % D.CH) if isinstance(D.CH, int) else D.CH
+UNIT = ("chapter %d" % D.CH) if isinstance(D.CH, int) else D.UNIT_LABEL
+SOURCE_OF = ("Mastering Bitcoin 3rd edition's chapter %d" % D.CH) if isinstance(D.CH, int) else D.SOURCE_OF
+RENEWS = ("This document renews chapter %d of the 3rd edition of Mastering Bitcoin for SEN0401 (Antonopoulos and Harding, 2023)." % D.CH) if isinstance(D.CH, int) else D.DOC_INTRO
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT = os.path.join(REPO, "03-materials", "ch%s" % N, "rdodi"); os.makedirs(OUT, exist_ok=True)
-BASE = "http://example.org/sen0401/ch%s" % N
+OUT = os.path.join(REPO, "03-materials", N, "rdodi"); os.makedirs(OUT, exist_ok=True)
+BASE = "http://example.org/sen0401/%s" % N
 PFX = '''@prefix chx:     <%s#> .
 @prefix res:     <http://example.org/rdodi/research-ontology#> .
 @prefix rd:      <http://example.org/rdodi/domain-ontology#> .
@@ -26,7 +30,7 @@ PFX = '''@prefix chx:     <%s#> .
 ''' % BASE
 
 def header(part, label):
-    ident = "sen0401_ch%s_%s_v%s" % (N, part, V)
+    ident = "sen0401_%s_%s_v%s" % (N, part, V)
     return '''<%s/%s> a owl:Ontology ;
     rdfs:label "%s"@en ; owl:versionInfo "%s" ; owl:versionIRI <%s/%s/%s> ;
     dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
@@ -36,14 +40,14 @@ def header(part, label):
     dcterms:creator <http://example.org/rdodi/agent/YusufAltunel> ;
     dcterms:created "2026-09-24"^^xsd:date ; dcterms:modified "2026-09-24"^^xsd:date ;
     dcterms:identifier "%s" ;
-    prov:wasGeneratedBy <http://example.org/sen0401/activity/ch%s-rdodi-run> ;
+    prov:wasGeneratedBy <http://example.org/sen0401/activity/%s-rdodi-run> ;
     prov:wasAttributedTo <http://example.org/rdodi/agent/YusufAltunel> .
 ''' % (BASE, part, label, VD, BASE, part, VD, ident, N)
 
 def q(t): return t.replace('\\', '\\\\').replace('"', "'")
 
 def research():
-    L = [PFX, header("research", "SEN0401 chapter %d - RDODI Stage 1 research artefact" % D.CH),
+    L = [PFX, header("research", "SEN0401 %s - RDODI Stage 1 research artefact" % UNIT),
          'chx:Research a res:ResearchProject ; rdfs:label "%s"@en ;' % q(D.TITLE),
          '    sen0414:methodology "Primary source first: the chapter\'s named concepts from the book\'s own source at tag third_edition_print1. Then the official documentation for the current release and the PEPs the chapter\'s topics touch. Every source opened and read on %s; every claim taken from text actually read; every behaviour executed under Python 3.14.4." ;' % VER,
          '    res:hasResearchScope chx:Scope ; rdfs:member ' + ", ".join("chx:%s" % p[0] for p in D.PUBS) + ' .',
@@ -65,7 +69,7 @@ def label(c):
     return t[0].upper() + t[1:]
 
 def tbox():
-    L = [PFX, header("tbox", "SEN0401 chapter %d domain ontology - TBox" % D.CH)]; seen = set()
+    L = [PFX, header("tbox", "SEN0401 %s domain ontology - TBox" % UNIT)]; seen = set()
     for top, mid, leaf, *_ in D.TAX:
         for c, par in ((top, None), (mid, top), (leaf, mid)):
             if c in seen: continue
@@ -79,29 +83,31 @@ def tbox():
     return "\n".join(L) + "\n"
 
 def abox():
-    L = [PFX, header("abox", "SEN0401 chapter %d domain ontology - ABox" % D.CH)]
+    L = [PFX, header("abox", "SEN0401 %s domain ontology - ABox" % UNIT)]
     for top, mid, leaf, ex, d, io in D.TAX:
         L.append('chx:X_%s a owl:NamedIndividual, chx:%s ; rdfs:label "%s"@en ; skos:definition "%s"@en ; dcterms:source <%s/research> .' % (leaf, leaf, q(ex), q(d), BASE))
         if io:
             L.append('chx:IO_%s a owl:NamedIndividual, rd:IOExample ; rdfs:label "%s evaluates to %s"@en ; chx:input "%s" ; chx:output "%s" .' % (leaf, q(io[0]), q(io[1]), q(io[0]), q(io[1])))
             L.append("chx:X_%s rd:hasIOExample chx:IO_%s ." % (leaf, leaf))
-    L.append('''chx:Artifact a owl:NamedIndividual, rd:DomainOntologyArtifact ; rdfs:label "SEN0401 chapter %d domain ontology"@en ;
+        if leaf in getattr(D, "CHARTS", {}):
+            L.append('chx:X_%s sen0414:hasChartCanvas "%s" .' % (leaf, D.CHARTS[leaf]))
+    L.append('''chx:Artifact a owl:NamedIndividual, rd:DomainOntologyArtifact ; rdfs:label "SEN0401 %s domain ontology"@en ;
     rd:derivedFromResearchSubject <%s/research> ; rd:hasCompetencyQuestion chx:CQs ; rd:hasSourceProvenance chx:Provenance ;
     rd:hasReusabilityScope rd:RS_SubjectSpecific ; rd:hasResolutionEnvironment chx:Env .
-chx:CQs a owl:NamedIndividual, rd:CompetencyQuestionSet ; rdfs:label "Chapter %d competency questions"@en ; rd:containsCompetencyQuestion chx:CQ1, chx:CQ2 .
+chx:CQs a owl:NamedIndividual, rd:CompetencyQuestionSet ; rdfs:label "%s competency questions"@en ; rd:containsCompetencyQuestion chx:CQ1, chx:CQ2 .
 chx:CQ1 a owl:NamedIndividual, rd:CompetencyQuestion ; rdfs:label "Which claims of the chapter can be checked by computation, and what does the computation give?"@en .
 chx:CQ2 a owl:NamedIndividual, rd:CompetencyQuestion ; rdfs:label "Which concepts reach beyond the book into the current state of Bitcoin and the course theme, and on what source?"@en .
-chx:Provenance a owl:NamedIndividual, rd:ResearchSubjectInput ; rdfs:label "Derived from the chapter %d research artefact"@en ;
-    skos:definition "Concepts are corpus-derived from Mastering Bitcoin 3rd edition's chapter %d through the Stage 1 research artefact; the modern-practice branch comes from that artefact's secondary sources."@en ;
+chx:Provenance a owl:NamedIndividual, rd:ResearchSubjectInput ; rdfs:label "Derived from the %s research artefact"@en ;
+    skos:definition "Concepts are corpus-derived from %s through the Stage 1 research artefact; the modern-practice branch comes from that artefact's secondary sources."@en ;
     dcterms:source <%s/research> .
 chx:Env a owl:NamedIndividual, rd:ResolutionEnvironment ; rdfs:label "CPython 3.14.4"@en ;
     skos:definition "Every input-output example executed under CPython 3.14.4, installed with uv on 2026-09-24."@en ;
     dcterms:source "The execution run recorded with this build, 08-tooling/sen0414_rdodi_build_v1_0_0.py" .
-''' % (D.CH, BASE, D.CH, D.CH, D.CH, BASE))
+''' % (UNIT, BASE, UNIT[0].upper() + UNIT[1:], UNIT, SOURCE_OF, BASE))
     return "\n".join(L) + "\n"
 
 def shacl():
-    return PFX + header("shacl", "SEN0401 chapter %d domain ontology - shapes" % D.CH) + '''chx:ExemplarShape a sh:NodeShape ; sh:targetClass owl:NamedIndividual ;
+    return PFX + header("shacl", "SEN0401 %s domain ontology - shapes" % UNIT) + '''chx:ExemplarShape a sh:NodeShape ; sh:targetClass owl:NamedIndividual ;
     sh:property [ sh:path rdfs:label ; sh:minCount 1 ; sh:severity sh:Violation ; sh:message "Every individual needs a label." ] .
 chx:ExemplarSourcedShape a sh:NodeShape ; sh:targetSubjectsOf skos:definition ;
     sh:property [ sh:path dcterms:source ; sh:minCount 1 ; sh:severity sh:Violation ; sh:message "A defined individual must cite its source." ] .
@@ -122,8 +128,8 @@ def document():
             order.append((m, 2, top))
             for t in D.TAX:
                 if t[1] == m: order.append((t[2], 3, m))
-    L = [PFX, header("document", "SEN0401 chapter %d - RDODI Stage 3 document" % D.CH),
-         'chx:Document a doc:ReportSection ; rdfs:label "%s"@en ; skos:definition "This document renews chapter %d of the 3rd edition of Mastering Bitcoin for SEN0401 (Antonopoulos and Harding, 2023)." ; dcterms:source <%s/research> ;' % (q(D.TITLE), D.CH, BASE),
+    L = [PFX, header("document", "SEN0401 %s - RDODI Stage 3 document" % UNIT),
+         'chx:Document a doc:ReportSection ; rdfs:label "%s"@en ; skos:definition "%s" ; dcterms:source <%s/research> ;' % (q(D.TITLE), q(RENEWS), BASE),
          '    doc:hasSection ' + ", ".join("chx:S_%s" % c for c, lv, p in order if lv == 1) + ' .']
     for n, (c, lv, p) in enumerate(order, 1):
         L.append('chx:S_%s a %s ; rdfs:label "%s"@en ; doc:sectionTitle "%s" ; doc:hierarchyLevel %d ; doc:sectionOrder %d ;%s' % (
@@ -132,5 +138,5 @@ def document():
     return "\n".join(L) + "\n", order
 
 for name, text in (("research", research()), ("domain_tbox", tbox()), ("domain_abox", abox()), ("domain_shacl", shacl()), ("document", document()[0])):
-    open(os.path.join(OUT, "sen0401_ch%s_%s_v%s.ttl" % (N, name, V)), "w").write(text)
-print("chapter %d: five artefacts written to %s" % (D.CH, OUT))
+    open(os.path.join(OUT, "sen0401_%s_%s_v%s.ttl" % (N, name, V)), "w").write(text)
+print("%s: five artefacts written to %s" % (UNIT, OUT))

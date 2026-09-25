@@ -5,8 +5,9 @@ interpreter printed. Results go to test_results_v2.json; the page ABox marks a w
 import json, os, sys, time
 from playwright.sync_api import sync_playwright
 N = sys.argv[1]; REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-page_path = os.environ.get("PAGE", os.path.join(REPO, "03-materials", "ch%s" % N, "page", "sen0401_ch%s_page_v2_1_0.html" % N))
-d = json.load(open(os.path.join(REPO, "08-tooling", "ch%s-page" % N, "page_data_v2.json")))
+NUM = N; N = ("ch%s" % N) if N.isdigit() else N  # a numbered chapter, or a named supplement such as "numbers"
+page_path = os.environ.get("PAGE", os.path.join(REPO, "03-materials", N, "page", "sen0401_%s_page_v2_1_0.html" % N))
+d = json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "page_data_v2.json")))
 AXE = "/home/claude/Ontologies/rdodi-ecosystem/07-pedagogy-professional-stage/lib/axe.min.js"
 R = {"widgets": {}, "features": {}, "gates": {}}
 def feat(k, ok, detail=""): R["features"][k] = {"passed": bool(ok), "detail": detail}
@@ -57,6 +58,11 @@ with sync_playwright() as p:
                 ok = ok and shown == n["io"]["out"]; why += "; card shows %r" % shown
                 pg.click('[data-diagram="%s"]' % n["id"]); ok = ok and pg.locator("#%s-diagram svg g.n" % w).count() > 0; why += "; diagram drawn"
                 pg.fill("#%s-code" % w, n["io"]["code"] + " "); pg.click('[data-reset="%s"]' % n["id"]); ok = ok and pg.input_value("#%s-code" % w) == n["io"]["code"]; why += "; edit and reset"
+            elif n.get("chart") and "io" not in n:
+                # a chart widget passes when Chart.js has drawn the snapshot's data into it, visible, with points
+                pg.wait_for_function("id=>{const c=document.getElementById(id);const ch=c&&window.Chart&&Chart.getChart(c);return ch&&ch.data.datasets.some(d=>d.data&&d.data.length>0)&&c.offsetWidth>0}", arg=n["chart"], timeout=20000)
+                pts = pg.evaluate("id=>Chart.getChart(document.getElementById(id)).data.datasets.reduce((a,d)=>a+d.data.length,0)", n["chart"])
+                ok = pts > 0; why = "chart %s drawn with %d points" % (n["chart"], pts)
             elif n["level"] == 3:
                 pg.click('[data-step="%s"]' % w); ok = pg.locator("#%s li" % w).nth(1).is_visible(); why = "second step revealed"
             else:
@@ -92,7 +98,7 @@ with sync_playwright() as p:
     pg.click('#tabs [data-tab="intro"]'); pg.add_script_tag(path=AXE)
     R["gates"]["WCAG 2 AA (axe-core)"] = pg.evaluate("async()=>{const r=await axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa']}});return r.violations.map(v=>[v.id,v.impact,v.nodes.length])}")
     b.close()
-json.dump(R, open(os.environ.get("RESULTS", os.path.join(REPO, "08-tooling", "ch%s-page" % N, "test_results_v2.json")), "w"), indent=1)
+json.dump(R, open(os.environ.get("RESULTS", os.path.join(REPO, "08-tooling", "%s-page" % N, "test_results_v2.json")), "w"), indent=1)
 bad = [k for k, v in R["widgets"].items() if not v["passed"]]
 print("widgets: %d tested, %d passed; failing: %s" % (len(R["widgets"]), len(R["widgets"]) - len(bad), [(k, R["widgets"][k]["detail"]) for k in bad[:3]]))
 for k, v in R["features"].items(): print("  [%s] %s  %s" % ("PASS" if v["passed"] else "FAIL", k, v["detail"]))

@@ -3,10 +3,12 @@
 results: a widget is marked designTestPassed only if its test in test_results.json passed."""
 import json, os, sys
 N = sys.argv[1]; REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-rec = json.load(open(os.path.join(REPO, "08-tooling", "ch%s-page" % N, "build_record.json")))
-OBJ = json.load(open(os.path.join(REPO, "08-tooling", "ch%s-page" % N, "objectives.json")))
-tr = json.load(open(os.path.join(REPO, "08-tooling", "ch%s-page" % N, "test_results.json")))
-BASE = "http://example.org/sen0401/ch%s" % N
+NUM = N; N = ("ch%s" % N) if N.isdigit() else N  # a numbered chapter, or a named supplement such as "numbers"
+UNITL = ("chapter %d" % int(NUM)) if NUM.isdigit() else json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "unit.json")))["label"]
+rec = json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "build_record.json")))
+OBJ = json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "objectives.json")))
+tr = json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "test_results.json")))
+BASE = "http://example.org/sen0401/%s" % N
 q = lambda t: t.replace("\\", "\\\\").replace('"', "'")
 L = ['''@prefix ipo:     <http://example.org/rdodi/interactive-page-ontology#> .
 @prefix wp:      <http://example.org/widget-primitives#> .
@@ -21,14 +23,14 @@ L = ['''@prefix ipo:     <http://example.org/rdodi/interactive-page-ontology#> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix prov:    <http://www.w3.org/ns/prov#> .
 
-<%s/page> a owl:Ontology ; rdfs:label "SEN0401 chapter %d - RDODI Stage 4 page ABox"@en ; owl:versionInfo "1.0.0" ;
+<%s/page> a owl:Ontology ; rdfs:label "SEN0401 %s - RDODI Stage 4 page ABox"@en ; owl:versionInfo "1.0.0" ;
     dcterms:license <https://creativecommons.org/licenses/by/4.0/> ; dcterms:rights "Copyright (c) 2026 Yusuf Altunel. Licensed CC BY 4.0."@en ;
     dcterms:rightsHolder <http://example.org/rdodi/agent/YusufAltunel> ; dcterms:publisher <http://example.org/rdodi/agent/IstanbulKulturUniversity> ;
     dcterms:creator <http://example.org/rdodi/agent/YusufAltunel> ; dcterms:created "2026-09-24"^^xsd:date ; dcterms:modified "2026-09-24"^^xsd:date ;
-    dcterms:identifier "sen0401_ch%s_page_abox_v1_0_0" ; prov:wasGeneratedBy <http://example.org/sen0401/activity/ch%s-rdodi-run> ;
+    dcterms:identifier "sen0401_%s_page_abox_v1_0_0" ; prov:wasGeneratedBy <http://example.org/sen0401/activity/%s-rdodi-run> ;
     prov:wasAttributedTo <http://example.org/rdodi/agent/YusufAltunel> .
 
-pg:Page a ipo:Page, ipo:InteractiveLearningSurface ; rdfs:label "Chapter %d interactive page"@en ;
+pg:Page a ipo:Page, ipo:InteractiveLearningSurface ; rdfs:label "%s interactive page"@en ;
     dcterms:source <%s/document> ; ipo:hasSourceDocument pg:SourceDocument ;
     ipo:satisfiesHeuristic ipo:RecognitionRatherThanRecall, ipo:ConsistencyAndStandards, ipo:AestheticAndMinimalistDesign,
         ipo:ShneidermanRule_OfferInformativeFeedback, ipo:ShneidermanRule_PermitEasyReversalOfActions, ipo:HelpAndDocumentation ;
@@ -43,9 +45,9 @@ pg:Sidebar a ipo:Sidebar ; rdfs:label "Section tree"@en .
 pg:Main a ipo:MainContent ; rdfs:label "Chapter content with inline widgets"@en .
 pg:GroupedTopBar a ipo:PrimaryNavigation ; rdfs:label "Grouped permanent top bar"@en .
 pg:SectionTree a ipo:TreeNavigation ; rdfs:label "Sub-section sidebar tree"@en .
-pg:SourceDocument a ipo:SourceDocument ; rdfs:label "Chapter %d Stage 3 document"@en ; dcterms:source <%s/document> ;
+pg:SourceDocument a ipo:SourceDocument ; rdfs:label "%s Stage 3 document"@en ; dcterms:source <%s/document> ;
     ipo:hasLearningObjective %(cos)s .
-''' .replace('%(cos)s', ', '.join('pg:' + k for k in OBJ)) % (BASE, BASE, int(N), N, N, int(N), BASE, len(rec["sections"]), rec["python"], int(N), BASE)]
+''' .replace('%(cos)s', ', '.join('pg:' + k for k in OBJ)) % (BASE, BASE, UNITL, N, N, UNITL[0].upper() + UNITL[1:], BASE, len(rec["sections"]), rec["python"], UNITL[0].upper() + UNITL[1:], BASE)]
 for k, (text, lvl) in OBJ.items():
     L.append('pg:%s a ipo:LearningObjective, owl:NamedIndividual ; rdfs:label "%s"@en ; ld:bloomLevel ld:%s  .' % (k, q(text), lvl))
 for n, it in enumerate(rec['quiz'], 1):
@@ -65,6 +67,6 @@ for w in rec["widgets"]:
         L.append('    mp:numericModelStatus mp:Validated ; mp:hasValidationDerivation "Every value the widget reveals was produced by executing the expression under %s at build time, not typed" ; mp:hasConformanceTest "The browser design test requires the revealed value to equal the executed one" ;' % rec["python"])
     L.append('    wp:instantiatesPrimitive wp:%s ; ds:selectionWarrant "%s" ;' % (w["prim"], q(w["warrant"])))
     L.append('    wp:demonstratesConcept <%s> ; dcterms:source <%s> ;' % (w["cls"], w["cls"].replace("#", "/document#S_") if False else "%s/document" % BASE))
-    L.append('    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v1_0_0.py: %s" ; wp:designTestPassed %s .' % (q(r["detail"]), "true" if r["passed"] else "false"))
-open(os.path.join(REPO, "03-materials", "ch%s" % N, "page", "sen0401_ch%s_page_abox_v1_0_0.ttl" % N), "w").write("\n".join(L) + "\n")
+    L.append('    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v2_0_0.py: %s" ; wp:designTestPassed %s .' % (q(r["detail"]), "true" if r["passed"] else "false"))
+open(os.path.join(REPO, "03-materials", N, "page", "sen0401_%s_page_abox_v1_0_0.ttl" % N), "w").write("\n".join(L) + "\n")
 print("page ABox written: %d sections, %d widgets (%d marked tested)" % (len(rec["sections"]), len(rec["widgets"]), sum(1 for w in rec["widgets"] if tr["widgets"][w["id"]]["passed"])))

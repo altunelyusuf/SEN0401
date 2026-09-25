@@ -138,6 +138,110 @@ ex:Iter_1 a backlog:Iteration ; rdfs:label "First iteration: chapter 1, before t
 
 
 FEEDBACK = """
+ex:G_ChaptersSeenInData a backlog:Goal ;
+    rdfs:label "Chapters 1 and 2 are seen in the network's real data"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:derivesFromScope ex:Scope ; backlog:goalCoversArea ex:Area_Page ;
+    backlog:contributesToMission ex:Mission ; backlog:hasGoalFacing backlog:Facing_Containment ;
+    backlog:hasIntentOrigin backlog:IOrigin_OwnerStated ; backlog:decidedBy backlog:Owner ;
+    backlog:hasGoalRationale "Added with scope change SC_Numbers, not by the Goal stage: the owner asked for his Bitcoin numbers dashboard to become a course page. It serves the mission's grounding - students see chapter 1's supply schedule and chapter 2's security by computation in Blockchain.com's data." .
+ex:Obj_Supplements backlog:contributesToGoal ex:G_ChaptersSeenInData ; backlog:hasCheckpoint ex:CP_Obj_Supplements .
+ex:CP_Obj_Supplements a backlog:ObjectiveCheckpoint ; rdfs:label "Reading when the supplementary page closes"@en ;
+    backlog:checkpointCondition "Taken when the Bitcoin in numbers page closes, since it is the only item this objective counts." ;
+    backlog:expectedValue "1"^^xsd:decimal .
+
+ex:Obj_Supplements a backlog:Objective ; rdfs:label "Owner-requested supplementary pages built: from 0 to 1"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:fillsScope ex:Scope ; backlog:hasSuccessMetric ex:Met_Supplements ;
+    backlog:hasMeasurementKind backlog:Meas_Counted ;
+    backlog:hasMeasurementQuery "Count of supplementary pages the owner requested that are published in the course repository and pass their gates and browser tests." ;
+    backlog:hasBaselineValue "0"^^xsd:decimal ; backlog:hasTargetValue "1"^^xsd:decimal ; backlog:hasTargetDirection backlog:Dir_Increase ;
+    backlog:metricMovableBy ex:ST_Page_Numbers ;
+    backlog:hasIntentOrigin backlog:IOrigin_OwnerStated ; backlog:decidedBy backlog:Owner .
+ex:Met_Supplements a backlog:Metric ; rdfs:label "owner-requested supplementary pages built"@en ; backlog:belongsToLineage ex:Lineage .
+ex:Obs0_Supplements a backlog:MetricObservation ; rdfs:label "Baseline, when the request was taken up"@en ;
+    backlog:observesMetric ex:Met_Supplements ; backlog:observationFor ex:Obj_Supplements ; backlog:hasObservedValue "0"^^xsd:decimal ;
+    backlog:observedAt "2026-09-25T08:52:21"^^xsd:dateTime ; backlog:hasObservationMethod "Read from the repository: no supplementary page existed." .
+ex:Obs1_Supplements a backlog:MetricObservation ; rdfs:label "Supplementary pages read after the Bitcoin in numbers page closed"@en ;
+    backlog:observesMetric ex:Met_Supplements ; backlog:observationFor ex:Obj_Supplements ; backlog:hasObservedValue "1"^^xsd:decimal ;
+    backlog:observedAt "2026-09-25T09:01:03"^^xsd:dateTime ; backlog:hasObservationMethod "Counted supplementary pages passing their gates and browser tests: Bitcoin in numbers." .
+ex:ST_Page_Numbers backlog:pursuesObjective ex:Obj_Supplements .
+ex:Finding_ForkedObjectiveTargets a backlog:RetrospectiveFinding ;
+    rdfs:label "SEN0401's objectives carried SEN0414's target of 16"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Page_Numbers ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "Tying the new page to an objective meant reading SEN0401's objectives closely: all three counting objectives - decks, research runs, pages - had a target of 16, SEN0414's number of taught subjects, carried over when SEN0414's lineage builder was forked on 2026-09-25. SEN0401 has fourteen chapters. Every earlier validation passed because nothing checks a target against the scope it measures." ;
+    backlog:hasRemedy "The stage builder now takes the target from the number of chapters, so the three objectives read 14; this finding records that published releases sen0401-v0.4.0 to v0.15.0 stated 16. The lesson reaches past this lineage: the fork is the root cause, which is why consolidating both courses' builders into one CME-held builder is already on the record." .
+
+ex:CR_Numbers a backlog:ChangeRequest ;
+    rdfs:label "Turn the owner's Bitcoin numbers dashboard into an interactive course page"@en ;
+    backlog:requestsChangeTo ex:Scope ; backlog:hasChangeDirection backlog:Direction_Grow ;
+    backlog:hasChangeRequestRationale "The owner asked for a dashboard built by another session - Bitcoin: price, supply and mining power v1.1.0, a claude.ai artifact of 25 September 2026 drawn from Blockchain.com's public charts - to be converted into an interactive page like the chapter pages. The scope covers the fourteen chapters' decks, research and pages; a supplementary page is outside it, so the boundary has to move." ;
+    backlog:hasDisposition backlog:Disp_Accepted .
+
+ex:IA_Numbers a backlog:ImpactAssessment ;
+    rdfs:label "What the supplementary page costs, measured before building it"@en ;
+    backlog:analyzesRequest ex:CR_Numbers ; backlog:identifiesAffectedLineage ex:Lineage ;
+    backlog:hasImpactStatement "Measured before the work: the dashboard holds nine charts over one data snapshot (1,471 price samples, 1,500 supply samples, 1,615 hash-rate samples). The chapter tooling assumed numbered chapters throughout - builder, page data, page build, tests, ABox, gate runner - so it had to be generalised to named units, and that generalisation had to be shown to rebuild chapters 1 and 2 unchanged. No chapter story is displaced; chapter 2's iteration keeps its goal." .
+
+ex:SC_Numbers a backlog:ScopeChange ;
+    rdfs:label "Scope grown by one supplementary page: Bitcoin in numbers"@en ;
+    backlog:fulfillsRequest ex:CR_Numbers ; backlog:changesScope ex:Scope ; backlog:decidedBy backlog:Owner ;
+    backlog:admitsItem ex:ST_Page_Numbers ;
+    backlog:hasScopeChangeRationale "The boundary moved outward by one page because the owner asked for it. Paid for by generalising the tooling rather than forking it again - the generalised builder and page tooling were shown to regenerate chapters 1 and 2 identically - and by verifying the dashboard's data against its stated source before teaching from it." .
+
+ex:Del_Page_Numbers a backlog:ScopeDeliverable ;
+    rdfs:label "Page: Bitcoin in numbers, supplement to chapters 1 and 2"@en ;
+    backlog:derivesFromMissionClause "every SEN0401 lecture deck teaches what the textbook teaches"^^xsd:string ;
+    backlog:hasDeliverableText "An interactive page with the chapter pages' tools, carrying the owner's dashboard's nine charts over its Blockchain.com snapshot, grounded in verified sources and connected to chapters 1 and 2." ;
+    backlog:deliverableForArea ex:Area_Page ; backlog:hasScopeLayer backlog:Layer_Product ; backlog:hasProductScopeKind backlog:Kind_Functional .
+
+ex:ST_Page_Numbers a backlog:Story ; rdfs:label "Page: Bitcoin in numbers"@en ; backlog:hasIdentifier "ST_Page_Numbers" ; backlog:hasTitle "Supplementary page: Bitcoin in numbers" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ;
+    backlog:asRole "SEN0401 instructor" ; backlog:wantsCapability "the Bitcoin numbers dashboard as an interactive page like the chapter pages" ; backlog:soThat "students see chapter 1's supply schedule and chapter 2's security by computation in real data" ;
+    backlog:satisfiesDeliverable ex:Del_Page_Numbers ; backlog:hasAcceptanceCriterion ex:AC_Chapter ;
+    backlog:effectiveDefinitionOfDone ex:DoD ; backlog:hasApplicableConcern backlog:Concern_Data ;
+    backlog:hasState backlog:Done ; backlog:startedAt "2026-09-25T08:52:21"^^xsd:dateTime ; backlog:finishedAt "2026-09-25T09:00:01"^^xsd:dateTime ; backlog:lastAuditedAt "2026-09-25T09:01:03"^^xsd:dateTime ;
+    backlog:hasEvidence ex:Ev_Page_Numbers ; backlog:hasExecutionModality backlog:Mode_Hybrid ; backlog:memberOfContainer ex:Iter_2 ;
+    backlog:hasPriorityScore ex:Score_Page_Numbers ;
+    backlog:decomposesInto ex:TK_Page_Numbers_Build, ex:TK_Page_Numbers_Verify .
+ex:Score_Page_Numbers a backlog:PriorityScore ; backlog:scoredByMethod backlog:Method_WSJF ;
+    backlog:hasScoreValue "12.67"^^xsd:decimal ; backlog:scoredAt "2026-09-25T08:52:21"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
+    backlog:hasScoreRationale "WSJF = (business value 13 + time criticality 20 + risk reduction 5) / job size 3: the page components the owner approved for this lineage's pages, applied unchanged; the owner's request put it first." .
+ex:Plan_Page_Numbers a backlog:PlanningEvent ; rdfs:label "Planning of the Bitcoin in numbers page into the second iteration"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:plannedAt "2026-09-25T08:52:21"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_2 ;
+    backlog:plansItem ex:ST_Page_Numbers ; backlog:producesTask ex:TK_Page_Numbers_Build, ex:TK_Page_Numbers_Verify .
+ex:Refine_Page_Numbers a backlog:RefinementEvent ; rdfs:label "Refinement that made the Bitcoin in numbers page ready"@en ;
+    backlog:refines ex:ST_Page_Numbers ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-25T08:52:21"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_2 ;
+    backlog:hasRefinementOutcome "Settled from the owner's request: convert the dashboard into an interactive page similar to the chapter pages, keeping its charts; its data verified against Blockchain.com before use." .
+ex:TK_Page_Numbers_Build a backlog:ExecutionTask ; rdfs:label "Bitcoin in numbers page: build"@en ; backlog:hasIdentifier "TK_Page_Numbers_Build" ; backlog:hasTitle "Build the Bitcoin in numbers page" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:hasState backlog:Done ; backlog:startedAt "2026-09-25T08:52:21"^^xsd:dateTime ; backlog:finishedAt "2026-09-25T09:00:01"^^xsd:dateTime ; backlog:hasEvidence ex:Ev_Page_Numbers ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; a task is not scored on its own." .
+ex:TK_Page_Numbers_Verify a backlog:ExecutionTask ; rdfs:label "Bitcoin in numbers page: verify"@en ; backlog:hasIdentifier "TK_Page_Numbers_Verify" ; backlog:hasTitle "Verify the Bitcoin in numbers page" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:hasState backlog:Done ; backlog:startedAt "2026-09-25T08:52:21"^^xsd:dateTime ; backlog:finishedAt "2026-09-25T09:00:01"^^xsd:dateTime ; backlog:hasEvidence ex:Ev_Page_Numbers ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; a task is not scored on its own." .
+ex:Ev_Page_Numbers a backlog:TestEvidence ; rdfs:label "Checks for the Bitcoin in numbers page"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:attestsCriterion ex:AC_Chapter ; backlog:evidenceVerified true ; backlog:hasTestId "Page/Numbers" ;
+    backlog:hasTestSpec "Data: the snapshot spot-checked against the Blockchain.com API - market price and hash rate equal at shared dates. RDODI Stages 1-3 for the unit, all gates PASS, coverage 12 of 12 of the dashboard's own sections. Page: 08-tooling/sen0401_page_test_v2_0_0.py in headless Chromium at 2026-09-25T09:00:01 - all 23 widgets passed, including all nine charts drawn by Chart.js with their data and all three computations printed by Pyodide exactly as the build interpreter printed them; 0 console errors; 0 WCAG 2 AA violations; a fixture with one stored value altered refused. RDODI Stage 4 and every automated pedagogy gate pass; the owner's pedagogical-soundness attestation is pending, not claimed." ;
+    backlog:hasVerificationMethod "Gates and browser tests run over the artefacts as published." ;
+    backlog:verifiedByTool "08-tooling/sen0401_page_test_v2_0_0.py, rdodi-ecosystem gates, pyshacl, owlready2 HermiT" ; backlog:verifiedAt "2026-09-25T09:00:01"^^xsd:dateTime .
+ex:Harness_Page_Numbers a backlog:TestHarness ; rdfs:label "Checks for the Bitcoin in numbers page"@en ;
+    backlog:harnessFor ex:ST_Page_Numbers ; backlog:harnessComplete true ; backlog:hasHarnessEvidence ex:Ev_Page_Numbers .
+ex:Start_Page_Numbers a backlog:TransitionEvent ; rdfs:label "Bitcoin in numbers page started"@en ; backlog:transitionedItem ex:ST_Page_Numbers ;
+    backlog:viaTransition backlog:T_Start ; backlog:transitionedAt "2026-09-25T08:52:21"^^xsd:dateTime ; backlog:transitionedBy backlog:Owner ;
+    backlog:hasTransitionNote "Started when the owner's request was taken up; planning, refinement and start share this clock time because the request carried all three." .
+ex:Complete_Page_Numbers a backlog:TransitionEvent ; rdfs:label "Bitcoin in numbers page completed"@en ;
+    backlog:transitionedItem ex:ST_Page_Numbers ; backlog:viaTransition backlog:T_Complete ;
+    backlog:transitionedAt "2026-09-25T09:01:03"^^xsd:dateTime ; backlog:transitionedBy backlog:Owner ;
+    backlog:hasTransitionNote "Closed on its data check, its gates, its browser tests and its refused fixture. Times read from the clock." .
+
+ex:Finding_ChapterAboxTestName a backlog:RetrospectiveFinding ;
+    rdfs:label "The chapter pages' ABoxes named a test script that does not exist"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Page_Ch01, ex:ST_Page_Ch02 ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "Regression-checking the generalised tooling against the published chapter pages showed each widget's design test attributed to 08-tooling/sen0401_page_test_v1_0_0.py - a name inherited from SEN0414's first page builder. The script that ran every one of those tests is sen0401_page_test_v2_0_0.py." ;
+    backlog:hasRemedy "The page ABox builder now names the real script; both chapter pages' ABoxes re-issued as v2.1.1 with nothing else changed. The pages themselves were not touched." .
+
 ex:Finding_PagesRevisedFromCourseNotes a backlog:RetrospectiveFinding ;
     rdfs:label "The chapter 1 and 2 pages were revised to carry what the decks gained from the course notes"@en ;
     backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Page_Ch01, ex:ST_Page_Ch02 ;
