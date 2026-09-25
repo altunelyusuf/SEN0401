@@ -7,7 +7,7 @@
 
 <http://example.org/sen0401-slides-lineage> a owl:Ontology ;
     rdfs:label "Delivery lineage for renewing the SEN0401 lecture decks"@en ;
-    owl:versionInfo "0.9.2" ; dcterms:identifier "sen0401_slides_lineage" .
+    owl:versionInfo "0.10.0" ; dcterms:identifier "sen0401_slides_lineage" .
 
 ex:Lineage a backlog:Lineage ;
     rdfs:label "First lineage run for the SEN0401 decks"@en ;
@@ -661,8 +661,31 @@ ex:ST_Deck_Ch02 a backlog:Story ; rdfs:label "Deck: Mastering Bitcoin 3rd editio
     backlog:satisfiesDeliverable ex:Del_Deck_Ch02 ; backlog:pursuesObjective ex:Obj_DecksRenewed ; backlog:hasAcceptanceCriterion ex:AC_Chapter ;
     backlog:effectiveDefinitionOfDone ex:DoD ; backlog:hasApplicableConcern backlog:Concern_Data ;
     backlog:dependsOn ex:ST_Research_Ch02 ;
-    backlog:hasState backlog:Proposed ;
-    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Scored when its own iteration is planned." .
+    backlog:hasState backlog:Ready ; backlog:memberOfContainer ex:Iter_2 ;
+    backlog:hasPriorityScore ex:Score_Deck_Ch02 ;
+    backlog:decomposesInto ex:TK_Deck_Ch02_Build, ex:TK_Deck_Ch02_Verify .
+
+ex:Score_Deck_Ch02 a backlog:PriorityScore ; backlog:scoredByMethod backlog:Method_WSJF ;
+    backlog:hasScoreValue "9.60"^^xsd:decimal ; backlog:scoredAt "2026-09-24T22:34:30"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
+    backlog:hasScoreRationale "WSJF = (business value 20 + time criticality 20 + risk reduction 8) / job size 5, approved by the owner. Time criticality is set by the class at 09:00 Istanbul on 2026-09-25." .
+ex:Plan_Deck_Ch02 a backlog:PlanningEvent ; rdfs:label "Planning of Deck for Ch02 into the first iteration"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:plannedAt "2026-09-25T00:24:54"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_2 ;
+    backlog:plansItem ex:ST_Deck_Ch02 ; backlog:producesTask ex:TK_Deck_Ch02_Build, ex:TK_Deck_Ch02_Verify .
+ex:Refine_Deck_Ch02 a backlog:RefinementEvent ; rdfs:label "Refinement that made Deck for Ch02 ready"@en ;
+    backlog:refines ex:ST_Deck_Ch02 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-25T00:24:54"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_2 ; backlog:hasRefinementOutcome "Settled: rewritten from the 3rd edition's chapter and the research record, restyled with PowerPoint's own capabilities, every code example run under current Python before it is shown, and the deck described as a teaching material aligned to the outcomes it serves." .
+ex:TK_Deck_Ch02_Build a backlog:ExecutionTask ; rdfs:label "Deck for Ch02: build"@en ; backlog:hasIdentifier "TK_Deck_Ch02_Build" ; backlog:hasTitle "Build Deck Ch02" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch02 ;
+    backlog:hasAuditNote "Build it." .
+ex:TK_Deck_Ch02_Verify a backlog:ExecutionTask ; rdfs:label "Deck for Ch02: verify"@en ; backlog:hasIdentifier "TK_Deck_Ch02_Verify" ; backlog:hasTitle "Verify Deck Ch02" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch02 ;
+    backlog:hasAuditNote "Run the chapter check and require the stale fixture refused." .
 
 ex:ST_Deck_Ch03 a backlog:Story ; rdfs:label "Deck: Mastering Bitcoin 3rd edition, chapter 3: Bitcoin Core"@en ; backlog:hasIdentifier "ST_Deck_Ch03" ; backlog:hasTitle "Deck for Mastering Bitcoin 3rd edition, chapter 3" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ;
@@ -847,8 +870,33 @@ ex:ST_Research_Ch02 a backlog:Story ; rdfs:label "Research: Mastering Bitcoin 3r
     backlog:asRole "SEN0401 instructor" ; backlog:wantsCapability "an RDODI four-stage research run on the chapter's subject, with its pedagogy stage and Courseware profile" ; backlog:soThat "students are taught from the edition they read, on researched ground" ;
     backlog:satisfiesDeliverable ex:Del_Research_Ch02 ; backlog:pursuesObjective ex:Obj_ResearchRecorded ; backlog:hasAcceptanceCriterion ex:AC_Chapter ;
     backlog:effectiveDefinitionOfDone ex:DoD ; backlog:hasApplicableConcern backlog:Concern_Data ;
-    backlog:hasState backlog:Proposed ;
-    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Scored when its own iteration is planned." .
+    backlog:hasState backlog:InProgress ; backlog:startedAt "2026-09-25T00:24:54"^^xsd:dateTime ; backlog:memberOfContainer ex:Iter_2 ;
+    backlog:hasPriorityScore ex:Score_Research_Ch02 ;
+    backlog:decomposesInto ex:TK_Research_Ch02_Build, ex:TK_Research_Ch02_Verify .
+
+ex:Score_Research_Ch02 a backlog:PriorityScore ; backlog:scoredByMethod backlog:Method_WSJF ;
+    backlog:hasScoreValue "15.33"^^xsd:decimal ; backlog:scoredAt "2026-09-24T22:34:30"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
+    backlog:hasScoreRationale "WSJF = (business value 13 + time criticality 20 + risk reduction 13) / job size 3, approved by the owner. Time criticality is set by the class at 09:00 Istanbul on 2026-09-25." .
+ex:Plan_Research_Ch02 a backlog:PlanningEvent ; rdfs:label "Planning of Research for Ch02 into the first iteration"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:plannedAt "2026-09-25T00:24:54"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_2 ;
+    backlog:plansItem ex:ST_Research_Ch02 ; backlog:producesTask ex:TK_Research_Ch02_Build, ex:TK_Research_Ch02_Verify .
+ex:Refine_Research_Ch02 a backlog:RefinementEvent ; rdfs:label "Refinement that made Research for Ch02 ready"@en ;
+    backlog:refines ex:ST_Research_Ch02 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-25T00:24:54"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_2 ; backlog:hasRefinementOutcome "Settled: RDODI's four-stage procedure v1.6.0 on the chapter's subject, with its Pedagogy and Professional Standards stage and the Courseware profile; the research record lists every source a later claim rests on." .
+ex:TK_Research_Ch02_Build a backlog:ExecutionTask ; rdfs:label "Research for Ch02: build"@en ; backlog:hasIdentifier "TK_Research_Ch02_Build" ; backlog:hasTitle "Build Research Ch02" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:hasAuditNote "Build it." .
+ex:TK_Research_Ch02_Verify a backlog:ExecutionTask ; rdfs:label "Research for Ch02: verify"@en ; backlog:hasIdentifier "TK_Research_Ch02_Verify" ; backlog:hasTitle "Verify Research Ch02" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:hasAuditNote "Run the chapter check and require the stale fixture refused." .
+
+ex:Start_Research_Ch02 a backlog:TransitionEvent ; rdfs:label "Research Ch02 started"@en ; backlog:transitionedItem ex:ST_Research_Ch02 ;
+    backlog:viaTransition backlog:T_Start ; backlog:transitionedAt "2026-09-25T00:24:54"^^xsd:dateTime ; backlog:transitionedBy backlog:Owner ;
+    backlog:hasTransitionNote "Started once its dependency, the chapter's research, was Done. Time read from the clock." .
 
 ex:ST_Research_Ch03 a backlog:Story ; rdfs:label "Research: Mastering Bitcoin 3rd edition, chapter 3: Bitcoin Core"@en ; backlog:hasIdentifier "ST_Research_Ch03" ; backlog:hasTitle "Research for Mastering Bitcoin 3rd edition, chapter 3" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ;
@@ -980,10 +1028,10 @@ ex:Score_Page_Ch01 a backlog:PriorityScore ; backlog:scoredByMethod backlog:Meth
     backlog:hasScoreValue "12.67"^^xsd:decimal ; backlog:scoredAt "2026-09-24T22:34:30"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
     backlog:hasScoreRationale "WSJF = (business value 13 + time criticality 20 + risk reduction 5) / job size 3, approved by the owner. Time criticality is set by the class at 09:00 Istanbul on 2026-09-25." .
 ex:Plan_Page_Ch01 a backlog:PlanningEvent ; rdfs:label "Planning of Page for Ch01 into the first iteration"@en ; backlog:belongsToLineage ex:Lineage ;
-    backlog:plannedAt "2026-09-24T22:34:30"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_1 ;
+    backlog:plannedAt "2026-09-24T22:23:59"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_1 ;
     backlog:plansItem ex:ST_Page_Ch01 ; backlog:producesTask ex:TK_Page_Ch01_Build, ex:TK_Page_Ch01_Verify .
 ex:Refine_Page_Ch01 a backlog:RefinementEvent ; rdfs:label "Refinement that made Page for Ch01 ready"@en ;
-    backlog:refines ex:ST_Page_Ch01 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-24T22:34:30"^^xsd:dateTime ;
+    backlog:refines ex:ST_Page_Ch01 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-24T22:23:59"^^xsd:dateTime ;
     backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_1 ; backlog:hasRefinementOutcome "Settled: one interactive page for the chapter, carrying the research results; published as a page students can open, and described as a teaching material." .
 ex:TK_Page_Ch01_Build a backlog:ExecutionTask ; rdfs:label "Page for Ch01: build"@en ; backlog:hasIdentifier "TK_Page_Ch01_Build" ; backlog:hasTitle "Build Page Ch01" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
@@ -1009,8 +1057,31 @@ ex:ST_Page_Ch02 a backlog:Story ; rdfs:label "Page: Mastering Bitcoin 3rd editio
     backlog:satisfiesDeliverable ex:Del_Page_Ch02 ; backlog:pursuesObjective ex:Obj_PagesBuilt ; backlog:hasAcceptanceCriterion ex:AC_Chapter ;
     backlog:effectiveDefinitionOfDone ex:DoD ; backlog:hasApplicableConcern backlog:Concern_Data ;
     backlog:dependsOn ex:ST_Research_Ch02 ;
-    backlog:hasState backlog:Proposed ;
-    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Scored when its own iteration is planned." .
+    backlog:hasState backlog:Ready ; backlog:memberOfContainer ex:Iter_2 ;
+    backlog:hasPriorityScore ex:Score_Page_Ch02 ;
+    backlog:decomposesInto ex:TK_Page_Ch02_Build, ex:TK_Page_Ch02_Verify .
+
+ex:Score_Page_Ch02 a backlog:PriorityScore ; backlog:scoredByMethod backlog:Method_WSJF ;
+    backlog:hasScoreValue "12.67"^^xsd:decimal ; backlog:scoredAt "2026-09-24T22:34:30"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
+    backlog:hasScoreRationale "WSJF = (business value 13 + time criticality 20 + risk reduction 5) / job size 3, approved by the owner. Time criticality is set by the class at 09:00 Istanbul on 2026-09-25." .
+ex:Plan_Page_Ch02 a backlog:PlanningEvent ; rdfs:label "Planning of Page for Ch02 into the first iteration"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:plannedAt "2026-09-25T00:24:54"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_2 ;
+    backlog:plansItem ex:ST_Page_Ch02 ; backlog:producesTask ex:TK_Page_Ch02_Build, ex:TK_Page_Ch02_Verify .
+ex:Refine_Page_Ch02 a backlog:RefinementEvent ; rdfs:label "Refinement that made Page for Ch02 ready"@en ;
+    backlog:refines ex:ST_Page_Ch02 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-25T00:24:54"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_2 ; backlog:hasRefinementOutcome "Settled: one interactive page for the chapter, carrying the research results; published as a page students can open, and described as a teaching material." .
+ex:TK_Page_Ch02_Build a backlog:ExecutionTask ; rdfs:label "Page for Ch02: build"@en ; backlog:hasIdentifier "TK_Page_Ch02_Build" ; backlog:hasTitle "Build Page Ch02" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch02 ;
+    backlog:hasAuditNote "Build it." .
+ex:TK_Page_Ch02_Verify a backlog:ExecutionTask ; rdfs:label "Page for Ch02: verify"@en ; backlog:hasIdentifier "TK_Page_Ch02_Verify" ; backlog:hasTitle "Verify Page Ch02" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch02 ;
+    backlog:hasAuditNote "Run the chapter check and require the stale fixture refused." .
 
 ex:ST_Page_Ch03 a backlog:Story ; rdfs:label "Page: Mastering Bitcoin 3rd edition, chapter 3: Bitcoin Core"@en ; backlog:hasIdentifier "ST_Page_Ch03" ; backlog:hasTitle "Page for Mastering Bitcoin 3rd edition, chapter 3" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ;
@@ -1139,6 +1210,13 @@ ex:Iter_1 a backlog:Iteration ; rdfs:label "First iteration: chapter 1, before t
     backlog:hasSprintGoal "Chapter 1 researched, its deck built and its interactive page built, ready to present at 09:00." ;
     backlog:hasMember ex:ST_Deck_Ch01, ex:ST_Research_Ch01, ex:ST_Page_Ch01 .
 
+ex:Iter_2 a backlog:Iteration ; rdfs:label "Second iteration: chapter 2, before the class of 2 October"@en ;
+    backlog:hasIdentifier "Iter_2" ; backlog:belongsToLineage ex:Lineage ;
+    backlog:iterationStart "2026-09-25T00:24:54"^^xsd:dateTime ; backlog:iterationEnd "2026-10-02T06:00:00"^^xsd:dateTime ;
+    backlog:hasDurationSource "Owner, 2026-09-25: proceed with chapter 2 for both courses. The end is SEN0401's next class, Friday 2 October at 09:00 Istanbul, from the weekly schedule in the course outline." ;
+    backlog:hasSprintGoal "Chapter 2 researched, its deck built and its interactive page built." ;
+    backlog:hasMember ex:ST_Deck_Ch02, ex:ST_Research_Ch02, ex:ST_Page_Ch02 .
+
 ex:Out_Mission a backlog:StageOutput ;
     rdfs:label "Closure of the Mission stage"@en ;
     backlog:belongsToLineage ex:Lineage ;
@@ -1175,5 +1253,5 @@ ex:Out_Backlog a backlog:StageOutput ;
     backlog:belongsToLineage ex:Lineage ;
     backlog:outputOfStage backlog:Stage_Backlog ;
     backlog:consumesOutput ex:Out_Objective ;
-    backlog:hasStateDigest "9883aa085170345863a209540af804fd5646ae66f4e4d4d7ab9fca93fe3ae2a9" ;
+    backlog:hasStateDigest "58981b066f9bbc67cead25d910a59809ddafd851f5e58713e8ba9b42115e15c5" ;
     backlog:closedAtCommit "035c8c1" .

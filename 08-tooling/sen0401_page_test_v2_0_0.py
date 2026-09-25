@@ -23,7 +23,9 @@ with sync_playwright() as p:
     feat("explorer tree: expand, collapse, expand all", opened and closed and all_open, "%d nodes" % pg.locator("#tree .tn").count())
     feat("explorer icons by level", all(pg.locator("#tree .ico").nth(k).text_content() in ("📁", "📂", "🔷") for k in range(pg.locator("#tree .ico").count())))
     # tabs and sub-tabs
-    pg.click('#tabs [data-tab="%s"]' % top["id"]); mids = [n for n in d["nodes"] if n["parent"] == top["id"]]
+    # the sub-tab check needs a subject with at least two sub-subjects; chapter 2's first subject has one
+    top2 = next(t for t in [n for n in d["nodes"] if n["level"] == 1] if len([n for n in d["nodes"] if n["parent"] == t["id"]]) >= 2)
+    pg.click('#tabs [data-tab="%s"]' % top2["id"]); mids = [n for n in d["nodes"] if n["parent"] == top2["id"]]
     pg.click('[data-sub="%s"]' % mids[-1]["id"])
     feat("subject tabs and sub-tabs", pg.locator('[data-subpane="%s"]' % mids[-1]["id"]).is_visible() and not pg.locator('[data-subpane="%s"]' % mids[0]["id"]).is_visible())
     # right card and jumps

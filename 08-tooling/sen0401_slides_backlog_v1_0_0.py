@@ -9,9 +9,13 @@ from sen0401_slides_stages_v1_0_0 import CHAPTERS, KIND, cid
 # taught in the same class.
 PLANNED_AT = "2026-09-24T22:23:59"
 WSJF = {"Research": (13, 20, 13, 3), "Page": (13, 20, 5, 3), "Deck": (20, 20, 8, 5)}
-PLANNED = {1}
+PLANNED = {1, 2}
+# Chapter 2 planned on 2026-09-25 by the owner's instruction "proceed with chapter 2 for both courses", into Iter_2,
+# which ends at SEN0401's next class - the course meets on Fridays at 09:00 Istanbul, per its outline.
+PLANNED_AT_2 = "2026-09-25T00:24:54"
+ITER_OF = {1: "Iter_1", 2: "Iter_2"}
 # Started items, at the clock time each began. The kick-off was declared by the owner.
-STARTED = {("Research", 1): "2026-09-24T22:23:59", ("Deck", 1): "2026-09-24T22:32:36", ("Page", 1): "2026-09-24T22:28:51"}
+STARTED = {("Research", 1): "2026-09-24T22:23:59", ("Deck", 1): "2026-09-24T22:32:36", ("Page", 1): "2026-09-24T22:28:51", ("Research", 2): "2026-09-25T00:24:54"}
 # Re-scoring after the latest completion (BP-D11), at the clock time it was done; components unchanged.
 RESCORED_AT = "2026-09-24T22:34:30"
 
@@ -39,7 +43,7 @@ def planned_tail(k, n):
                  '    backlog:hasEvidence ex:Ev_%s_%s ; backlog:hasExecutionModality backlog:Mode_Hybrid' % (STARTED[(k, n)], d["finished"], d["closed"], k, cid(n)))
     else:
         state = ('InProgress ; backlog:startedAt "%s"^^xsd:dateTime' % STARTED[(k, n)]) if (k, n) in STARTED else 'Ready'
-    return ('backlog:hasState backlog:' + state + ' ; backlog:memberOfContainer ex:Iter_1 ;\n    backlog:hasPriorityScore ex:Score_%s_%s ;\n'
+    return ('backlog:hasState backlog:' + state + ' ; backlog:memberOfContainer ex:' + ITER_OF[n] + ' ;\n    backlog:hasPriorityScore ex:Score_%s_%s ;\n'
             '    backlog:decomposesInto ex:TK_%s_%s_Build, ex:TK_%s_%s_Verify' % (k, cid(n), k, cid(n), k, cid(n)))
 
 
@@ -95,11 +99,11 @@ ex:Score_%(k)s_%(c)s a backlog:PriorityScore ; backlog:scoredByMethod backlog:Me
     backlog:hasScoreValue "%(v).2f"^^xsd:decimal ; backlog:scoredAt "%(t)s"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
     backlog:hasScoreRationale "WSJF = (business value %(bv)d + time criticality %(tc)d + risk reduction %(rr)d) / job size %(js)d, approved by the owner. Time criticality is set by the class at 09:00 Istanbul on 2026-09-25." .
 ex:Plan_%(k)s_%(c)s a backlog:PlanningEvent ; rdfs:label "Planning of %(k)s for %(c)s into the first iteration"@en ; backlog:belongsToLineage ex:Lineage ;
-    backlog:plannedAt "%(t)s"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_1 ;
+    backlog:plannedAt "%(pt)s"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:%(it)s ;
     backlog:plansItem ex:ST_%(k)s_%(c)s ; backlog:producesTask ex:TK_%(k)s_%(c)s_Build, ex:TK_%(k)s_%(c)s_Verify .
 ex:Refine_%(k)s_%(c)s a backlog:RefinementEvent ; rdfs:label "Refinement that made %(k)s for %(c)s ready"@en ;
-    backlog:refines ex:ST_%(k)s_%(c)s ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "%(t)s"^^xsd:dateTime ;
-    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_1 ; backlog:hasRefinementOutcome "%(o)s" .
+    backlog:refines ex:ST_%(k)s_%(c)s ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "%(pt)s"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:%(it)s ; backlog:hasRefinementOutcome "%(o)s" .
 ex:TK_%(k)s_%(c)s_Build a backlog:ExecutionTask ; rdfs:label "%(k)s for %(c)s: build"@en ; backlog:hasIdentifier "TK_%(k)s_%(c)s_Build" ; backlog:hasTitle "Build %(k)s %(c)s" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:%(tstate)s ;
     backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
@@ -110,7 +114,7 @@ ex:TK_%(k)s_%(c)s_Verify a backlog:ExecutionTask ; rdfs:label "%(k)s for %(c)s: 
     backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
     backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;%(dep)s
     backlog:hasAuditNote "Run the chapter check and require the stale fixture refused." .
-''' % dict(k=k, c=c, bv=bv, tc=tc, rr=rr, js=js, v=(bv + tc + rr) / js, t=(RESCORED_AT if (RESCORED_AT and (k, n) not in DONE) else PLANNED_AT), o=REFINED[k],
+''' % dict(k=k, c=c, bv=bv, tc=tc, rr=rr, js=js, v=(bv + tc + rr) / js, t=(RESCORED_AT if (RESCORED_AT and (k, n) not in DONE) else (PLANNED_AT_2 if n == 2 else PLANNED_AT)), pt=(PLANNED_AT_2 if n == 2 else PLANNED_AT), it=ITER_OF[n], o=REFINED[k],
           tstate=(('Done ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:finishedAt "%s"^^xsd:dateTime ; backlog:hasEvidence ex:Ev_%s_%s' % (STARTED[(k, n)], DONE[(k, n)]["finished"], k, c)) if (k, n) in DONE else 'Proposed'),
           dep=("" if k == "Research" else "\n    backlog:dependsOn ex:ST_Research_%s ;" % c))
 
@@ -126,6 +130,16 @@ ex:Iter_1 a backlog:Iteration ; rdfs:label "First iteration: chapter 1, before t
 
 
 FEEDBACK = ""
+
+
+ITER2 = '''
+ex:Iter_2 a backlog:Iteration ; rdfs:label "Second iteration: chapter 2, before the class of 2 October"@en ;
+    backlog:hasIdentifier "Iter_2" ; backlog:belongsToLineage ex:Lineage ;
+    backlog:iterationStart "%s"^^xsd:dateTime ; backlog:iterationEnd "2026-10-02T06:00:00"^^xsd:dateTime ;
+    backlog:hasDurationSource "Owner, 2026-09-25: proceed with chapter 2 for both courses. The end is SEN0401's next class, Friday 2 October at 09:00 Istanbul, from the weekly schedule in the course outline." ;
+    backlog:hasSprintGoal "Chapter 2 researched, its deck built and its interactive page built." ;
+    backlog:hasMember %s .
+'''
 
 
 def backlog_block():
@@ -208,5 +222,6 @@ ex:ST_%s_%s a backlog:Story ; rdfs:label "%s: %s"@en ; backlog:hasIdentifier "ST
                 L.append(closure_block(k, n))
                 L.append(start_block(k, n))
     L.append(FEEDBACK)
-    if PLANNED: L.append(ITER % (PLANNED_AT, ", ".join("ex:ST_%s_%s" % (k, cid(n)) for k, _, _ in KIND for n in sorted(PLANNED))))
+    if PLANNED: L.append(ITER % (PLANNED_AT, ", ".join("ex:ST_%s_%s" % (k, cid(n)) for k, _, _ in KIND for n in (1,))))
+    if 2 in PLANNED: L.append(ITER2 % (PLANNED_AT_2, ", ".join("ex:ST_%s_%s" % (k, cid(2)) for k, _, _ in KIND)))
     return "".join(L)
