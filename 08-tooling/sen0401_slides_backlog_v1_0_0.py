@@ -17,7 +17,7 @@ ITER_OF = {1: "Iter_1", 2: "Iter_2"}
 # Started items, at the clock time each began. The kick-off was declared by the owner.
 STARTED = {("Research", 1): "2026-09-24T22:23:59", ("Deck", 1): "2026-09-24T22:32:36", ("Page", 1): "2026-09-24T22:28:51", ("Research", 2): "2026-09-25T00:24:54", ("Page", 2): "2026-09-25T00:28:01", ("Deck", 2): "2026-09-25T00:30:58"}
 # Re-scoring after the latest completion (BP-D11), at the clock time it was done; components unchanged.
-RESCORED_AT = "2026-09-25T00:32:12"
+RESCORED_AT = "2026-09-25T06:13:08"
 
 # Finished items and the evidence each closed on. Times from the clock or from commits only.
 DONE = {("Research", 1): {"finished": "2026-09-24T22:28:23", "closed": "2026-09-24T22:28:51", "release": "sen0401-v0.7.0 (a69f51d)",
@@ -27,7 +27,11 @@ DONE = {("Research", 1): {"finished": "2026-09-24T22:28:23", "closed": "2026-09-
     ("Research", 2): {"finished": "2026-09-25T00:27:49", "closed": "2026-09-25T00:28:01", "release": "sen0401-v0.11.0 (934b9c1)",
     "spec": "RDODI procedure v1.6.0, Stages 1-3 for Mastering Bitcoin's chapter 2 by 08-tooling/sen0401_rdodi_build_v1_0_0.py from sen0401_ch02_rdodi_data_v1_0_0.py: all gates PASS, coverage 25/25. Its central quantitative claim was reproduced: a Python transcription of the whitepaper's section 11 procedure gives the paper's own table - 0.2045873 at one confirmation, 0.0002428 at six - to seven decimal places."},
     ("Deck", 2): {"finished": "2026-09-25T00:32:02", "closed": "2026-09-25T00:32:12", "release": "the release carrying 03-materials/ch02/SEN0401_Ch02_HowBitcoinWorks_3e.pptx",
-    "spec": "08-tooling/ch02-deck/deck_check.py re-ran the six computations shown on the deck under Python 3.14.4 - satoshi units, the toy fee, change, and the whitepaper's attacker-success procedure - with 0 mismatches; the fixture fixture_stale_deck.pptx, showing 0.0024 for six confirmations, was refused naming slide 9. The PROV-O terms on slide 12 were checked against the W3C Recommendation's text before use."}}
+    "spec": "08-tooling/ch02-deck/deck_check.py re-ran the six computations shown on the deck under Python 3.14.4 - satoshi units, the toy fee, change, and the whitepaper's attacker-success procedure - with 0 mismatches; the fixture fixture_stale_deck.pptx, showing 0.0024 for six confirmations, was refused naming slide 9. The PROV-O terms on slide 12 were checked against the W3C Recommendation's text before use."},
+    ("Page", 1): {"finished": "2026-09-25T06:12:40", "closed": "2026-09-25T06:13:08", "release": "the release carrying the chapter 1 page",
+    "spec": "08-tooling/sen0401_page_test_v2_0_0.py exercised every widget and feature of the chapter 1 page in headless Chromium at 2026-09-25T06:12:40 - every widget passed, every executable example printed via Pyodide exactly what the build interpreter printed, 0 console errors, 0 WCAG 2 AA violations - and a fixture with one stored value altered was refused. RDODI Stage 4 and every automated pedagogy gate pass. The Courseware profile's pedagogical-soundness attestation is the owner's, is not part of this story's definition of done, and is recorded as pending, not claimed."},
+    ("Page", 2): {"finished": "2026-09-25T06:12:40", "closed": "2026-09-25T06:13:08", "release": "the release carrying the chapter 2 page",
+    "spec": "08-tooling/sen0401_page_test_v2_0_0.py exercised every widget and feature of the chapter 2 page in headless Chromium at 2026-09-25T06:12:40 - every widget passed, every executable example printed via Pyodide exactly what the build interpreter printed, 0 console errors, 0 WCAG 2 AA violations - and a fixture with one stored value altered was refused. RDODI Stage 4 and every automated pedagogy gate pass. The Courseware profile's pedagogical-soundness attestation is the owner's, is not part of this story's definition of done, and is recorded as pending, not claimed."}}
 
 REFINED = {
     "Research": "Settled: RDODI's four-stage procedure v1.6.0 on the chapter's subject, with its Pedagogy and Professional Standards stage and the Courseware profile; the research record lists every source a later claim rests on.",
@@ -89,10 +93,10 @@ ex:Complete_%(k)s_%(c)s a backlog:TransitionEvent ; rdfs:label "%(k)s %(c)s comp
 %(extra)s
 ''' % dict(k=k, c=c, spec=d["spec"], rel=d["release"], fin=d["finished"], cl=d["closed"],
                 met={"Research": "Met_ResearchRecorded", "Deck": "Met_DecksRenewed", "Page": "Met_PagesBuilt"}[k], obj=OBJ[k],
-                obsnote=("Counted chapters whose Stages 1-3 artefacts are published and pass their gates: %s." % ", ".join("chapter %d" % m for (kk, m) in DONE if kk == "Research" and m <= n) if k == "Research" else "Counted renewed decks passing the chapter check: %s." % ", ".join("chapter %d" % m for (kk, m) in DONE if kk == "Deck" and m <= n)),
+                obsnote=("Counted chapters whose Stages 1-3 artefacts are published and pass their gates: %s." % ", ".join("chapter %d" % m for (kk, m) in DONE if kk == "Research" and m <= n) if k == "Research" else ("Counted renewed decks passing the chapter check: %s." % ", ".join("chapter %d" % m for (kk, m) in DONE if kk == "Deck" and m <= n)) if k == "Deck" else ("Counted interactive pages passing their browser tests and Stage 4 gates: %s." % ", ".join("chapter %d" % m for (kk, m) in DONE if kk == "Page" and m <= n))),
                 count=len([1 for (kk, m) in DONE if kk == k and m <= n]),
-                tool=("rdodi-ecosystem/02-gates/rdodi_pipeline_validator_v1_6_0.py, pyshacl, owlready2 HermiT" if k == "Research" else "08-tooling/ch01-deck/deck_check.py under Python 3.14.4"),
-                tnote=("Closed on Stages 1-3 of the RDODI procedure. The pedagogy stage, which this story's refinement placed here, runs over a page artefact - its gates take the page's ABox and HTML - so it moves to the chapter's page story; recorded in Refine2_Research_%s rather than claimed here." % c) if k == "Research" else "Closed on the deck check and its refused fixture. Times read from the clock.",
+                tool=("rdodi-ecosystem/02-gates/rdodi_pipeline_validator_v1_6_0.py, pyshacl, owlready2 HermiT" if k == "Research" else ("08-tooling/ch%02d-deck/deck_check.py under Python 3.14.4" % n) if k == "Deck" else "08-tooling/sen0401_page_test_v2_0_0.py in headless Chromium, RDODI Stage 4 and pedagogy gates"),
+                tnote=("Closed on Stages 1-3 of the RDODI procedure. The pedagogy stage, which this story's refinement placed here, runs over a page artefact - its gates take the page's ABox and HTML - so it moves to the chapter's page story; recorded in Refine2_Research_%s rather than claimed here." % c) if k == "Research" else ("Closed on the deck check and its refused fixture. Times read from the clock." if k == "Deck" else "Closed on the page's browser tests, its refused fixture and its Stage 4 gates. The Courseware attestation, the owner's, is pending and not claimed. Times read from the clock."),
                 extra=(("ex:Obs1_Untaught_%s a backlog:MetricObservation ; rdfs:label \"No renewal item following the superseded structure, read after the %s deck closed\"@en ; backlog:observesMetric ex:Met_UntaughtWork ; backlog:observationFor ex:Obj_NoUntaughtWork ; backlog:hasObservedValue \"0\"^^xsd:decimal ; backlog:observedAt \"%s\"^^xsd:dateTime ; backlog:hasObservationMethod \"Counted renewal items following the 2nd edition's superseded chapter structure: none.\" ." % (c, c, d["closed"])) if k == "Deck" else "") + ((("ex:Refine2_Research_%s a backlog:RefinementEvent ; rdfs:label \"Pedagogy stage moved to the page story\"@en ;" % c) + REFINE2_TAIL.replace("%(c)s", c).replace("%(cl)s", d["closed"]) + " .") if k == "Research" else ""))
 
 
@@ -133,7 +137,14 @@ ex:Iter_1 a backlog:Iteration ; rdfs:label "First iteration: chapter 1, before t
 '''
 
 
-FEEDBACK = ""
+FEEDBACK = """
+ex:Finding_DecksRevisedFromCourseNotes a backlog:RetrospectiveFinding ;
+    rdfs:label "The delivered chapter 1 and 2 decks were revised from the owner's course notes"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Deck_Ch01, ex:ST_Deck_Ch02 ;
+    backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "After both decks were closed, the owner supplied his course notes (2021, after the 2nd edition) to fill gaps. Compared slide by slide, they surfaced topics the renewed decks lacked: for chapter 1, what makes Bitcoin different, its four parts behind the scenes, mining replacing a central bank, and the ways to get a first bitcoin; for chapter 2, the invoice as a BIP21 URI, why ten minutes is an average, the sudoku analogy for mining, and an interactive blockchain demo; for both, the owner's discussion prompts. Every topic was checked against the 3rd edition before it was used, and kept in the 3rd edition's words; two items were left out - a 2021 price-prediction source and classified-ad sellers the 3rd edition no longer lists." ;
+    backlog:hasRemedy "Revisions recorded here rather than by reopening closed stories: the decks' content grew, their acceptance - every computation re-run, fixtures refused - was re-run on the revised decks at 2026-09-25T06:07:08 and 2026-09-25T06:07:08 with 0 mismatches, and both chapters' research records were re-published as v1.0.1 naming the notes, chapter 12 and the demo as sources, all RDODI gates passing again." .
+"""
 
 
 ITER2 = '''

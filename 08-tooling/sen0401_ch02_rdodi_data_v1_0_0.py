@@ -4,11 +4,15 @@ including the whitepaper's attacker-success procedure, which reproduces the pape
 CH = 2
 TITLE = "How Bitcoin works: one transaction from wallet to blockchain, checked against the whitepaper"
 QUESTION = "How does chapter 2 of Mastering Bitcoin's 3rd edition explain a transaction's path from wallet to blockchain, which of its quantitative claims can be reproduced from primary sources, and how does its transaction chain meet the course theme?"
+VERSION = "1_0_1"  # revision: the owner's course notes added as a source, 2026-09-25
 PUBS = [
  ("P01","Mastering Bitcoin, 3rd edition - Chapter 2, How Bitcoin Works (Antonopoulos and Harding, O'Reilly, 2023; CC BY-SA 4.0; tag third_edition_print1)","https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/third_edition_print1/ch02_overview.adoc",True),
  ("P02","Bitcoin: A Peer-to-Peer Electronic Cash System (Nakamoto, 2008)","https://bitcoin.org/bitcoin.pdf",False),
  ("P03","Bitcoin Core releases (Bitcoin Core project)","https://bitcoincore.org/en/releases/",False),
  ("P04","PROV-O: The PROV Ontology, W3C Recommendation, 30 April 2013","https://www.w3.org/TR/prov-o/",False),
+ ('P_NOTES', 'Course notes: Chapter_2_HowBitcoinWorks.pptx, SEN0401 (then CSE0469) Block Chain, Yusuf Altunel, 2021 - based on Mastering Bitcoin 2nd edition; supplied by the owner on 2026-09-25 (sha256 8629b856328bf0cf)', 'urn:sen0401:course-notes:Chapter_2_HowBitcoinWorks.pptx:8629b856328bf0cf', False),
+ ('P06', 'Mastering Bitcoin, 3rd edition - Chapter 12, Mining and Consensus (Antonopoulos and Harding, 2023)', 'https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/third_edition_print1/ch12_mining.adoc', False),
+ ('P07', 'Blockchain Demo (Brownworth), interactive web page', 'https://andersbrownworth.com/blockchain/hash', False),
 ]
 CONCEPTS = [("Section",x) for x in ("How Bitcoin Works","Bitcoin Overview","Buying from an Online Store","Bitcoin Transactions","Transaction Inputs and Outputs","Transaction Chains","Making Change","Coin Selection","Common Transaction Forms","Constructing a Transaction","Getting the Right Inputs","Creating the Outputs","Adding the Transaction to the Blockchain","Bitcoin Mining","Spending the Transaction")] + \
  [("Concept",x) for x in ("input","output","transaction fee","change address","consolidation transaction","block explorer","confirmation","genesis block","satoshi","consensus rules")]
@@ -17,6 +21,7 @@ FINDINGS = [
  ("F2","Contemporary developments","The Bitcoin Core software that full nodes run to verify every rule has continued to release after the book; its releases page lists 31.1 as the newest.",["P03"]),
  ("F3","Comparative analysis","The chapter's claim that a payment becomes harder to reverse with each confirmation is quantified in Nakamoto's paper: for an attacker with a tenth of the hash power the probability of catching up falls from 0.2045873 at one confirmation to 0.0002428 at six, and a Python transcription of the paper's own procedure reproduces that table exactly.",["P02","P01"]),
  ("F4","Conclusion","For the course theme, a transaction chain - each input spending an earlier output - is a provenance graph, and W3C's PROV Ontology offers the vocabulary to describe it: entities derived from entities by activities, attributed to agents.",["P01","P04"]),
+ ("F5","Course notes","The owner's course notes for this chapter (2021, after the 2nd edition) surfaced topics now added to the deck, each checked against the 3rd edition: the invoice as a BIP21 URI, which the 3rd edition prints in full with a bech32 address where the notes had the older format; why ten minutes is an average and six confirmations a convention, with small payments accepted unconfirmed at low double-spend risk as coffee shops accept small card payments, from the 3rd edition's chapter 12; the notes' own analogy of mining as a giant competitive sudoku, kept and labelled as an analogy because the 3rd edition does not use it; and the Blockchain Demo the notes link to, verified reachable.",["P_NOTES","P01"]),
 ]
 TAX = [
  ("Transaction","TransactionPart","Input","an earlier output being spent","An input spends funds by referring to an earlier transaction's output and proving ownership with a digital signature.",None),

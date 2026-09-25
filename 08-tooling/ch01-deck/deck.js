@@ -32,6 +32,17 @@ card(s,5.15,1.45,4.35,2.4,'Bitcoin \u2014 the system','A collection of concepts 
 s.addText('Users control keys that prove ownership; with them they sign transactions that spend bitcoin to a new owner.',{x:0.5,y:4.2,w:9,h:0.6,fontFace:B,fontSize:14,color:C.ink,margin:0,isTextBox:true});
 note(s,BK+': the unit is bitcoin with a small b, the system Bitcoin with a capital B.');
 
+s=light(); title(s,'What makes Bitcoin different','Four characteristics');
+[['Virtual','No physical coins, not even individual digital coins \u2014 coins are implied in transactions.'],['Borderless','Fast, secure and borderless: arguably the perfect form of money for the internet.'],['Decentralized','No central authority or single point of control to attack or corrupt.'],['Robust','Built to withstand intervention by antagonists \u2014 legitimate governments or criminal elements.']].forEach(([h,t],i)=>card(s,0.5+i*2.3,1.45,2.15,3.0,h,t,i%2?C.slate:C.orange));
+note(s,BK+'. The four-way framing follows '+"the owner\u2019s course notes (CSE0469, after the 2nd edition)"+'; every statement on the slide is the 3rd edition\u2019s own.');
+
+s=light(); title(s,'Behind the scenes: four parts','What Bitcoin consists of');
+[['Protocol','A decentralized peer-to-peer network'],['Blockchain','A public transaction journal'],['Consensus rules','Independent validation of transactions and currency issuance'],['Proof of work','A mechanism for global decentralized consensus on the valid blockchain']].forEach(([h,t],i)=>{ const x=0.5+i*2.3;
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE,{x,y:1.5,w:2.15,h:0.7,fill:{color:i===3?C.orange:C.slate},line:{color:C.orange,width:1},rectRadius:0.08});
+  s.addText(h,{x,y:1.5,w:2.15,h:0.7,fontFace:H,fontSize:15,bold:true,color:C.white,align:'center',valign:'middle',margin:0,isTextBox:true});
+  s.addText(t,{x,y:2.35,w:2.15,h:1.8,fontFace:B,fontSize:13,color:C.ink,align:'center',valign:'top',margin:0,isTextBox:true}); });
+note(s,BK+': Bitcoin consists of a decentralized peer-to-peer network, a public transaction journal, consensus rules and a proof-of-work algorithm. Highlighted in '+"the owner\u2019s course notes (CSE0469, after the 2nd edition)"+'.');
+
 s=light(); title(s,'From a paper to a running network','History, and what has changed since the book');
 const tl=[['2008','Nakamoto\u2019s paper: A Peer-to-Peer Electronic Cash System'],['2009','The network starts from a reference implementation'],['Apr 2011','Nakamoto withdraws from public view'],['Dec 2023','3rd edition of the book published'],['20 Apr 2024','Halving at block 840000: subsidy 3.125'],['Today','Bitcoin Core 31.1 is the newest release']];
 s.addShape(pres.shapes.LINE,{x:0.7,y:2.55,w:8.6,h:0,line:{color:C.orange,width:3}});
@@ -59,6 +70,12 @@ s.addChart(pres.charts.BAR,[{name:'Block subsidy (bitcoin)',labels:['Era 0','Era
 codeCard(s,EX.supply,6.0,1.45,3.5,2.3,11);
 s.addText('Every 210000 blocks the subsidy halves; the sum converges just below 21 million, as the book says.',{x:6.0,y:4.1,w:3.5,h:0.9,fontFace:B,fontSize:12,color:C.ink,margin:0,isTextBox:true});
 note(s,'Chart values and both results computed under Python '+py+'. Each era is 210000 blocks; era 4 began at block 840000 on 2024-04-20 (Bitcoin Wiki, Controlled supply).');
+
+s=light(); title(s,'Mining replaces the central bank','Issuance and clearing, decentralized');
+card(s,0.5,1.45,2.85,3.0,'Minting','New bitcoin is created by mining, as a reward to the miner who wins the round.',C.orange);
+card(s,3.575,1.45,2.85,3.0,'Clearing','Mining decentralizes the currency-issuance and clearing functions of a central bank.',C.slate);
+card(s,6.65,1.45,2.85,3.0,'Deflationary','Issuance diminishes, so the currency is deflationary over the long term; issuance ends around the year 2140.',C.orange);
+note(s,BK+' for minting, clearing and deflation; the year 2140 from the 3rd edition\u2019s chapter 12 (Mining and Consensus). The owner\u2019s notes carried a 2021 price-prediction source; it is left out as dated and speculative.');
 
 s=light(); title(s,'Choosing a wallet: by platform','The book names types, not brands \u2014 wallets change too fast');
 card(s,0.5,1.45,2.85,3.0,'Desktop','The first type of Bitcoin wallet, created as a reference implementation. Autonomy and control, on operating systems that are often poorly secured.',C.slate);
@@ -99,11 +116,20 @@ s=light(); title(s,'Receiving, pricing, sending','Alice\u2019s first bitcoin');
   s.addText(t,{x,y:2.3,w:2.8,h:1.6,fontFace:B,fontSize:14,color:C.ink,valign:'top',margin:0,isTextBox:true}); if(i<2) s.addShape(pres.shapes.LINE,{x:x+2.85,y:1.8,w:0.2,h:0,line:{color:C.orange,width:2}}); });
 note(s,BK+', sections Receiving Bitcoin, Finding the Current Price of Bitcoin, Sending and Receiving Bitcoin.');
 
+s=light(); title(s,'Getting your first bitcoin','Transactions are irreversible, so sellers are cautious');
+[['Friend','Buy directly from someone who has bitcoin \u2014 the least complicated way.'],['Earn','Sell a product or service for bitcoin.'],['ATM','A machine that takes cash and sends bitcoin to your wallet.'],['Exchange','A currency exchange linked to your bank account.']].forEach(([h,t],i)=>card(s,0.5+i*2.3,1.45,2.15,2.7,h,t,i%2?C.slate:C.orange));
+s.addText('Card and bank payments can be reversed; bitcoin payments cannot \u2014 which is why sellers accepting cards verify buyers first.',{x:0.5,y:4.35,w:9,h:0.55,fontFace:B,fontSize:13,italic:true,color:C.mute,margin:0,isTextBox:true});
+note(s,BK+', section Getting Your First Bitcoin: four methods. The owner\u2019s notes also listed classified-ad sellers; the 3rd edition no longer does, so it is not repeated here.');
+
 s=light(); title(s,'Our theme: semantic technologies','The chapter\u2019s key idea, applied to identity');
 card(s,0.5,1.45,4.35,2.9,'From the book','Control belongs to whoever holds the keys. No central registry issues addresses or approves spends.',C.slate);
 card(s,5.15,1.45,4.35,2.9,'W3C standards','Decentralized Identifiers (Recommendation, 2022) apply the same principle to identity; Verifiable Credentials 2.0 (Recommendation, 2025) build signed claims on it.',C.orange);
 s.addText('A project idea for this term: model keys, identities and credentials as an ontology, and reason over them.',{x:0.5,y:4.55,w:9,h:0.45,fontFace:B,fontSize:13,italic:true,color:C.mute,margin:0,isTextBox:true});
 note(s,'W3C Decentralized Identifiers (DIDs) v1.0, Recommendation 9 July 2022; Verifiable Credentials Data Model v2.0, Recommendation 5 May 2025. The project idea is a suggestion within the term theme, not a requirement.');
+
+s=light(); title(s,'Discussion','Assess what you got so far');
+[['Noticeable issues','What stood out, and what surprised you?'],['Interesting details','What is the most interesting point? Is Bitcoin inspiring?'],['Unclarified issues','Which points need further explanation? Pick one critical issue and explain it.']].forEach(([h,t],i)=>card(s,0.5+i*3.05,1.45,2.85,2.9,h,t,i===1?C.orange:C.slate));
+note(s,'Discussion prompts from '+"the owner\u2019s course notes (CSE0469, after the 2nd edition)"+', lightly edited.');
 
 s=light(); title(s,'Check yourself','Answer before you look at the interactive page');
 ['What problem does proof of work solve without a central clearinghouse?','Why does the total supply stay just below 21 million?','What was the block subsidy after the halving in April 2024?','In a noncustodial wallet, who can spend the bitcoin?','Why should you use a new address for each payment?'].forEach((q,i)=>{ const y=1.4+i*0.66;
@@ -112,8 +138,8 @@ s=light(); title(s,'Check yourself','Answer before you look at the interactive p
 note(s,'Answers: the double-spend; the subsidy halves every 210000 blocks so the sum converges at 20999999.9769; 3.125 bitcoin; only the user; to keep payers from seeing each other\u2019s payments.');
 
 s=light(); title(s,'Sources','Every claim beyond the book is recorded in the chapter\u2019s research record');
-const src=['Antonopoulos, A. M., Harding, D. A. (2023). Mastering Bitcoin, 3rd ed., ch. 1. O\u2019Reilly. CC BY-SA 4.0. github.com/bitcoinbook/bitcoinbook','Nakamoto, S. (2008). Bitcoin: A Peer-to-Peer Electronic Cash System. bitcoin.org/bitcoin.pdf','Back, A. (2002). Hashcash - A Denial of Service Counter-Measure. hashcash.org','Bitcoin Wiki (2026). Controlled supply. en.bitcoin.it/wiki/Controlled_supply','Bitcoin Core (2026). Releases. bitcoincore.org/en/releases','Palatinus, M. et al. (2013). BIP 39 \u2013 Mnemonic code for generating deterministic keys','W3C (2022). Decentralized Identifiers v1.0; W3C (2025). Verifiable Credentials Data Model v2.0'];
-s.addText(src.map((t,i)=>({text:t,options:{bullet:true,breakLine:i<src.length-1}})),{x:0.5,y:1.4,w:9,h:3.5,fontFace:B,fontSize:12,color:C.ink,paraSpaceAfter:5,margin:0,valign:'top',isTextBox:true});
+const src=['Antonopoulos, A. M., Harding, D. A. (2023). Mastering Bitcoin, 3rd ed., ch. 1. O\u2019Reilly. CC BY-SA 4.0. github.com/bitcoinbook/bitcoinbook','Nakamoto, S. (2008). Bitcoin: A Peer-to-Peer Electronic Cash System. bitcoin.org/bitcoin.pdf','Back, A. (2002). Hashcash - A Denial of Service Counter-Measure. hashcash.org','Bitcoin Wiki (2026). Controlled supply. en.bitcoin.it/wiki/Controlled_supply','Bitcoin Core (2026). Releases. bitcoincore.org/en/releases','Palatinus, M. et al. (2013). BIP 39 \u2013 Mnemonic code for generating deterministic keys','W3C (2022). Decentralized Identifiers v1.0; W3C (2025). Verifiable Credentials Data Model v2.0','Antonopoulos, A. M., Harding, D. A. (2023). Mastering Bitcoin, 3rd ed., ch. 12, Mining and Consensus','Altunel, Y. (2021). Course notes, chapter 1, after Mastering Bitcoin 2nd ed. \u2014 checked against the 3rd edition before use'];
+s.addText(src.map((t,i)=>({text:t,options:{bullet:true,breakLine:i<src.length-1}})),{x:0.5,y:1.4,w:9,h:3.5,fontFace:B,fontSize:11,color:C.ink,paraSpaceAfter:4,margin:0,valign:'top',isTextBox:true});
 s.addText('Slides adapt Mastering Bitcoin, 3rd edition, under CC BY-SA 4.0; this deck is shared under the same licence.',{x:0.5,y:5.0,w:9,h:0.3,fontFace:B,fontSize:10,italic:true,color:C.mute,margin:0,isTextBox:true});
 note(s,'Full verified source list in 03-materials/ch01/rdodi/sen0401_ch01_research_v1_0_0.ttl.');
 

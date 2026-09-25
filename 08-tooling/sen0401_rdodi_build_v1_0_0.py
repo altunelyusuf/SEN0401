@@ -6,6 +6,7 @@ they are to be retired once this builder is shown to reproduce chapter 1's artef
 a finding, not left implicit."""
 import importlib, os, sys
 D = importlib.import_module(sys.argv[1]); VER = sys.argv[2]
+V = getattr(D, "VERSION", "1_0_0"); VD = V.replace("_", ".")
 N = "%02d" % D.CH
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(REPO, "03-materials", "ch%s" % N, "rdodi"); os.makedirs(OUT, exist_ok=True)
@@ -25,9 +26,9 @@ PFX = '''@prefix chx:     <%s#> .
 ''' % BASE
 
 def header(part, label):
-    ident = "sen0401_ch%s_%s_v1_0_0" % (N, part)
+    ident = "sen0401_ch%s_%s_v%s" % (N, part, V)
     return '''<%s/%s> a owl:Ontology ;
-    rdfs:label "%s"@en ; owl:versionInfo "1.0.0" ; owl:versionIRI <%s/%s/1.0.0> ;
+    rdfs:label "%s"@en ; owl:versionInfo "%s" ; owl:versionIRI <%s/%s/%s> ;
     dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
     dcterms:rights "Copyright (c) 2026 Yusuf Altunel. Licensed CC BY 4.0."@en ;
     dcterms:rightsHolder <http://example.org/rdodi/agent/YusufAltunel> ;
@@ -37,7 +38,7 @@ def header(part, label):
     dcterms:identifier "%s" ;
     prov:wasGeneratedBy <http://example.org/sen0401/activity/ch%s-rdodi-run> ;
     prov:wasAttributedTo <http://example.org/rdodi/agent/YusufAltunel> .
-''' % (BASE, part, label, BASE, part, ident, N)
+''' % (BASE, part, label, VD, BASE, part, VD, ident, N)
 
 def q(t): return t.replace('\\', '\\\\').replace('"', "'")
 
@@ -129,5 +130,5 @@ def document():
     return "\n".join(L) + "\n", order
 
 for name, text in (("research", research()), ("domain_tbox", tbox()), ("domain_abox", abox()), ("domain_shacl", shacl()), ("document", document()[0])):
-    open(os.path.join(OUT, "sen0401_ch%s_%s_v1_0_0.ttl" % (N, name)), "w").write(text)
+    open(os.path.join(OUT, "sen0401_ch%s_%s_v%s.ttl" % (N, name, V)), "w").write(text)
 print("chapter %d: five artefacts written to %s" % (D.CH, OUT))

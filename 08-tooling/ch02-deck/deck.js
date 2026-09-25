@@ -39,6 +39,13 @@ card(s,5.0,1.45,4.5,2.9,'From bitcoin to satoshis','A bitcoin divides into 100,0
 s.addText('Satoshis per bitcoin, and per millibitcoin',{x:0.5,y:3.35,w:4.2,h:0.4,fontFace:B,fontSize:12,italic:true,color:C.mute,margin:0,isTextBox:true});
 note(s,BK+', section Buying from an Online Store.');
 
+s=light(); title(s,'The payment request','What the store\u2019s QR code actually encodes');
+s.addShape(pres.shapes.ROUNDED_RECTANGLE,{x:0.5,y:1.45,w:9,h:1.05,fill:{color:C.code},line:{color:C.code},rectRadius:0.1});
+s.addText('bitcoin:bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4?amount=0.01577764&label=Bob%27s%20Store&message=Purchase%20at%20Bob%27s%20Store',{x:0.7,y:1.5,w:8.6,h:0.95,fontFace:M,fontSize:12.5,color:C.codeTxt,valign:'middle',margin:0,isTextBox:true});
+[['Address','bc1qk2g6\u2026u7u3e4'],['Amount','0.01577764'],['Label','Bob\u2019s Store'],['Message','Purchase at Bob\u2019s Store']].forEach(([h,t],i)=>card(s,0.5+i*2.3,2.8,2.15,1.6,h,t,i%2?C.slate:C.orange));
+s.addText('A URI format defined in BIP21: the wallet reads it, so Alice never types an address.',{x:0.5,y:4.6,w:9,h:0.4,fontFace:B,fontSize:13,italic:true,color:C.mute,margin:0,isTextBox:true});
+note(s,BK+', section Buying from an Online Store: the invoice QR code encodes this URI, defined in BIP21. Highlighted in '+"the owner\u2019s course notes (CSE0469, after the 2nd edition)"+', which used the 2nd edition\u2019s older address format.');
+
 s=light(); title(s,'A transaction is a ledger line','Inputs spend, outputs receive, and the difference is the fee');
 codeCard(s,EX.fee,0.5,1.45,5.3,1.75,12);
 card(s,6.1,1.45,3.4,2.9,'The implied fee','Inputs minus outputs, in satoshis. Nobody writes the fee down: the miner who includes the transaction collects the difference.',C.orange);
@@ -77,10 +84,21 @@ s.addTable(tb,{x:6.4,y:1.4,w:3.1,colW:[1.1,2.0],fontFace:B,fontSize:11,color:C.i
 s.addText('Matches the table in Nakamoto (2008), section 11, to seven decimals.',{x:0.5,y:4.4,w:9,h:0.4,fontFace:B,fontSize:13,italic:true,color:C.mute,margin:0,isTextBox:true});
 note(s,'Nakamoto (2008), section 11, Calculations: for q=0.1 the paper lists P=0.2045873 at z=1 and P=0.0002428 at z=6. The table on this slide was computed under Python '+py+'.');
 
+s=light(); title(s,'Mining as a giant sudoku','An analogy for hard-to-solve, easy-to-check');
+[['Hard to solve','Finding a solution takes enormous trial and error across the whole network.'],['Easy to verify','Anyone can check a finished puzzle quickly, however large it is.'],['Adjustable','Make the grid bigger or smaller and the puzzle gets harder or easier \u2014 like difficulty adjustment.'],['Resets','Each time someone wins, a new puzzle begins \u2014 about every 10 minutes.']].forEach(([h,t],i)=>card(s,0.5+i*2.3,1.45,2.15,3.0,h,t,i%2?C.slate:C.orange));
+s.addText('An analogy, not the mechanism: mining really searches for a block header whose hash meets a target.',{x:0.5,y:4.6,w:9,h:0.4,fontFace:B,fontSize:13,italic:true,color:C.mute,margin:0,isTextBox:true});
+note(s,'Analogy from '+"the owner\u2019s course notes (CSE0469, after the 2nd edition)"+'. The 3rd edition does not use it; its own description is on the Mining slide: a header that takes enormous computation to form and little to verify.');
+
 s=light(); title(s,'Why six confirmations','Each block on top makes reversal harder');
 card(s,0.5,1.45,4.35,2.9,'Stacking blocks','Each block mined on top is one more confirmation. To take back a payment with two confirmations, three blocks would have to be mined.',C.slate);
 card(s,5.15,1.45,4.35,2.9,'Back to the genesis block','Every block links back to block number 0. By convention, more than six confirmations is considered very hard to change.',C.orange);
 note(s,BK+', section Spending the Transaction.');
+
+s=light(); title(s,'Must you always wait?','Ten minutes is an average, and six confirmations is a convention');
+card(s,0.5,1.45,2.85,3.0,'Unconfirmed','Propagated, but not yet in a block. Blocks arrive every 10 minutes on average \u2014 not on a timetable.',C.slate);
+card(s,3.575,1.45,2.85,3.0,'Small payments','A merchant may accept a cheap item unconfirmed: the double-spend risk is low, like a coffee shop taking small card payments without a signature.',C.orange);
+card(s,6.65,1.45,2.85,3.0,'Large payments','Selling something expensive for bitcoin risks a double-spend, so the merchant waits for confirmations.',C.slate);
+note(s,'Unconfirmed and 10 minutes on average: Mastering Bitcoin 3rd edition, chapter 1. Small versus large payments and the coffee-shop comparison: chapter 12, Mining and Consensus. The \u201c10 minutes misconception\u201d framing is from '+"the owner\u2019s course notes (CSE0469, after the 2nd edition)"+'.');
 
 s=light(); title(s,'Looking it up: block explorers','Useful \u2014 and not private');
 card(s,0.5,1.45,4.35,2.9,'What they do','Search by address, transaction, block number or block hash \u2014 Blockstream Explorer, Mempool.Space, BlockCypher.',C.slate);
@@ -94,6 +112,14 @@ s.addText('An output wasDerivedFrom earlier outputs, wasGeneratedBy a transactio
 s.addText('A project idea: publish a transaction chain as PROV-O RDF and query its history with SPARQL.',{x:0.5,y:4.3,w:9,h:0.45,fontFace:B,fontSize:13,italic:true,color:C.mute,margin:0,isTextBox:true});
 note(s,'PROV-O: The PROV Ontology, W3C Recommendation, 30 April 2013. The mapping is a teaching suggestion within the term theme.');
 
+s=light(); title(s,'Try it: a blockchain you can break','Anders Brownworth\u2019s interactive demo');
+card(s,0.5,1.45,9,1.6,'andersbrownworth.com/blockchain','Change one character in an earlier block and watch every later block\u2019s hash go invalid \u2014 the chain of hashes this chapter describes, made visible.',C.orange);
+note(s,'Blockchain Demo by Anders Brownworth, linked from '+"the owner\u2019s course notes (CSE0469, after the 2nd edition)"+'; page verified reachable on 2026-09-25.');
+
+s=light(); title(s,'Discussion','Assess what you got so far');
+[['Noticeable issues','What stood out, and what surprised you?'],['Interesting details','What is the most interesting point? Is Bitcoin inspiring?'],['Unclarified issues','Which points need further explanation? Pick one critical issue and explain it.']].forEach(([h,t],i)=>card(s,0.5+i*3.05,1.45,2.85,2.9,h,t,i===1?C.orange:C.slate));
+note(s,'Discussion prompts from '+"the owner\u2019s course notes (CSE0469, after the 2nd edition)"+', lightly edited.');
+
 s=light(); title(s,'Check yourself','Answer before you open the interactive page');
 ['Where is the transaction fee written in a transaction?','Paying 5 from a 20 input, what is the change?','When does a transaction join the blockchain?','How likely is a 10% attacker to reverse six confirmations?','Which PROV-O term fits a Bitcoin transaction?'].forEach((q,i)=>{ const y=1.4+i*0.66;
   s.addShape(pres.shapes.OVAL,{x:0.5,y:y+0.04,w:0.46,h:0.46,fill:{color:C.orange},line:{color:C.orange}}); s.addText(String(i+1),{x:0.5,y:y+0.04,w:0.46,h:0.46,fontFace:H,fontSize:15,bold:true,color:C.white,align:'center',valign:'middle',margin:0,isTextBox:true});
@@ -101,8 +127,8 @@ s=light(); title(s,'Check yourself','Answer before you open the interactive page
 note(s,'Answers: nowhere - it is inputs minus outputs; 15; when a miner includes it in a block that full nodes validate; about 0.0002428; an activity.');
 
 s=light(); title(s,'Sources','Every claim beyond the book is recorded in the chapter\u2019s research record');
-const src=['Antonopoulos, A. M., Harding, D. A. (2023). Mastering Bitcoin, 3rd ed., ch. 2. O\u2019Reilly. CC BY-SA 4.0. github.com/bitcoinbook/bitcoinbook','Nakamoto, S. (2008). Bitcoin: A Peer-to-Peer Electronic Cash System, section 11. bitcoin.org/bitcoin.pdf','Bitcoin Core (2026). Releases. bitcoincore.org/en/releases','W3C (2013). PROV-O: The PROV Ontology. W3C Recommendation. w3.org/TR/prov-o'];
-s.addText(src.map((t,i)=>({text:t,options:{bullet:true,breakLine:i<src.length-1}})),{x:0.5,y:1.4,w:9,h:3.3,fontFace:B,fontSize:13,color:C.ink,paraSpaceAfter:6,margin:0,valign:'top',isTextBox:true});
+const src=['Antonopoulos, A. M., Harding, D. A. (2023). Mastering Bitcoin, 3rd ed., ch. 2. O\u2019Reilly. CC BY-SA 4.0. github.com/bitcoinbook/bitcoinbook','Nakamoto, S. (2008). Bitcoin: A Peer-to-Peer Electronic Cash System, section 11. bitcoin.org/bitcoin.pdf','Bitcoin Core (2026). Releases. bitcoincore.org/en/releases','W3C (2013). PROV-O: The PROV Ontology. W3C Recommendation. w3.org/TR/prov-o','Antonopoulos, A. M., Harding, D. A. (2023). Mastering Bitcoin, 3rd ed., ch. 12, Mining and Consensus','Altunel, Y. (2021). Course notes, chapter 2, after Mastering Bitcoin 2nd ed. \u2014 checked against the 3rd edition before use','Brownworth, A. Blockchain Demo. andersbrownworth.com/blockchain'];
+s.addText(src.map((t,i)=>({text:t,options:{bullet:true,breakLine:i<src.length-1}})),{x:0.5,y:1.4,w:9,h:3.3,fontFace:B,fontSize:12,color:C.ink,paraSpaceAfter:5,margin:0,valign:'top',isTextBox:true});
 s.addText('Slides adapt Mastering Bitcoin, 3rd edition, under CC BY-SA 4.0; this deck is shared under the same licence.',{x:0.5,y:5.0,w:9,h:0.3,fontFace:B,fontSize:10,italic:true,color:C.mute,margin:0,isTextBox:true});
 note(s,'Full verified source list in 03-materials/ch02/rdodi/sen0401_ch02_research_v1_0_0.ttl.');
 

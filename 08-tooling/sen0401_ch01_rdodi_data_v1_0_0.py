@@ -3,6 +3,7 @@ Every claim was read on 2026-09-25 from the source it cites; every computation e
 CH = 1
 TITLE = "Bitcoin from first principles: chapter 1 of Mastering Bitcoin, 3rd edition, and Bitcoin today"
 QUESTION = "What does chapter 1 of Mastering Bitcoin's 3rd edition establish about Bitcoin as money, network and wallet, what has changed since its December 2023 publication, and where does it meet the course theme of semantic technologies?"
+VERSION = "1_0_1"  # revision: the owner's course notes added as a source, 2026-09-25
 PUBS = [
  ("P01","Mastering Bitcoin, 3rd edition - Chapter 1, Introduction (Antonopoulos and Harding, O'Reilly, 2023; CC BY-SA 4.0; tag third_edition_print1)","https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/third_edition_print1/ch01_intro.adoc",True),
  ("P02","Bitcoin: A Peer-to-Peer Electronic Cash System (Nakamoto, 2008)","https://bitcoin.org/bitcoin.pdf",False),
@@ -12,6 +13,8 @@ PUBS = [
  ("P06","BIP 39 - Mnemonic code for generating deterministic keys (Palatinus, Rusnak, Voisine and Bowe, 2013)","https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki",False),
  ("P07","Decentralized Identifiers (DIDs) v1.0, W3C Recommendation, 9 July 2022","https://www.w3.org/TR/did-core/",False),
  ("P08","Verifiable Credentials Data Model v2.0, W3C Recommendation, 5 May 2025","https://www.w3.org/TR/vc-data-model-2.0/",False),
+ ('P_NOTES', 'Course notes: Chapter_1_Introduction.pptx, SEN0401 (then CSE0469) Block Chain, Yusuf Altunel, 2021 - based on Mastering Bitcoin 2nd edition; supplied by the owner on 2026-09-25 (sha256 d2c5e9a87aee1b3d)', 'urn:sen0401:course-notes:Chapter_1_Introduction.pptx:d2c5e9a87aee1b3d', False),
+ ('P09', 'Mastering Bitcoin, 3rd edition - Chapter 12, Mining and Consensus (Antonopoulos and Harding, 2023)', 'https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/third_edition_print1/ch12_mining.adoc', False),
 ]
 CONCEPTS = [("Section",x) for x in ("Introduction","History of Bitcoin","Getting Started","Choosing a Bitcoin Wallet","Types of Bitcoin wallets","Full node versus Lightweight","Who controls the keys","Quick Start","Recovery Codes","Bitcoin Addresses","Receiving Bitcoin","Getting Your First Bitcoin","Finding the Current Price of Bitcoin","Sending and Receiving Bitcoin")] + \
  [("Concept",x) for x in ("proof of work","consensus","double-spend","recovery code","floating exchange rate","noncustodial wallet","full node","lightweight client","desktop wallet","mobile wallet","web wallet")]
@@ -20,6 +23,7 @@ FINDINGS = [
  ("F2","Contemporary developments","Since the book's publication the subsidy halved at block 840000 on 2024-04-20 to 3.125 bitcoin per block, and the reference implementation it describes has moved on: Bitcoin Core's releases page lists 31.1 as the newest.",["P05","P04"]),
  ("F3","Comparative analysis","The chapter's claims can be checked against its sources and by computation: Nakamoto's paper proposes a purely peer-to-peer electronic cash system, and proof of work descends from Back's Hashcash, first proposed to throttle abuse; the supply schedule sums to 20999999.9769 bitcoin, just below 21 million as the book says; and the recovery codes the book shows follow BIP 39, whose initial entropy is 128 to 256 bits.",["P02","P03","P05","P06"]),
  ("F4","Conclusion","For SEN0401's theme of semantic technologies, the chapter's key idea - control by whoever holds the keys, with no central registry - is the same idea W3C standardised for identity in Decentralized Identifiers and Verifiable Credentials, which gives projects a bridge from the book to semantic web standards.",["P01","P07","P08"]),
+ ("F5","Course notes","The owner's course notes for this chapter (written in 2021 after the 2nd edition) surfaced four topics the renewed deck lacked; each was checked against the 3rd edition and kept only in its words: what makes Bitcoin different - virtual, borderless, decentralized and robust against legitimate governments or criminal elements; the four parts behind the scenes - protocol, blockchain, consensus rules and proof of work; mining replacing a central bank's issuance and clearing, with the currency deflationary and issuance ending around 2140; and the four ways to get a first bitcoin. Two items in the notes were left out: a 2021 price-prediction source, as dated and speculative, and classified-ad sellers, which the 3rd edition no longer lists.",["P_NOTES","P01"]),
 ]
 TAX = [
  ("Money","Unit","BitcoinUnit","bitcoin with a small b, Bitcoin with a capital B","The unit of currency is bitcoin with a small b; the system is Bitcoin with a capital B.",None),
