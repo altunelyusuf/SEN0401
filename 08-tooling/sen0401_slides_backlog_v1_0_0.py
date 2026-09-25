@@ -15,15 +15,17 @@ PLANNED = {1, 2}
 PLANNED_AT_2 = "2026-09-25T00:24:54"
 ITER_OF = {1: "Iter_1", 2: "Iter_2"}
 # Started items, at the clock time each began. The kick-off was declared by the owner.
-STARTED = {("Research", 1): "2026-09-24T22:23:59", ("Deck", 1): "2026-09-24T22:32:36", ("Page", 1): "2026-09-24T22:28:51", ("Research", 2): "2026-09-25T00:24:54"}
+STARTED = {("Research", 1): "2026-09-24T22:23:59", ("Deck", 1): "2026-09-24T22:32:36", ("Page", 1): "2026-09-24T22:28:51", ("Research", 2): "2026-09-25T00:24:54", ("Page", 2): "2026-09-25T00:28:01"}
 # Re-scoring after the latest completion (BP-D11), at the clock time it was done; components unchanged.
-RESCORED_AT = "2026-09-24T22:34:30"
+RESCORED_AT = "2026-09-25T00:28:01"
 
 # Finished items and the evidence each closed on. Times from the clock or from commits only.
 DONE = {("Research", 1): {"finished": "2026-09-24T22:28:23", "closed": "2026-09-24T22:28:51", "release": "sen0401-v0.7.0 (a69f51d)",
     "spec": "RDODI procedure v1.6.0, Stages 1-3 for Mastering Bitcoin's chapter 1, built by 08-tooling/sen0401_rdodi_build_v1_0_0.py from sen0401_ch01_rdodi_data_v1_0_0.py. All gates PASS after two fixes: RDODI's citation detector could not read W3C as an author (a digit in the name), so W3C is cited as World Wide Web Consortium; and one of the chapter's sections was not named in the document. Stage1.A-B, Stage2.A, C and H, Stage3.A, B, F, E.cov, E.sub and src with RDODI's validator functions; Stage1.C-E, Stage2.B (HermiT consistent), D-G, Stage3.C-E (coverage 25/25), G and H as direct checks."},
     ("Deck", 1): {"finished": "2026-09-24T22:34:12", "closed": "2026-09-24T22:34:30", "release": "the release carrying 03-materials/ch01/SEN0401_Ch01_Introduction_3e.pptx",
-    "spec": "08-tooling/ch01-deck/deck_check.py re-ran every computation shown on the deck under Python 3.14.4 - the toy proof of work and the supply schedule - with 0 mismatches; the fixture fixture_stale_deck.pptx, showing 21000000.0 for the supply, was refused naming slide 6. Every other slide's content traces to the book's chapter 1 or the research record, cited in its speaker notes. Rendered and inspected; three faults fixed before closing: an over-long title, chart labels naming halving years not read from any source, and data labels rounding 12.5 to 13."}}
+    "spec": "08-tooling/ch01-deck/deck_check.py re-ran every computation shown on the deck under Python 3.14.4 - the toy proof of work and the supply schedule - with 0 mismatches; the fixture fixture_stale_deck.pptx, showing 21000000.0 for the supply, was refused naming slide 6. Every other slide's content traces to the book's chapter 1 or the research record, cited in its speaker notes. Rendered and inspected; three faults fixed before closing: an over-long title, chart labels naming halving years not read from any source, and data labels rounding 12.5 to 13."},
+    ("Research", 2): {"finished": "2026-09-25T00:27:49", "closed": "2026-09-25T00:28:01", "release": "sen0401-v0.11.0 (934b9c1)",
+    "spec": "RDODI procedure v1.6.0, Stages 1-3 for Mastering Bitcoin's chapter 2 by 08-tooling/sen0401_rdodi_build_v1_0_0.py from sen0401_ch02_rdodi_data_v1_0_0.py: all gates PASS, coverage 25/25. Its central quantitative claim was reproduced: a Python transcription of the whitepaper's section 11 procedure gives the paper's own table - 0.2045873 at one confirmation, 0.0002428 at six - to seven decimal places."}}
 
 REFINED = {
     "Research": "Settled: RDODI's four-stage procedure v1.6.0 on the chapter's subject, with its Pedagogy and Professional Standards stage and the Courseware profile; the research record lists every source a later claim rests on.",
