@@ -138,6 +138,13 @@ ex:Iter_1 a backlog:Iteration ; rdfs:label "First iteration: chapter 1, before t
 
 
 FEEDBACK = """
+ex:Finding_PagesRevisedFromCourseNotes a backlog:RetrospectiveFinding ;
+    rdfs:label "The chapter 1 and 2 pages were revised to carry what the decks gained from the course notes"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Page_Ch01, ex:ST_Page_Ch02 ;
+    backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "The owner asked for the interactive pages to be updated as well. The pages are generated from each chapter's domain ontology and document, so the notes' topics were added there rather than to the pages directly: chapter 1 gained a Nature subject (four characteristics, three architectural parts), an Issuance sub-subject (central-bank replacement; deflation, with issuance ending around 2140 computed as about 2140.8 at ten minutes a block) and an Acquisition sub-subject (four ways to get bitcoin); chapter 2 gained the BIP21 payment request with its URI parsed by Python, unconfirmed transactions, small-payment acceptance, the sudoku analogy and the Blockchain Demo. Both pages gained a Discussion tab with the notes' prompts. Doing so exposed labels the camel-case rule had mangled - Bitcoin a t m, Bip21 uri - fixed with explicit labels at their source." ;
+    backlog:hasRemedy "Domain ontologies, documents and research records re-published as v1.1.0 with all RDODI gates passing; pages re-published as v2.1.0 with every widget passing in the browser at 2026-09-25T07:55:36 (52 on chapter 1, 36 on chapter 2), 0 console errors, 0 WCAG 2 AA violations, a stale-value fixture refused on each, and every Stage 4 and automated pedagogy gate passing. The owner's pedagogical-soundness attestation remains pending." .
+
 ex:Finding_DecksRevisedFromCourseNotes a backlog:RetrospectiveFinding ;
     rdfs:label "The delivered chapter 1 and 2 decks were revised from the owner's course notes"@en ;
     backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Deck_Ch01, ex:ST_Deck_Ch02 ;

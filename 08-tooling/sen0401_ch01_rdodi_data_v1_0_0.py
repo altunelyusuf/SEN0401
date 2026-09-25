@@ -3,7 +3,8 @@ Every claim was read on 2026-09-25 from the source it cites; every computation e
 CH = 1
 TITLE = "Bitcoin from first principles: chapter 1 of Mastering Bitcoin, 3rd edition, and Bitcoin today"
 QUESTION = "What does chapter 1 of Mastering Bitcoin's 3rd edition establish about Bitcoin as money, network and wallet, what has changed since its December 2023 publication, and where does it meet the course theme of semantic technologies?"
-VERSION = "1_0_1"  # revision: the owner's course notes added as a source, 2026-09-25
+VERSION = "1_1_0"  # MINOR: concepts added from the owner's course notes, checked against the 3rd edition  # revision: the owner's course notes added as a source, 2026-09-25
+LABELS = {'BitcoinATM': 'Bitcoin ATM', 'PeerToPeerProtocol': 'Peer-to-peer protocol', 'DoubleSpend': 'Double-spend', 'ProofOfWork': 'Proof of work'}
 PUBS = [
  ("P01","Mastering Bitcoin, 3rd edition - Chapter 1, Introduction (Antonopoulos and Harding, O'Reilly, 2023; CC BY-SA 4.0; tag third_edition_print1)","https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/third_edition_print1/ch01_intro.adoc",True),
  ("P02","Bitcoin: A Peer-to-Peer Electronic Cash System (Nakamoto, 2008)","https://bitcoin.org/bitcoin.pdf",False),
@@ -44,6 +45,20 @@ TAX = [
  ("Usage","Address","BitcoinAddress","an address shown as a QR code","A number derived from the private key that others use to pay you; a new one per invoice protects privacy.",None),
  ("Usage","Transfer","SendingAndReceiving","Alice paying Joe","Receiving shows an address or invoice; sending signs a transaction that spends to someone else's address.",None),
  ("Usage","SemanticBridge","DecentralizedIdentity","a DID controlled by its holder","W3C Decentralized Identifiers apply the same principle to identity: control by whoever holds the keys, with no central registry.",None),
+
+ ("Nature","Characteristic","Virtual","coins implied in transactions","There are no physical coins, not even individual digital coins; coins are implied in transactions.",None),
+ ("Nature","Characteristic","Borderless","money for the internet","Fast, secure and borderless - arguably the perfect form of money for the internet.",None),
+ ("Nature","Characteristic","Decentralized","no single point of control","Free of any central authority or point of control that can be attacked or corrupted.",None),
+ ("Nature","Characteristic","Robust","resisting intervention","Built to withstand intervention by antagonists, whether legitimate governments or criminal elements.",None),
+ ("Nature","Architecture","PeerToPeerProtocol","a decentralized peer-to-peer network","The Bitcoin protocol: a decentralized peer-to-peer network.",None),
+ ("Nature","Architecture","PublicJournal","the blockchain","A public transaction journal: the blockchain.",None),
+ ("Nature","Architecture","ConsensusRuleSet","rules for validation and issuance","A set of rules for independent transaction validation and currency issuance.",None),
+ ("Money","Issuance","CentralBankReplacement","mining as minting and clearing","Mining decentralizes the currency-issuance and clearing functions of a central bank.",None),
+ ("Money","Issuance","Deflation","issuance ending around 2140","Issuance diminishes, so the currency is deflationary; after about 6.93 million blocks, around 2140, no new bitcoin is issued.",("round(2009 + 6_930_000 * 10 / (60 * 24 * 365.25), 1)","2140.8")),
+ ("Usage","Acquisition","BuyFromFriend","a friend who has bitcoin","The least complicated way to get a first bitcoin: buy directly from someone who has some.",None),
+ ("Usage","Acquisition","EarnBitcoin","payment for a product or service","Earn bitcoin by selling a product or service for it.",None),
+ ("Usage","Acquisition","BitcoinATM","a machine taking cash","A machine that accepts cash and sends bitcoin to a smartphone wallet.",None),
+ ("Usage","Acquisition","CurrencyExchange","an exchange linked to a bank account","A currency exchange that swaps bitcoin with local currency.",None),
 ]
 S = "Antonopoulos and Harding, 2023"; N = "Nakamoto, 2008"; BK = "Back, 2002"; W = "Bitcoin Wiki, 2026"; C = "Bitcoin Core, 2026"; B39 = "Palatinus et al., 2013"; DID = "World Wide Web Consortium, 2022"; VC = "World Wide Web Consortium, 2025"
 BODY = {
@@ -82,3 +97,24 @@ BODY = {
  "SemanticBridge": "The course theme of semantic technologies meets the chapter at its central idea: control by whoever holds the keys, without a central registry (%s)." % DID,
  "DecentralizedIdentity": "W3C's Decentralized Identifiers apply that idea to identity, and Verifiable Credentials build signed claims on top of it, so a project can carry the chapter's key principle into semantic web standards (%s)." % VC,
 }
+
+BODY.update({
+ "Nature": "Before the history, the chapter says what kind of thing Bitcoin is; the owner's course notes gather this into characteristics and architecture (Altunel, 2021).",
+ "Characteristic": "The chapter's opening pages describe Bitcoin by four characteristics, drawn together as a set in the owner's course notes (Altunel, 2021).",
+ "Virtual": "Bitcoin is entirely virtual: there are no physical coins, not even individual digital coins, because the coins are implied in transactions (Antonopoulos and Harding, 2023).",
+ "Borderless": "Bitcoin is fast, secure and borderless, which makes it arguably the perfect form of money for the internet (Antonopoulos and Harding, 2023).",
+ "Decentralized": "Bitcoin is decentralized by design, free of any central authority or point of control that can be attacked or corrupted (Antonopoulos and Harding, 2023).",
+ "Robust": "A decentralized currency was needed to be robust against intervention by antagonists, whether legitimate governments or criminal elements (Antonopoulos and Harding, 2023).",
+ "Architecture": "Behind the scenes, the chapter lists four parts Bitcoin consists of, one of which - proof of work - appears under consensus (Antonopoulos and Harding, 2023).",
+ "PeerToPeerProtocol": "The Bitcoin protocol is a decentralized peer-to-peer network, so no server sits at the centre (Antonopoulos and Harding, 2023).",
+ "PublicJournal": "The blockchain is a public transaction journal that anyone can read and verify (Antonopoulos and Harding, 2023).",
+ "ConsensusRuleSet": "The consensus rules are a set of rules for independent transaction validation and currency issuance (Antonopoulos and Harding, 2023).",
+ "Issuance": "The chapter explains who creates money in Bitcoin - no one, in the sense a central bank does (Antonopoulos and Harding, 2023).",
+ "CentralBankReplacement": "Bitcoin mining decentralizes the currency-issuance and clearing functions of a central bank and replaces the need for any central bank (Antonopoulos and Harding, 2023).",
+ "Deflation": "With diminishing issuance the currency is deflationary over the long term, and after about 6.93 million blocks, around 2140, no new bitcoin is issued; at ten minutes a block that reaches about 2140.8 (Antonopoulos and Harding, 2023).",
+ "Acquisition": "Getting Your First Bitcoin warns that bitcoin transactions are irreversible, so sellers accepting reversible card payments verify buyers first (Antonopoulos and Harding, 2023).",
+ "BuyFromFriend": "Finding a friend who has bitcoin and buying directly is the least complicated way to start (Antonopoulos and Harding, 2023).",
+ "EarnBitcoin": "A programmer can sell programming skills and a hairdresser can cut hair for bitcoin (Antonopoulos and Harding, 2023).",
+ "BitcoinATM": "A Bitcoin ATM accepts cash and sends bitcoin to a smartphone wallet (Antonopoulos and Harding, 2023).",
+ "CurrencyExchange": "Many countries have currency exchanges linked to bank accounts that swap bitcoin with local currency (Antonopoulos and Harding, 2023).",
+})

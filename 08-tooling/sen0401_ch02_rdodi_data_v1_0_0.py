@@ -4,7 +4,8 @@ including the whitepaper's attacker-success procedure, which reproduces the pape
 CH = 2
 TITLE = "How Bitcoin works: one transaction from wallet to blockchain, checked against the whitepaper"
 QUESTION = "How does chapter 2 of Mastering Bitcoin's 3rd edition explain a transaction's path from wallet to blockchain, which of its quantitative claims can be reproduced from primary sources, and how does its transaction chain meet the course theme?"
-VERSION = "1_0_1"  # revision: the owner's course notes added as a source, 2026-09-25
+VERSION = "1_1_0"  # MINOR: concepts added from the owner's course notes, checked against the 3rd edition  # revision: the owner's course notes added as a source, 2026-09-25
+LABELS = {'Bip21Uri': 'BIP21 URI'}
 PUBS = [
  ("P01","Mastering Bitcoin, 3rd edition - Chapter 2, How Bitcoin Works (Antonopoulos and Harding, O'Reilly, 2023; CC BY-SA 4.0; tag third_edition_print1)","https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/third_edition_print1/ch02_overview.adoc",True),
  ("P02","Bitcoin: A Peer-to-Peer Electronic Cash System (Nakamoto, 2008)","https://bitcoin.org/bitcoin.pdf",False),
@@ -40,6 +41,12 @@ TAX = [
  ("Blockchain","Security","Confirmation","each block built on top","Each block mined on top of the one containing a transaction is one more confirmation; more confirmations make reversal harder.",("round(1 - sum(__import__('math').exp(-6*0.1/0.9) * (6*0.1/0.9)**k / __import__('math').factorial(k) * (1 - (0.1/0.9)**(6-k)) for k in range(7)), 7)","0.0002428")),
  ("Blockchain","Security","GenesisBlock","block number 0","The first block of the chain, to which every block links back.",None),
  ("Semantics","ProvenanceModel","ProvenanceGraph","a transaction chain described in PROV-O","A transaction chain is a provenance graph: outputs derived from outputs by transactions, attributed to key holders - expressible in W3C PROV-O.",None),
+
+ ("Transaction","PaymentRequest","Bip21Uri","the invoice encoded in the store's QR code","A BIP21 URI carrying the address, amount, label and message, which the wallet reads so the payer never types an address.",("__import__('urllib.parse').parse.parse_qs(__import__('urllib.parse').parse.urlsplit('bitcoin:bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4?amount=0.01577764&label=Bob%27s%20Store').query)['label'][0]","\"Bob's Store\"")),
+ ("Blockchain","Security","UnconfirmedTransaction","a payment propagated but not yet in a block","Propagated to the network but not yet recorded in a block; blocks arrive every 10 minutes on average, not on a timetable.",None),
+ ("Blockchain","Security","SmallPaymentAcceptance","a cheap item sold without waiting","A merchant may accept a small payment unconfirmed because the double-spend risk is low, as coffee shops accept small card payments without a signature.",None),
+ ("Blockchain","Mining","SudokuAnalogy","mining pictured as a giant sudoku","An analogy from the course notes: hard to solve, easy to check, adjustable in size, restarted after every solution.",None),
+ ("Practice","InteractiveDemo","BlockchainDemo","Anders Brownworth's blockchain demo","An interactive page where changing one earlier block invalidates every later block's hash.",None),
 ]
 S = "Antonopoulos and Harding, 2023"; N = "Nakamoto, 2008"; C = "Bitcoin Core, 2026"; P = "World Wide Web Consortium, 2013"
 BODY = {
@@ -72,3 +79,13 @@ BODY = {
  "ProvenanceModel": "A chain of spends is a record of where each value came from - a provenance record (%s)." % P,
  "ProvenanceGraph": "W3C's PROV Ontology describes entities derived from other entities by activities and attributed to agents, which is exactly the shape of outputs spent by transactions signed by key holders (%s)." % P,
 }
+BODY.update({
+ "PaymentRequest": "Buying from an Online Store shows the invoice Alice's wallet scans (Antonopoulos and Harding, 2023).",
+ "Bip21Uri": "The invoice QR code encodes a URI defined in BIP21 with the address, the payment amount 0.01577764, the label Bob's Store and a message, so Alice never types an address (Antonopoulos and Harding, 2023).",
+ "UnconfirmedTransaction": "A payment first shows as unconfirmed: propagated but not yet in a block, and blocks arrive every 10 minutes on average rather than on a timetable - the ten-minute misconception the course notes warn about (Altunel, 2021).",
+ "SmallPaymentAcceptance": "Selling a cheap item unconfirmed carries low double-spend risk, as coffee shops accept small card payments without a signature, while an expensive item justifies waiting for confirmations (Antonopoulos and Harding, 2023).",
+ "SudokuAnalogy": "The course notes picture mining as a giant competitive sudoku - hard to solve, easy to verify, harder or easier by grid size, and restarted after each solution - an analogy the 3rd edition does not use (Altunel, 2021).",
+ "Practice": "The course notes point students to an interactive demonstration of the chain of hashes this chapter describes (Altunel, 2021).",
+ "InteractiveDemo": "Seeing a hash chain break is more convincing than reading about it (Altunel, 2021).",
+ "BlockchainDemo": "Anders Brownworth's Blockchain Demo shows that changing one character in an earlier block invalidates every later block, which is what makes the journal tamper-evident (Altunel, 2021).",
+})

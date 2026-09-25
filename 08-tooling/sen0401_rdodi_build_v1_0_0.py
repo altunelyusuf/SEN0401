@@ -59,6 +59,8 @@ def research():
     return "\n".join(L) + "\n"
 
 def label(c):
+    # explicit labels first: the camel-case rule mangles acronyms and hyphenated terms ("Bitcoin a t m")
+    if c in getattr(D, "LABELS", {}): return D.LABELS[c]
     t = "".join(" " + ch.lower() if ch.isupper() and i else ch for i, ch in enumerate(c)).strip()
     return t[0].upper() + t[1:]
 

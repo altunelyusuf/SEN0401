@@ -84,7 +84,8 @@ agents = [{"id": "agent-" + n["id"], "name": AGENT.get(n["id"], n["label"] + " a
            "covers": [m["id"] for m in nodes if m["parent"] == n["id"]] + [n["id"]]} for n in nodes if n["level"] == 2]
 refs = sorted((str(R.value(p, RDFS.label)), str(R.value(p, DC.source))) for p in R.subjects(RDF.type, RES.Publication))
 title = next(str(o) for s, o in D.subject_objects(RDFS.label) if str(s).endswith("#Document"))
-data = {"research_file": os.path.basename(f("research")), "chapter": int(N), "title": title, "python": pyver, "nodes": nodes, "relations": rels, "agents": agents, "refs": refs}
+DISC = os.path.join(REPO, "08-tooling", "ch%s-page" % N, "discussion.json")
+data = {"discussion": json.load(open(DISC)) if os.path.exists(DISC) else [], "research_file": os.path.basename(f("research")), "chapter": int(N), "title": title, "python": pyver, "nodes": nodes, "relations": rels, "agents": agents, "refs": refs}
 out = os.path.join(REPO, "08-tooling", "ch%s-page" % N); os.makedirs(out, exist_ok=True)
 json.dump(data, open(os.path.join(out, "page_data_v2.json"), "w"), indent=1)
 print("chapter %s: %d concepts, %d relations (%d stated, %d co-mentions), %d agents, %d executed examples with ast trees, under %s" % (

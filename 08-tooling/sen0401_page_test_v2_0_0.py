@@ -5,7 +5,7 @@ interpreter printed. Results go to test_results_v2.json; the page ABox marks a w
 import json, os, sys, time
 from playwright.sync_api import sync_playwright
 N = sys.argv[1]; REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-page_path = os.environ.get("PAGE", os.path.join(REPO, "03-materials", "ch%s" % N, "page", "sen0401_ch%s_page_v2_0_0.html" % N))
+page_path = os.environ.get("PAGE", os.path.join(REPO, "03-materials", "ch%s" % N, "page", "sen0401_ch%s_page_v2_1_0.html" % N))
 d = json.load(open(os.path.join(REPO, "08-tooling", "ch%s-page" % N, "page_data_v2.json")))
 AXE = "/home/claude/Ontologies/rdodi-ecosystem/07-pedagogy-professional-stage/lib/axe.min.js"
 R = {"widgets": {}, "features": {}, "gates": {}}
