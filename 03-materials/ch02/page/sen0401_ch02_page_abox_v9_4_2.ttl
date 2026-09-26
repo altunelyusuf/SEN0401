@@ -1,0 +1,293 @@
+@prefix ipo:     <http://example.org/rdodi/interactive-page-ontology#> .
+@prefix wp:      <http://example.org/widget-primitives#> .
+@prefix ds:      <http://example.org/rdodi/discourse-selection#> .
+@prefix pg:      <http://example.org/sen0401/ch02/page#> .
+@prefix sen0401: <http://example.org/sen0401#> .
+@prefix ld:      <http://example.org/rdodi/learning-design#> .
+@prefix mp:      <http://example.org/rdodi/model-provenance#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+
+<http://example.org/sen0401/ch02/page> a owl:Ontology ; rdfs:label "SEN0401 chapter 2 - RDODI Stage 4 page ABox"@en ; owl:versionInfo "9.4.2" ;
+    dcterms:license <https://creativecommons.org/licenses/by/4.0/> ; dcterms:rights "Copyright (c) 2026 Yusuf Altunel. Licensed CC BY 4.0."@en ;
+    dcterms:rightsHolder <http://example.org/rdodi/agent/YusufAltunel> ; dcterms:publisher <http://example.org/rdodi/agent/IstanbulKulturUniversity> ;
+    dcterms:creator <http://example.org/rdodi/agent/YusufAltunel> ; dcterms:created "2026-09-24"^^xsd:date ; dcterms:modified "2026-09-24"^^xsd:date ;
+    dcterms:identifier "sen0401_ch02_page_abox_v9_4_2" ; prov:wasGeneratedBy <http://example.org/sen0401/activity/ch02-rdodi-run> ;
+    prov:wasAttributedTo <http://example.org/rdodi/agent/YusufAltunel> .
+
+pg:Page a ipo:Page, ipo:InteractiveLearningSurface ; rdfs:label "Chapter 2 interactive page"@en ;
+    dcterms:source <http://example.org/sen0401/ch02/document> ; ipo:hasSourceDocument pg:SourceDocument ;
+    ipo:satisfiesHeuristic ipo:RecognitionRatherThanRecall, ipo:ConsistencyAndStandards, ipo:AestheticAndMinimalistDesign,
+        ipo:ShneidermanRule_OfferInformativeFeedback, ipo:ShneidermanRule_PermitEasyReversalOfActions, ipo:HelpAndDocumentation ;
+    ipo:hasLayoutPattern pg:Layout ; ipo:hasSemanticRegion pg:Header, pg:Sidebar, pg:Main ;
+    ipo:includesNavigationPattern pg:GroupedTopBar, pg:SectionTree ;
+    ipo:coversLearningObjective pg:CO1, pg:CO2, pg:CO3, pg:CO4 ;
+    sen0401:navigationRule "BP-D34: 36 sections falls in 26-50, so a grouped permanent top bar with a sub-section sidebar; the named single flowing anchor-page variation of procedure v1.6.0 section 5.3." ;
+    sen0401:pythonUsed "Python 3.14.4" .
+pg:Layout a ipo:SplitLayout ; rdfs:label "Sidebar and main content"@en .
+pg:Header a ipo:Header ; rdfs:label "Sticky header with grouped section bar"@en .
+pg:Sidebar a ipo:Sidebar ; rdfs:label "Section tree"@en .
+pg:Main a ipo:MainContent ; rdfs:label "Chapter content with inline widgets"@en .
+pg:GroupedTopBar a ipo:PrimaryNavigation ; rdfs:label "Grouped permanent top bar"@en .
+pg:SectionTree a ipo:TreeNavigation ; rdfs:label "Sub-section sidebar tree"@en .
+pg:SourceDocument a ipo:SourceDocument ; rdfs:label "Chapter 2 Stage 3 document"@en ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    ipo:hasLearningObjective pg:CO1, pg:CO2, pg:CO3, pg:CO4 .
+
+pg:CO1 a ipo:LearningObjective, owl:NamedIndividual ; rdfs:label "Trace a payment's inputs, outputs, change and implied fee"@en ; ld:bloomLevel ld:Apply  .
+pg:CO2 a ipo:LearningObjective, owl:NamedIndividual ; rdfs:label "Explain how a transaction travels from wallet to network to block"@en ; ld:bloomLevel ld:Understand  .
+pg:CO3 a ipo:LearningObjective, owl:NamedIndividual ; rdfs:label "Compute, as the whitepaper does, how confirmations reduce the chance of reversal"@en ; ld:bloomLevel ld:Apply  .
+pg:CO4 a ipo:LearningObjective, owl:NamedIndividual ; rdfs:label "Describe a transaction chain as a provenance graph in W3C PROV terms"@en ; ld:bloomLevel ld:Understand  .
+pg:Q1 a ld:AssessmentItem, owl:NamedIndividual ; rdfs:label "Inputs total 0.15 bitcoin and outputs total 0.1499 bitcoin. What is the difference?"@en ; ld:hasOption pg:Q1_O0, pg:Q1_O1, pg:Q1_O2 ; ld:hasCorrectOption pg:Q1_O0 ; ld:cognitiveLevel ld:Apply ; ld:assessesObjective pg:CO1 ;
+    ld:distractorRationale "Bitcoin amounts are exact integers of satoshis; nothing is rounded away." ; ld:distractorRationale "Change is itself an output, so it is already counted in the 0.1499." .
+pg:Q1_O0 a ld:AnswerOption ; rdfs:label "The transaction fee, collected by the miner" .
+pg:Q1_O1 a ld:AnswerOption ; rdfs:label "A rounding error" .
+pg:Q1_O2 a ld:AnswerOption ; rdfs:label "Change returned to the payer" .
+pg:Q2 a ld:AssessmentItem, owl:NamedIndividual ; rdfs:label "Alice pays 5 bitcoins using a 20-bitcoin input. Ignoring the fee, what is the change?"@en ; ld:hasOption pg:Q2_O0, pg:Q2_O1, pg:Q2_O2 ; ld:hasCorrectOption pg:Q2_O0 ; ld:cognitiveLevel ld:Apply ; ld:assessesObjective pg:CO1 ;
+    ld:distractorRationale "The whole input is spent; 20 would mean the store got nothing." ; ld:distractorRationale "5 is the payment to the store, not the change." .
+pg:Q2_O0 a ld:AnswerOption ; rdfs:label "15 bitcoins" .
+pg:Q2_O1 a ld:AnswerOption ; rdfs:label "20 bitcoins" .
+pg:Q2_O2 a ld:AnswerOption ; rdfs:label "5 bitcoins" .
+pg:Q3 a ld:AssessmentItem, owl:NamedIndividual ; rdfs:label "When does a transaction become part of the blockchain?"@en ; ld:hasOption pg:Q3_O0, pg:Q3_O1, pg:Q3_O2 ; ld:hasCorrectOption pg:Q3_O0 ; ld:cognitiveLevel ld:Understand ; ld:assessesObjective pg:CO2 ;
+    ld:distractorRationale "Signing makes it valid to relay; it is not yet in any block." ; ld:distractorRationale "Explorers display what they see, including unconfirmed transactions." .
+pg:Q3_O0 a ld:AnswerOption ; rdfs:label "When a miner includes it in a block that full nodes validate" .
+pg:Q3_O1 a ld:AnswerOption ; rdfs:label "As soon as the wallet signs it" .
+pg:Q3_O2 a ld:AnswerOption ; rdfs:label "When a block explorer shows it" .
+pg:Q4 a ld:AssessmentItem, owl:NamedIndividual ; rdfs:label "By the whitepaper, an attacker with 10% of the hash power catches up from six blocks behind with probability about:"@en ; ld:hasOption pg:Q4_O0, pg:Q4_O1, pg:Q4_O2 ; ld:hasCorrectOption pg:Q4_O0 ; ld:cognitiveLevel ld:Apply ; ld:assessesObjective pg:CO3 ;
+    ld:distractorRationale "0.2 is the probability at one confirmation, not six." ; ld:distractorRationale "0.05 is roughly the probability at two confirmations." .
+pg:Q4_O0 a ld:AnswerOption ; rdfs:label "0.0002" .
+pg:Q4_O1 a ld:AnswerOption ; rdfs:label "0.2" .
+pg:Q4_O2 a ld:AnswerOption ; rdfs:label "0.05" .
+pg:Q5 a ld:AssessmentItem, owl:NamedIndividual ; rdfs:label "In PROV-O terms, what is a Bitcoin transaction in a chain of spends?"@en ; ld:hasOption pg:Q5_O0, pg:Q5_O1, pg:Q5_O2 ; ld:hasCorrectOption pg:Q5_O0 ; ld:cognitiveLevel ld:Understand ; ld:assessesObjective pg:CO4 ;
+    ld:distractorRationale "The agent is the key holder who signs; the transaction is what happens." ; ld:distractorRationale "Nothing about a transaction chain is a document on the web." .
+pg:Q5_O0 a ld:AnswerOption ; rdfs:label "An activity that derives new outputs from earlier ones" .
+pg:Q5_O1 a ld:AnswerOption ; rdfs:label "An agent" .
+pg:Q5_O2 a ld:AnswerOption ; rdfs:label "A web page" .
+pg:s_Transaction a ipo:ChapterSection ; rdfs:label "Transaction"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Transaction> ; sen0401:anchor "#s-Transaction" .
+pg:Page ipo:coversChapterSection pg:s_Transaction .
+pg:s_TransactionPart a ipo:ChapterSection ; rdfs:label "Transaction part"@en ; dcterms:source <http://example.org/sen0401/ch02#S_TransactionPart> ; sen0401:anchor "#s-TransactionPart" .
+pg:Page ipo:coversChapterSection pg:s_TransactionPart .
+pg:s_Input a ipo:ChapterSection ; rdfs:label "Input"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Input> ; sen0401:anchor "#s-Input" .
+pg:Page ipo:coversChapterSection pg:s_Input .
+pg:s_Output a ipo:ChapterSection ; rdfs:label "Output"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Output> ; sen0401:anchor "#s-Output" .
+pg:Page ipo:coversChapterSection pg:s_Output .
+pg:s_TransactionFee a ipo:ChapterSection ; rdfs:label "Transaction fee"@en ; dcterms:source <http://example.org/sen0401/ch02#S_TransactionFee> ; sen0401:anchor "#s-TransactionFee" .
+pg:Page ipo:coversChapterSection pg:s_TransactionFee .
+pg:s_Linkage a ipo:ChapterSection ; rdfs:label "Linkage"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Linkage> ; sen0401:anchor "#s-Linkage" .
+pg:Page ipo:coversChapterSection pg:s_Linkage .
+pg:s_TransactionChain a ipo:ChapterSection ; rdfs:label "Transaction chain"@en ; dcterms:source <http://example.org/sen0401/ch02#S_TransactionChain> ; sen0401:anchor "#s-TransactionChain" .
+pg:Page ipo:coversChapterSection pg:s_TransactionChain .
+pg:s_MakingChange a ipo:ChapterSection ; rdfs:label "Making change"@en ; dcterms:source <http://example.org/sen0401/ch02#S_MakingChange> ; sen0401:anchor "#s-MakingChange" .
+pg:Page ipo:coversChapterSection pg:s_MakingChange .
+pg:s_CoinSelection a ipo:ChapterSection ; rdfs:label "Coin selection"@en ; dcterms:source <http://example.org/sen0401/ch02#S_CoinSelection> ; sen0401:anchor "#s-CoinSelection" .
+pg:Page ipo:coversChapterSection pg:s_CoinSelection .
+pg:s_Form a ipo:ChapterSection ; rdfs:label "Form"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Form> ; sen0401:anchor "#s-Form" .
+pg:Page ipo:coversChapterSection pg:s_Form .
+pg:s_SimplePayment a ipo:ChapterSection ; rdfs:label "Simple payment"@en ; dcterms:source <http://example.org/sen0401/ch02#S_SimplePayment> ; sen0401:anchor "#s-SimplePayment" .
+pg:Page ipo:coversChapterSection pg:s_SimplePayment .
+pg:s_Consolidation a ipo:ChapterSection ; rdfs:label "Consolidation"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Consolidation> ; sen0401:anchor "#s-Consolidation" .
+pg:Page ipo:coversChapterSection pg:s_Consolidation .
+pg:s_Unit a ipo:ChapterSection ; rdfs:label "Unit"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Unit> ; sen0401:anchor "#s-Unit" .
+pg:Page ipo:coversChapterSection pg:s_Unit .
+pg:s_Satoshi a ipo:ChapterSection ; rdfs:label "Satoshi"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Satoshi> ; sen0401:anchor "#s-Satoshi" .
+pg:Page ipo:coversChapterSection pg:s_Satoshi .
+pg:s_PaymentRequest a ipo:ChapterSection ; rdfs:label "Payment request"@en ; dcterms:source <http://example.org/sen0401/ch02#S_PaymentRequest> ; sen0401:anchor "#s-PaymentRequest" .
+pg:Page ipo:coversChapterSection pg:s_PaymentRequest .
+pg:s_Bip21Uri a ipo:ChapterSection ; rdfs:label "BIP21 URI"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Bip21Uri> ; sen0401:anchor "#s-Bip21Uri" .
+pg:Page ipo:coversChapterSection pg:s_Bip21Uri .
+pg:s_Network a ipo:ChapterSection ; rdfs:label "Network"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Network> ; sen0401:anchor "#s-Network" .
+pg:Page ipo:coversChapterSection pg:s_Network .
+pg:s_Propagation a ipo:ChapterSection ; rdfs:label "Propagation"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Propagation> ; sen0401:anchor "#s-Propagation" .
+pg:Page ipo:coversChapterSection pg:s_Propagation .
+pg:s_TransactionPropagation a ipo:ChapterSection ; rdfs:label "Transaction propagation"@en ; dcterms:source <http://example.org/sen0401/ch02#S_TransactionPropagation> ; sen0401:anchor "#s-TransactionPropagation" .
+pg:Page ipo:coversChapterSection pg:s_TransactionPropagation .
+pg:s_BlockExplorer a ipo:ChapterSection ; rdfs:label "Block explorer"@en ; dcterms:source <http://example.org/sen0401/ch02#S_BlockExplorer> ; sen0401:anchor "#s-BlockExplorer" .
+pg:Page ipo:coversChapterSection pg:s_BlockExplorer .
+pg:s_Blockchain a ipo:ChapterSection ; rdfs:label "Blockchain"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Blockchain> ; sen0401:anchor "#s-Blockchain" .
+pg:Page ipo:coversChapterSection pg:s_Blockchain .
+pg:s_Mining a ipo:ChapterSection ; rdfs:label "Mining"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Mining> ; sen0401:anchor "#s-Mining" .
+pg:Page ipo:coversChapterSection pg:s_Mining .
+pg:s_Block a ipo:ChapterSection ; rdfs:label "Block"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Block> ; sen0401:anchor "#s-Block" .
+pg:Page ipo:coversChapterSection pg:s_Block .
+pg:s_ConsensusRules a ipo:ChapterSection ; rdfs:label "Consensus rules"@en ; dcterms:source <http://example.org/sen0401/ch02#S_ConsensusRules> ; sen0401:anchor "#s-ConsensusRules" .
+pg:Page ipo:coversChapterSection pg:s_ConsensusRules .
+pg:s_SudokuAnalogy a ipo:ChapterSection ; rdfs:label "Sudoku analogy"@en ; dcterms:source <http://example.org/sen0401/ch02#S_SudokuAnalogy> ; sen0401:anchor "#s-SudokuAnalogy" .
+pg:Page ipo:coversChapterSection pg:s_SudokuAnalogy .
+pg:s_Security a ipo:ChapterSection ; rdfs:label "Security"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Security> ; sen0401:anchor "#s-Security" .
+pg:Page ipo:coversChapterSection pg:s_Security .
+pg:s_Confirmation a ipo:ChapterSection ; rdfs:label "Confirmation"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Confirmation> ; sen0401:anchor "#s-Confirmation" .
+pg:Page ipo:coversChapterSection pg:s_Confirmation .
+pg:s_GenesisBlock a ipo:ChapterSection ; rdfs:label "Genesis block"@en ; dcterms:source <http://example.org/sen0401/ch02#S_GenesisBlock> ; sen0401:anchor "#s-GenesisBlock" .
+pg:Page ipo:coversChapterSection pg:s_GenesisBlock .
+pg:s_UnconfirmedTransaction a ipo:ChapterSection ; rdfs:label "Unconfirmed transaction"@en ; dcterms:source <http://example.org/sen0401/ch02#S_UnconfirmedTransaction> ; sen0401:anchor "#s-UnconfirmedTransaction" .
+pg:Page ipo:coversChapterSection pg:s_UnconfirmedTransaction .
+pg:s_SmallPaymentAcceptance a ipo:ChapterSection ; rdfs:label "Small payment acceptance"@en ; dcterms:source <http://example.org/sen0401/ch02#S_SmallPaymentAcceptance> ; sen0401:anchor "#s-SmallPaymentAcceptance" .
+pg:Page ipo:coversChapterSection pg:s_SmallPaymentAcceptance .
+pg:s_Semantics a ipo:ChapterSection ; rdfs:label "Semantics"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Semantics> ; sen0401:anchor "#s-Semantics" .
+pg:Page ipo:coversChapterSection pg:s_Semantics .
+pg:s_ProvenanceModel a ipo:ChapterSection ; rdfs:label "Provenance model"@en ; dcterms:source <http://example.org/sen0401/ch02#S_ProvenanceModel> ; sen0401:anchor "#s-ProvenanceModel" .
+pg:Page ipo:coversChapterSection pg:s_ProvenanceModel .
+pg:s_ProvenanceGraph a ipo:ChapterSection ; rdfs:label "Provenance graph"@en ; dcterms:source <http://example.org/sen0401/ch02#S_ProvenanceGraph> ; sen0401:anchor "#s-ProvenanceGraph" .
+pg:Page ipo:coversChapterSection pg:s_ProvenanceGraph .
+pg:s_Practice a ipo:ChapterSection ; rdfs:label "Practice"@en ; dcterms:source <http://example.org/sen0401/ch02#S_Practice> ; sen0401:anchor "#s-Practice" .
+pg:Page ipo:coversChapterSection pg:s_Practice .
+pg:s_InteractiveDemo a ipo:ChapterSection ; rdfs:label "Interactive demo"@en ; dcterms:source <http://example.org/sen0401/ch02#S_InteractiveDemo> ; sen0401:anchor "#s-InteractiveDemo" .
+pg:Page ipo:coversChapterSection pg:s_InteractiveDemo .
+pg:s_BlockchainDemo a ipo:ChapterSection ; rdfs:label "Blockchain demo"@en ; dcterms:source <http://example.org/sen0401/ch02#S_BlockchainDemo> ; sen0401:anchor "#s-BlockchainDemo" .
+pg:Page ipo:coversChapterSection pg:s_BlockchainDemo .
+pg:w_Transaction a ipo:InstructionalWidget ; rdfs:label "map widget for Transaction"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Transaction> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Transaction> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: overview card opens its sub-subject" ; wp:designTestPassed true .
+pg:w_TransactionPart a ipo:InstructionalWidget ; rdfs:label "map widget for TransactionPart"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#TransactionPart> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#TransactionPart> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: grid shows its 3 concepts" ; wp:designTestPassed true .
+pg:w_Input a ipo:InstructionalWidget ; rdfs:label "steps widget for Input"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Input> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Input> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_Output a ipo:InstructionalWidget ; rdfs:label "steps widget for Output"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Output> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Output> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_TransactionFee a ipo:InstructionalWidget, ipo:CoupledVariableDemonstrator ; rdfs:label "predict widget for TransactionFee"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#TransactionFee> ;
+    ipo:enforcesDomainConstraint <http://example.org/sen0401/ch02#TransactionFee> ;
+    mp:numericModelStatus mp:Validated ; mp:hasValidationDerivation "Every value the widget reveals was produced by executing the expression under Python 3.14.4 at build time, not typed" ; mp:hasConformanceTest "The browser design test requires the revealed value to equal the executed one" ;
+    wp:instantiatesPrimitive wp:Primitive_CoupledVariableExplorer ; ds:selectionWarrant "Feature_AsymmetricContrast: the learner edits and predicts sum([15_000_000]) - sum([10_000_000, 4_990_000]), then Pyodide shows what Python actually does" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#TransactionFee> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: printed '10000'; edited to 2 + 2 printed '4'; card shows '10000'" ; wp:designTestPassed true .
+pg:w_Linkage a ipo:InstructionalWidget ; rdfs:label "map widget for Linkage"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Linkage> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Linkage> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: grid shows its 3 concepts" ; wp:designTestPassed true .
+pg:w_TransactionChain a ipo:InstructionalWidget ; rdfs:label "steps widget for TransactionChain"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#TransactionChain> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#TransactionChain> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_MakingChange a ipo:InstructionalWidget, ipo:CoupledVariableDemonstrator ; rdfs:label "predict widget for MakingChange"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#MakingChange> ;
+    ipo:enforcesDomainConstraint <http://example.org/sen0401/ch02#MakingChange> ;
+    mp:numericModelStatus mp:Validated ; mp:hasValidationDerivation "Every value the widget reveals was produced by executing the expression under Python 3.14.4 at build time, not typed" ; mp:hasConformanceTest "The browser design test requires the revealed value to equal the executed one" ;
+    wp:instantiatesPrimitive wp:Primitive_CoupledVariableExplorer ; ds:selectionWarrant "Feature_AsymmetricContrast: the learner edits and predicts 20 - 5, then Pyodide shows what Python actually does" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#MakingChange> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: printed '15'; edited to 2 + 2 printed '4'; card shows '15'" ; wp:designTestPassed true .
+pg:w_CoinSelection a ipo:InstructionalWidget ; rdfs:label "steps widget for CoinSelection"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#CoinSelection> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#CoinSelection> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_Form a ipo:InstructionalWidget ; rdfs:label "map widget for Form"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Form> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Form> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: grid shows its 2 concepts" ; wp:designTestPassed true .
+pg:w_SimplePayment a ipo:InstructionalWidget ; rdfs:label "steps widget for SimplePayment"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#SimplePayment> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#SimplePayment> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_Consolidation a ipo:InstructionalWidget ; rdfs:label "steps widget for Consolidation"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Consolidation> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Consolidation> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_Unit a ipo:InstructionalWidget ; rdfs:label "map widget for Unit"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Unit> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Unit> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: grid shows its 1 concepts" ; wp:designTestPassed true .
+pg:w_Satoshi a ipo:InstructionalWidget, ipo:CoupledVariableDemonstrator ; rdfs:label "predict widget for Satoshi"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Satoshi> ;
+    ipo:enforcesDomainConstraint <http://example.org/sen0401/ch02#Satoshi> ;
+    mp:numericModelStatus mp:Validated ; mp:hasValidationDerivation "Every value the widget reveals was produced by executing the expression under Python 3.14.4 at build time, not typed" ; mp:hasConformanceTest "The browser design test requires the revealed value to equal the executed one" ;
+    wp:instantiatesPrimitive wp:Primitive_CoupledVariableExplorer ; ds:selectionWarrant "Feature_AsymmetricContrast: the learner edits and predicts 10**8 // 1000, then Pyodide shows what Python actually does" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Satoshi> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: printed '100000'; edited to 2 + 2 printed '4'; card shows '100000'" ; wp:designTestPassed true .
+pg:w_PaymentRequest a ipo:InstructionalWidget ; rdfs:label "map widget for PaymentRequest"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#PaymentRequest> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#PaymentRequest> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: grid shows its 1 concepts" ; wp:designTestPassed true .
+pg:w_Bip21Uri a ipo:InstructionalWidget, ipo:CoupledVariableDemonstrator ; rdfs:label "predict widget for Bip21Uri"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Bip21Uri> ;
+    ipo:enforcesDomainConstraint <http://example.org/sen0401/ch02#Bip21Uri> ;
+    mp:numericModelStatus mp:Validated ; mp:hasValidationDerivation "Every value the widget reveals was produced by executing the expression under Python 3.14.4 at build time, not typed" ; mp:hasConformanceTest "The browser design test requires the revealed value to equal the executed one" ;
+    wp:instantiatesPrimitive wp:Primitive_CoupledVariableExplorer ; ds:selectionWarrant "Feature_AsymmetricContrast: the learner edits and predicts __import__('urllib.parse').parse.parse_qs(__import__('urllib.parse').parse.urlsplit('bitcoin:bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4?amount=0.01577764&label=Bob%27s%20Store').query)['label'][0], then Pyodide shows what Python actually does" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Bip21Uri> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: printed ''Bob\\'s Store''; edited to 2 + 2 printed '4'; card shows ''Bob\\'s Store''" ; wp:designTestPassed true .
+pg:w_Network a ipo:InstructionalWidget ; rdfs:label "map widget for Network"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Network> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Network> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: overview card opens its sub-subject" ; wp:designTestPassed true .
+pg:w_Propagation a ipo:InstructionalWidget ; rdfs:label "map widget for Propagation"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Propagation> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Propagation> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: grid shows its 2 concepts" ; wp:designTestPassed true .
+pg:w_TransactionPropagation a ipo:InstructionalWidget ; rdfs:label "steps widget for TransactionPropagation"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#TransactionPropagation> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#TransactionPropagation> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_BlockExplorer a ipo:InstructionalWidget ; rdfs:label "steps widget for BlockExplorer"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#BlockExplorer> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#BlockExplorer> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_Blockchain a ipo:InstructionalWidget ; rdfs:label "map widget for Blockchain"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Blockchain> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Blockchain> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: overview card opens its sub-subject" ; wp:designTestPassed true .
+pg:w_Mining a ipo:InstructionalWidget ; rdfs:label "map widget for Mining"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Mining> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Mining> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: grid shows its 3 concepts" ; wp:designTestPassed true .
+pg:w_Block a ipo:InstructionalWidget ; rdfs:label "steps widget for Block"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Block> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Block> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_ConsensusRules a ipo:InstructionalWidget ; rdfs:label "steps widget for ConsensusRules"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#ConsensusRules> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#ConsensusRules> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_SudokuAnalogy a ipo:InstructionalWidget ; rdfs:label "steps widget for SudokuAnalogy"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#SudokuAnalogy> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#SudokuAnalogy> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_Security a ipo:InstructionalWidget ; rdfs:label "map widget for Security"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Security> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Security> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: grid shows its 4 concepts" ; wp:designTestPassed true .
+pg:w_Confirmation a ipo:InstructionalWidget, ipo:CoupledVariableDemonstrator ; rdfs:label "predict widget for Confirmation"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Confirmation> ;
+    ipo:enforcesDomainConstraint <http://example.org/sen0401/ch02#Confirmation> ;
+    mp:numericModelStatus mp:Validated ; mp:hasValidationDerivation "Every value the widget reveals was produced by executing the expression under Python 3.14.4 at build time, not typed" ; mp:hasConformanceTest "The browser design test requires the revealed value to equal the executed one" ;
+    wp:instantiatesPrimitive wp:Primitive_CoupledVariableExplorer ; ds:selectionWarrant "Feature_AsymmetricContrast: the learner edits and predicts round(1 - sum(__import__('math').exp(-6*0.1/0.9) * (6*0.1/0.9)**k / __import__('math').factorial(k) * (1 - (0.1/0.9)**(6-k)) for k in range(7)), 7), then Pyodide shows what Python actually does" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Confirmation> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: printed '0.0002428'; edited to 2 + 2 printed '4'; card shows '0.0002428'" ; wp:designTestPassed true .
+pg:w_GenesisBlock a ipo:InstructionalWidget ; rdfs:label "steps widget for GenesisBlock"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#GenesisBlock> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#GenesisBlock> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_UnconfirmedTransaction a ipo:InstructionalWidget ; rdfs:label "steps widget for UnconfirmedTransaction"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#UnconfirmedTransaction> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#UnconfirmedTransaction> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_SmallPaymentAcceptance a ipo:InstructionalWidget ; rdfs:label "steps widget for SmallPaymentAcceptance"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#SmallPaymentAcceptance> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#SmallPaymentAcceptance> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_Semantics a ipo:InstructionalWidget ; rdfs:label "map widget for Semantics"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Semantics> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Semantics> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: overview card opens its sub-subject" ; wp:designTestPassed true .
+pg:w_ProvenanceModel a ipo:InstructionalWidget ; rdfs:label "map widget for ProvenanceModel"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#ProvenanceModel> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#ProvenanceModel> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: grid shows its 1 concepts" ; wp:designTestPassed true .
+pg:w_ProvenanceGraph a ipo:InstructionalWidget ; rdfs:label "steps widget for ProvenanceGraph"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#ProvenanceGraph> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#ProvenanceGraph> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
+pg:w_Practice a ipo:InstructionalWidget ; rdfs:label "map widget for Practice"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#Practice> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#Practice> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: overview card opens its sub-subject" ; wp:designTestPassed true .
+pg:w_InteractiveDemo a ipo:InstructionalWidget ; rdfs:label "map widget for InteractiveDemo"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#InteractiveDemo> ;
+    wp:instantiatesPrimitive wp:Primitive_OverviewDetailBrushing ; ds:selectionWarrant "Feature_KCategoryEnumeration: the section enumerates its kinds; choosing one opens its card" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#InteractiveDemo> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: grid shows its 1 concepts" ; wp:designTestPassed true .
+pg:w_BlockchainDemo a ipo:InstructionalWidget ; rdfs:label "steps widget for BlockchainDemo"@en ; ipo:demonstratesSubject <http://example.org/sen0401/ch02#BlockchainDemo> ;
+    wp:instantiatesPrimitive wp:Primitive_GuidedNarrativeWalkthrough ; ds:selectionWarrant "Feature_OrderedArgument: example first, then its explanation" ;
+    wp:demonstratesConcept <http://example.org/sen0401/ch02#BlockchainDemo> ; dcterms:source <http://example.org/sen0401/ch02/document> ;
+    wp:hasDesignTest "Exercised in headless Chromium by 08-tooling/sen0401_page_test_v9_4_2.py: second step revealed" ; wp:designTestPassed true .
