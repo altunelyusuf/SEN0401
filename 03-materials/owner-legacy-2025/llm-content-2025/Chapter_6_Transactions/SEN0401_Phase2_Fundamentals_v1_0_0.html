@@ -1,0 +1,2637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- SEO Optimization: Meta Tags per SEO_Optimization_Ontology -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SEN0401 Blockchain Wallets Course - Istanbul Kültür University. Comprehensive guide to cryptocurrency wallets, HD wallets, BIP standards, MPC, and account abstraction.">
+    <meta name="keywords" content="blockchain, cryptocurrency wallet, HD wallet, BIP-32, BIP-39, BIP-44, Bitcoin, Ethereum, MPC, account abstraction, ERC-4337">
+    <meta name="author" content="Istanbul Kültür University - Computer Engineering Department">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#6366f1">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="SEN0401: Blockchain Wallets - Interactive Course">
+    <meta property="og:description" content="Master cryptocurrency wallet technology from basics to advanced concepts including HD wallets, BIP standards, and modern innovations.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Course",
+        "name": "SEN0401: Special Topics in Software Engineering - Blockchain Wallets",
+        "description": "Comprehensive course on blockchain wallet technology covering HD wallets, BIP standards, security mechanisms, and modern innovations.",
+        "provider": {
+            "@type": "Organization",
+            "name": "Istanbul Kültür University",
+            "department": "Computer Engineering"
+        },
+        "educationalLevel": "Graduate",
+        "teaches": ["Blockchain Technology", "Cryptocurrency Wallets", "Cryptographic Key Management", "BIP Standards"],
+        "hasCourseInstance": {
+            "@type": "CourseInstance",
+            "courseMode": "online",
+            "instructor": {
+                "@type": "Person",
+                "name": "Prof. Dr. Yusuf Uzun"
+            }
+        }
+    }
+    </script>
+    
+    <title>SEN0401: Blockchain Wallets | Istanbul Kültür University</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Prism.js for Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* ============================================
+           CSS VARIABLES - JOYFUL COLOR THEME
+           ============================================ */
+        :root {
+            /* Primary Colors - Vibrant & Joyful */
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --warning-gradient: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            
+            /* Solid Colors */
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --danger: #ef4444;
+            
+            /* Background Colors */
+            --bg-light: #fafbfc;
+            --bg-white: #ffffff;
+            --bg-gradient: linear-gradient(180deg, #fdfbfb 0%, #ebedee 100%);
+            --bg-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            
+            /* Text Colors */
+            --text-dark: #1f2937;
+            --text-medium: #4b5563;
+            --text-light: #9ca3af;
+            --text-white: #ffffff;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
+            
+            /* Border Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+            
+            /* Spacing */
+            --nav-height: 70px;
+            
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+        
+        /* ============================================
+           RESET & BASE STYLES
+           ============================================ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: var(--nav-height);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--text-dark);
+            background: var(--bg-light);
+            overflow-x: hidden;
+        }
+        
+        /* ============================================
+           STICKY NAVIGATION - ALWAYS VISIBLE
+           ============================================ */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+            z-index: 1000;
+            transition: var(--transition-normal);
+        }
+        
+        .navbar.scrolled {
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .navbar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        
+        .navbar-brand .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--primary-gradient);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            list-style: none;
+        }
+        
+        .navbar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            text-decoration: none;
+            color: var(--text-medium);
+            font-weight: 500;
+            font-size: 0.9rem;
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+        }
+        
+        .navbar-menu a:hover,
+        .navbar-menu a.active {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .navbar-menu a i {
+            font-size: 0.85rem;
+        }
+        
+        .nav-cta {
+            background: var(--primary-gradient) !important;
+            color: white !important;
+            padding: 0.6rem 1.25rem !important;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg) !important;
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+        
+        /* ============================================
+           HERO SECTION
+           ============================================ */
+        .hero {
+            min-height: 100vh;
+            background: var(--bg-hero);
+            padding: calc(var(--nav-height) + 4rem) 2rem 4rem;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        
+        /* Animated Background Shapes */
+        .hero-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .hero-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite;
+        }
+        
+        .hero-shape:nth-child(1) {
+            width: 400px;
+            height: 400px;
+            background: #ffffff;
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+        
+        .hero-shape:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            background: #f093fb;
+            bottom: -50px;
+            left: -50px;
+            animation-delay: -5s;
+        }
+        
+        .hero-shape:nth-child(3) {
+            width: 200px;
+            height: 200px;
+            background: #ffffff;
+            top: 50%;
+            left: 30%;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(5deg); }
+            66% { transform: translateY(20px) rotate(-5deg); }
+        }
+        
+        .hero-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-content {
+            color: white;
+        }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            animation: slideInLeft 0.8s ease;
+        }
+        
+        .hero-badge i {
+            color: #fbbf24;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            animation: slideInLeft 0.8s ease 0.1s both;
+        }
+        
+        .hero-title span {
+            background: linear-gradient(90deg, #fbbf24, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            animation: slideInLeft 0.8s ease 0.2s both;
+        }
+        
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            animation: slideInLeft 0.8s ease 0.3s both;
+        }
+        
+        .hero-stat {
+            text-align: center;
+        }
+        
+        .hero-stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            display: block;
+        }
+        
+        .hero-stat-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            animation: slideInLeft 0.8s ease 0.4s both;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            border: none;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: var(--primary-dark);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Hero Visual */
+        .hero-visual {
+            position: relative;
+            animation: slideInRight 1s ease 0.3s both;
+        }
+        
+        .wallet-illustration {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-2xl);
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .wallet-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .wallet-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        
+        .wallet-card-header h4 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+        
+        .wallet-card-header i {
+            font-size: 1.5rem;
+        }
+        
+        .wallet-balance {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .wallet-address {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.7);
+            background: rgba(0,0,0,0.2);
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            word-break: break-all;
+        }
+        
+        .key-derivation-visual {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            color: white;
+        }
+        
+        .key-node {
+            background: rgba(255,255,255,0.1);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-size: 0.75rem;
+            border: 1px dashed rgba(255,255,255,0.3);
+            transition: var(--transition-fast);
+        }
+        
+        .key-node:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+        
+        .key-node i {
+            display: block;
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* ============================================
+           SECTION STYLES
+           ============================================ */
+        .section {
+            padding: 5rem 2rem;
+            position: relative;
+        }
+        
+        .section-alt {
+            background: var(--bg-white);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        
+        .section-title span {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-medium);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        /* ============================================
+           COURSE OVERVIEW SECTION
+           ============================================ */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .overview-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .overview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: var(--transition-normal);
+        }
+        
+        .overview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .overview-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .overview-card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            color: white;
+        }
+        
+        .overview-card:nth-child(1) .overview-card-icon { background: var(--primary-gradient); }
+        .overview-card:nth-child(2) .overview-card-icon { background: var(--success-gradient); }
+        .overview-card:nth-child(3) .overview-card-icon { background: var(--warning-gradient); }
+        .overview-card:nth-child(4) .overview-card-icon { background: var(--secondary-gradient); }
+        .overview-card:nth-child(5) .overview-card-icon { background: var(--info-gradient); }
+        .overview-card:nth-child(6) .overview-card-icon { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
+        
+        .overview-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+        }
+        
+        .overview-card p {
+            color: var(--text-medium);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .overview-card .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 1rem;
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+        
+        .overview-card .card-link:hover {
+            gap: 0.75rem;
+        }
+        
+        /* ============================================
+           LEARNING OBJECTIVES
+           ============================================ */
+        .objectives-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+        
+        .objectives-content h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+        }
+        
+        .objectives-list {
+            list-style: none;
+        }
+        
+        .objectives-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .objectives-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .objective-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            background: var(--success-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+        
+        .objective-text {
+            font-size: 1rem;
+            color: var(--text-medium);
+        }
+        
+        .objective-text strong {
+            color: var(--text-dark);
+        }
+        
+        .objectives-visual {
+            position: relative;
+        }
+        
+        .progress-ring {
+            background: var(--bg-white);
+            border-radius: var(--radius-2xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+        }
+        
+        .progress-ring-circle {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+        }
+        
+        .progress-ring-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle circle {
+            fill: none;
+            stroke-width: 12;
+            stroke-linecap: round;
+        }
+        
+        .progress-ring-circle .bg {
+            stroke: #e5e7eb;
+        }
+        
+        .progress-ring-circle .progress {
+            stroke: url(#progressGradient);
+            stroke-dasharray: 565;
+            stroke-dashoffset: 565;
+            animation: progressAnimation 2s ease forwards;
+        }
+        
+        @keyframes progressAnimation {
+            to { stroke-dashoffset: 56; }
+        }
+        
+        .progress-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .progress-label {
+            font-size: 1rem;
+            color: var(--text-medium);
+        }
+        
+        /* ============================================
+           RESPONSIVE DESIGN
+           ============================================ */
+        @media (max-width: 1024px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .hero-stats {
+                justify-content: center;
+            }
+            
+            .hero-buttons {
+                justify-content: center;
+            }
+            
+            .hero-visual {
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            
+            .objectives-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar-menu {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                right: 0;
+                background: white;
+                flex-direction: column;
+                padding: 1rem;
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-100%);
+                opacity: 0;
+                visibility: hidden;
+                transition: var(--transition-normal);
+            }
+            
+            .navbar-menu.open {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .navbar-menu a {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .mobile-toggle {
+                display: block;
+            }
+            
+            .hero-title {
+                font-size: 2.25rem;
+            }
+            
+            .hero-stats {
+                flex-wrap: wrap;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+        
+        /* ============================================
+           SCROLL PROGRESS INDICATOR
+           ============================================ */
+        .scroll-progress {
+            position: fixed;
+            top: var(--nav-height);
+            left: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            z-index: 999;
+            transition: width 0.1s linear;
+        }
+        
+        /* ============================================
+           BACK TO TOP BUTTON
+           ============================================ */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-normal);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        /* ============================================
+           TOOLTIP STYLES
+           ============================================ */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+        
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-dark);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-fast);
+            z-index: 100;
+        }
+        
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* ============================================
+           ANIMATION UTILITIES
+           ============================================ */
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        .stagger-5 { animation-delay: 0.5s; }
+        .stagger-6 { animation-delay: 0.6s; }
+        
+        /* ============================================
+           INSIGHT BOX
+           ============================================ */
+        .insight-box {
+            display: flex;
+            gap: 1.5rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05));
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .insight-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--warning-gradient);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .insight-content h4 {
+            color: var(--primary);
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .insight-content p {
+            color: var(--text-medium);
+            font-size: 1rem;
+            line-height: 1.7;
+            font-style: italic;
+        }
+        
+        .insight-content cite {
+            display: block;
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            font-style: normal;
+        }
+        
+        /* ============================================
+           CONCEPT GRID & CARDS
+           ============================================ */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .concept-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: var(--transition-normal);
+        }
+        
+        .concept-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .concept-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .concept-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        .concept-level {
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .concept-level.beginner {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+        
+        .concept-level.intermediate {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+        
+        .concept-level.advanced {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+        
+        .concept-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+        }
+        
+        .concept-card > p {
+            color: var(--text-medium);
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+        
+        .concept-list {
+            list-style: none;
+            margin-bottom: 1rem;
+        }
+        
+        .concept-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            color: var(--text-medium);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .concept-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .concept-list li i {
+            color: var(--primary);
+            width: 20px;
+        }
+        
+        .concept-analogy {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            background: rgba(99, 102, 241, 0.05);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            color: var(--text-medium);
+        }
+        
+        .concept-analogy i {
+            color: var(--primary);
+            margin-top: 0.25rem;
+        }
+        
+        /* ============================================
+           CODE BLOCKS
+           ============================================ */
+        .code-block {
+            background: #1e1e2e;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            padding: 0.75rem 1rem;
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+        
+        .code-header i {
+            margin-right: 0.5rem;
+        }
+        
+        .copy-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            transition: var(--transition-fast);
+        }
+        
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        
+        .code-block code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+        }
+        
+        /* ============================================
+           KEY PROPERTIES
+           ============================================ */
+        .key-properties {
+            display: grid;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .property {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed rgba(0,0,0,0.1);
+        }
+        
+        .property-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .property-value {
+            color: var(--text-dark);
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        
+        /* ============================================
+           WARNING & INFO BOXES
+           ============================================ */
+        .warning-box, .info-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid var(--danger);
+            color: #b91c1c;
+        }
+        
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid var(--info);
+            color: #1d4ed8;
+        }
+        
+        /* ============================================
+           DERIVATION FLOW
+           ============================================ */
+        .derivation-flow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: var(--bg-light);
+            border-radius: var(--radius-lg);
+            margin: 1rem 0;
+        }
+        
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .flow-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .flow-step span {
+            font-size: 0.75rem;
+            color: var(--text-medium);
+            text-align: center;
+            max-width: 80px;
+        }
+        
+        .flow-arrow {
+            color: var(--text-light);
+            font-size: 1.25rem;
+        }
+        
+        /* ============================================
+           COMPARISON TABLE
+           ============================================ */
+        .comparison-table-wrapper {
+            overflow-x: auto;
+            margin: 2rem 0;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-white);
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem 1.25rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .comparison-table th {
+            background: var(--bg-light);
+            font-weight: 600;
+            color: var(--text-dark);
+            white-space: nowrap;
+        }
+        
+        .comparison-table th .type-icon {
+            display: inline-flex;
+            width: 30px;
+            height: 30px;
+            border-radius: var(--radius-md);
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+        
+        .type-jbok .type-icon { background: #ef4444; }
+        .type-deterministic .type-icon { background: #f59e0b; }
+        .type-hd .type-icon { background: #10b981; }
+        
+        .comparison-table tbody tr:hover {
+            background: rgba(99, 102, 241, 0.03);
+        }
+        
+        .status-good { color: #059669; }
+        .status-bad { color: #dc2626; }
+        .status-neutral { color: #d97706; }
+        
+        .status-good i, .status-bad i, .status-neutral i {
+            margin-right: 0.5rem;
+        }
+        
+        /* ============================================
+           WALLET TYPE CARDS
+           ============================================ */
+        .wallet-type-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .wallet-type-card.jbok {
+            border-top: 4px solid #ef4444;
+        }
+        
+        .wallet-type-card.hd {
+            border-top: 4px solid #10b981;
+        }
+        
+        .type-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .type-badge.bad {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+        
+        .type-badge.good {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+        
+        .wallet-type-card h4 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+        }
+        
+        .wallet-type-card h4 i {
+            margin-right: 0.5rem;
+            opacity: 0.7;
+        }
+        
+        .wallet-type-card > p {
+            color: var(--text-medium);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .type-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-column h5 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .detail-column ul {
+            list-style: none;
+        }
+        
+        .detail-column li {
+            padding: 0.4rem 0;
+            color: var(--text-medium);
+            font-size: 0.9rem;
+            padding-left: 1.25rem;
+            position: relative;
+        }
+        
+        .detail-column li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+        
+        /* ============================================
+           HD TREE VISUALIZATION
+           ============================================ */
+        .hd-tree-visual {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(99, 102, 241, 0.05));
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            margin-top: 1.5rem;
+        }
+        
+        .hd-tree-visual h5 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .tree-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .tree-node {
+            background: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-fast);
+        }
+        
+        .tree-node:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .tree-node.root {
+            background: var(--primary-gradient);
+            color: white;
+        }
+        
+        .tree-node.purpose { border-left: 3px solid var(--primary); }
+        .tree-node.coin { border-left: 3px solid #f59e0b; }
+        .tree-node.account { border-left: 3px solid #10b981; }
+        .tree-node.address { border-left: 3px solid #3b82f6; }
+        
+        .node-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .tree-level {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            position: relative;
+        }
+        
+        .tree-branch {
+            width: 2px;
+            height: 30px;
+            background: var(--text-light);
+            position: absolute;
+            top: -30px;
+            left: 50%;
+        }
+        
+        /* ============================================
+           INTERACTIVE DEMO
+           ============================================ */
+        .interactive-demo {
+            background: var(--bg-white);
+            border-radius: var(--radius-2xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-xl);
+            border: 2px solid var(--primary);
+            margin-top: 3rem;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .demo-header h3 i {
+            color: var(--primary);
+        }
+        
+        .demo-header p {
+            color: var(--text-medium);
+        }
+        
+        .demo-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            border: none;
+        }
+        
+        .demo-btn.primary {
+            background: var(--primary-gradient);
+            color: white;
+        }
+        
+        .demo-btn.secondary {
+            background: var(--bg-light);
+            color: var(--text-medium);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .demo-output {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .output-step {
+            background: var(--bg-light);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+        }
+        
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--primary-gradient);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        
+        .step-title {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .step-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: white;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            word-break: break-all;
+            color: var(--text-dark);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .step-value .placeholder {
+            color: var(--text-light);
+            font-style: italic;
+        }
+        
+        .step-arrow {
+            text-align: center;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .address-outputs {
+            display: grid;
+            gap: 0.5rem;
+        }
+        
+        .address-type {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: white;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .address-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            min-width: 120px;
+        }
+        
+        .address-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            word-break: break-all;
+        }
+        
+        /* ============================================
+           SUBSECTION STYLES
+           ============================================ */
+        .subsection {
+            margin-top: 3rem;
+        }
+        
+        .subsection-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .subsection-title i {
+            color: var(--primary);
+        }
+        
+        .subsection-intro {
+            color: var(--text-medium);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            max-width: 800px;
+        }
+        
+        @media (max-width: 768px) {
+            .concept-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .type-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .derivation-flow {
+                flex-direction: column;
+            }
+            
+            .flow-arrow {
+                transform: rotate(90deg);
+            }
+            
+            .tree-level {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+    
+    <!-- ====================================
+         STICKY NAVIGATION - ALWAYS VISIBLE
+         ==================================== -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <a href="#" class="navbar-brand">
+                <div class="logo-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <span>SEN0401</span>
+            </a>
+            
+            <ul class="navbar-menu" id="navMenu">
+                <li><a href="#overview"><i class="fas fa-home"></i> Overview</a></li>
+                <li><a href="#fundamentals"><i class="fas fa-cubes"></i> Fundamentals</a></li>
+                <li><a href="#hd-wallets"><i class="fas fa-sitemap"></i> HD Wallets</a></li>
+                <li><a href="#bip-standards"><i class="fas fa-file-code"></i> BIP Standards</a></li>
+                <li><a href="#advanced"><i class="fas fa-rocket"></i> Advanced</a></li>
+                <li><a href="#security"><i class="fas fa-shield-alt"></i> Security</a></li>
+                <li><a href="#quiz" class="nav-cta"><i class="fas fa-question-circle"></i> Quiz</a></li>
+            </ul>
+            
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- ====================================
+         HERO SECTION
+         ==================================== -->
+    <section class="hero" id="hero">
+        <div class="hero-shapes">
+            <div class="hero-shape"></div>
+            <div class="hero-shape"></div>
+            <div class="hero-shape"></div>
+        </div>
+        
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-star"></i>
+                    Istanbul Kültür University • Computer Engineering
+                </div>
+                
+                <h1 class="hero-title">
+                    SEN0401: <span>Blockchain Wallets</span>
+                </h1>
+                
+                <p class="hero-subtitle">
+                    Master cryptocurrency wallet technology from foundational concepts to cutting-edge innovations. 
+                    Explore HD wallets, BIP standards, MPC, smart contract wallets, and account abstraction.
+                </p>
+                
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">12+</span>
+                        <span class="hero-stat-label">Modules</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">50+</span>
+                        <span class="hero-stat-label">Concepts</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">25+</span>
+                        <span class="hero-stat-label">Interactive Examples</span>
+                    </div>
+                </div>
+                
+                <div class="hero-buttons">
+                    <a href="#overview" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Learning
+                    </a>
+                    <a href="#quiz" class="btn btn-secondary">
+                        <i class="fas fa-question-circle"></i> Take Quiz
+                    </a>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <div class="wallet-illustration">
+                    <div class="wallet-card">
+                        <div class="wallet-card-header">
+                            <h4>HD Wallet</h4>
+                            <i class="fab fa-bitcoin"></i>
+                        </div>
+                        <div class="wallet-balance">1.2345 BTC</div>
+                        <div class="wallet-address">bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq</div>
+                    </div>
+                    
+                    <div class="key-derivation-visual">
+                        <div class="key-node">
+                            <i class="fas fa-key"></i>
+                            Master Seed
+                        </div>
+                        <div class="key-node">
+                            <i class="fas fa-code-branch"></i>
+                            m/44'/0'/0'
+                        </div>
+                        <div class="key-node">
+                            <i class="fas fa-qrcode"></i>
+                            Address
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- ====================================
+         COURSE OVERVIEW SECTION
+         ==================================== -->
+    <section class="section" id="overview">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">
+                    <i class="fas fa-book-open"></i> Course Overview
+                </span>
+                <h2 class="section-title">What You'll <span>Learn</span></h2>
+                <p class="section-subtitle">
+                    A comprehensive journey through blockchain wallet technology, from basic concepts to advanced implementations based on Antonopoulos (2017) and modern innovations.
+                </p>
+            </div>
+            
+            <div class="overview-grid">
+                <div class="overview-card fade-in stagger-1">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3>Wallet Fundamentals</h3>
+                    <p>Understand what wallets really are: containers for cryptographic keys, not coins. Learn about key pairs, addresses, and the fundamental architecture.</p>
+                    <a href="#fundamentals" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="overview-card fade-in stagger-2">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <h3>HD Wallet Architecture</h3>
+                    <p>Master Hierarchical Deterministic wallets - derive unlimited keys from a single seed. Understand key derivation, chain codes, and tree structures.</p>
+                    <a href="#hd-wallets" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="overview-card fade-in stagger-3">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-file-code"></i>
+                    </div>
+                    <h3>BIP Standards</h3>
+                    <p>Deep dive into Bitcoin Improvement Proposals: BIP-32, BIP-39, BIP-44, BIP-49, BIP-84, and BIP-86. Learn derivation paths and mnemonic codes.</p>
+                    <a href="#bip-standards" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="overview-card fade-in stagger-4">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h3>MPC Wallets</h3>
+                    <p>Explore Multi-Party Computation: threshold signatures, FROST protocol, and how institutions secure billions in digital assets without single points of failure.</p>
+                    <a href="#mpc-wallets" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="overview-card fade-in stagger-5">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h3>Smart Contract Wallets</h3>
+                    <p>Understand ERC-4337 account abstraction, EIP-7702, paymasters, and how programmable wallets are revolutionizing user experience.</p>
+                    <a href="#smart-wallets" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="overview-card fade-in stagger-6">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Security & Recovery</h3>
+                    <p>Learn about hardware wallets, secure elements, social recovery, guardian systems, and best practices for protecting digital assets.</p>
+                    <a href="#security" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- ====================================
+         LEARNING OBJECTIVES SECTION
+         ==================================== -->
+    <section class="section section-alt" id="objectives">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">
+                    <i class="fas fa-bullseye"></i> Learning Objectives
+                </span>
+                <h2 class="section-title">Course <span>Goals</span></h2>
+                <p class="section-subtitle">
+                    By the end of this course, you will have mastered all aspects of blockchain wallet technology.
+                </p>
+            </div>
+            
+            <div class="objectives-container">
+                <div class="objectives-content">
+                    <h3>After completing this course, you will be able to:</h3>
+                    <ul class="objectives-list">
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Explain</strong> why wallets contain keys, not coins, and describe the relationship between private keys, public keys, and addresses.</span>
+                        </li>
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Compare</strong> nondeterministic (JBOK) wallets with deterministic and HD wallets, articulating the advantages of each.</span>
+                        </li>
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Implement</strong> BIP-32 key derivation and understand the mathematical foundations of HD wallets.</span>
+                        </li>
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Generate</strong> and validate BIP-39 mnemonic phrases with proper entropy and checksum verification.</span>
+                        </li>
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Navigate</strong> BIP-44/49/84/86 derivation paths and understand their purpose for different address types.</span>
+                        </li>
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Analyze</strong> MPC protocols, threshold signatures, and ERC-4337 account abstraction architectures.</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="objectives-visual">
+                    <div class="progress-ring">
+                        <div class="progress-ring-circle">
+                            <svg viewBox="0 0 200 200">
+                                <defs>
+                                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#667eea" />
+                                        <stop offset="100%" stop-color="#764ba2" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="bg" cx="100" cy="100" r="90" />
+                                <circle class="progress" cx="100" cy="100" r="90" />
+                            </svg>
+                            <span class="progress-value">90%</span>
+                        </div>
+                        <p class="progress-label">Target Competency Level</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- ====================================
+         SECTION: WALLET FUNDAMENTALS
+         ==================================== -->
+    <section class="section" id="fundamentals">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">
+                    <i class="fas fa-graduation-cap"></i> Module 1
+                </span>
+                <h2 class="section-title">Wallet <span>Fundamentals</span></h2>
+                <p class="section-subtitle">
+                    Understanding the true nature of cryptocurrency wallets - they contain keys, not coins.
+                </p>
+            </div>
+            
+            <!-- Key Insight Box -->
+            <div class="insight-box">
+                <div class="insight-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="insight-content">
+                    <h4>Key Insight</h4>
+                    <p>"A common misconception about bitcoin is that bitcoin wallets contain bitcoin. In fact, the wallet contains only keys. The 'coins' are recorded on the blockchain. Users control the coins on the network by signing transactions with the keys in their wallets."</p>
+                    <cite>— Andreas M. Antonopoulos, Mastering Bitcoin (2017)</cite>
+                </div>
+            </div>
+            
+            <!-- Concept Cards Grid -->
+            <div class="concept-grid">
+                <!-- What is a Wallet -->
+                <div class="concept-card" id="wallet-definition">
+                    <div class="concept-header">
+                        <div class="concept-icon" style="background: var(--primary-gradient);">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="concept-level beginner">Beginner</div>
+                    </div>
+                    <h3>What is a Wallet?</h3>
+                    <p>A blockchain wallet is a <strong>software application or hardware device</strong> that serves as the primary user interface to a blockchain network. It manages:</p>
+                    <ul class="concept-list">
+                        <li><i class="fas fa-key"></i> <strong>Private Keys</strong> - Secret numbers that authorize spending</li>
+                        <li><i class="fas fa-unlock"></i> <strong>Public Keys</strong> - Derived from private keys, used for verification</li>
+                        <li><i class="fas fa-qrcode"></i> <strong>Addresses</strong> - Derived from public keys, shared with others to receive funds</li>
+                        <li><i class="fas fa-file-signature"></i> <strong>Transaction Signing</strong> - Creating valid blockchain transactions</li>
+                    </ul>
+                    <div class="concept-analogy">
+                        <i class="fas fa-key"></i>
+                        <span><strong>Analogy:</strong> A wallet is like a keychain - it holds the keys to your coins, not the coins themselves. The coins remain on the blockchain (like money in a bank vault), and your keys prove you own them.</span>
+                    </div>
+                </div>
+                
+                <!-- Private Keys -->
+                <div class="concept-card" id="private-keys">
+                    <div class="concept-header">
+                        <div class="concept-icon" style="background: var(--danger); background: linear-gradient(135deg, #ef4444, #dc2626);">
+                            <i class="fas fa-user-secret"></i>
+                        </div>
+                        <div class="concept-level intermediate">Intermediate</div>
+                    </div>
+                    <h3>Private Keys</h3>
+                    <p>A private key is a <strong>256-bit random number</strong> that must be kept secret. It's the foundation of cryptocurrency ownership.</p>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span><i class="fas fa-code"></i> Example Private Key (Hex)</span>
+                            <button class="copy-btn" onclick="copyCode(this)"><i class="far fa-copy"></i></button>
+                        </div>
+                        <pre><code class="language-plaintext">e9873d79c6d87dc0fb6a5778633389f4453213303da61f20bd67fc233aa33262</code></pre>
+                    </div>
+                    
+                    <div class="key-properties">
+                        <div class="property">
+                            <span class="property-label">Size:</span>
+                            <span class="property-value">256 bits (32 bytes)</span>
+                        </div>
+                        <div class="property">
+                            <span class="property-label">Range:</span>
+                            <span class="property-value">1 to n-1 (where n = secp256k1 order)</span>
+                        </div>
+                        <div class="property">
+                            <span class="property-label">Possible Keys:</span>
+                            <span class="property-value">~2<sup>256</sup> ≈ 10<sup>77</sup></span>
+                        </div>
+                    </div>
+                    
+                    <div class="warning-box">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span><strong>Critical:</strong> Anyone who obtains your private key can spend your funds. Never share it!</span>
+                    </div>
+                </div>
+                
+                <!-- Public Keys -->
+                <div class="concept-card" id="public-keys">
+                    <div class="concept-header">
+                        <div class="concept-icon" style="background: var(--success-gradient);">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div class="concept-level intermediate">Intermediate</div>
+                    </div>
+                    <h3>Public Keys & Addresses</h3>
+                    <p>Public keys are derived from private keys using <strong>Elliptic Curve Cryptography (ECC)</strong> on the secp256k1 curve.</p>
+                    
+                    <div class="derivation-flow">
+                        <div class="flow-step">
+                            <div class="flow-icon" style="background: #ef4444;"><i class="fas fa-key"></i></div>
+                            <span>Private Key</span>
+                        </div>
+                        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                        <div class="flow-step">
+                            <div class="flow-icon" style="background: #10b981;"><i class="fas fa-calculator"></i></div>
+                            <span>ECDSA (K = k × G)</span>
+                        </div>
+                        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                        <div class="flow-step">
+                            <div class="flow-icon" style="background: #3b82f6;"><i class="fas fa-unlock"></i></div>
+                            <span>Public Key</span>
+                        </div>
+                        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                        <div class="flow-step">
+                            <div class="flow-icon" style="background: #8b5cf6;"><i class="fas fa-hashtag"></i></div>
+                            <span>SHA256 + RIPEMD160</span>
+                        </div>
+                        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                        <div class="flow-step">
+                            <div class="flow-icon" style="background: #f59e0b;"><i class="fas fa-qrcode"></i></div>
+                            <span>Address</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i>
+                        <span>This derivation is <strong>one-way</strong>: you cannot reverse-engineer a private key from a public key or address.</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Wallet Types Section -->
+            <div class="subsection" id="wallet-types">
+                <h3 class="subsection-title">
+                    <i class="fas fa-th-large"></i> Wallet Type Taxonomy
+                </h3>
+                
+                <p class="subsection-intro">
+                    Wallets can be classified by their key generation method. This is the most important distinction affecting backup, security, and usability.
+                </p>
+                
+                <!-- Wallet Comparison Table -->
+                <div class="comparison-table-wrapper">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th class="type-jbok">
+                                    <div class="type-icon"><i class="fas fa-random"></i></div>
+                                    Nondeterministic (JBOK)
+                                </th>
+                                <th class="type-deterministic">
+                                    <div class="type-icon"><i class="fas fa-seedling"></i></div>
+                                    Deterministic
+                                </th>
+                                <th class="type-hd">
+                                    <div class="type-icon"><i class="fas fa-sitemap"></i></div>
+                                    HD (Hierarchical)
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Key Generation</strong></td>
+                                <td>Random, independent keys</td>
+                                <td>Single seed → sequential derivation</td>
+                                <td>Single seed → tree structure</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Backup Complexity</strong></td>
+                                <td class="status-bad"><i class="fas fa-times-circle"></i> Each key separately</td>
+                                <td class="status-good"><i class="fas fa-check-circle"></i> Single seed backup</td>
+                                <td class="status-good"><i class="fas fa-check-circle"></i> Single seed backup</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Key Relationship</strong></td>
+                                <td>No mathematical link</td>
+                                <td>Sequential relationship</td>
+                                <td>Hierarchical tree paths</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Standard</strong></td>
+                                <td>Pre-BIP era</td>
+                                <td>Early Bitcoin</td>
+                                <td>BIP-32, BIP-39, BIP-44</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Example Wallets</strong></td>
+                                <td>Early Bitcoin Core</td>
+                                <td>Type-1 wallets</td>
+                                <td>Electrum, Ledger, Trezor</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Recommendation</strong></td>
+                                <td class="status-bad"><i class="fas fa-ban"></i> Discouraged</td>
+                                <td class="status-neutral"><i class="fas fa-minus-circle"></i> Outdated</td>
+                                <td class="status-good"><i class="fas fa-star"></i> Recommended</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- JBOK Wallet Details -->
+                <div class="wallet-type-card jbok">
+                    <div class="type-badge bad">Type-0 • Discouraged</div>
+                    <h4><i class="fas fa-random"></i> Nondeterministic (JBOK) Wallets</h4>
+                    <p><strong>"Just a Bunch Of Keys"</strong> - Each private key is generated independently from a random number with no mathematical relationship between keys.</p>
+                    
+                    <div class="type-details">
+                        <div class="detail-column">
+                            <h5><i class="fas fa-exclamation-circle"></i> Problems</h5>
+                            <ul>
+                                <li>Must backup every key individually</li>
+                                <li>Pool exhaustion requires fresh backups</li>
+                                <li>Cumbersome for frequent address generation</li>
+                                <li>High risk of lost funds due to backup failure</li>
+                            </ul>
+                        </div>
+                        <div class="detail-column">
+                            <h5><i class="fas fa-history"></i> Historical Context</h5>
+                            <ul>
+                                <li>Used by original Bitcoin Core client</li>
+                                <li>Pre-generated pools of ~100 keys</li>
+                                <li>Required backup after pool exhaustion</li>
+                                <li>Superseded by BIP-32 HD wallets</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span><i class="fas fa-code"></i> JBOK Key Generation (Pseudocode)</span>
+                        </div>
+                        <pre><code class="language-javascript">// Each key is completely independent
+function generateJBOKWallet(numKeys) {
+    const wallet = { keys: [] };
+    
+    for (let i = 0; i < numKeys; i++) {
+        // Generate random 256-bit number
+        const privateKey = crypto.randomBytes(32);
+        
+        // Derive public key using secp256k1
+        const publicKey = secp256k1.getPublicKey(privateKey);
+        
+        // Generate address
+        const address = hash160(publicKey);
+        
+        wallet.keys.push({ privateKey, publicKey, address });
+        // ⚠️ Each key must be backed up separately!
+    }
+    
+    return wallet;
+}</code></pre>
+                    </div>
+                </div>
+                
+                <!-- HD Wallet Details -->
+                <div class="wallet-type-card hd">
+                    <div class="type-badge good">Type-2 • Recommended</div>
+                    <h4><i class="fas fa-sitemap"></i> Hierarchical Deterministic (HD) Wallets</h4>
+                    <p>HD wallets derive all keys from a single <strong>master seed</strong> using a tree structure. A single backup protects all current and future keys.</p>
+                    
+                    <div class="type-details">
+                        <div class="detail-column">
+                            <h5><i class="fas fa-check-circle"></i> Advantages</h5>
+                            <ul>
+                                <li>Single seed backup for unlimited keys</li>
+                                <li>Organized tree structure (accounts, chains)</li>
+                                <li>Can share branch public keys safely</li>
+                                <li>Standardized across wallets (BIP-32/44)</li>
+                            </ul>
+                        </div>
+                        <div class="detail-column">
+                            <h5><i class="fas fa-cog"></i> Key Features</h5>
+                            <ul>
+                                <li>Deterministic derivation path</li>
+                                <li>Hardened vs. normal child keys</li>
+                                <li>Extended public keys (xpub)</li>
+                                <li>Industry standard since 2012</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- HD Wallet Tree Visualization -->
+                    <div class="hd-tree-visual">
+                        <h5><i class="fas fa-project-diagram"></i> HD Wallet Tree Structure</h5>
+                        <div class="tree-container">
+                            <div class="tree-node root">
+                                <div class="node-content">
+                                    <i class="fas fa-seedling"></i>
+                                    <span>Master Seed</span>
+                                </div>
+                            </div>
+                            <div class="tree-level">
+                                <div class="tree-branch"></div>
+                                <div class="tree-node purpose">
+                                    <div class="node-content">
+                                        <i class="fas fa-bullseye"></i>
+                                        <span>m/44' (Purpose)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tree-level">
+                                <div class="tree-branch"></div>
+                                <div class="tree-node coin">
+                                    <div class="node-content">
+                                        <i class="fab fa-bitcoin"></i>
+                                        <span>m/44'/0' (Bitcoin)</span>
+                                    </div>
+                                </div>
+                                <div class="tree-node coin">
+                                    <div class="node-content">
+                                        <i class="fab fa-ethereum"></i>
+                                        <span>m/44'/60' (Ethereum)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tree-level">
+                                <div class="tree-branch"></div>
+                                <div class="tree-node account">
+                                    <div class="node-content">
+                                        <i class="fas fa-user"></i>
+                                        <span>Account 0</span>
+                                    </div>
+                                </div>
+                                <div class="tree-node account">
+                                    <div class="node-content">
+                                        <i class="fas fa-user"></i>
+                                        <span>Account 1</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tree-level final">
+                                <div class="tree-branch"></div>
+                                <div class="tree-node address external">
+                                    <div class="node-content">
+                                        <i class="fas fa-arrow-down"></i>
+                                        <span>External (Receiving)</span>
+                                    </div>
+                                </div>
+                                <div class="tree-node address internal">
+                                    <div class="node-content">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span>Internal (Change)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Interactive Demo: Key Generation -->
+            <div class="interactive-demo" id="demo-key-generation">
+                <div class="demo-header">
+                    <h3><i class="fas fa-flask"></i> Interactive Demo: Key Generation</h3>
+                    <p>See how private keys, public keys, and addresses are derived in real-time.</p>
+                </div>
+                
+                <div class="demo-container">
+                    <div class="demo-controls">
+                        <button class="demo-btn primary" onclick="generateNewKey()">
+                            <i class="fas fa-dice"></i> Generate Random Key
+                        </button>
+                        <button class="demo-btn secondary" onclick="resetDemo()">
+                            <i class="fas fa-redo"></i> Reset
+                        </button>
+                    </div>
+                    
+                    <div class="demo-output">
+                        <div class="output-step" id="step-private">
+                            <div class="step-header">
+                                <span class="step-number">1</span>
+                                <span class="step-title">Private Key (256-bit hex)</span>
+                            </div>
+                            <div class="step-value" id="privateKeyOutput">
+                                <span class="placeholder">Click "Generate Random Key" to start</span>
+                            </div>
+                        </div>
+                        
+                        <div class="step-arrow"><i class="fas fa-arrow-down"></i> secp256k1 × G</div>
+                        
+                        <div class="output-step" id="step-public">
+                            <div class="step-header">
+                                <span class="step-number">2</span>
+                                <span class="step-title">Public Key (Compressed, 33 bytes)</span>
+                            </div>
+                            <div class="step-value" id="publicKeyOutput">
+                                <span class="placeholder">—</span>
+                            </div>
+                        </div>
+                        
+                        <div class="step-arrow"><i class="fas fa-arrow-down"></i> SHA256 → RIPEMD160</div>
+                        
+                        <div class="output-step" id="step-hash">
+                            <div class="step-header">
+                                <span class="step-number">3</span>
+                                <span class="step-title">Public Key Hash (20 bytes)</span>
+                            </div>
+                            <div class="step-value" id="hashOutput">
+                                <span class="placeholder">—</span>
+                            </div>
+                        </div>
+                        
+                        <div class="step-arrow"><i class="fas fa-arrow-down"></i> Base58Check / Bech32</div>
+                        
+                        <div class="output-step" id="step-address">
+                            <div class="step-header">
+                                <span class="step-number">4</span>
+                                <span class="step-title">Bitcoin Addresses</span>
+                            </div>
+                            <div class="address-outputs">
+                                <div class="address-type">
+                                    <span class="address-label">Legacy (P2PKH):</span>
+                                    <span class="address-value" id="legacyAddress">—</span>
+                                </div>
+                                <div class="address-type">
+                                    <span class="address-label">SegWit (P2WPKH):</span>
+                                    <span class="address-value" id="segwitAddress">—</span>
+                                </div>
+                                <div class="address-type">
+                                    <span class="address-label">Taproot (P2TR):</span>
+                                    <span class="address-value" id="taprootAddress">—</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+    
+    <!-- ====================================
+         SCRIPTS
+         ==================================== -->
+    <script>
+        // ========================================
+        // NAVIGATION FUNCTIONALITY
+        // ========================================
+        const navbar = document.getElementById('navbar');
+        const mobileToggle = document.getElementById('mobileToggle');
+        const navMenu = document.getElementById('navMenu');
+        const scrollProgress = document.getElementById('scrollProgress');
+        const backToTop = document.getElementById('backToTop');
+        
+        // Scroll handler for navbar styling and progress
+        window.addEventListener('scroll', () => {
+            // Navbar shadow on scroll
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            
+            // Scroll progress bar
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / docHeight) * 100;
+            scrollProgress.style.width = progress + '%';
+            
+            // Back to top button visibility
+            if (window.scrollY > 500) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+        
+        // Mobile menu toggle
+        mobileToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('open');
+            const icon = mobileToggle.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+        
+        // Close mobile menu on link click
+        document.querySelectorAll('.navbar-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('open');
+                const icon = mobileToggle.querySelector('i');
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-times');
+            });
+        });
+        
+        // Back to top functionality
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // Active nav link on scroll
+        const sections = document.querySelectorAll('section[id]');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            document.querySelectorAll('.navbar-menu a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+        
+        // ========================================
+        // INTERSECTION OBSERVER FOR ANIMATIONS
+        // ========================================
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.overview-card, .concept-card').forEach(card => {
+            observer.observe(card);
+        });
+        
+        console.log('SEN0401 Blockchain Wallets Course - Phase 1 Loaded Successfully');
+        
+        // ========================================
+        // INTERACTIVE KEY GENERATION DEMO
+        // ========================================
+        
+        // Simple hash functions for demonstration (not production!)
+        function simpleHash(input, length = 64) {
+            let hash = 0;
+            for (let i = 0; i < input.length; i++) {
+                const char = input.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            // Convert to hex and pad
+            let result = '';
+            const seed = Math.abs(hash);
+            for (let i = 0; i < length; i++) {
+                result += '0123456789abcdef'[Math.floor((seed * (i + 1) * 17) % 16)];
+            }
+            return result;
+        }
+        
+        function generateRandomHex(length) {
+            const chars = '0123456789abcdef';
+            let result = '';
+            const array = new Uint8Array(length / 2);
+            crypto.getRandomValues(array);
+            for (let i = 0; i < array.length; i++) {
+                result += chars[array[i] >> 4] + chars[array[i] & 0x0f];
+            }
+            return result;
+        }
+        
+        function generateNewKey() {
+            // Animate the process
+            const steps = ['step-private', 'step-public', 'step-hash', 'step-address'];
+            steps.forEach(step => {
+                document.getElementById(step).style.opacity = '0.5';
+            });
+            
+            // Step 1: Generate Private Key
+            setTimeout(() => {
+                const privateKey = generateRandomHex(64);
+                document.getElementById('privateKeyOutput').innerHTML = 
+                    `<span style="color: #ef4444;">${privateKey}</span>`;
+                document.getElementById('step-private').style.opacity = '1';
+                
+                // Step 2: "Derive" Public Key (simulated)
+                setTimeout(() => {
+                    const pubKeyPrefix = Math.random() > 0.5 ? '02' : '03';
+                    const publicKey = pubKeyPrefix + simpleHash(privateKey, 64);
+                    document.getElementById('publicKeyOutput').innerHTML = 
+                        `<span style="color: #10b981;">${publicKey}</span>`;
+                    document.getElementById('step-public').style.opacity = '1';
+                    
+                    // Step 3: Hash (simulated)
+                    setTimeout(() => {
+                        const hash160 = simpleHash(publicKey, 40);
+                        document.getElementById('hashOutput').innerHTML = 
+                            `<span style="color: #3b82f6;">${hash160}</span>`;
+                        document.getElementById('step-hash').style.opacity = '1';
+                        
+                        // Step 4: Generate Addresses (simulated)
+                        setTimeout(() => {
+                            const legacyChars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+                            let legacy = '1';
+                            for (let i = 0; i < 33; i++) {
+                                legacy += legacyChars[Math.floor(Math.random() * legacyChars.length)];
+                            }
+                            
+                            const segwitChars = '023456789acdefghjklmnpqrstuvwxyz';
+                            let segwit = 'bc1q';
+                            for (let i = 0; i < 38; i++) {
+                                segwit += segwitChars[Math.floor(Math.random() * segwitChars.length)];
+                            }
+                            
+                            let taproot = 'bc1p';
+                            for (let i = 0; i < 58; i++) {
+                                taproot += segwitChars[Math.floor(Math.random() * segwitChars.length)];
+                            }
+                            
+                            document.getElementById('legacyAddress').textContent = legacy;
+                            document.getElementById('segwitAddress').textContent = segwit;
+                            document.getElementById('taprootAddress').textContent = taproot;
+                            document.getElementById('step-address').style.opacity = '1';
+                            
+                        }, 400);
+                    }, 400);
+                }, 400);
+            }, 200);
+        }
+        
+        function resetDemo() {
+            document.getElementById('privateKeyOutput').innerHTML = '<span class="placeholder">Click "Generate Random Key" to start</span>';
+            document.getElementById('publicKeyOutput').innerHTML = '<span class="placeholder">—</span>';
+            document.getElementById('hashOutput').innerHTML = '<span class="placeholder">—</span>';
+            document.getElementById('legacyAddress').textContent = '—';
+            document.getElementById('segwitAddress').textContent = '—';
+            document.getElementById('taprootAddress').textContent = '—';
+        }
+        
+        // Copy to clipboard function
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block');
+            const code = codeBlock.querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    button.innerHTML = '<i class="far fa-copy"></i>';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

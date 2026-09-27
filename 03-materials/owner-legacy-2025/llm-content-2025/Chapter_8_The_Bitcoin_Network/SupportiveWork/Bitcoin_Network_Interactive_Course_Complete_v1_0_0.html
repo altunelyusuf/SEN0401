@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 8: Bitcoin Network | SEN0401 Blockchain Course</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #FF6B6B; --secondary: #4ECDC4; --accent: #FFD93D;
+            --success: #6BCF7F; --info: #5DADE2; --warning: #F39C12;
+            --bg-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: #FFF; --text-dark: #2C3E50; --text-light: #7F8C8D;
+            --nav-height: 70px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8; color: var(--text-dark);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .sticky-nav {
+            position: fixed; top: 0; left: 0; right: 0; height: var(--nav-height);
+            background: var(--bg-grad); box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .nav-container {
+            max-width: 1400px; margin: 0 auto; padding: 0 30px; height: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav-logo {
+            font-size: 24px; font-weight: 700; color: white;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .nav-logo i { font-size: 28px; color: var(--accent); }
+        .nav-menu { display: flex; gap: 5px; list-style: none; }
+        .nav-menu a {
+            color: white; text-decoration: none; padding: 8px 16px;
+            border-radius: 8px; transition: all 0.3s; font-weight: 500; font-size: 14px;
+        }
+        .nav-menu a:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 25px; cursor: pointer;
+            font-weight: 600; transition: all 0.3s; display: inline-flex;
+            align-items: center; gap: 8px;
+        }
+        .btn-primary { background: var(--accent); color: var(--text-dark); }
+        .btn-quiz { background: var(--primary); color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .hero {
+            margin-top: var(--nav-height); padding: 100px 30px;
+            background: var(--bg-grad); text-align: center; color: white;
+            position: relative; overflow: hidden;
+        }
+        .hero::before, .hero::after {
+            content: ''; position: absolute; background: rgba(255,255,255,0.1);
+            border-radius: 50%; animation: float 6s ease-in-out infinite;
+        }
+        .hero::before { width: 500px; height: 500px; top: -200px; right: -200px; }
+        .hero::after { width: 400px; height: 400px; bottom: -150px; left: -150px; animation-duration: 8s; animation-direction: reverse; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .hero h1 { font-size: 56px; margin-bottom: 20px; z-index: 1; position: relative; }
+        .hero-subtitle { font-size: 24px; margin-bottom: 15px; opacity: 0.95; }
+        .hero-meta { font-size: 16px; opacity: 0.9; margin-bottom: 40px; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 60px 30px; }
+        .content-section {
+            background: var(--card-bg); border-radius: 20px; padding: 50px;
+            margin-bottom: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+        .content-section:hover { box-shadow: 0 15px 50px rgba(0,0,0,0.12); transform: translateY(-5px); }
+        .section-header {
+            display: flex; align-items: center; gap: 15px; margin-bottom: 30px;
+            padding-bottom: 20px; border-bottom: 3px solid var(--secondary);
+        }
+        .section-number {
+            width: 50px; height: 50px; background: var(--bg-grad); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 24px;
+        }
+        .section-title { font-size: 32px; color: var(--text-dark); font-weight: 700; }
+        .subsection { margin: 30px 0; }
+        .subsection h3 {
+            font-size: 24px; color: var(--primary); margin-bottom: 15px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .subsection p { margin-bottom: 15px; text-align: justify; }
+        .key-concepts {
+            background: linear-gradient(135deg, #667eea22 0%, #764ba222 100%);
+            border-left: 5px solid var(--secondary); padding: 25px;
+            border-radius: 12px; margin: 25px 0;
+        }
+        .key-concepts h4 {
+            color: var(--primary); margin-bottom: 15px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .key-concepts ul { list-style: none; padding-left: 0; }
+        .key-concepts li { padding: 8px 0 8px 30px; position: relative; }
+        .key-concepts li::before {
+            content: '✓'; position: absolute; left: 0;
+            color: var(--success); font-weight: 700; font-size: 18px;
+        }
+        .code-demo {
+            margin: 30px 0; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .code-header {
+            background: var(--text-dark); color: white; padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .run-code-btn {
+            background: var(--success); color: white; border: none;
+            padding: 8px 20px; border-radius: 6px; cursor: pointer;
+            font-weight: 600; transition: all 0.3s;
+        }
+        .run-code-btn:hover { background: #5FD879; transform: scale(1.05); }
+        .code-output {
+            background: #1e1e1e; color: #d4d4d4; padding: 20px;
+            font-family: 'Courier New', monospace; min-height: 100px;
+            max-height: 400px; overflow-y: auto;
+        }
+        pre { background: #282c34; color: #abb2bf; padding: 20px; border-radius: 8px; overflow-x: auto; }
+        .quiz-container {
+            background: linear-gradient(135deg, #FF6B6B22 0%, #4ECDC422 100%);
+            border-radius: 20px; padding: 40px; margin: 40px 0;
+        }
+        .quiz-header { text-align: center; margin-bottom: 30px; }
+        .quiz-header h3 { font-size: 28px; color: var(--primary); margin-bottom: 10px; }
+        .quiz-question {
+            background: white; padding: 30px; border-radius: 12px;
+            margin-bottom: 20px; box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+        .question-text { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+        .quiz-options { display: grid; gap: 12px; }
+        .quiz-option {
+            padding: 15px 20px; border: 2px solid #e0e0e0; border-radius: 10px;
+            cursor: pointer; transition: all 0.3s; background: white;
+        }
+        .quiz-option:hover {
+            border-color: var(--secondary); background: var(--secondary);
+            color: white; transform: translateX(5px);
+        }
+        .quiz-option.correct { border-color: var(--success); background: var(--success); color: white; }
+        .quiz-option.incorrect { border-color: var(--primary); background: var(--primary); color: white; }
+        .quiz-feedback {
+            margin-top: 20px; padding: 20px; border-radius: 10px;
+            font-weight: 600; display: none;
+        }
+        .quiz-feedback.show { display: block; }
+        .quiz-feedback.correct { background: var(--success); color: white; }
+        .quiz-feedback.incorrect { background: var(--warning); color: white; }
+        .visualization {
+            background: white; padding: 30px; border-radius: 12px;
+            margin: 30px 0; box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .viz-title {
+            font-size: 20px; font-weight: 600; margin-bottom: 20px;
+            text-align: center;
+        }
+        table {
+            width: 100%; border-collapse: collapse; margin: 25px 0;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden;
+        }
+        thead { background: var(--bg-grad); color: white; }
+        th, td { padding: 15px; text-align: left; }
+        tbody tr { border-bottom: 1px solid #e0e0e0; transition: background 0.3s; }
+        tbody tr:hover { background: #f5f7fa; }
+        .footer { background: var(--text-dark); color: white; padding: 40px 30px; text-align: center; }
+        .progress-tracker {
+            position: fixed; bottom: 30px; right: 30px; background: white;
+            padding: 20px; border-radius: 50%; box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 999; width: 80px; height: 80px; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        .progress-percent { font-size: 18px; font-weight: 700; color: var(--primary); }
+        .progress-label { font-size: 10px; color: var(--text-light); }
+        @media (max-width: 768px) {
+            .nav-menu { display: none; }
+            .hero h1 { font-size: 36px; }
+            .content-section { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="sticky-nav">
+        <div class="nav-container">
+            <div class="nav-logo"><i class="fas fa-network-wired"></i><span>Bitcoin Network</span></div>
+            <ul class="nav-menu">
+                <li><a href="#intro">Intro</a></li>
+                <li><a href="#philosophy">Philosophy</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#nodes">Nodes</a></li>
+                <li><a href="#protocols">Protocols</a></li>
+                <li><a href="#security">Security</a></li>
+                <li><a href="#quiz">Quiz</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn btn-quiz" onclick="document.getElementById('quiz').scrollIntoView({behavior:'smooth'})">
+                    <i class="fas fa-graduation-cap"></i> Quiz
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div style="position:relative; z-index:1; max-width:900px; margin:0 auto;">
+            <h1><i class="fas fa-satellite-dish"></i> The Bitcoin Network</h1>
+            <div class="hero-subtitle">Chapter 8: Peer-to-Peer Architecture</div>
+            <div class="hero-meta">
+                SEN0401: Blockchain | Istanbul Kültür University | <i class="fas fa-clock"></i> 90 min
+            </div>
+            <button class="btn btn-primary" onclick="document.getElementById('intro').scrollIntoView({behavior:'smooth'})">
+                <i class="fas fa-book-reader"></i> Start Learning
+            </button>
+        </div>
+    </section>
+
+    <div class="container">
+        <section id="intro" class="content-section">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2 class="section-title">Introduction</h2>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-rocket"></i> Bitcoin as Decentralized System</h3>
+                <p>Bitcoin, introduced via Satoshi Nakamoto's 2008 whitepaper, fundamentally transformed digital currencies by proving electronic cash could function without centralized authority. The Bitcoin network provides infrastructure for discovering, propagating, validating, and recording transactions across thousands of independent global participants.</p>
+                <div class="key-concepts">
+                    <h4><i class="fas fa-lightbulb"></i> Key Concepts</h4>
+                    <ul>
+                        <li>Peer-to-peer architecture eliminates single points of failure</li>
+                        <li>Decentralized control emerges from collective actions</li>
+                        <li>No central authority required for transactions</li>
+                        <li>Cryptographic verification replaces institutional trust</li>
+                        <li>Global consensus without coordination servers</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="code-demo">
+                <div class="code-header">
+                    <div><i class="fas fa-code"></i> P2P Node Connection Demo</div>
+                    <button class="run-code-btn" onclick="runP2PDemo()"><i class="fas fa-play"></i> Run</button>
+                </div>
+                <pre>class P2PNode:
+    def __init__(self, id):
+        self.id = id
+        self.peers = []
+    
+    def connect(self, peer):
+        self.peers.append(peer)
+        print(f"{self.id} → {peer.id}")
+    
+    def broadcast(self, msg):
+        for p in self.peers:
+            print(f"{self.id} sends to {p.id}: {msg}")
+
+alice, bob, carol = P2PNode("Alice"), P2PNode("Bob"), P2PNode("Carol")
+alice.connect(bob); alice.connect(carol)
+alice.broadcast("New block!")</pre>
+                <div class="code-output" id="p2pOut">Click Run to simulate!</div>
+            </div>
+            <div class="visualization">
+                <div class="viz-title"><i class="fas fa-chart-line"></i> Network Growth</div>
+                <canvas id="growthChart" style="max-height:300px"></canvas>
+            </div>
+        </section>
+
+        <section id="philosophy" class="content-section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2 class="section-title">Philosophical Foundations</h2>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-balance-scale"></i> Decentralization Principle</h3>
+                <p>Decentralization guides Bitcoin's architecture, distributing power across participants rather than concentrating it. This reflects fundamental philosophy about power distribution, censorship resistance, and protection against single-point failures.</p>
+                <table>
+                    <thead><tr><th>Aspect</th><th>Centralized</th><th>Bitcoin</th></tr></thead>
+                    <tbody>
+                        <tr><td>Control</td><td>Single authority</td><td>Distributed across all</td></tr>
+                        <tr><td>Failure</td><td>System-wide crashes</td><td>Continues despite failures</td></tr>
+                        <tr><td>Censorship</td><td>Possible</td><td>Highly resistant</td></tr>
+                        <tr><td>Trust</td><td>Required</td><td>Cryptographic only</td></tr>
+                        <tr><td>Jurisdiction</td><td>Single framework</td><td>100+ countries</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-equals"></i> Peer Equality</h3>
+                <p>All nodes maintain equal status without hierarchy. No node has intrinsic authority—validation power is equal for all participants regardless of computational power or wealth.</p>
+            </div>
+        </section>
+
+        <section id="architecture" class="content-section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2 class="section-title">Network Architecture</h2>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-sitemap"></i> Core P2P Network</h3>
+                <p>The core Bitcoin network comprises nodes running the P2P protocol—approximately 15,000-17,000 total nodes globally, with 6,000-8,000 publicly accessible listening nodes. These full nodes independently validate all transactions and blocks.</p>
+                <div class="key-concepts">
+                    <h4><i class="fas fa-server"></i> Network Components</h4>
+                    <ul>
+                        <li>Core P2P network of full validating nodes</li>
+                        <li>Extended network with specialized protocols</li>
+                        <li>Relay networks for low-latency mining</li>
+                        <li>Edge components for service integration</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="visualization">
+                <div class="viz-title"><i class="fas fa-project-diagram"></i> Node Distribution</div>
+                <canvas id="nodeChart" style="max-height:300px"></canvas>
+            </div>
+        </section>
+
+        <section id="nodes" class="content-section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2 class="section-title">Node Types</h2>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-server"></i> Full Nodes</h3>
+                <p>Full nodes maintain complete blockchain copies (550+ GB), independently validate all transactions and blocks, and provide four core services: routing, blockchain storage, optional mining, and wallet services.</p>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-mobile-alt"></i> SPV Nodes</h3>
+                <p>Simplified Payment Verification nodes store only block headers (~75 MB), enabling lightweight operation on mobile devices. SPV nodes verify payments through merkle proofs without complete blockchain copies.</p>
+                <div class="code-demo">
+                    <div class="code-header">
+                        <div><i class="fas fa-code"></i> SPV Merkle Proof Verification</div>
+                        <button class="run-code-btn" onclick="runSPVDemo()"><i class="fas fa-play"></i> Run</button>
+                    </div>
+                    <pre>import hashlib
+
+def hash(data): return hashlib.sha256(data.encode()).hexdigest()[:8]
+def merkle_root(txs): return hash(hash(txs[0])+hash(txs[1]))
+
+# Block with 4 transactions
+txs = ["Alice→Bob", "Carol→Dave", "Eve→Frank", "Grace→Henry"]
+root = merkle_root([merkle_root(txs[:2]), merkle_root(txs[2:])])
+
+print(f"Merkle Root: {root}")
+print("SPV node verifies with proof, not full transactions!")</pre>
+                    <div class="code-output" id="spvOut">Click Run to see verification!</div>
+                </div>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-microchip"></i> Mining Nodes</h3>
+                <p>Mining nodes perform Proof-of-Work computations using specialized ASIC hardware. Pool mining coordinates thousands of participants, distributing rewards proportionally to contributed hash power.</p>
+            </div>
+        </section>
+
+        <section id="protocols" class="content-section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2 class="section-title">Network Protocols</h2>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-exchange-alt"></i> Bitcoin P2P Protocol</h3>
+                <p>The P2P protocol operates over TCP (port 8333 mainnet) with standardized message structures enabling peer discovery, transaction/block propagation, and blockchain synchronization. Messages include: inv (inventory announcements), getdata (data requests), tx (transactions), block (blocks), addr (peer addresses).</p>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-broadcast-tower"></i> Transaction Propagation</h3>
+                <p>Inventory-based propagation minimizes redundant transmission. Nodes announce transaction IDs via inv messages; peers request unknowns via getdata; originating nodes send complete transactions. This reduces bandwidth by ~95%.</p>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-cube"></i> Block Propagation</h3>
+                <p>Compact block relay (BIP-152) exploits mempool synchronization—sending block headers plus short transaction IDs rather than full data. High-bandwidth mode eliminates inv delays for trusted peers, achieving near-minimum latency.</p>
+            </div>
+        </section>
+
+        <section id="security" class="content-section">
+            <div class="section-header">
+                <div class="section-number">6</div>
+                <h2 class="section-title">Security & Privacy</h2>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-shield-alt"></i> Eclipse Attack Defenses</h3>
+                <p>Eclipse attacks isolate victims by monopolizing connections. Bitcoin defends via connection diversity (across network groups), address database management, and new/tried table separation preventing immediate pollution.</p>
+            </div>
+            <div class="subsection">
+                <h3><i class="fas fa-lock"></i> Encryption & Authentication</h3>
+                <p>BIP-150 enables peer authentication via cryptographic identity proof. BIP-151 proposes end-to-end encryption protecting against traffic analysis. Tor integration conceals IP addresses from network observers.</p>
+            </div>
+        </section>
+
+        <section id="quiz" class="content-section">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <h3><i class="fas fa-graduation-cap"></i> Knowledge Check Quiz</h3>
+                    <p style="color:var(--text-light)">Test your understanding! Select the best answer.</p>
+                </div>
+                
+                <div class="quiz-question">
+                    <div class="question-text">1. What is the primary advantage of Bitcoin's peer-to-peer architecture?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 1)">Faster transaction processing than centralized systems</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 1)">Elimination of single points of failure and central authority</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 1)">Lower energy consumption for validation</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 1)">Guaranteed transaction privacy</div>
+                    </div>
+                    <div class="quiz-feedback" id="feedback1"></div>
+                </div>
+
+                <div class="quiz-question">
+                    <div class="question-text">2. Approximately how many full Bitcoin nodes operate globally?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 2)">1,000 - 2,000 nodes</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 2)">15,000 - 17,000 nodes</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 2)">50,000 - 75,000 nodes</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 2)">Over 100,000 nodes</div>
+                    </div>
+                    <div class="quiz-feedback" id="feedback2"></div>
+                </div>
+
+                <div class="quiz-question">
+                    <div class="question-text">3. What distinguishes SPV nodes from full nodes?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 3)">SPV nodes can mine blocks while full nodes cannot</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 3)">SPV nodes store only block headers, not complete blockchain</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 3)">SPV nodes have faster transaction validation</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 3)">SPV nodes earn higher mining rewards</div>
+                    </div>
+                    <div class="quiz-feedback" id="feedback3"></div>
+                </div>
+
+                <div class="quiz-question">
+                    <div class="question-text">4. What does compact block relay (BIP-152) achieve?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 4)">Increases block size limits</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 4)">Encrypts all block data</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 4)">Reduces bandwidth by ~95% using short transaction IDs</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 4)">Eliminates the need for mining pools</div>
+                    </div>
+                    <div class="quiz-feedback" id="feedback4"></div>
+                </div>
+
+                <div class="quiz-question">
+                    <div class="question-text">5. How do peers maintain equal authority in Bitcoin?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 5)">By voting on transaction validity</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 5)">Through independent validation—each node verifies all data</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 5)">By delegating validation to elected supernodes</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 5)">Through centralized coordination servers</div>
+                    </div>
+                    <div class="quiz-feedback" id="feedback5"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="footer">
+        <div class="footer-content">
+            <h3><i class="fas fa-graduation-cap"></i> SEN0401: Special Topics in Software Engineering (Blockchain)</h3>
+            <p>Istanbul Kültür University | Department of Computer Engineering</p>
+            <p style="margin-top:20px">© 2025 Bitcoin Network Educational Resource</p>
+        </div>
+    </div>
+
+    <div class="progress-tracker">
+        <div class="progress-percent" id="progressPercent">0%</div>
+        <div class="progress-label">Progress</div>
+    </div>
+
+    <script>
+        // P2P Demo
+        function runP2PDemo() {
+            const out = document.getElementById('p2pOut');
+            out.innerHTML = '<div style="color:#6BCF7F">▶ Running simulation...</div>';
+            setTimeout(() => {
+                out.innerHTML = `Node Alice connected to Node Bob
+Node Alice connected to Node Carol
+
+Node Alice broadcasting: New block!
+  → Message sent to Node Bob
+  → Message sent to Node Carol
+
+<div style="color:#6BCF7F">✓ P2P Network Simulation Complete!
+Network has 2 peer connections</div>`;
+            }, 500);
+        }
+
+        // SPV Demo
+        function runSPVDemo() {
+            const out = document.getElementById('spvOut');
+            out.innerHTML = '<div style="color:#6BCF7F">▶ Computing merkle proof...</div>';
+            setTimeout(() => {
+                out.innerHTML = `Merkle Root: a7f3c91d
+<div style="color:#6BCF7F">✓ SPV node verifies with proof, not full transactions!
+Proof size: 3 hashes vs 4 full transactions
+Bandwidth savings: 75%</div>`;
+            }, 500);
+        }
+
+        // Quiz System
+        let score = 0;
+        const totalQuestions = 5;
+        const answered = new Set();
+
+        function checkAnswer(element, isCorrect, questionNum) {
+            if (answered.has(questionNum)) return;
+            answered.add(questionNum);
+            
+            const feedback = document.getElementById('feedback' + questionNum);
+            const allOptions = element.parentElement.children;
+            
+            for (let opt of allOptions) {
+                opt.style.pointerEvents = 'none';
+            }
+            
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedback.className = 'quiz-feedback correct show';
+                feedback.innerHTML = '<i class="fas fa-check-circle"></i> Correct! Excellent understanding!';
+                score++;
+            } else {
+                element.classList.add('incorrect');
+                feedback.className = 'quiz-feedback incorrect show';
+                feedback.innerHTML = '<i class="fas fa-times-circle"></i> Not quite. Review the section for the correct answer.';
+            }
+            
+            if (answered.size === totalQuestions) {
+                setTimeout(() => {
+                    alert(`Quiz Complete! Score: ${score}/${totalQuestions} (${Math.round(score/totalQuestions*100)}%)\\n\\n` +
+                          (score >= 4 ? '🎉 Excellent work!' : score >= 3 ? '👍 Good job!' : '📚 Review the material and try again!'));
+                }, 500);
+            }
+        }
+
+        // Scroll Progress Tracker
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progressPercent').textContent = Math.round(scrolled) + '%';
+        });
+
+        // Charts
+        window.addEventListener('load', () => {
+            // Network Growth Chart
+            new Chart(document.getElementById('growthChart'), {
+                type: 'line',
+                data: {
+                    labels: ['2009', '2011', '2013', '2015', '2017', '2019', '2021', '2023', '2025'],
+                    datasets: [{
+                        label: 'Total Nodes',
+                        data: [10, 50, 500, 3000, 8000, 10000, 12000, 15000, 17000],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Node Distribution Chart
+            new Chart(document.getElementById('nodeChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Germany', 'USA', 'France', 'Netherlands', 'Canada', 'Other'],
+                    datasets: [{
+                        data: [20, 18, 12, 10, 8, 32],
+                        backgroundColor: ['#FF6B6B', '#4ECDC4', '#FFD93D', '#6BCF7F', '#5DADE2', '#F39C12']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

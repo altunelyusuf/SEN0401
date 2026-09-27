@@ -1,0 +1,219 @@
+================================================================================
+PHASE 4: INTEGRATION TESTING
+================================================================================
+
+Loading ontology...
+✓ Loaded 1108 triples
+
+================================================================================
+TEST 1: SPARQL COMPETENCY QUESTIONS
+================================================================================
+
+Testing CQ-01: What are the components of a Bitcoin transaction?
+Category: Foundational
+Results: 4 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#TransactionInput | Transaction Input
+  2. http://example.org/blockchain/transactions#TransactionOutput | Transaction Output
+  3. http://example.org/blockchain/transactions#DigitalSignature | Digital Signature
+  ... and 1 more
+
+Testing CQ-02: What is the difference between transaction inputs and outputs?
+Category: Foundational
+Results: 2 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#TransactionInput | A transaction input specifies a previous unspent transaction output (UTXO) to be consumed and provides an unlocking script (scriptSig or witness) that satisfies the spending conditions of that output. Each input identifies the previous transaction by TXID and output index (vout).
+  2. http://example.org/blockchain/transactions#TransactionOutput | A transaction output (TXO) specifies an amount of cryptocurrency (in satoshis) and the conditions under which it can be spent, encoded as a locking script (scriptPubKey). Unspent outputs (UTXOs) form the fundamental state of the blockchain, representing all available funds.
+
+Testing CQ-03: How are transactions identified?
+Category: Foundational
+Results: 1 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#hasTXID | has TXID | Transaction identifier - double SHA256 hash of transaction (excluding witness).
+
+Testing CQ-04: What types of locking scripts exist?
+Category: Architectural
+Results: 12 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#LockingScript | Locking Script
+  2. http://example.org/blockchain/transactions#P2PKH_Script | P2PKH Locking Script
+  3. http://example.org/blockchain/transactions#P2SH_Script | P2SH Locking Script
+  ... and 9 more
+
+Testing CQ-05: How do multi-signature transactions work?
+Category: Architectural
+Results: 1 rows
+Status: ✓ PASS
+Sample results:
+  1. A multisignature transaction requires multiple signatures (M) from a set of possible signers (N) to authorize spending. This provides enhanced security through shared control, useful for corporate accounts, escrow, and collaborative custody. Implementation varies: bare multisig, P2SH multisig, or Schnorr threshold signatures in Taproot. | 2-of-3 multisig: requires any 2 signatures from 3 possible public keys. Common in escrow where buyer, seller, and arbitrator share control.
+
+Testing CQ-06: What is the relationship between transactions and blocks?
+Category: Architectural
+Results: 2 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#containsTransaction | http://example.org/blockchain/transactions#isContainedInBlock | contains transaction
+  2. http://example.org/blockchain/transactions#isContainedInBlock | http://example.org/blockchain/transactions#containsTransaction | is contained in block
+
+Testing CQ-07: How does Segregated Witness change transaction structure?
+Category: Advanced
+Results: 1 rows
+Status: ✓ PASS
+Sample results:
+  1. Segregated Witness (SegWit) transactions separate the witness data (signatures and scripts) from the transaction structure, placing it in a new witness field. This fixes transaction malleability, enables larger effective blocks through weight-based accounting, and improves signature validation efficiency. SegWit transactions use witness version 0. | P2WPKH transaction where signature and public key are in witness field, not scriptSig. TXID computed without witness data, while WTXID includes it.
+
+Testing CQ-08: What are the components of Taproot transactions?
+Category: Advanced
+Results: 11 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#TaprootTransaction | Taproot Transaction
+  2. http://example.org/blockchain/transactions#Pay-to-Taproot | Pay-to-Taproot Transaction
+  3. http://example.org/blockchain/transactions#TaprootOutput | Taproot Output
+  ... and 8 more
+
+Testing CQ-09: How do Lightning Network transactions differ from on-chain transactions?
+Category: Advanced
+Results: 7 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#LightningNetworkEntity | Lightning Network Entity
+  2. http://example.org/blockchain/transactions#PaymentChannel | Payment Channel
+  3. http://example.org/blockchain/transactions#LightningInvoice | Lightning Invoice
+  ... and 4 more
+
+Testing CQ-10: What signature schemes are supported?
+Category: Advanced
+Results: 3 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#ECDSASignature | ECDSA Signature | ECDSA is the digital signature scheme Bitcoin used exclusively until Taproot. It uses the secp256k1 elliptic curve and produces signatures with two components (r, s). Each signature is 71-72 bytes in DER encoding. ECDSA signatures commit to transaction data and SIGHASH type.
+  2. http://example.org/blockchain/transactions#SchnorrSignature | Schnorr Signature | Schnorr signatures are an alternative signature scheme using the same secp256k1 curve. They are 64 bytes (smaller than ECDSA), support linear aggregation enabling efficient multisig, allow batch verification, and have provable security. Schnorr is used exclusively in Taproot (witness version 1).
+  3. http://example.org/blockchain/transactions#AggregatedSignature | Aggregated Signature | Schnorr signatures support linear aggregation where multiple signatures can be combined into a single signature that validates the combined statement. This makes multisig transactions indistinguishable from single-sig, improving privacy and reducing transaction size.
+
+Testing CQ-11: What properties connect transactions to their inputs?
+Category: Relationships
+Results: 2 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#hasInput | http://example.org/blockchain/transactions#isInputOf | has input
+  2. http://example.org/blockchain/transactions#isReferencedBy | http://example.org/blockchain/transactions#referencesTransaction | is referenced by
+
+Testing CQ-12: What is the relationship between nLockTime and timelocks?
+Category: Relationships
+Results: 10 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#TimelockedTransaction | None | Timelocked Transaction
+  2. http://example.org/blockchain/transactions#HTLCScript | None | Hashed Timelock Contract Script
+  3. http://example.org/blockchain/transactions#Timelock | None | Timelock
+  ... and 7 more
+
+Testing CQ-13: How are transaction types hierarchically organized?
+Category: Relationships
+Results: 12 rows
+Status: ✓ PASS
+Sample results:
+  1. http://example.org/blockchain/transactions#Pay-to-Public-Key | http://example.org/blockchain/transactions#LegacyTransaction | Pay-to-Public-Key Transaction | Legacy Transaction
+  2. http://example.org/blockchain/transactions#Pay-to-Public-Key-Hash | http://example.org/blockchain/transactions#LegacyTransaction | Pay-to-Public-Key-Hash Transaction | Legacy Transaction
+  3. http://example.org/blockchain/transactions#Pay-to-Script-Hash | http://example.org/blockchain/transactions#LegacyTransaction | Pay-to-Script-Hash Transaction | Legacy Transaction
+  ... and 9 more
+
+SPARQL Testing Summary: 13 PASS, 0 FAIL
+
+================================================================================
+TEST 2: JSON-LD SERIALIZATION
+================================================================================
+
+Attempting JSON-LD serialization...
+✓ JSON-LD serialization successful
+✓ Generated 185386 characters
+✓ Contains 182 top-level entries
+✓ Saved to blockchain_transactions_ontology.jsonld
+
+================================================================================
+TEST 3: INVERSE PROPERTY VERIFICATION
+================================================================================
+
+Total Object Properties: 33
+With Inverse: 16 (48.5%)
+Without Inverse: 17 (51.5%)
+
+Properties without inverses:
+  - has witness
+  - has redeem script
+  - has witness script
+  - signs transaction
+  - uses signature scheme
+  - uses x-only public key
+  - has timelock
+  - has funding transaction
+  - represents channel state
+  - has payment hash
+  - has preimage
+  - routes through
+  - has internal key
+  - has output key
+  - has Merkle root
+  - has TapLeaf
+  - has control block
+
+Inverse Property Status: PARTIAL (≥75% threshold)
+
+================================================================================
+TEST 4: GRAPH STRUCTURE ANALYSIS
+================================================================================
+
+Total Classes: 66
+Total Object Properties: 33
+Total Data Properties: 27
+Maximum Hierarchy Depth: 5 levels
+Deepest classes:
+  - P2SH-wrapped-SegWit: 5 levels
+  - Pay-to-Public-Key-Hash: 3 levels
+  - Pay-to-Public-Key: 3 levels
+  - Pay-to-Script-Hash: 3 levels
+  - Pay-to-Witness-Public-Key-Hash: 3 levels
+
+================================================================================
+TEST 5: DOCUMENTATION COMPLETENESS
+================================================================================
+
+Total Classes: 66
+With rdfs:label: 66 (100.0%)
+With rdfs:comment: 66 (100.0%)
+With skos:definition: 66 (100.0%)
+With skos:example: 59 (89.4%)
+
+Documentation Completeness: 100.0%
+Documentation Status: PASS
+
+================================================================================
+TEST 6: EDUCATIONAL EFFECTIVENESS
+================================================================================
+
+✓ Basic Concepts Present: 5/5
+✓ Advanced Concepts Present: 13
+✓ Classes with Examples: 70
+
+Educational Effectiveness: PASS
+
+================================================================================
+PHASE 4 INTEGRATION TESTING SUMMARY
+================================================================================
+
+SPARQL Competency Questions   : 13/13 PASS ✓
+JSON-LD Serialization         : PASS ✓
+Inverse Properties            : 16/33 (48.5%) ⚠
+Graph Structure               : 66 classes, 60 properties ✓
+Documentation                 : 100.0% complete ✓
+Educational Effectiveness     : PASS ✓
+
+Overall Integration Test Score: 80.0%
+Status: ✓ READY FOR DEPLOYMENT
+
+Integration testing complete. Detailed results saved.

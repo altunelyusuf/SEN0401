@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Break the Chain Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* gray-50 */
+        }
+        .font-mono {
+            font-family: 'Roboto Mono', monospace;
+        }
+        .block {
+            transition: all 0.3s ease-in-out;
+            border-color: #16a34a; /* green-600 */
+        }
+        .block.invalid {
+            border-color: #dc2626; /* red-600 */
+            background-color: #fee2e2; /* red-100 */
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+        }
+        .block.checking {
+             box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+             border-color: #3b82f6; /* blue-500 */
+        }
+        .link {
+            transition: all 0.3s ease-in-out;
+        }
+        .link.invalid {
+            color: #dc2626; /* red-600 */
+            animation: shake 0.5s;
+        }
+        .editable-data {
+            cursor: pointer;
+            border-bottom: 2px dashed #9ca3af; /* gray-400 */
+        }
+        .editable-data:hover {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="text-gray-800 p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">🔗 Interactive Break the Chain Challenge 🔗</h1>
+            <p class="mt-2 text-lg text-gray-600">A visual game to understand blockchain's immutability.</p>
+        </header>
+
+        <main class="space-y-8">
+            <!-- Blockchain Visualization -->
+            <div id="blockchain-container" class="space-y-8">
+                <!-- Blocks will be injected here by JavaScript -->
+            </div>
+
+            <!-- Game Interaction Panel -->
+            <div class="bg-white p-6 rounded-lg shadow-md border sticky top-4 z-10">
+                <h2 class="text-xl font-bold mb-4">🎮 How to Play</h2>
+                <div class="grid md:grid-cols-2 gap-6 items-center">
+                    <div class="prose prose-sm">
+                        <ol>
+                            <li><b>Click the data</b> of any block (e.g., <code class="font-mono">"Alice pays Bob 1 coin"</code>) to edit the transaction.</li>
+                            <li>Change the text and press Enter.</li>
+                            <li>Click the <b>"Start Validation"</b> button.</li>
+                            <li>Follow the steps to see how your change broke the chain!</li>
+                        </ol>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="validate-button" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
+                            Start Validation
+                        </button>
+                         <button id="reset-button" class="w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition">
+                            Reset Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status & Explanation Panel -->
+            <div id="status-panel" class="bg-gray-800 text-white p-6 rounded-lg shadow-md hidden">
+                <div id="status-header" class="text-lg font-bold mb-4 font-sans"></div>
+                <pre id="status-message" class="whitespace-pre-wrap font-mono text-sm"></pre>
+                <div id="validation-controls" class="mt-4">
+                     <button id="next-step-button" class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition">
+                        Next Step
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        class Block {
+            constructor(index, data, previousHash = '') {
+                this.index = index;
+                this.timestamp = new Date().getTime();
+                this.data = data;
+                this.previousHash = previousHash;
+                this.hash = null;
+            }
+
+            async calculateHash() {
+                const blockString = this.index + this.previousHash + this.timestamp + JSON.stringify(this.data);
+                const encoder = new TextEncoder();
+                const data = encoder.encode(blockString);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+        }
+
+        class Blockchain {
+            constructor() { this.chain = []; }
+            async createGenesisBlock() {
+                const genesisBlock = new Block(0, "Genesis Block", "0");
+                genesisBlock.hash = await genesisBlock.calculateHash();
+                this.chain.push(genesisBlock);
+            }
+            getLatestBlock() { return this.chain[this.chain.length - 1]; }
+            async addBlock(newBlock) {
+                newBlock.previousHash = this.getLatestBlock().hash;
+                newBlock.hash = await newBlock.calculateHash();
+                this.chain.push(newBlock);
+            }
+        }
+
+        const blockchainContainer = document.getElementById('blockchain-container');
+        const validateButton = document.getElementById('validate-button');
+        const resetButton = document.getElementById('reset-button');
+        const statusPanel = document.getElementById('status-panel');
+        const statusHeader = document.getElementById('status-header');
+        const statusMessage = document.getElementById('status-message');
+        const nextStepButton = document.getElementById('next-step-button');
+
+        let myChain;
+        let validationState = { active: false, currentBlockIndex: 0, stage: '' };
+        let originalChainState = '';
+
+        async function initializeGame() {
+            myChain = new Blockchain();
+            await myChain.createGenesisBlock();
+            await myChain.addBlock(new Block(1, "Alice pays Bob 1 coin"));
+            await myChain.addBlock(new Block(2, "Bob pays Carol 2 coins"));
+            await myChain.addBlock(new Block(3, "Carol pays Dave 0.5 coins"));
+            
+            originalChainState = JSON.stringify(myChain.chain);
+            renderChain();
+            statusPanel.classList.add('hidden');
+            validateButton.disabled = false;
+            nextStepButton.style.display = 'none';
+        }
+
+        function renderChain() {
+            blockchainContainer.innerHTML = '';
+            myChain.chain.forEach((block, i) => {
+                const isGenesis = i === 0;
+                const blockElement = document.createElement('div');
+                blockElement.id = `block-container-${i}`;
+                const blockDataId = `data-${i}`;
+
+                blockElement.innerHTML = `
+                    <div id="block-${i}" class="block bg-white p-4 rounded-lg shadow-md border-2">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-lg font-bold">Block #${block.index} ${isGenesis ? '(Genesis Block)' : ''}</h3>
+                            <span class="text-xs text-gray-500">Timestamp: ${new Date(block.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center">
+                                <span class="w-32 font-semibold text-gray-600">Data:</span>
+                                <span id="${blockDataId}" class="font-mono text-gray-800 break-all ${isGenesis ? '' : 'editable-data'}">${block.data}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-32 font-semibold text-gray-600">Hash:</span>
+                                <span class="font-mono text-green-700 break-all">${block.hash}</span>
+                            </div>
+                            <div class="flex">
+                                <span class="w-32 font-semibold text-gray-600">Previous Hash:</span>
+                                <span class="font-mono text-yellow-700 break-all">${block.previousHash}</span>
+                            </div>
+                        </div>
+                    </div>
+                    ${!isGenesis ? `<div id="link-${i}" class="link text-center text-2xl text-green-600 font-bold my-2">↑</div>` : ''}
+                `;
+                blockchainContainer.prepend(blockElement);
+            });
+            
+            // Add event listeners for editing data
+            myChain.chain.forEach((block, i) => {
+                if (i === 0) return; // Can't edit Genesis block
+                const dataElement = document.getElementById(`data-${i}`);
+                dataElement.addEventListener('click', () => makeEditable(dataElement, i));
+            });
+        }
+        
+        function makeEditable(element, index) {
+            const currentData = myChain.chain[index].data;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentData;
+            input.className = 'font-mono text-gray-800 bg-yellow-100 p-1 rounded-md w-full';
+            
+            element.replaceWith(input);
+            input.focus();
+
+            const save = () => {
+                const newData = input.value;
+                myChain.chain[index].data = newData;
+                // Mark chain as potentially invalid
+                const blockDiv = document.getElementById(`block-${index}`);
+                if (JSON.stringify(myChain.chain) !== originalChainState) {
+                    blockDiv.classList.add('invalid');
+                } else {
+                    blockDiv.classList.remove('invalid');
+                }
+                const newSpan = document.createElement('span');
+                newSpan.id = element.id;
+                newSpan.className = element.className;
+                newSpan.textContent = newData;
+                input.replaceWith(newSpan);
+                newSpan.addEventListener('click', () => makeEditable(newSpan, index));
+            };
+
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') input.blur(); });
+        }
+        
+        function startValidation() {
+            renderChain(); // Clears any previous validation highlights
+            validateButton.disabled = true;
+            statusPanel.classList.remove('hidden');
+            statusHeader.textContent = '🔍 Starting Chain Validation...';
+            statusMessage.textContent = 'The validator will check each block and its links. Press "Next Step" to begin.';
+            nextStepButton.style.display = 'block';
+            nextStepButton.disabled = false;
+            
+            validationState = { active: true, currentBlockIndex: 1, stage: 'check_hash' };
+        }
+
+        async function performNextValidationStep() {
+            if (!validationState.active) return;
+
+            const i = validationState.currentBlockIndex;
+            const currentBlock = myChain.chain[i];
+            const previousBlock = myChain.chain[i-1];
+            const currentBlockElement = document.getElementById(`block-${i}`);
+            
+            // Highlight the block being checked
+            document.querySelectorAll('.block.checking').forEach(el => el.classList.remove('checking'));
+            currentBlockElement.classList.add('checking');
+
+            if (validationState.stage === 'check_hash') {
+                statusHeader.textContent = `🔍 Checking Block #${i} Hash...`;
+                statusMessage.textContent = `Recalculating hash for Block #${i} based on its current data ('${currentBlock.data}') to see if it matches the stored hash.`;
+                
+                const reCalculatedHash = await currentBlock.calculateHash();
+                await new Promise(r => setTimeout(r, 200)); // artificial delay
+                
+                if (currentBlock.hash !== reCalculatedHash) {
+                    validationState.active = false;
+                    statusHeader.textContent = '❌ CHAIN INVALID! YOU\'VE BEEN CAUGHT!';
+                    statusMessage.textContent = `Tampering detected!\n\nThe data in Block #${i} was changed, so its hash no longer matches.\n\nOriginal Stored Hash: ${currentBlock.hash}\nNewly Calculated Hash: ${reCalculatedHash}`;
+                    currentBlockElement.classList.add('invalid');
+                    nextStepButton.style.display = 'none';
+                } else {
+                    statusMessage.textContent = `✅ Hash is correct. The data in Block #${i} has not been tampered with since it was created.\n\nNext, we'll check the link to the previous block.`;
+                    validationState.stage = 'check_link';
+                }
+            } else if (validationState.stage === 'check_link') {
+                statusHeader.textContent = `🔗 Checking Link from Block #${i} to #${i-1}...`;
+                statusMessage.textContent = `Verifying that Block #${i}'s "Previous Hash" matches the actual hash of Block #${i-1}.`;
+                
+                await new Promise(r => setTimeout(r, 200)); // artificial delay
+
+                if (currentBlock.previousHash !== previousBlock.hash) {
+                    validationState.active = false;
+                    statusHeader.textContent = '❌ CHAIN INVALID! YOU\'VE BEEN CAUGHT!';
+                    statusMessage.textContent = `Chain link is broken!\n\nThe hash of Block #${i-1} has changed (likely due to tampering in that block), but Block #${i} still points to the old hash.\n\nBlock #${i-1}'s Actual Hash: ${previousBlock.hash}\nBlock #${i}'s "Previous Hash": ${currentBlock.previousHash}`;
+                    currentBlockElement.classList.add('invalid');
+                    document.getElementById(`link-${i}`).classList.add('invalid');
+                    nextStepButton.style.display = 'none';
+                } else {
+                     statusMessage.textContent = `✅ Link is secure. Block #${i} correctly points to Block #${i-1}.\n\nMoving to the next block...`;
+                     validationState.currentBlockIndex++;
+                     validationState.stage = 'check_hash';
+
+                     if (validationState.currentBlockIndex >= myChain.chain.length) {
+                         validationState.active = false;
+                         statusHeader.textContent = '✅ CHAIN IS VALID!';
+                         statusMessage.textContent = 'Congratulations! No tampering was detected across the entire blockchain.';
+                         nextStepButton.style.display = 'none';
+                         document.querySelectorAll('.block.checking').forEach(el => el.classList.remove('checking'));
+                     }
+                }
+            }
+        }
+
+        validateButton.addEventListener('click', startValidation);
+        nextStepButton.addEventListener('click', performNextValidationStep);
+        resetButton.addEventListener('click', initializeGame);
+
+        initializeGame();
+    });
+    </script>
+
+</body>
+</html>
+

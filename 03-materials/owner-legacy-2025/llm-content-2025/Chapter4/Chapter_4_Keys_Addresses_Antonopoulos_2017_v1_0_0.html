@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SEN0401 - Bitcoin Keys and Addresses: Interactive course module on blockchain cryptography fundamentals">
+    <meta name="author" content="Istanbul Kültür University - Computer Engineering">
+    <title>SEN0401: Bitcoin Keys & Addresses | Interactive Learning</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    
+    <style>
+        /* ===== CSS VARIABLES (Design System) ===== */
+        :root {
+            /* Primary Colors */
+            --primary-blue-50: #EFF6FF;
+            --primary-blue-100: #DBEAFE;
+            --primary-blue-500: #3B82F6;
+            --primary-blue-600: #2563EB;
+            --primary-blue-700: #1D4ED8;
+            --primary-blue-900: #1E3A8A;
+            
+            /* Secondary Colors */
+            --purple-50: #FAF5FF;
+            --purple-100: #F3E8FF;
+            --purple-500: #A855F7;
+            --purple-600: #7C3AED;
+            --purple-700: #6D28D9;
+            
+            /* Accent Colors */
+            --green-50: #ECFDF5;
+            --green-500: #10B981;
+            --green-600: #059669;
+            --amber-50: #FFFBEB;
+            --amber-500: #F59E0B;
+            --red-50: #FEF2F2;
+            --red-500: #EF4444;
+            
+            /* Neutral Colors */
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-400: #9CA3AF;
+            --gray-600: #4B5563;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            
+            /* Typography */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --font-display: 'Poppins', 'Inter', sans-serif;
+            
+            /* Spacing */
+            --space-4: 1rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+            
+            /* Transitions */
+            --transition-fast: 150ms ease-in-out;
+            --transition-base: 300ms ease-in-out;
+            --transition-slow: 500ms ease-in-out;
+        }
+        
+        /* ===== GLOBAL STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+        
+        body {
+            font-family: var(--font-sans);
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--gray-800);
+            background: var(--gray-50);
+            overflow-x: hidden;
+        }
+        
+        /* ===== STICKY NAVIGATION ===== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: linear-gradient(135deg, var(--primary-blue-600), var(--purple-600));
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all var(--transition-base);
+        }
+        
+        .navbar-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: white;
+            text-decoration: none;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        
+        .navbar-brand i {
+            font-size: 1.5rem;
+        }
+        
+        .navbar-menu {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        
+        .navbar-menu a {
+            padding: 0.5rem 1rem;
+            color: white;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: background var(--transition-fast);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .navbar-menu a:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .navbar-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            font-size: 0.875rem;
+        }
+        
+        .progress-bar {
+            width: 100px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--green-500);
+            width: 0%;
+            transition: width var(--transition-slow);
+        }
+        
+        /* ===== MAIN LAYOUT ===== */
+        .main-content {
+            margin-top: 80px;
+            max-width: 1280px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: var(--space-8) var(--space-6);
+        }
+        
+        /* ===== HERO SECTION ===== */
+        .hero {
+            background: linear-gradient(135deg, var(--primary-blue-50), var(--purple-50));
+            border-radius: 1rem;
+            padding: var(--space-16) var(--space-8);
+            text-align: center;
+            margin-bottom: var(--space-12);
+            border: 2px solid var(--primary-blue-100);
+        }
+        
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray-600);
+            margin-bottom: 2rem;
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-blue-600);
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+        
+        /* ===== CONTENT SECTIONS ===== */
+        .section {
+            background: white;
+            border-radius: 1rem;
+            padding: var(--space-8);
+            margin-bottom: var(--space-8);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .section:nth-child(1) { animation-delay: 0.1s; }
+        .section:nth-child(2) { animation-delay: 0.2s; }
+        .section:nth-child(3) { animation-delay: 0.3s; }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary-blue-100);
+        }
+        
+        .section-icon {
+            font-size: 2rem;
+            color: var(--primary-blue-600);
+        }
+        
+        .section h2 {
+            font-family: var(--font-display);
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        .section h3 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .section h4 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .section p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+        
+        .section ul, .section ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .section li {
+            margin-bottom: 0.5rem;
+            line-height: 1.7;
+        }
+        
+        /* ===== CALLOUT BOXES ===== */
+        .callout {
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+        
+        .callout-success {
+            background: var(--green-50);
+            border-color: var(--green-500);
+        }
+        
+        .callout-warning {
+            background: var(--amber-50);
+            border-color: var(--amber-500);
+        }
+        
+        .callout-info {
+            background: var(--primary-blue-50);
+            border-color: var(--primary-blue-500);
+        }
+        
+        .callout-error {
+            background: var(--red-50);
+            border-color: var(--red-500);
+        }
+        
+        .callout-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* ===== CODE BLOCKS ===== */
+        pre {
+            background: var(--gray-900);
+            color: var(--gray-50);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.875em;
+            background: var(--gray-100);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            color: var(--purple-700);
+        }
+        
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+        
+        /* ===== INTERACTIVE PLACEHOLDERS ===== */
+        .interactive-placeholder {
+            background: linear-gradient(135deg, var(--purple-50), var(--primary-blue-50));
+            border: 2px dashed var(--purple-600);
+            border-radius: 1rem;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .interactive-placeholder i {
+            font-size: 3rem;
+            color: var(--purple-600);
+            margin-bottom: 1rem;
+        }
+        
+        .interactive-placeholder h4 {
+            color: var(--purple-700);
+            margin-bottom: 0.5rem;
+        }
+        
+        .interactive-placeholder p {
+            color: var(--gray-600);
+            margin-bottom: 0;
+        }
+        
+        /* ===== TABLES ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        th {
+            background: var(--primary-blue-600);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tr:hover {
+            background: var(--gray-50);
+        }
+        
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            .navbar-container {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            
+            .navbar-menu {
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .section {
+                padding: var(--space-6);
+            }
+            
+            .section h2 {
+                font-size: 1.75rem;
+            }
+        }
+        
+        /* ===== UTILITY CLASSES ===== */
+        .text-center { text-align: center; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .font-bold { font-weight: 700; }
+        
+        /* ===== SCROLL TO TOP BUTTON ===== */
+        .scroll-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--primary-blue-600);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: all var(--transition-base);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 999;
+        }
+        
+        .scroll-top.visible {
+            opacity: 1;
+        }
+        
+        .scroll-top:hover {
+            background: var(--primary-blue-700);
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== STICKY NAVIGATION ===== -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <a href="#" class="navbar-brand">
+                <i class="fas fa-key"></i>
+                <span>SEN0401: Bitcoin Keys & Addresses</span>
+            </a>
+            
+            <ul class="navbar-menu">
+                <li><a href="#intro">Introduction</a></li>
+                <li><a href="#keys">Keys</a></li>
+                <li><a href="#addresses">Addresses</a></li>
+                <li><a href="#wallets">Wallets</a></li>
+                <li><a href="#games">Games</a></li>
+                <li><a href="#quiz">Quiz</a></li>
+                <li><a href="#coding">Coding</a></li>
+            </ul>
+            
+            <div class="navbar-actions">
+                <div class="progress-indicator">
+                    <span id="progress-text">0%</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+        <!-- HERO SECTION -->
+        <section class="hero">
+            <h1>🔐 Bitcoin Keys & Addresses</h1>
+            <p class="hero-subtitle">Master the Cryptographic Foundations of Blockchain Security</p>
+            
+            <div class="hero-stats">
+                <div class="stat-box">
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Major Topics</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">10</div>
+                    <div class="stat-label">Interactive Games</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">25</div>
+                    <div class="stat-label">Quiz Questions</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Coding Exercises</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- SECTION 1: INTRODUCTION -->
+        <section class="section" id="intro">
+            <div class="section-header">
+                <i class="fas fa-lightbulb section-icon"></i>
+                <h2>Introduction to Bitcoin Cryptography</h2>
+            </div>
+            
+            <h3>What is Cryptography?</h3>
+            <p><strong>Cryptography</strong> (from Greek "secret writing") encompasses techniques for secure communication and data protection. Modern cryptography extends beyond encryption to include:</p>
+            
+            <ul>
+                <li><strong>Digital Signatures:</strong> Proving knowledge of a secret without revealing it</li>
+                <li><strong>Digital Fingerprints:</strong> Proving data authenticity</li>
+                <li><strong>Key Exchange:</strong> Secure communication channel establishment</li>
+                <li><strong>Zero-Knowledge Proofs:</strong> Proving statements without revealing underlying data</li>
+            </ul>
+            
+            <div class="callout callout-info">
+                <div class="callout-title">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Bitcoin's Unique Use</strong>
+                </div>
+                <p>Ironically, Bitcoin does NOT encrypt transaction data. The blockchain is completely transparent. Instead, Bitcoin uses cryptography for:</p>
+                <ol>
+                    <li><strong>Access Control:</strong> Who can spend which bitcoins</li>
+                    <li><strong>Ownership Proof:</strong> Digital signatures show authorization</li>
+                    <li><strong>Identity Management:</strong> Pseudonymous addresses protect privacy</li>
+                </ol>
+            </div>
+            
+            <div class="callout callout-success">
+                <div class="callout-title">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong>Think About It</strong>
+                </div>
+                <p>If transactions aren't encrypted, how does Bitcoin maintain security? The answer: cryptographic signatures ensure only private key holders can authorize spending.</p>
+            </div>
+            
+            <h3>Public Key Cryptography Fundamentals</h3>
+            <p><strong>Historical Context:</strong> Public key cryptography was invented in the 1970s by Whitfield Diffie and Martin Hellman, revolutionizing information security.</p>
+            
+            <p><strong>The Problem Solved:</strong> Traditional symmetric encryption requires both parties to share a secret key securely. This creates a chicken-and-egg problem: how do you securely share the key in the first place?</p>
+            
+            <p><strong>The Solution:</strong> Asymmetric cryptography uses two related but distinct keys:</p>
+            <ul>
+                <li><strong>Private Key:</strong> Kept secret, never shared</li>
+                <li><strong>Public Key:</strong> Freely distributed to anyone</li>
+            </ul>
+            
+            <h4>Mathematical Foundation</h4>
+            <p>Based on mathematical functions that are:</p>
+            <ul>
+                <li><strong>Easy in one direction:</strong> Computing f(x) is fast</li>
+                <li><strong>Hard in reverse:</strong> Computing x from f(x) is computationally infeasible</li>
+            </ul>
+            
+            <p><strong>Examples of One-Way Functions:</strong></p>
+            <ol>
+                <li><strong>Prime Factorization:</strong> Easy to multiply primes (7 × 13 = 91), hard to factor (91 = ? × ?)</li>
+                <li><strong>Discrete Logarithm:</strong> Easy to compute g<sup>x</sup> mod p, hard to find x</li>
+                <li><strong>Elliptic Curve Multiplication:</strong> Easy to compute k × G, hard to find k (Bitcoin uses this!)</li>
+            </ol>
+            
+            <h3>Elliptic Curve Cryptography (ECC)</h3>
+            <p><strong>Why ECC?</strong> Provides same security as RSA with much smaller keys:</p>
+            <ul>
+                <li><strong>RSA 2048-bit</strong> ≈ <strong>ECC 224-bit</strong> (same security level)</li>
+                <li>Smaller keys → smaller transactions → lower fees</li>
+            </ul>
+            
+            <p><strong>Bitcoin's Choice:</strong> secp256k1 elliptic curve</p>
+            <ul>
+                <li>Standardized curve (SEC 2)</li>
+                <li>256-bit security</li>
+                <li>Optimized for efficient computation</li>
+                <li>No known backdoors or weaknesses</li>
+            </ul>
+            
+            <div class="callout callout-info">
+                <div class="callout-title">
+                    <i class="fas fa-calculator"></i>
+                    <strong>The Elliptic Curve Equation</strong>
+                </div>
+                <pre><code>y² = x³ + 7  (over finite field F(p))
+
+where p = 2²⁵⁶ - 2³² - 2⁹ - 2⁸ - 2⁷ - 2⁶ - 2⁴ - 1</code></pre>
+            </div>
+        </section>
+        
+        <!-- SECTION 2: PRIVATE KEYS -->
+        <section class="section" id="keys">
+            <div class="section-header">
+                <i class="fas fa-key section-icon"></i>
+                <h2>Private Keys: The Foundation of Ownership</h2>
+            </div>
+            
+            <h3>What is a Private Key?</h3>
+            <p>A <strong>private key</strong> is simply a 256-bit number chosen at random. This number is the ultimate source of control in Bitcoin. Anyone who knows your private key can spend your bitcoin.</p>
+            
+            <div class="callout callout-warning">
+                <div class="callout-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Critical Security Principle</strong>
+                </div>
+                <p><strong>"Not your keys, not your coins"</strong> - If you don't control the private key, you don't truly own the bitcoin. Key loss = permanent bitcoin loss. There is NO recovery mechanism.</p>
+            </div>
+            
+            <h3>Private Key Format</h3>
+            <p>A private key can be represented in various formats:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Format</th>
+                        <th>Example</th>
+                        <th>Use Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Hex</strong></td>
+                        <td><code>E9873D79C6D87DC0FB6A5778633389F4453213303DA61F20BD67FC233AA33262</code></td>
+                        <td>Programming, debugging</td>
+                    </tr>
+                    <tr>
+                        <td><strong>WIF</strong></td>
+                        <td><code>5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF</code></td>
+                        <td>Import/export, paper wallets</td>
+                    </tr>
+                    <tr>
+                        <td><strong>WIF-compressed</strong></td>
+                        <td><code>KxFC1jmwwCoACiCAWZ3eXa96mBM6tb3TYzGmf6YwgdGWZgawvrtJ</code></td>
+                        <td>Modern wallets (smaller transactions)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Decimal</strong></td>
+                        <td><code>105738...</code> (77 digits)</td>
+                        <td>Mathematical operations</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>Generating Secure Private Keys</h3>
+            <p>The security of Bitcoin depends entirely on the randomness of private key generation. A private key must be:</p>
+            
+            <ol>
+                <li><strong>Truly Random:</strong> Generated using cryptographically secure random number generator (CSPRNG)</li>
+                <li><strong>Uniformly Distributed:</strong> All 2²⁵⁶ possible values equally likely</li>
+                <li><strong>Unpredictable:</strong> No pattern or correlation with other keys</li>
+            </ol>
+            
+            <div class="callout callout-error">
+                <div class="callout-title">
+                    <i class="fas fa-skull-crossbones"></i>
+                    <strong>Common Misconception</strong>
+                </div>
+                <p><strong>NEVER</strong> create a private key by typing random characters or using a weak random number generator. Attackers can crack weak keys! Always use:</p>
+                <ul>
+                    <li>Hardware wallet random number generators</li>
+                    <li>Cryptographically secure libraries (e.g., Python's <code>secrets</code> module)</li>
+                    <li>Physical entropy sources (dice rolls, coin flips - but requires 256 flips!)</li>
+                </ul>
+            </div>
+            
+            <h3>Private Key Space</h3>
+            <p>The private key space is enormous: <strong>2²⁵⁶ possible keys</strong></p>
+            
+            <p>To put this in perspective:</p>
+            <pre><code>2²⁵⁶ ≈ 10⁷⁷ (1 followed by 77 zeros)
+
+Comparison:
+- Atoms in observable universe: ~10⁸⁰
+- Grains of sand on Earth: ~10¹⁸
+- Stars in Milky Way: ~10¹¹
+
+Probability of collision: effectively ZERO</code></pre>
+            
+            <div class="callout callout-success">
+                <div class="callout-title">
+                    <i class="fas fa-shield-alt"></i>
+                    <strong>Security Guarantee</strong>
+                </div>
+                <p>The chance of two randomly generated private keys being identical is so astronomically small that it's considered impossible. You can safely generate a key knowing it's virtually certain to be unique.</p>
+            </div>
+        </section>
+        
+        <!-- SECTION 3: PUBLIC KEYS -->
+        <section class="section" id="public-keys">
+            <div class="section-header">
+                <i class="fas fa-lock-open section-icon"></i>
+                <h2>Public Keys: Derived from Private</h2>
+            </div>
+            
+            <h3>Public Key Generation</h3>
+            <p>A <strong>public key</strong> is mathematically derived from a private key using elliptic curve multiplication:</p>
+            
+            <pre><code>K = k × G
+
+where:
+K = Public key (a point on the curve)
+k = Private key (a 256-bit number)
+G = Generator point (constant for secp256k1)</code></pre>
+            
+            <p><strong>Key Property:</strong> This operation is a one-way function:</p>
+            <ul>
+                <li>✅ Easy: Given k, compute K (milliseconds)</li>
+                <li>❌ Hard: Given K, find k (impossible with current technology)</li>
+            </ul>
+            
+            <h3>Public Key Formats</h3>
+            <p>Public keys can be represented in two formats:</p>
+            
+            <h4>1. Uncompressed Public Key (65 bytes)</h4>
+            <pre><code>04 [x-coordinate: 32 bytes] [y-coordinate: 32 bytes]
+
+Example:
+04A0DC65FFCA799873CBEA0AC274015B9B5F0B8C0E4D6E13CBD0FA8C0EC2E5D3...
+  └─ prefix (0x04)
+     └──────────────── x ───────────────┘
+                                        └──────────── y ───────────┘</code></pre>
+            
+            <h4>2. Compressed Public Key (33 bytes)</h4>
+            <p>Modern wallets use compressed keys to save space:</p>
+            <pre><code>02 [x-coordinate: 32 bytes]  (if y is even)
+03 [x-coordinate: 32 bytes]  (if y is odd)
+
+Example:
+02A0DC65FFCA799873CBEA0AC274015B9B5F0B8C0E4D6E13CBD0FA8C0EC2E5D3
+└─ prefix (0x02)
+   └──────────────────────── x ───────────────────────┘</code></pre>
+            
+            <div class="callout callout-info">
+                <div class="callout-title">
+                    <i class="fas fa-compress"></i>
+                    <strong>Why Compression Works</strong>
+                </div>
+                <p>Given the elliptic curve equation y² = x³ + 7, if we know x, we can calculate y² and take the square root. This gives two possible y values (positive and negative). The prefix (02 or 03) indicates which one.</p>
+                <p><strong>Space Savings:</strong> 65 bytes → 33 bytes (49% reduction)</p>
+            </div>
+            
+            <h3>Point Addition on Elliptic Curves</h3>
+            <p>The "multiplication" k × G is actually repeated addition of the generator point to itself k times:</p>
+            
+            <pre><code>1 × G = G
+2 × G = G + G
+3 × G = G + G + G
+...
+k × G = G + G + ... + G (k times)</code></pre>
+            
+            <p>However, we use efficient algorithms (double-and-add) to compute this in logarithmic time rather than linear time.</p>
+        </section>
+        
+        <!-- SECTION 4: BITCOIN ADDRESSES -->
+        <section class="section" id="addresses">
+            <div class="section-header">
+                <i class="fas fa-map-marker-alt section-icon"></i>
+                <h2>Bitcoin Addresses: User-Friendly Identifiers</h2>
+            </div>
+            
+            <h3>What is a Bitcoin Address?</h3>
+            <p>A <strong>Bitcoin address</strong> is a user-friendly representation of the public key, created through a series of cryptographic hashing and encoding steps. Think of it as the "account number" where others can send you bitcoin.</p>
+            
+            <div class="callout callout-success">
+                <div class="callout-title">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>Why Not Use Public Keys Directly?</strong>
+                </div>
+                <ul>
+                    <li><strong>Shorter:</strong> Addresses are shorter and easier to share</li>
+                    <li><strong>Error Detection:</strong> Built-in checksum catches typos</li>
+                    <li><strong>Additional Security:</strong> Double hashing provides extra protection</li>
+                    <li><strong>Script Flexibility:</strong> Addresses can represent various spending conditions</li>
+                </ul>
+            </div>
+            
+            <h3>Address Generation Pipeline</h3>
+            <p>The complete process from private key to address:</p>
+            
+            <pre><code>Private Key (256 bits)
+    ↓ [Elliptic Curve Multiplication]
+Public Key (264 bits uncompressed or 264 bits compressed)
+    ↓ [SHA-256]
+SHA-256 Hash (256 bits)
+    ↓ [RIPEMD-160]
+Public Key Hash (160 bits)
+    ↓ [Add version prefix]
+Versioned Hash (168 bits)
+    ↓ [SHA-256 twice for checksum]
+Checksum (32 bits, first 4 bytes)
+    ↓ [Base58Check Encoding]
+Bitcoin Address (25-34 characters)</code></pre>
+            
+            <h3>Address Types</h3>
+            
+            <h4>1. Legacy Address (P2PKH - Pay to Public Key Hash)</h4>
+            <ul>
+                <li><strong>Prefix:</strong> Starts with <code>1</code></li>
+                <li><strong>Example:</strong> <code>1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</code></li>
+                <li><strong>Use:</strong> Original Bitcoin address format</li>
+                <li><strong>Size:</strong> 25-34 characters</li>
+            </ul>
+            
+            <h4>2. Script Hash Address (P2SH - Pay to Script Hash)</h4>
+            <ul>
+                <li><strong>Prefix:</strong> Starts with <code>3</code></li>
+                <li><strong>Example:</strong> <code>3J98t1WpEZ73CNmYviecrnyiWrnqRhWNLy</code></li>
+                <li><strong>Use:</strong> Multisignature and complex scripts</li>
+                <li><strong>Feature:</strong> Moves script complexity from sender to receiver</li>
+            </ul>
+            
+            <h4>3. SegWit Address (Bech32)</h4>
+            <ul>
+                <li><strong>Prefix:</strong> Starts with <code>bc1</code></li>
+                <li><strong>Example:</strong> <code>bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4</code></li>
+                <li><strong>Use:</strong> Native SegWit (Segregated Witness)</li>
+                <li><strong>Benefits:</strong> Lower fees, better error detection, case-insensitive</li>
+            </ul>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>P2PKH (1...)</th>
+                        <th>P2SH (3...)</th>
+                        <th>Bech32 (bc1...)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Introduced</strong></td>
+                        <td>2009</td>
+                        <td>2012</td>
+                        <td>2017</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transaction Size</strong></td>
+                        <td>Large</td>
+                        <td>Medium</td>
+                        <td>Small</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fees</strong></td>
+                        <td>High</td>
+                        <td>Medium</td>
+                        <td>Low (10-40% savings)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Error Detection</strong></td>
+                        <td>Basic</td>
+                        <td>Basic</td>
+                        <td>Advanced</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Compatibility</strong></td>
+                        <td>Universal</td>
+                        <td>Universal</td>
+                        <td>Modern wallets only</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>Base58Check Encoding</h3>
+            <p>Bitcoin uses <strong>Base58Check</strong> encoding for addresses (P2PKH and P2SH types):</p>
+            
+            <pre><code>Base58 Alphabet (58 characters):
+123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz
+
+Excluded characters (to avoid confusion):
+0 (zero) - looks like O
+O (uppercase o) - looks like 0
+I (uppercase i) - looks like l
+l (lowercase L) - looks like I</code></pre>
+            
+            <div class="callout callout-info">
+                <div class="callout-title">
+                    <i class="fas fa-check-double"></i>
+                    <strong>Checksum Protection</strong>
+                </div>
+                <p>Base58Check adds a 4-byte checksum (first 4 bytes of double SHA-256 hash) to detect typos:</p>
+                <ul>
+                    <li>Catches nearly all single-character errors</li>
+                    <li>Catches most transposition errors</li>
+                    <li>Probability of accepting invalid address: ~1 in 4 billion</li>
+                </ul>
+            </div>
+        </section>
+        
+        <!-- SECTION 5: WALLETS -->
+        <section class="section" id="wallets">
+            <div class="section-header">
+                <i class="fas fa-wallet section-icon"></i>
+                <h2>Bitcoin Wallets: Key Management Systems</h2>
+            </div>
+            
+            <h3>What is a Bitcoin Wallet?</h3>
+            <p>Despite the name, a Bitcoin wallet doesn't actually "store" bitcoin. Instead, it:</p>
+            <ul>
+                <li><strong>Stores private keys</strong> that control access to bitcoin addresses</li>
+                <li><strong>Generates new addresses</strong> for receiving payments</li>
+                <li><strong>Creates and signs transactions</strong> to send bitcoin</li>
+                <li><strong>Tracks balance</strong> by scanning the blockchain</li>
+            </ul>
+            
+            <div class="callout callout-warning">
+                <div class="callout-title">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Key Concept</strong>
+                </div>
+                <p>Bitcoin doesn't exist in wallets - it exists as entries on the blockchain. Your wallet is just a keychain that proves ownership of those blockchain entries.</p>
+            </div>
+            
+            <h3>Hierarchical Deterministic (HD) Wallets</h3>
+            <p>Modern wallets use <strong>HD wallet</strong> technology (BIP-32, BIP-44) that generates all keys from a single seed:</p>
+            
+            <pre><code>Seed (128-256 bits random)
+    ↓ [Mnemonic encoding - BIP-39]
+12-24 Word Phrase
+    ↓ [Key Derivation - BIP-32]
+Master Private Key
+    ↓ [Hierarchical derivation]
+Child Keys (billions of keys from one seed)</code></pre>
+            
+            <h4>Advantages of HD Wallets</h4>
+            <ul>
+                <li><strong>Single Backup:</strong> One seed backs up unlimited keys</li>
+                <li><strong>Organizational Structure:</strong> Keys organized in tree hierarchy</li>
+                <li><strong>Account Isolation:</strong> Separate keys for different purposes</li>
+                <li><strong>Extended Public Keys:</strong> Generate receive addresses without private keys</li>
+            </ul>
+            
+            <h3>Mnemonic Code Words (BIP-39)</h3>
+            <p>HD wallets use human-readable <strong>mnemonic phrases</strong> instead of random hex strings:</p>
+            
+            <pre><code>Example 12-word phrase:
+witch collapse practice feed shame open despair creek road again ice least
+
+Example 24-word phrase:
+void come effort suffer camp survey warrior heavy shoot primary clutch
+crush open amazing screen patrol group space point ten exist slush
+involve unfold</code></pre>
+            
+            <div class="callout callout-error">
+                <div class="callout-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Security Critical</strong>
+                </div>
+                <p><strong>Your mnemonic phrase IS your wallet.</strong> Anyone with these words controls all your bitcoin. Never:</p>
+                <ul>
+                    <li>Store it digitally (photos, cloud, email)</li>
+                    <li>Share it with anyone</li>
+                    <li>Enter it on websites claiming to "verify" or "restore" your wallet</li>
+                </ul>
+                <p><strong>DO:</strong> Write it on paper, store in secure location (safe, safety deposit box)</p>
+            </div>
+            
+            <h3>Wallet Types</h3>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Security</th>
+                        <th>Use Case</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Hardware Wallet</strong></td>
+                        <td>Dedicated device (Ledger, Trezor)</td>
+                        <td>⭐⭐⭐⭐⭐</td>
+                        <td>Long-term storage, large amounts</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Paper Wallet</strong></td>
+                        <td>Keys printed on paper</td>
+                        <td>⭐⭐⭐⭐</td>
+                        <td>Cold storage, gifts</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Desktop Wallet</strong></td>
+                        <td>Software on computer</td>
+                        <td>⭐⭐⭐</td>
+                        <td>Regular use, medium amounts</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mobile Wallet</strong></td>
+                        <td>App on smartphone</td>
+                        <td>⭐⭐</td>
+                        <td>Daily transactions, small amounts</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Web Wallet</strong></td>
+                        <td>Browser-based service</td>
+                        <td>⭐</td>
+                        <td>Convenience (not recommended for storage)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        
+        <!-- INTERACTIVE GAMES SECTION -->
+        <section class="section" id="games">
+            <div class="section-header">
+                <i class="fas fa-gamepad section-icon"></i>
+                <h2>Interactive Learning Games</h2>
+            </div>
+            
+            <p>Test your knowledge and reinforce learning through these engaging games. Each game focuses on specific concepts and provides immediate feedback.</p>
+            
+            <!-- Game Placeholders - Will be implemented in Phase 5 -->
+            <div class="interactive-placeholder">
+                <i class="fas fa-puzzle-piece"></i>
+                <h4>Game 1: Key Concept Matching</h4>
+                <p>Drag and drop cryptographic terms to match their definitions</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-brain"></i>
+                <h4>Game 2: Blockchain Memory Cards</h4>
+                <p>Match pairs of related blockchain concepts</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-sort-numeric-down"></i>
+                <h4>Game 3: Algorithm Sequence</h4>
+                <p>Order the steps of key generation and address derivation</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-key"></i>
+                <h4>Game 4: Key Generation Simulator</h4>
+                <p>Interactive visualization of private and public key creation</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-map-marked-alt"></i>
+                <h4>Game 5: Address Derivation Visualizer</h4>
+                <p>Step-by-step walkthrough of converting public keys to addresses</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-signature"></i>
+                <h4>Game 6: Digital Signature Simulator</h4>
+                <p>Create and verify signatures to understand the signing process</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-shield-alt"></i>
+                <h4>Game 7: Security Vulnerability Hunt</h4>
+                <p>Identify security issues in wallet scenarios</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-bug"></i>
+                <h4>Game 8: Code Debugging Challenge</h4>
+                <p>Fix broken code implementing key operations</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-lightbulb"></i>
+                <h4>Game 9: Real-World Scenario Solver</h4>
+                <p>Apply your knowledge to solve practical Bitcoin problems</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-stopwatch"></i>
+                <h4>Game 10: Operations Speed Challenge</h4>
+                <p>Race against time to perform key and address operations</p>
+            </div>
+        </section>
+        
+        <!-- QUIZ SECTION -->
+        <section class="section" id="quiz">
+            <div class="section-header">
+                <i class="fas fa-question-circle section-icon"></i>
+                <h2>Interactive Quiz</h2>
+            </div>
+            
+            <p>Test your understanding with this Kahoot-style quiz featuring 25 questions across all major topics. Questions range from basic concepts to advanced applications.</p>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-clipboard-check"></i>
+                <h4>25-Question Interactive Quiz</h4>
+                <p>Multiple choice, true/false, and fill-in-the-blank questions with immediate feedback and explanations</p>
+            </div>
+        </section>
+        
+        <!-- CODING EXERCISES SECTION -->
+        <section class="section" id="coding">
+            <div class="section-header">
+                <i class="fas fa-code section-icon"></i>
+                <h2>Hands-On Coding Exercises</h2>
+            </div>
+            
+            <p>Practice implementing Bitcoin key and address operations through these interactive coding challenges. Each exercise includes auto-validation and progressive hints.</p>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-terminal"></i>
+                <h4>Exercise 1: Generate Random Private Key</h4>
+                <p>Implement secure private key generation using CSPRNG</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-terminal"></i>
+                <h4>Exercise 2: Derive Public Key from Private</h4>
+                <p>Use elliptic curve multiplication to generate public keys</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-terminal"></i>
+                <h4>Exercise 3: Implement Base58Check Encoding</h4>
+                <p>Build the address encoding algorithm from scratch</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-terminal"></i>
+                <h4>Exercise 4: Create Bitcoin Address</h4>
+                <p>Complete pipeline from public key to address with checksum</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-terminal"></i>
+                <h4>Exercise 5: Validate Bitcoin Address</h4>
+                <p>Verify address format and checksum correctness</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-terminal"></i>
+                <h4>Exercise 6: Sign Transaction</h4>
+                <p>Create ECDSA signature for transaction data</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-terminal"></i>
+                <h4>Exercise 7: Verify Signature</h4>
+                <p>Validate digital signature against public key</p>
+            </div>
+            
+            <div class="interactive-placeholder">
+                <i class="fas fa-terminal"></i>
+                <h4>Exercise 8: HD Wallet Key Derivation</h4>
+                <p>Implement BIP-32 hierarchical key generation</p>
+            </div>
+        </section>
+        
+    </main>
+    
+    <!-- SCROLL TO TOP BUTTON -->
+    <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    
+    <!-- ===== JAVASCRIPT ===== -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    
+    <script>
+        // ===== PROGRESS TRACKING =====
+        function updateProgress() {
+            const sections = document.querySelectorAll('.section');
+            const scrollPosition = window.scrollY + window.innerHeight / 2;
+            const documentHeight = document.documentElement.scrollHeight;
+            
+            let currentSection = 0;
+            sections.forEach((section, index) => {
+                const sectionTop = section.offsetTop;
+                if (scrollPosition >= sectionTop) {
+                    currentSection = index + 1;
+                }
+            });
+            
+            const progress = Math.min((currentSection / sections.length) * 100, 100);
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = Math.round(progress) + '%';
+        }
+        
+        // ===== SCROLL TO TOP BUTTON =====
+        const scrollTopBtn = document.getElementById('scrollTop');
+        
+        function toggleScrollTopButton() {
+            if (window.scrollY > 300) {
+                scrollTopBtn.classList.add('visible');
+            } else {
+                scrollTopBtn.classList.remove('visible');
+            }
+        }
+        
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // ===== SMOOTH SCROLL FOR NAVIGATION =====
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // ===== SCROLL EVENT LISTENERS =====
+        window.addEventListener('scroll', () => {
+            updateProgress();
+            toggleScrollTopButton();
+        });
+        
+        // ===== INITIAL CALLS =====
+        updateProgress();
+        toggleScrollTopButton();
+        
+        // ===== SECTION ANIMATION ON SCROLL =====
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.section').forEach(section => {
+            observer.observe(section);
+        });
+        
+        // ===== CONSOLE MESSAGE =====
+        console.log('%c🔐 SEN0401: Bitcoin Keys & Addresses', 'font-size: 20px; font-weight: bold; color: #2563EB;');
+        console.log('%cInteractive Learning Platform - Phase 4 Core Implementation', 'font-size: 14px; color: #6B7280;');
+        console.log('%cPhase 5 will add 10 games, quiz system, and 8 coding exercises!', 'font-size: 12px; color: #10B981;');
+    </script>
+</body>
+</html>

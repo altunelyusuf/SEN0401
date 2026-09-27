@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEN0401: Week 3 - Bitcoin Core Implementation | Complete Interactive Course</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #7c3aed;
+            --secondary-color: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --bg-gradient: linear-gradient(160deg,#fdf4ff,#ecfeff 35%, #f0fdfa 65%, #fff7ed);
+            --text-dark: #0f172a;
+            --text-light: #ffffff;
+            --card-bg: #ffffff;
+            --shadow: 0 8px 30px rgba(0,0,0,.08);
+            --shadow-hover: 0 15px 40px rgba(0,0,0,0.15);
+            --radius: 16px;
+        }
+        
+        body {
+            font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;
+            background: var(--bg-gradient);
+            line-height: 1.6;
+            color: var(--text-dark);
+            padding-top: 70px;
+        }
+        
+        /* Sticky Navigation */
+        .sticky-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(90deg,#7c3aed,#2563eb);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            padding: 0.8rem 0;
+        }
+        
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .nav-brand {
+            color: var(--text-light);
+            font-size: 1.3rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-brand .code {
+            background: #fff;
+            color: #7c3aed;
+            border-radius: 10px;
+            padding: 2px 10px;
+            font-size: 0.9rem;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        
+        .nav-menu a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .nav-menu a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 1.5rem auto;
+            padding: 0 1.5rem;
+        }
+        
+        /* Hero Section */
+        .hero {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+        }
+        
+        .hero h1 {
+            font-size: clamp(1.8rem, 3vw, 2.5rem);
+            color: var(--primary-color);
+            margin: 0.5rem 0 1rem;
+        }
+        
+        .hero .subtitle {
+            color: #475569;
+            margin-bottom: 1.5rem;
+        }
+        
+        .badge {
+            display: inline-flex;
+            gap: 6px;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #ecfeff;
+            color: #0e7490;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        
+        .hero .illustration {
+            display: grid;
+            place-items: center;
+            padding: 2rem;
+            background: linear-gradient(135deg,#a78bfa,#60a5fa);
+            color: #fff;
+            border-radius: var(--radius);
+        }
+        
+        .hero .illustration .big {
+            font-size: 4rem;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(90deg,#06b6d4,#22c55e);
+            color: #fff;
+            font-weight: 700;
+            padding: 10px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .btn.alt {
+            background: linear-gradient(90deg,#f59e0b,#ef4444);
+        }
+        
+        .btn.secondary {
+            background: linear-gradient(90deg,#7c3aed,#2563eb);
+        }
+        
+        /* Section Styles */
+        .section {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 3px solid var(--secondary-color);
+        }
+        
+        .section h3 {
+            color: var(--secondary-color);
+            font-size: 1.4rem;
+            margin: 1.5rem 0 1rem;
+        }
+        
+        .section h4 {
+            color: var(--text-dark);
+            font-size: 1.2rem;
+            margin: 1rem 0 0.5rem;
+        }
+        
+        /* Grid Layouts */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .g-2 { grid-template-columns: repeat(2, 1fr); }
+        .g-3 { grid-template-columns: repeat(3, 1fr); }
+        
+        @media (max-width: 950px) {
+            .hero, .g-2, .g-3 { grid-template-columns: 1fr; }
+        }
+        
+        /* Learning Objectives */
+        .lo-card {
+            padding: 1.5rem;
+            border-left: 6px solid var(--success-color);
+            background: linear-gradient(135deg, #f0fdfa 0%, #ecfeff 100%);
+            border-radius: 12px;
+        }
+        
+        /* Code Blocks */
+        pre {
+            background: #0b1020;
+            color: #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem;
+            overflow: auto;
+            margin: 1rem 0;
+        }
+        
+        code {
+            font-family: 'Courier New', monospace;
+        }
+        
+        .code-container {
+            background: #1a202c;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #90cdf4;
+        }
+        
+        /* Info Boxes */
+        .info-box {
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            border-left: 5px solid;
+        }
+        
+        .info-box.tip {
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+        
+        .info-box.warning {
+            background: #fffbeb;
+            border-color: #f59e0b;
+        }
+        
+        .info-box.success {
+            background: #f0fdf4;
+            border-color: #22c55e;
+        }
+        
+        /* Games Section */
+        .games {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .game {
+            background: #fff;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            border-left: 6px solid #7c3aed;
+        }
+        
+        .game h3 {
+            color: #7c3aed;
+            margin: 0 0 1rem 0;
+        }
+        
+        /* Game Elements */
+        .dragzone {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 12px;
+            background: #f5f3ff;
+            border-radius: 12px;
+            min-height: 60px;
+        }
+        
+        .draggable {
+            background: #ede9fe;
+            border: 2px dashed #a78bfa;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: grab;
+            user-select: none;
+        }
+        
+        .draggable:active {
+            cursor: grabbing;
+        }
+        
+        .drop {
+            background: #ecfeff;
+            border: 2px dashed #67e8f9;
+            border-radius: 12px;
+            padding: 12px;
+            min-height: 60px;
+        }
+        
+        /* Quiz Styles */
+        .quiz {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .quiz .q {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .quiz .options {
+            display: grid;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        
+        .quiz button.opt {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            background: #f0f9ff;
+            border: 2px solid #bae6fd;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .quiz button.opt:hover {
+            background: #e0f2fe;
+            transform: translateX(5px);
+        }
+        
+        .quiz button.opt.correct {
+            background: #dcfce7;
+            border-color: #86efac;
+        }
+        
+        .quiz button.opt.wrong {
+            background: #fee2e2;
+            border-color: #fecaca;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .tabs button {
+            background: #eef2ff;
+            color: #3730a3;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        
+        .tabs button[aria-selected="true"] {
+            background: #3730a3;
+            color: #fff;
+        }
+        
+        .tabpanel {
+            display: none;
+        }
+        
+        .tabpanel.active {
+            display: block;
+        }
+        
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .data-table thead {
+            background: linear-gradient(90deg, #7c3aed, #2563eb);
+            color: white;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        /* Pills */
+        .pill {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #fef3c7;
+            color: #92400e;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        
+        .pill.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        /* Utilities */
+        .flex { display: flex; gap: 10px; align-items: center; }
+        .right { margin-left: auto; }
+        .mt8 { margin-top: 8px; }
+        .mt12 { margin-top: 12px; }
+        .mt20 { margin-top: 20px; }
+        .mb12 { margin-bottom: 12px; }
+        .hint { font-size: 0.9rem; color: #64748b; }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .section {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .progress-bar {
+            background: #e5e7eb;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, var(--success-color), var(--primary-color));
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Architecture Diagram */
+        .layer {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e0e7ff 100%);
+            padding: 1.2rem;
+            margin: 1rem 0;
+            border-radius: 10px;
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .layer h4 {
+            margin-top: 0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-direction: column;
+            }
+            
+            .nav-menu {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sticky Navigation -->
+    <nav class="sticky-nav">
+        <div class="nav-content">
+            <div class="nav-brand">
+                <span class="code">SEN0401</span>
+                <span>Week 3 — Bitcoin Core</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#objectives">Objectives</a></li>
+                <li><a href="#prep">Preparation</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#setup">Setup</a></li>
+                <li><a href="#rpc">RPC Lab</a></li>
+                <li><a href="#games">10 Games</a></li>
+                <li><a href="#quiz">Quiz</a></li>
+                <li><a href="#coding">Coding</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Hero -->
+        <div class="hero">
+            <div class="card">
+                <span class="badge">🎯 Interactive Learning Week</span>
+                <h1>Bitcoin Core Implementation</h1>
+                <p class="subtitle">Set up a node, explore JSON‑RPC, validate blocks & transactions, and master Bitcoin Core architecture through games, simulations, and hands-on coding.</p>
+                <div class="flex mt12">
+                    <a class="btn" href="#games">Play Games</a>
+                    <a class="btn alt" href="#quiz">Take Quiz</a>
+                    <a class="btn secondary" href="#setup">Setup Guide</a>
+                </div>
+            </div>
+            <div class="card illustration">
+                <div class="big">₿</div>
+                <div>P2P • Validation • Storage • RPC</div>
+            </div>
+        </div>
+
+        <!-- Progress Tracking -->
+        <div class="progress-container">
+            <h3>📊 Your Learning Progress</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%">0%</div>
+            </div>
+            <p id="progress-text">Start your journey by exploring the sections below!</p>
+        </div>
+
+        <!-- Overview -->
+        <section class="section" id="overview">
+            <h2>📋 Week 3 Overview</h2>
+            <p>Welcome to Week 3! This week focuses on <strong>Bitcoin Core</strong>, the reference implementation of Bitcoin. You'll learn to set up nodes, understand the architecture, and interact programmatically through JSON-RPC.</p>
+            
+            <div class="grid g-3">
+                <div class="lo-card">
+                    <h4>🔧 Apply</h4>
+                    <p>Set up Bitcoin Core node from source or binaries, configure <code>bitcoin.conf</code>, and run in different modes.</p>
+                </div>
+                <div class="lo-card">
+                    <h4>🔍 Analyze</h4>
+                    <p>Examine Bitcoin Core subsystems: P2P networking, validation, storage (blk*.dat & chainstate), wallet, and RPC server.</p>
+                </div>
+                <div class="lo-card">
+                    <h4>⚖️ Evaluate</h4>
+                    <p>Compare node configurations (full-index, pruned, bandwidth-limited) and justify trade-offs for different scenarios.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Learning Objectives -->
+        <section class="section" id="objectives">
+            <h2>🎓 Learning Objectives</h2>
+            
+            <div class="info-box tip">
+                <h4>By the end of this week, you will be able to:</h4>
+                <ul>
+                    <li><strong>Apply:</strong> Install, configure, and run Bitcoin Core node</li>
+                    <li><strong>Analyze:</strong> Understand the four-layer architecture in depth</li>
+                    <li><strong>Evaluate:</strong> Choose optimal configurations for specific use cases</li>
+                    <li><strong>Create:</strong> Build applications using the JSON-RPC API</li>
+                    <li><strong>Master:</strong> 20 essential RPC commands for development</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Preparation -->
+        <section class="section" id="prep">
+            <h2>📚 Preparation Materials</h2>
+            
+            <div class="grid g-2">
+                <div class="card">
+                    <h3>Reading: Chapter 3</h3>
+                    <p>Read the full Chapter 3 to understand Bitcoin Core as the authoritative implementation, build process, runtime configuration, and JSON‑RPC usage.</p>
+                    <p class="hint mt12">Covers compilation, configuration, and RPC examples in detail.</p>
+                </div>
+                
+                <div class="card">
+                    <h3>Pre-requisites</h3>
+                    <ul>
+                        <li>Command-line basics (bash, terminal)</li>
+                        <li>Understanding of JSON format</li>
+                        <li>Basic programming (Python recommended)</li>
+                        <li>Git version control</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h3>Quick Installation Guide</h3>
+            <div class="tabs" role="tablist">
+                <button role="tab" aria-selected="true" data-tab="src">Build from Source</button>
+                <button role="tab" aria-selected="false" data-tab="bin">Use Binaries</button>
+            </div>
+            
+            <div id="tab-src" class="tabpanel active">
+                <pre><code>$ git clone https://github.com/bitcoin/bitcoin.git
+$ cd bitcoin
+$ git tag  # list releases
+$ git checkout v25.0  # latest stable
+$ ./autogen.sh && ./configure && make -j$(nproc)
+$ sudo make install  # installs bitcoind, bitcoin-cli</code></pre>
+            </div>
+            
+            <div id="tab-bin" class="tabpanel">
+                <pre><code># Download from bitcoincore.org
+# Verify signatures and checksums
+$ bitcoind -daemon
+$ bitcoin-cli getblockchaininfo</code></pre>
+            </div>
+            
+            <p class="hint mt12">💡 Use <span class="pill">prune=5000</span> for constrained disks, <span class="pill">txindex=1</span> for full transaction queries.</p>
+        </section>
+
+        <!-- Architecture -->
+        <section class="section" id="architecture">
+            <h2>🏗️ Bitcoin Core Architecture</h2>
+            
+            <p>Bitcoin Core is organized into four main layers. Understanding this architecture is crucial for development.</p>
+            
+            <div class="layer" style="border-color: #ef4444;">
+                <h4>🌐 Network Layer (P2P)</h4>
+                <p>Handles peer discovery, connection management, message propagation, and DoS protection.</p>
+            </div>
+            
+            <div class="layer" style="border-color: #f59e0b;">
+                <h4>⚖️ Consensus Layer (Validation)</h4>
+                <p>Transaction validation, block validation, script execution, and consensus rule enforcement.</p>
+            </div>
+            
+            <div class="layer" style="border-color: #10b981;">
+                <h4>💾 Storage Layer (Database)</h4>
+                <p>Blockchain storage in blk*.dat, UTXO set in LevelDB chainstate, and optional transaction index.</p>
+            </div>
+            
+            <div class="layer" style="border-color: #3b82f6;">
+                <h4>👛 Wallet & RPC Layer</h4>
+                <p>Key management, transaction creation, coin selection, and JSON-RPC API server.</p>
+            </div>
+        </section>
+
+        <!-- Setup Guide -->
+        <section class="section" id="setup">
+            <h2>⚙️ Node Setup & Configuration</h2>
+            
+            <h3>1. Create bitcoin.conf</h3>
+            <div class="code-container">
+                <pre><code># ~/.bitcoin/bitcoin.conf
+
+# RPC Credentials (CHANGE THESE!)
+rpcuser=bitcoinrpc
+rpcpassword=YOUR_SECURE_PASSWORD
+
+# Resource-constrained setup
+prune=5000              # Keep only 5GB
+maxconnections=15       # Limit peers
+maxmempool=200          # 200MB mempool
+
+# Full-index backend (optional)
+# txindex=1             # Enable full tx lookup</code></pre>
+            </div>
+            
+            <h3>2. Configuration Options</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Option</th>
+                        <th>Purpose</th>
+                        <th>Recommended Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>prune</code></td>
+                        <td>Reduce disk space by deleting old blocks</td>
+                        <td>5000 (5GB) for constrained systems</td>
+                    </tr>
+                    <tr>
+                        <td><code>txindex</code></td>
+                        <td>Maintain index of ALL transactions</td>
+                        <td>1 for API/dev, 0 otherwise</td>
+                    </tr>
+                    <tr>
+                        <td><code>maxconnections</code></td>
+                        <td>Limit peer connections</td>
+                        <td>15-30 for limited bandwidth</td>
+                    </tr>
+                    <tr>
+                        <td><code>dbcache</code></td>
+                        <td>Database cache size (MB)</td>
+                        <td>450-4096 depending on RAM</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>3. Running the Node</h3>
+            <div class="code-container">
+                <pre><code># Start in foreground (testing)
+$ bitcoind -printtoconsole
+
+# Start as daemon (production)
+$ bitcoind -daemon
+
+# Check status
+$ bitcoin-cli getblockchaininfo
+
+# Stop the node
+$ bitcoin-cli stop</code></pre>
+            </div>
+        </section>
+
+        <!-- RPC Playground -->
+        <section class="section" id="rpc">
+            <h2>💻 RPC Playground (Interactive Simulator)</h2>
+            
+            <p>Practice common JSON-RPC commands. This simulator mimics responses for learning. For a real node, use your configured credentials.</p>
+            
+            <div class="grid g-2">
+                <div>
+                    <label><strong>Command</strong></label>
+                    <select id="rpcSelect" class="mt8" style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #e5e7eb;">
+                        <option value="getblockhash">getblockhash 1000</option>
+                        <option value="getblock">getblock &lt;hash&gt;</option>
+                        <option value="getblockchaininfo">getblockchaininfo</option>
+                        <option value="decoderawtransaction">decoderawtransaction &lt;hex&gt;</option>
+                        <option value="getrawtransaction">getrawtransaction &lt;txid&gt;</option>
+                    </select>
+                    <button class="btn mt12" id="runRpc">▶ Run Command</button>
+                </div>
+                <div>
+                    <label><strong>Result</strong></label>
+                    <pre id="rpcOut" class="mt8" style="min-height: 150px;">(result will appear here)</pre>
+                </div>
+            </div>
+            
+            <details class="mt12">
+                <summary style="cursor: pointer; font-weight: 700; color: #7c3aed;">📖 Show cURL & Python Examples</summary>
+                <div class="mt12">
+                    <h4>cURL Example:</h4>
+                    <pre><code>curl --user rpcuser:rpcpass \
+  --data-binary '{"jsonrpc":"1.0","id":"x","method":"getblockhash","params":[1000]}' \
+  -H 'content-type: text/plain;' http://127.0.0.1:8332/</code></pre>
+                    
+                    <h4>Python Example:</h4>
+                    <pre><code>from bitcoin.rpc import RawProxy
+p = RawProxy()
+print(p.getblockhash(1000))</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <!-- Games Section -->
+        <section class="section" id="games">
+            <h2>🎮 Interactive Mini-Games (10 Games)</h2>
+            
+            <p>Master Bitcoin Core concepts through engaging games. Each game teaches specific concepts with immediate feedback!</p>
+            
+            <div class="info-box success">
+                <h4>🏆 Game Suite Features</h4>
+                <ul>
+                    <li><strong>10 Complete Games</strong> covering all Bitcoin Core concepts</li>
+                    <li><strong>Instant Feedback</strong> - learn from mistakes in real-time</li>
+                    <li><strong>No External Dependencies</strong> - pure HTML/CSS/JavaScript</li>
+                    <li><strong>Progressive Difficulty</strong> - from Easy to Hard</li>
+                </ul>
+            </div>
+            
+            <div class="games">
+                <!-- Game 1: Layer Builder -->
+                <div class="game" id="g1">
+                    <h3>1️⃣ Architecture Layer Builder</h3>
+                    <p>Drag components into the correct architectural layers.</p>
+                    <div class="grid g-2 mt12">
+                        <div>
+                            <strong>Available Components:</strong>
+                            <div class="dragzone" id="pieces"></div>
+                        </div>
+                        <div>
+                            <strong>Architectural Layers:</strong>
+                            <div class="drop" data-layer="P2P" style="background: #fee2e2; border-color: #fca5a5;">P2P Layer</div>
+                            <div class="drop mt8" data-layer="Validation" style="background: #fed7aa; border-color: #fdba74;">Validation Layer</div>
+                            <div class="drop mt8" data-layer="Storage" style="background: #d1fae5; border-color: #6ee7b7;">Storage Layer</div>
+                            <div class="drop mt8" data-layer="RPC" style="background: #dbeafe; border-color: #93c5fd;">RPC Layer</div>
+                        </div>
+                    </div>
+                    <button class="btn mt12" onclick="scoreG1()">Check Answer</button>
+                    <span id="g1score" class="pill" style="display:none"></span>
+                </div>
+
+                <!-- Game 2: Transaction Validator -->
+                <div class="game" id="g2">
+                    <h3>2️⃣ Transaction Validator</h3>
+                    <p>Validate a transaction by checking consensus rules.</p>
+                    <div class="grid g-2">
+                        <div>
+                            <label><strong>Inputs reference unspent outputs?</strong></label>
+                            <select id="g2a" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px;">
+                                <option>Yes</option>
+                                <option>No</option>
+                            </select>
+                            
+                            <label class="mt12"><strong>Signatures verify against pubkeys?</strong></label>
+                            <select id="g2b" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px;">
+                                <option>Yes</option>
+                                <option>No</option>
+                            </select>
+                        </div>
+                        <div>
+                            <p class="hint">Select the correct validation checks for a valid Bitcoin transaction.</p>
+                            <button class="btn" onclick="scoreG2()">Validate Transaction</button>
+                            <span id="g2score" class="pill" style="display:none"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game 3: UTXO Memory Match -->
+                <div class="game" id="g3">
+                    <h3>3️⃣ UTXO Memory Match</h3>
+                    <p>Flip cards to match Bitcoin concepts with their definitions!</p>
+                    <div id="memory" class="dragzone"></div>
+                    <div class="flex mt12">
+                        <button class="btn" onclick="resetMemory()">🔄 Shuffle Cards</button>
+                        <span id="g3score" class="pill" style="display:none"></span>
+                    </div>
+                </div>
+
+                <!-- Game 4: P2P Simulator -->
+                <div class="game" id="g4">
+                    <h3>4️⃣ P2P Network Simulator</h3>
+                    <p>Simulate block propagation across the Bitcoin network.</p>
+                    <div class="grid g-2">
+                        <div>
+                            <label><strong>Number of Peers</strong></label>
+                            <input id="peers" type="number" min="2" max="128" value="16" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px;" />
+                            
+                            <label class="mt12"><strong>Network Latency (ms)</strong></label>
+                            <input id="lat" type="number" min="10" max="800" value="120" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px;" />
+                            
+                            <button class="btn mt12" onclick="simulateP2P()">🌐 Simulate Propagation</button>
+                        </div>
+                        <div>
+                            <strong>Propagation Metrics:</strong>
+                            <pre id="p2pout" style="min-height: 100px;">(metrics will appear here)</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game 5: Script Executor -->
+                <div class="game" id="g5">
+                    <h3>5️⃣ Script Stack Executor</h3>
+                    <p>Step through Bitcoin Script execution and watch the stack!</p>
+                    <div>
+                        <label><strong>Script:</strong></label>
+                        <input id="script" value="OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; font-family: monospace;"/>
+                        
+                        <div class="flex mt12">
+                            <button class="btn" onclick="stepScript()">▶ Step</button>
+                            <button class="btn alt" onclick="resetScript()">🔄 Reset</button>
+                        </div>
+                        
+                        <label class="mt12"><strong>Stack State:</strong></label>
+                        <pre id="stack">[]</pre>
+                    </div>
+                </div>
+
+                <!-- Game 6: Block Validation -->
+                <div class="game" id="g6">
+                    <h3>6️⃣ Block Validation Challenge</h3>
+                    <p>Find the invalid property in this block header.</p>
+                    <div class="grid g-2">
+                        <div>
+                            <label><strong>Bits (difficulty target)</strong></label>
+                            <input id="bits" value="1903a30c" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; font-family: monospace;" />
+                            
+                            <label class="mt12"><strong>Nonce</strong></label>
+                            <input id="nonce" value="924591752" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; font-family: monospace;" />
+                            
+                            <label class="mt12"><strong>Merkle Root Length (hex chars)</strong></label>
+                            <input id="mrlen" type="number" value="64" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px;" />
+                            
+                            <button class="btn mt12" onclick="checkBlock()">🔍 Validate Block</button>
+                        </div>
+                        <div>
+                            <strong>Validation Result:</strong>
+                            <pre id="blockout" style="min-height: 150px;"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game 7: API Command Master -->
+                <div class="game" id="g7">
+                    <h3>7️⃣ API Command Master</h3>
+                    <p>Match RPC commands with their descriptions!</p>
+                    <div class="grid g-2">
+                        <div>
+                            <label><strong>Command:</strong></label>
+                            <select id="cmd" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px;">
+                                <option>getblockhash</option>
+                                <option>getblock</option>
+                                <option>getrawtransaction</option>
+                                <option>decoderawtransaction</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label><strong>Description:</strong></label>
+                            <select id="desc" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px;">
+                                <option>Return block hash by height</option>
+                                <option>Return block by hash</option>
+                                <option>Return raw tx hex</option>
+                                <option>Decode tx hex to JSON</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn mt12" onclick="scoreG7()">Check Match</button>
+                    <span id="g7score" class="pill" style="display:none"></span>
+                </div>
+
+                <!-- Game 8: Coin Selection -->
+                <div class="game" id="g8">
+                    <h3>8️⃣ Coin Selection Optimizer</h3>
+                    <p>Select UTXOs to reach the target amount with minimal change!</p>
+                    <div>
+                        <label><strong>Available UTXOs (BTC):</strong></label>
+                        <input id="utxos" value="[0.02,0.03,0.015,0.01,0.05]" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; font-family: monospace;"/>
+                        
+                        <label class="mt12"><strong>Target Amount (BTC):</strong></label>
+                        <input id="target" value="0.06" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 6px; font-family: monospace;"/>
+                        
+                        <button class="btn mt12" onclick="optimizeCoins()">⚡ Optimize Selection</button>
+                        
+                        <label class="mt12"><strong>Result:</strong></label>
+                        <pre id="coinout"></pre>
+                    </div>
+                </div>
+
+                <!-- Game 9: BIP Timeline -->
+                <div class="game" id="g9">
+                    <h3>9️⃣ BIP Timeline Quest</h3>
+                    <p>Drag to reorder these Bitcoin Improvement Proposals chronologically!</p>
+                    <ol id="timeline" class="dragzone" style="list-style-position: inside;"></ol>
+                    <button class="btn mt12" onclick="scoreTimeline()">📅 Check Order</button>
+                    <span id="g9score" class="pill" style="display:none"></span>
+                </div>
+
+                <!-- Game 10: Node Sync -->
+                <div class="game" id="g10">
+                    <h3>🔟 Node Sync Master</h3>
+                    <p>Optimize node configuration for fastest Initial Block Download!</p>
+                    <div class="grid g-2">
+                        <div>
+                            <label><strong>dbcache (MB)</strong></label>
+                            <input id="dbcache" type="number" value="450" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px;" />
+                            
+                            <label class="mt12"><strong>Peers</strong></label>
+                            <input id="peers2" type="number" value="24" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px;" />
+                            
+                            <label class="mt12"><strong>Prune (MB, 0=disabled)</strong></label>
+                            <input id="prune" type="number" value="0" style="width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px;" />
+                            
+                            <button class="btn mt12" onclick="simulateIBD()">⚡ Simulate IBD</button>
+                        </div>
+                        <div>
+                            <strong>IBD Estimate:</strong>
+                            <pre id="ibdout" style="min-height: 100px;">(estimate will appear here)</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section class="section" id="quiz">
+            <h2>📣 Kahoot-style Quiz</h2>
+            
+            <div class="info-box warning">
+                <h4>⏱️ Timed Challenge!</h4>
+                <p>Test your knowledge with this timed quiz. You have 60 seconds to answer 5 questions!</p>
+            </div>
+            
+            <div class="flex mb12">
+                <button class="btn" id="startQuiz">🚀 Start Quiz</button>
+                <div class="right">
+                    <span class="pill" id="timer">Time: 60</span>
+                    <span class="pill success" id="score">Score: 0</span>
+                </div>
+            </div>
+            
+            <div class="quiz" id="quizBox"></div>
+        </section>
+
+        <!-- Coding Exercises -->
+        <section class="section" id="coding">
+            <h2>💻 Coding Exercises</h2>
+            
+            <div class="info-box tip">
+                <h4>Practice Python with Bitcoin Core API</h4>
+                <p>These exercises help you practice programmatic interaction with Bitcoin Core.</p>
+            </div>
+            
+            <h3>Exercise 1: Query Node Status</h3>
+            <div class="code-container">
+                <pre><code>from bitcoin.rpc import RawProxy
+
+# Create connection
+p = RawProxy()
+
+# Get blockchain info
+blockchain_info = p.getblockchaininfo()
+block_count = blockchain_info['blocks']
+print(f"Total blocks: {block_count}")
+
+# Get network info
+network_info = p.getnetworkinfo()
+connections = network_info['connections']
+print(f"Peer connections: {connections}")</code></pre>
+            </div>
+            
+            <h3>Exercise 2: Analyze Block Transactions</h3>
+            <div class="code-container">
+                <pre><code>from bitcoin.rpc import RawProxy
+
+p = RawProxy()
+block_height = 277316
+
+# Get block hash and data
+block_hash = p.getblockhash(block_height)
+block = p.getblock(block_hash)
+tx_list = block['tx']
+
+print(f"Block #{block_height} has {len(tx_list)} transactions")
+
+# Analyze first 5 transactions
+for i, tx_id in enumerate(tx_list[:5]):
+    raw_tx = p.getrawtransaction(tx_id)
+    decoded = p.decoderawtransaction(raw_tx)
+    
+    num_inputs = len(decoded['vin'])
+    num_outputs = len(decoded['vout'])
+    print(f"TX {i+1}: {num_inputs} inputs, {num_outputs} outputs")</code></pre>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="section">
+            <h2>🎯 Week Summary</h2>
+            
+            <h3>What You've Learned:</h3>
+            <ul>
+                <li>✅ Bitcoin Core four-layer architecture</li>
+                <li>✅ Node setup and configuration</li>
+                <li>✅ JSON-RPC API usage</li>
+                <li>✅ Blockchain data querying</li>
+                <li>✅ Resource optimization strategies</li>
+            </ul>
+            
+            <h3>Action Items:</h3>
+            <div class="info-box success">
+                <h4>🔴 Required</h4>
+                <ul>
+                    <li>Install and run Bitcoin Core</li>
+                    <li>Complete all 10 games</li>
+                    <li>Score 80%+ on quiz</li>
+                    <li>Document setup in lab notebook</li>
+                </ul>
+            </div>
+            
+            <div class="info-box tip">
+                <h4>🤖 AI Agent Project</h4>
+                <p>Build an agent that queries Bitcoin Core APIs. Have it detect node status via <code>getblockchaininfo</code> and answer queries with safe fallbacks.</p>
+            </div>
+            
+            <p class="hint mt20">Theme uses joyful gradients & vivid accents for engagement while maintaining accessibility. Always-visible sticky menu ensures easy navigation! 🚀</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Progress Tracking
+        let sectionsViewed = new Set();
+        const totalSections = 9;
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && entry.target.id) {
+                    sectionsViewed.add(entry.target.id);
+                    updateProgress();
+                }
+            });
+        }, { threshold: 0.3 });
+        
+        document.querySelectorAll('.section').forEach(section => {
+            if (section.id) observer.observe(section);
+        });
+        
+        function updateProgress() {
+            const progress = (sectionsViewed.size / totalSections) * 100;
+            const fill = document.getElementById('progress-fill');
+            const text = document.getElementById('progress-text');
+            
+            fill.style.width = progress + '%';
+            fill.textContent = Math.round(progress) + '%';
+            
+            if (progress === 100) {
+                text.textContent = '🎉 Congratulations! You\'ve completed all sections!';
+            } else {
+                text.textContent = `Great progress! ${sectionsViewed.size}/${totalSections} sections completed.`;
+            }
+        }
+
+        // Tabs
+        document.querySelectorAll('.tabs [role="tab"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const root = btn.closest('.section');
+                root.querySelectorAll('[role="tab"]').forEach(b => b.setAttribute('aria-selected', 'false'));
+                btn.setAttribute('aria-selected', 'true');
+                const id = 'tab-' + btn.dataset.tab;
+                root.querySelectorAll('.tabpanel').forEach(p => p.classList.remove('active'));
+                root.querySelector('#' + id).classList.add('active');
+            });
+        });
+
+        // RPC Playground
+        const rpcMap = {
+            getblockhash: { res: '00000000c937983704a73af28acdec37b049d214adbda81d7e2a3dd146f6ed09' },
+            getblock: { res: '{\n  "height": 277316,\n  "tx": ["... 419 txids ..."],\n  "difficulty": 1180923195.258026\n}' },
+            getblockchaininfo: { res: '{\n  "blocks": 820450,\n  "chain": "main",\n  "pruned": false,\n  "size_on_disk": 612389543210\n}' },
+            decoderawtransaction: { res: '{\n  "txid": "0627052b...c2f2",\n  "vin": [...],\n  "vout": [{"n":0,"value":0.015},{"n":1,"value":0.0845}]\n}' },
+            getrawtransaction: { res: '0100000001186f9f998a5aa6f048e51dd8...00000000' }
+        };
+        
+        document.getElementById('runRpc').onclick = () => {
+            const key = document.getElementById('rpcSelect').value;
+            document.getElementById('rpcOut').textContent = rpcMap[key].res;
+        };
+
+        // Game 1: Layer Builder
+        const pieces = [
+            {name: 'Peer Discovery', layer: 'P2P'},
+            {name: 'Block Validation', layer: 'Validation'},
+            {name: 'LevelDB Chainstate', layer: 'Storage'},
+            {name: 'JSON-RPC Server', layer: 'RPC'},
+            {name: 'Message Relay', layer: 'P2P'},
+            {name: 'Script Execution', layer: 'Validation'},
+            {name: 'blk*.dat Files', layer: 'Storage'},
+            {name: 'bitcoin-cli', layer: 'RPC'}
+        ];
+        
+        function initG1() {
+            const host = document.getElementById('pieces');
+            host.innerHTML = '';
+            pieces.sort(() => Math.random() - 0.5).forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'draggable';
+                div.textContent = p.name;
+                div.dataset.layer = p.layer;
+                div.draggable = true;
+                div.ondragstart = (e) => e.dataTransfer.setData('text', p.layer);
+                host.appendChild(div);
+            });
+            
+            document.querySelectorAll('.drop').forEach(drop => {
+                drop.ondragover = (e) => e.preventDefault();
+                drop.ondrop = (e) => {
+                    e.preventDefault();
+                    const layer = e.dataTransfer.getData('text');
+                    if (layer === drop.dataset.layer) {
+                        const dragged = document.querySelector(`.draggable[data-layer="${layer}"]:not([data-placed])`);
+                        if (dragged) {
+                            dragged.dataset.placed = 'true';
+                            drop.appendChild(dragged);
+                        }
+                    }
+                };
+            });
+        }
+        
+        window.scoreG1 = () => {
+            let correct = 0;
+            document.querySelectorAll('.drop').forEach(drop => {
+                const placed = drop.querySelectorAll('.draggable').length;
+                const expected = pieces.filter(p => p.layer === drop.dataset.layer).length;
+                if (placed === expected) correct++;
+            });
+            const el = document.getElementById('g1score');
+            el.textContent = correct === 4 ? '✓ Perfect!' : `${correct}/4 layers correct`;
+            el.style.display = 'inline-block';
+            el.className = correct === 4 ? 'pill success' : 'pill';
+        };
+        
+        initG1();
+
+        // Game 2: Transaction Validator
+        window.scoreG2 = () => {
+            const a = document.getElementById('g2a').selectedIndex;
+            const b = document.getElementById('g2b').selectedIndex;
+            const ok = (a === 0 && b === 0);
+            const el = document.getElementById('g2score');
+            el.textContent = ok ? '✓ Valid Transaction!' : '✗ Invalid - check answers';
+            el.style.display = 'inline-block';
+            el.className = ok ? 'pill success' : 'pill';
+        };
+
+        // Game 3: Memory Match
+        const pairs = [
+            ['UTXO', 'Unspent Transaction Output'],
+            ['Mempool', 'Unconfirmed transaction pool'],
+            ['Coinbase', 'Miner reward transaction'],
+            ['PSBT', 'Partially Signed Bitcoin Transaction']
+        ];
+        let memory = [];
+        
+        function buildMemory() {
+            const host = document.getElementById('memory');
+            host.innerHTML = '';
+            memory = pairs.flatMap(([a, b]) => [
+                {k: a, v: b, t: 'term'},
+                {k: a, v: b, t: 'def'}
+            ]).sort(() => Math.random() - 0.5);
+            
+            memory.forEach((c, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.style.background = 'linear-gradient(90deg,#60a5fa,#22d3ee)';
+                btn.style.minWidth = '120px';
+                btn.textContent = '?';
+                btn.dataset.i = i;
+                btn.onclick = () => flip(btn);
+                host.appendChild(btn);
+            });
+        }
+        
+        let sel = null, solved = 0;
+        
+        function flip(btn) {
+            const i = +btn.dataset.i;
+            const c = memory[i];
+            btn.textContent = c.t === 'term' ? c.k : c.v;
+            btn.disabled = true;
+            
+            if (sel === null) {
+                sel = i;
+            } else {
+                if (memory[sel].k === c.k && memory[sel].t !== c.t) {
+                    solved += 2;
+                } else {
+                    const prevBtn = document.querySelector(`[data-i="${sel}"]`);
+                    setTimeout(() => {
+                        prevBtn.textContent = '?';
+                        prevBtn.disabled = false;
+                        btn.textContent = '?';
+                        btn.disabled = false;
+                    }, 800);
+                }
+                sel = null;
+            }
+            
+            if (solved === memory.length) {
+                const el = document.getElementById('g3score');
+                el.textContent = '🎉 All Matched!';
+                el.style.display = 'inline-block';
+                el.className = 'pill success';
+            }
+        }
+        
+        window.resetMemory = () => {
+            solved = 0;
+            sel = null;
+            buildMemory();
+        };
+        
+        buildMemory();
+
+        // Game 4: P2P Simulator
+        window.simulateP2P = () => {
+            const peers = +document.getElementById('peers').value;
+            const lat = +document.getElementById('lat').value;
+            const hops = Math.ceil(Math.log2(peers));
+            const time = hops * (lat + 20);
+            document.getElementById('p2pout').textContent = 
+                `Network Propagation Analysis:\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━\n` +
+                `Peers: ${peers}\n` +
+                `Estimated Hops: ~${hops}\n` +
+                `Base Latency: ${lat}ms\n` +
+                `Total Propagation Time: ~${time}ms\n\n` +
+                `✓ Block reaches ${Math.round(peers * 0.9)} peers in ${time}ms`;
+        };
+
+        // Game 5: Script Executor
+        let pc = 0;
+        
+        window.stepScript = () => {
+            const stackEl = document.getElementById('stack');
+            const s = stackEl.textContent.trim();
+            let stack = s === '[]' ? [] : JSON.parse(s);
+            const program = document.getElementById('script').value.split(/\s+/);
+            
+            if (pc >= program.length) {
+                stackEl.textContent = JSON.stringify(stack) + '\n✓ Script complete';
+                return;
+            }
+            
+            const op = program[pc++];
+            
+            if (op === 'OP_DUP') {
+                stack.push(stack[stack.length - 1]);
+            } else if (op === 'OP_HASH160') {
+                stack.push('<hash160(' + stack.pop() + ')>');
+            } else if (op === 'OP_EQUALVERIFY') {
+                const b = stack.pop(), a = stack.pop();
+                if (a !== b) {
+                    stack = ['ScriptFail'];
+                    pc = program.length;
+                }
+            } else if (op === 'OP_CHECKSIG') {
+                stack.push('TRUE');
+            } else {
+                stack.push(op);
+            }
+            
+            stackEl.textContent = JSON.stringify(stack);
+        };
+        
+        window.resetScript = () => {
+            pc = 0;
+            document.getElementById('stack').textContent = '[]';
+        };
+
+        // Game 6: Block Validation
+        window.checkBlock = () => {
+            const bits = document.getElementById('bits').value.trim();
+            const nonce = +document.getElementById('nonce').value;
+            const mrlen = +document.getElementById('mrlen').value;
+            const issues = [];
+            
+            if (bits.length !== 8) issues.push('bits must be 8 hex chars');
+            if (mrlen !== 64) issues.push('Merkle root must be 64 hex chars');
+            if (nonce < 0) issues.push('nonce must be >= 0');
+            
+            document.getElementById('blockout').textContent = 
+                issues.length ? 
+                'Validation Issues Found:\n━━━━━━━━━━━━━━━━━━\n• ' + issues.join('\n• ') :
+                '✓ Block header format looks valid!\n\nAll fields meet consensus requirements.';
+        };
+
+        // Game 7: API Command Master
+        window.scoreG7 = () => {
+            const c = document.getElementById('cmd').selectedIndex;
+            const d = document.getElementById('desc').selectedIndex;
+            const ok = (c === d);
+            const el = document.getElementById('g7score');
+            el.textContent = ok ? '✓ Perfect Match!' : '✗ Try again';
+            el.style.display = 'inline-block';
+            el.className = ok ? 'pill success' : 'pill';
+        };
+
+        // Game 8: Coin Selection
+        window.optimizeCoins = () => {
+            try {
+                const arr = JSON.parse(document.getElementById('utxos').value).map(Number).sort((a, b) => b - a);
+                const target = parseFloat(document.getElementById('target').value);
+                let sum = 0, sel = [];
+                
+                for (const v of arr) {
+                    if (sum < target) {
+                        sel.push(v);
+                        sum += v;
+                    }
+                }
+                
+                const change = +(sum - target).toFixed(8);
+                document.getElementById('coinout').textContent = 
+                    `Coin Selection Result:\n` +
+                    `━━━━━━━━━━━━━━━━━━━━\n` +
+                    `Selected UTXOs: [${sel.join(', ')}]\n` +
+                    `Total Amount: ${sum} BTC\n` +
+                    `Target: ${target} BTC\n` +
+                    `Change: ${change} BTC\n\n` +
+                    (change < 0.00001 ? '✓ Excellent selection!' : '⚠ Optimize for less change');
+            } catch (e) {
+                document.getElementById('coinout').textContent = '✗ Invalid input format';
+            }
+        };
+
+        // Game 9: Timeline
+        const events = ['BIP 125 (RBF)', 'BIP 141 (SegWit)', 'BIP 174 (PSBT)', 'Taproot Activation'];
+        const correctOrder = ['BIP 125 (RBF)', 'BIP 141 (SegWit)', 'BIP 174 (PSBT)', 'Taproot Activation'];
+        const tl = document.getElementById('timeline');
+        
+        function buildTL() {
+            tl.innerHTML = '';
+            events.sort(() => Math.random() - 0.5).forEach(ev => {
+                const li = document.createElement('li');
+                li.className = 'draggable';
+                li.textContent = ev;
+                li.draggable = true;
+                tl.appendChild(li);
+            });
+        }
+        
+        buildTL();
+        
+        let dragLi = null;
+        tl.addEventListener('dragstart', e => { dragLi = e.target; });
+        tl.addEventListener('dragover', e => e.preventDefault());
+        tl.addEventListener('drop', e => {
+            e.preventDefault();
+            if (e.target.tagName === 'LI' && dragLi) {
+                tl.insertBefore(dragLi, e.target.nextSibling);
+            }
+        });
+        
+        window.scoreTimeline = () => {
+            const current = [...tl.querySelectorAll('li')].map(li => li.textContent);
+            const ok = current.every((t, i) => t === correctOrder[i]);
+            const el = document.getElementById('g9score');
+            el.textContent = ok ? '✓ Perfect Timeline!' : '✗ Not quite — try again!';
+            el.style.display = 'inline-block';
+            el.className = ok ? 'pill success' : 'pill';
+        };
+
+        // Game 10: IBD Simulator
+        window.simulateIBD = () => {
+            const db = +document.getElementById('dbcache').value;
+            const peers = +document.getElementById('peers2').value;
+            const prune = +document.getElementById('prune').value;
+            
+            let hours = 48 - Math.min(24, db / 64) - Math.min(8, peers / 8) - Math.min(8, prune > 0 ? 6 : 0);
+            hours = Math.max(6, Math.round(hours));
+            
+            document.getElementById('ibdout').textContent = 
+                `IBD Simulation Results:\n` +
+                `━━━━━━━━━━━━━━━━━━━━━\n` +
+                `Configuration:\n` +
+                `  dbcache: ${db} MB\n` +
+                `  Peers: ${peers}\n` +
+                `  Pruning: ${prune > 0 ? 'Enabled (' + prune + ' MB)' : 'Disabled'}\n\n` +
+                `Estimated IBD Time: ~${hours} hours\n` +
+                `(on mid-range hardware)\n\n` +
+                (hours < 12 ? '✓ Excellent configuration!' : 
+                 hours < 24 ? '⚠ Good, but can be optimized' : 
+                 '⚠ Consider increasing dbcache');
+        };
+
+        // Kahoot-style Quiz
+        const questions = [
+            {q: 'What does txindex=1 enable?', a: ['Full transaction lookup by txid', 'Faster mining', 'Bigger blocks', 'Wallet encryption'], k: 0},
+            {q: 'Where is the UTXO set stored?', a: ['chainstate (LevelDB)', 'wallet.dat', 'blk*.dat', 'mempool.dat'], k: 0},
+            {q: 'Which RPC returns a block hash for a height?', a: ['getblock', 'getblockhash', 'getblockchaininfo', 'getrawtransaction'], k: 1},
+            {q: 'Pruning reduces…', a: ['CPU usage', 'Disk usage', 'Consensus rules', 'Network difficulty'], k: 1},
+            {q: 'Bitcoin Core is best described as…', a: ['A custodial wallet', 'The reference implementation full node', 'An exchange', 'A miner pool'], k: 1}
+        ];
+        
+        let qi = 0, score = 0, time = 60, timerId = null;
+        const box = document.getElementById('quizBox');
+        
+        function renderQ() {
+            const {q, a, k} = questions[qi];
+            box.innerHTML = '';
+            const wrap = document.createElement('div');
+            wrap.className = 'q';
+            
+            const p = document.createElement('p');
+            p.innerHTML = `<strong>Question ${qi + 1}:</strong> ${q}`;
+            wrap.appendChild(p);
+            
+            const opts = document.createElement('div');
+            opts.className = 'options';
+            
+            a.forEach((t, i) => {
+                const b = document.createElement('button');
+                b.className = 'opt';
+                b.textContent = t;
+                b.onclick = () => {
+                    if (i === k) {
+                        b.classList.add('correct');
+                        score += 100;
+                    } else {
+                        b.classList.add('wrong');
+                    }
+                    document.getElementById('score').textContent = 'Score: ' + score;
+                    setTimeout(() => {
+                        qi = (qi + 1) % questions.length;
+                        if (qi === 0) {
+                            clearInterval(timerId);
+                            box.innerHTML = `<div class='q'><strong>🎉 Quiz Complete!</strong><br>Final Score: ${score}/500<br><br>${score >= 400 ? '✓ Excellent!' : score >= 300 ? '✓ Good job!' : '📚 Keep studying!'}</div>`;
+                        } else {
+                            renderQ();
+                        }
+                    }, 500);
+                };
+                opts.appendChild(b);
+            });
+            
+            wrap.appendChild(opts);
+            box.appendChild(wrap);
+        }
+        
+        document.getElementById('startQuiz').onclick = () => {
+            qi = 0;
+            score = 0;
+            time = 60;
+            document.getElementById('score').textContent = 'Score: 0';
+            renderQ();
+            
+            clearInterval(timerId);
+            timerId = setInterval(() => {
+                time--;
+                document.getElementById('timer').textContent = 'Time: ' + String(time).padStart(2, '0');
+                if (time <= 0) {
+                    clearInterval(timerId);
+                    box.innerHTML = `<div class='q'><strong>⏱️ Time's Up!</strong><br>Final Score: ${score}/500</div>`;
+                }
+            }, 1000);
+        };
+
+        // Smooth Scrolling
+        document.querySelectorAll('.nav-menu a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        console.log('🚀 Bitcoin Core Interactive Learning Platform Loaded Successfully!');
+    </script>
+</body>
+</html>

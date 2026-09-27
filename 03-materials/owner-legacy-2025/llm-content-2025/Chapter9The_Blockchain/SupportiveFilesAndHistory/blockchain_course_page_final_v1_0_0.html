@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEN0401: Chapter 9 - The Blockchain | Interactive Course</title>
+    <meta name="description" content="Comprehensive interactive course on blockchain technology from Mastering Bitcoin Chapter 9, featuring quiz, code demos, and visualizations.">
+    <meta name="keywords" content="blockchain, bitcoin, merkle tree, block structure, cryptocurrency, Andreas Antonopoulos">
+    <meta name="author" content="Istanbul Kültür University - Prof. Yusuf Altunel">
+    
+    <!-- Course Information Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Course",
+      "name": "SEN0401: Special Topics in Software Engineering - Blockchain",
+      "description": "Interactive blockchain technology course covering Chapter 9: The Blockchain",
+      "provider": {
+        "@type": "Organization",
+        "name": "Istanbul Kültür University"
+      }
+    }
+    </script>
+    
+    <style>
+        /* ===================================
+           RESET & BASE STYLES
+           =================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            /* Vivid Color Palette - NO DARK THEME */
+            --primary-blue: #4A90E2;
+            --primary-green: #50C878;
+            --primary-orange: #FFB347;
+            --success-green: #7CB342;
+            --joy-yellow: #FFD700;
+            --celebrate-pink: #FF69B4;
+            
+            /* Backgrounds - Light Only */
+            --bg-white: #FFFFFF;
+            --bg-light: #F5F7FA;
+            --bg-accent: #FFF9E6;
+            --bg-gradient: linear-gradient(135deg, #E3F2FD 0%, #FFF9E6 100%);
+            
+            /* Text Colors */
+            --text-primary: #2C3E50;
+            --text-secondary: #546E7A;
+            --text-light: #78909C;
+            
+            /* Interactive */
+            --hover-blue: #357ABD;
+            --active-green: #43A047;
+            
+            /* Code */
+            --code-bg: #FFF9E6;
+            --code-border: #FFD700;
+            
+            /* Spacing */
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 2rem;
+            --spacing-lg: 3rem;
+            --spacing-xl: 4rem;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px; /* Account for sticky nav */
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        
+        /* ===================================
+           STICKY NAVIGATION (ALWAYS VISIBLE)
+           =================================== */
+        .sticky-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-green));
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+            padding: 1rem 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .nav-brand small {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Mobile Navigation Toggle */
+        .nav-toggle {
+            display: none;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-toggle {
+                display: block;
+            }
+            
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                margin-top: 1rem;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+        }
+        
+        /* ===================================
+           HERO SECTION
+           =================================== */
+        .hero {
+            margin-top: 80px; /* Account for sticky nav */
+            padding: var(--spacing-xl) var(--spacing-md);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        /* ===================================
+           CONTENT SECTIONS
+           =================================== */
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-lg) var(--spacing-md);
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .section-header h2 {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+        
+        .section-meta {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        /* ===================================
+           CONCEPT CARDS
+           =================================== */
+        .concept-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+            border-left: 4px solid var(--primary-blue);
+            transition: all 0.3s ease;
+        }
+        
+        .concept-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(74, 144, 226, 0.25);
+        }
+        
+        .concept-card h3 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .concept-card blockquote {
+            background: var(--bg-accent);
+            border-left: 4px solid var(--joy-yellow);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-style: italic;
+            border-radius: 8px;
+        }
+        
+        .concept-card blockquote cite {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* ===================================
+           VISUAL COMPONENTS
+           =================================== */
+        .visual-demo {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+            border: 2px solid var(--primary-green);
+        }
+        
+        .visual-demo h4 {
+            color: var(--primary-green);
+            margin-bottom: 1rem;
+        }
+        
+        /* Blockchain Visualization */
+        .blockchain-visual {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding: 1rem;
+            min-height: 200px;
+        }
+        
+        .block {
+            min-width: 150px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .block::after {
+            content: '→';
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: var(--primary-blue);
+        }
+        
+        .block:last-child::after {
+            display: none;
+        }
+        
+        .block-hash {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        /* ===================================
+           CODE EXAMPLES
+           =================================== */
+        .code-demo {
+            background: var(--code-bg);
+            border: 2px solid var(--code-border);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+        }
+        
+        .code-demo h4 {
+            color: var(--primary-orange);
+            margin-bottom: 1rem;
+        }
+        
+        .code-editor {
+            background: #2C3E50;
+            color: #ECF0F1;
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .code-editor code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .code-output {
+            background: white;
+            border: 2px solid var(--success-green);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            min-height: 60px;
+        }
+        
+        .run-button {
+            background: linear-gradient(135deg, var(--success-green), var(--primary-green));
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(124, 179, 66, 0.3);
+        }
+        
+        .run-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(124, 179, 66, 0.4);
+        }
+        
+        /* ===================================
+           TABLES
+           =================================== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-md) 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .data-table thead {
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-green));
+            color: white;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--bg-light);
+        }
+        
+        .data-table tbody tr:hover {
+            background: var(--bg-accent);
+        }
+        
+        /* ===================================
+           QUIZ SECTION
+           =================================== */
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--spacing-md);
+        }
+        
+        .quiz-card {
+            background: white;
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.2);
+            margin: var(--spacing-md) 0;
+        }
+        
+        .quiz-progress {
+            background: var(--bg-light);
+            border-radius: 20px;
+            height: 30px;
+            margin-bottom: var(--spacing-md);
+            overflow: hidden;
+        }
+        
+        .quiz-progress-bar {
+            background: linear-gradient(90deg, var(--success-green), var(--primary-green));
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .question-text {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+            font-weight: 500;
+        }
+        
+        .quiz-options {
+            display: grid;
+            gap: 1rem;
+            margin: var(--spacing-md) 0;
+        }
+        
+        .quiz-option {
+            background: var(--bg-light);
+            border: 3px solid transparent;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+        
+        .quiz-option:hover {
+            border-color: var(--primary-blue);
+            transform: translateX(8px);
+        }
+        
+        .quiz-option.selected {
+            border-color: var(--primary-blue);
+            background: linear-gradient(135deg, #E3F2FD, #FFF9E6);
+        }
+        
+        .quiz-option.correct {
+            border-color: var(--success-green);
+            background: linear-gradient(135deg, #E8F5E9, #F1F8E9);
+        }
+        
+        .quiz-option.incorrect {
+            border-color: #E57373;
+            background: linear-gradient(135deg, #FFEBEE, #FFF9E6);
+        }
+        
+        .quiz-feedback {
+            background: var(--bg-accent);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            border-left: 4px solid var(--joy-yellow);
+        }
+        
+        .quiz-feedback.correct {
+            border-left-color: var(--success-green);
+        }
+        
+        .quiz-feedback.incorrect {
+            border-left-color: #E57373;
+        }
+        
+        .quiz-score {
+            text-align: center;
+            font-size: 3rem;
+            color: var(--success-green);
+            margin: var(--spacing-md) 0;
+        }
+        
+        /* ===================================
+           BADGES & SUCCESS INDICATORS
+           =================================== */
+        .success-badge {
+            background: linear-gradient(135deg, var(--success-green), var(--primary-green));
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(124, 179, 66, 0.3);
+        }
+        
+        .info-badge {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 15px;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+        
+        /* ===================================
+           ANIMATIONS
+           =================================== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        /* ===================================
+           FOOTER
+           =================================== */
+        footer {
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            text-align: center;
+            padding: var(--spacing-lg) var(--spacing-md);
+            margin-top: var(--spacing-xl);
+        }
+        
+        footer a {
+            color: var(--joy-yellow);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* ===================================
+           RESPONSIVE DESIGN
+           =================================== */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .section-header h2 {
+                font-size: 1.8rem;
+            }
+            
+            .content-section {
+                padding: var(--spacing-md) var(--spacing-sm);
+            }
+            
+            .blockchain-visual {
+                flex-direction: column;
+            }
+            
+            .block::after {
+                content: '↓';
+                right: 50%;
+                top: auto;
+                bottom: -30px;
+                transform: translateX(50%);
+            }
+        }
+        
+        /* ===================================
+           UTILITY CLASSES
+           =================================== */
+        .text-center { text-align: center; }
+        .mb-1 { margin-bottom: var(--spacing-sm); }
+        .mb-2 { margin-bottom: var(--spacing-md); }
+        .mb-3 { margin-bottom: var(--spacing-lg); }
+        .mt-1 { margin-top: var(--spacing-sm); }
+        .mt-2 { margin-top: var(--spacing-md); }
+        .mt-3 { margin-top: var(--spacing-lg); }
+    </style>
+</head>
+<body>
+    <!-- STICKY NAVIGATION (ALWAYS VISIBLE) -->
+    <nav class="sticky-nav" id="main-nav">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                SEN0401
+                <small>Blockchain Course</small>
+            </a>
+            <button class="nav-toggle" onclick="toggleNav()">☰</button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#block-structure">Blocks</a></li>
+                <li><a href="#merkle-trees">Merkle Trees</a></li>
+                <li><a href="#genesis-block">Genesis</a></li>
+                <li><a href="#networks">Networks</a></li>
+                <li><a href="#protocols">Protocols</a></li>
+                <li><a href="#quiz">Quiz</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- HERO SECTION -->
+    <header class="hero">
+        <h1>Chapter 9: The Blockchain</h1>
+        <p>An Interactive Journey Through Bitcoin's Foundational Data Structure</p>
+        <p class="hero-subtitle">Based on "Mastering Bitcoin" by Andreas M. Antonopoulos (2nd Edition, 2017)</p>
+        <p class="hero-subtitle">Istanbul Kültür University | Prof. Yusuf Altunel</p>
+    </header>
+    
+    <!-- INTRODUCTION SECTION -->
+    <section id="introduction" class="content-section">
+        <div class="section-header">
+            <h2>Introduction to Blockchain</h2>
+            <p class="section-meta">From Mastering Bitcoin, Chapter 9, Lines 1-52</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🔗 What is a Blockchain?</h3>
+            <blockquote>
+                "The blockchain data structure is an ordered, back-linked list of blocks of transactions."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Line 4</cite>
+            </blockquote>
+            
+            <p>The blockchain is Bitcoin's fundamental innovation—a data structure that enables decentralized consensus without requiring trust in any single party. Unlike traditional databases controlled by central authorities, the blockchain distributes complete copies across thousands of independent nodes worldwide, each validating transactions according to identical mathematical rules.</p>
+            
+            <p>The structure earns its name from the cryptographic "linking" of blocks. Each block contains a hash of the previous block's header, creating an unbreakable chain extending back to the very first block ever created in 2009. This architecture ensures that modifying any historical block would require recomputing all subsequent blocks—a feat requiring more computational power than the entire Bitcoin network combined.</p>
+        </div>
+        
+        <div class="visual-demo">
+            <h4>📊 Blockchain Visualization</h4>
+            <div class="blockchain-visual" id="blockchain-demo">
+                <div class="block">
+                    <strong>Block 0</strong>
+                    <div class="block-hash">Genesis</div>
+                    <small>Jan 3, 2009</small>
+                </div>
+                <div class="block">
+                    <strong>Block 1</strong>
+                    <div class="block-hash">000000...</div>
+                    <small>Jan 9, 2009</small>
+                </div>
+                <div class="block">
+                    <strong>Block 2</strong>
+                    <div class="block-hash">000000...</div>
+                    <small>Jan 12, 2009</small>
+                </div>
+                <div class="block">
+                    <strong>Block N</strong>
+                    <div class="block-hash">Current</div>
+                    <small>Today</small>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+                <em>Each block links to its parent through cryptographic hashes</em>
+            </p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🔐 The Cascade Effect & Immutability</h3>
+            <blockquote>
+                "This cascade effect ensures that once a block has many generations following it, it cannot be changed without forcing a recalculation of all subsequent blocks."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 33-35</cite>
+            </blockquote>
+            
+            <p>The blockchain's security emerges from a brilliant cascading mechanism. The "previous block hash" field resides inside each block header, which means changing a parent block's data changes its hash. This changed parent hash invalidates the child block's "previous block hash" field, which changes the child's hash, invalidating the grandchild, and so on through all descendants.</p>
+            
+            <p>Because finding valid hashes requires solving cryptographic puzzles consuming enormous computational effort, recomputing an entire chain becomes economically impossible. After just six blocks (~1 hour), transactions achieve practical immutability. After 100 blocks, the protocol allows spending coinbase (mining reward) transactions. After thousands of blocks, the blockchain represents settled history that would require more energy to modify than has been consumed by small countries.</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🌍 The Geological Metaphor</h3>
+            <blockquote>
+                "One way to think about the blockchain is like layers in a geological formation, or glacier core sample. The surface layers might change with the seasons, or even be blown away before they have time to settle. But once you go a few inches deep, geological layers become more and more stable."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 39-42</cite>
+            </blockquote>
+            
+            <p>Antonopoulos employs a powerful geological metaphor to explain probabilistic finality. Just as surface soil might blow away but deep strata remain undisturbed for millions of years, recent blockchain blocks might reorganize during temporary forks while deeply buried blocks achieve permanent stability. The top six blocks represent "topsoil"—subject to revision if longer competing chains emerge. Beyond six blocks, stability increases exponentially with depth until modification probability becomes infinitesimal.</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🍴 Blockchain Forks</h3>
+            <p>Although each block has exactly one parent (through its single "previous block hash" field), blocks can temporarily have multiple children. This situation, called a blockchain fork, occurs when different miners simultaneously discover valid blocks at the same height. The blockchain then branches, with different network partitions initially following different blocks.</p>
+            
+            <p>Fork resolution follows the longest chain rule: nodes adopt the branch exhibiting greatest cumulative proof-of-work (measured by chain length under constant difficulty). When one branch extends by finding an additional block first, all nodes abandon the shorter branch, consigning its blocks to "orphan" or "stale" status. Miners of orphaned blocks receive no rewards despite expending computational effort, creating economic incentive for rapid block propagation that minimizes simultaneous discoveries.</p>
+        </div>
+    </section>
+    
+    <!-- BLOCK STRUCTURE SECTION -->
+    <section id="block-structure" class="content-section">
+        <div class="section-header">
+            <h2>Block Structure</h2>
+            <p class="section-meta">From Mastering Bitcoin, Chapter 9, Lines 53-84</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>📦 Anatomy of a Block</h3>
+            <blockquote>
+                "A block is a container data structure that aggregates transactions for inclusion in the public ledger, the blockchain. The block is made of a header, containing metadata, followed by a long list of transactions that make up the bulk of its size."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 54-56</cite>
+            </blockquote>
+            
+            <p>Bitcoin blocks serve as containers aggregating transactions into the permanent historical record. Each block comprises two main components: an 80-byte header containing metadata, and a variable-length transaction list. The average transaction occupies at least 250 bytes, and typical blocks contain over 500 transactions, making complete blocks approximately 1,000 times larger than their headers alone.</p>
+        </div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Size</th>
+                    <th>Field</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>4 bytes</strong></td>
+                    <td>Block Size</td>
+                    <td>Size of the block in bytes, following this field</td>
+                </tr>
+                <tr>
+                    <td><strong>80 bytes</strong></td>
+                    <td>Block Header</td>
+                    <td>Several fields form the block header (see next table)</td>
+                </tr>
+                <tr>
+                    <td><strong>1-9 bytes</strong></td>
+                    <td>Transaction Counter</td>
+                    <td>VarInt encoding of how many transactions follow</td>
+                </tr>
+                <tr>
+                    <td><strong>Variable</strong></td>
+                    <td>Transactions</td>
+                    <td>The transactions recorded in this block</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="concept-card">
+            <h3>🔬 Block Header Components (80 Bytes)</h3>
+            <p>The block header consists of exactly six fields totaling 80 bytes. These fields serve three distinct purposes: connecting blocks into a chain (previous block hash), enabling mining competition (difficulty, timestamp, nonce), and summarizing transactions (merkle root).</p>
+        </div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Size</th>
+                    <th>Field</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>4 bytes</strong></td>
+                    <td>Version</td>
+                    <td>Version number to track software/protocol upgrades</td>
+                </tr>
+                <tr>
+                    <td><strong>32 bytes</strong></td>
+                    <td>Previous Block Hash</td>
+                    <td>Reference to the hash of the previous (parent) block</td>
+                </tr>
+                <tr>
+                    <td><strong>32 bytes</strong></td>
+                    <td>Merkle Root</td>
+                    <td>Hash of the root of the merkle tree of this block's transactions</td>
+                </tr>
+                <tr>
+                    <td><strong>4 bytes</strong></td>
+                    <td>Timestamp</td>
+                    <td>Approximate creation time (seconds from Unix Epoch)</td>
+                </tr>
+                <tr>
+                    <td><strong>4 bytes</strong></td>
+                    <td>Difficulty Target</td>
+                    <td>Proof-of-Work algorithm difficulty target</td>
+                </tr>
+                <tr>
+                    <td><strong>4 bytes</strong></td>
+                    <td>Nonce</td>
+                    <td>Counter used for the Proof-of-Work algorithm</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="concept-card">
+            <h3>🔑 Block Identifiers</h3>
+            <blockquote>
+                "The primary identifier of a block is its cryptographic hash, a digital fingerprint, made by hashing the block header twice through the SHA256 algorithm. The resulting 32-byte hash is called the block hash but is more accurately the block header hash, because only the block header is used to compute it."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 86-89</cite>
+            </blockquote>
+            
+            <p>Bitcoin identifies blocks through two mechanisms with different properties: block hashes and block heights. The block hash, computed by double-SHA256 hashing the 80-byte header, uniquely and unambiguously identifies each block. Any node can independently derive this hash by simply hashing the header—no trust required. For example, the genesis block hash is: <code>000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f</code></p>
+            
+            <p>Critically, block hashes aren't stored within block structures during network transmission or disk persistence. Instead, nodes compute hashes upon receiving blocks, potentially caching them in separate metadata tables for efficient indexing and retrieval.</p>
+            
+            <p>Block height, measuring a block's distance from genesis (genesis = height 0), provides convenient position references but lacks uniqueness during forks. Multiple competing blocks can temporarily share the same height until fork resolution determines the canonical chain. Therefore, block height serves best for approximate position indication rather than precise block identification.</p>
+        </div>
+    </section>
+    
+    <!-- GENESIS BLOCK SECTION -->
+    <section id="genesis-block" class="content-section">
+        <div class="section-header">
+            <h2>🎯 The Genesis Block</h2>
+            <p class="section-meta">From Mastering Bitcoin, Chapter 9, Lines 124-174</p>
+        </div>
+        
+        <div class="concept-card" style="border-left-color: var(--joy-yellow); background: linear-gradient(135deg, #FFF9E6, #FFFDE7);">
+            <h3>⭐ The First Block Ever Created</h3>
+            <blockquote>
+                "The first block in the blockchain is called the genesis block and was created in 2009. It is the common ancestor of all the blocks in the blockchain, meaning that if you start at any block and follow the chain backward in time, you will eventually arrive at the genesis block."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 125-127</cite>
+            </blockquote>
+            
+            <p><strong>Creation Date:</strong> January 3, 2009<br>
+            <strong>Block Height:</strong> 0<br>
+            <strong>Block Hash:</strong> <code style="font-size: 0.8rem;">000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f</code></p>
+            
+            <p>The genesis block occupies a unique position in Bitcoin's history and architecture. Unlike all subsequent blocks mined through competitive proof-of-work, the genesis block was statically encoded into Bitcoin's source code by Satoshi Nakamoto. Every Bitcoin node begins operation with knowledge of the genesis block's exact structure, hash, and transactions, providing a universal starting point from which to build and validate the blockchain.</p>
+            
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; border: 2px solid var(--joy-yellow);">
+                <h4 style="color: var(--primary-orange);">📰 The Hidden Message</h4>
+                <p style="font-style: italic; font-size: 1.1rem; color: var(--text-primary);">
+                    "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
+                </p>
+                <p style="margin-top: 1rem;">This message, embedded in the genesis block's coinbase transaction, serves dual purposes. First, it proves the block couldn't have been created before January 3, 2009—the publication date of the referenced Times of London headline. Second, it provides political commentary on the 2008-2009 financial crisis that motivated Bitcoin's creation, highlighting the bank bailouts that rendered traditional financial systems suspect and inspired development of decentralized alternatives requiring no government rescue.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- MERKLE TREES SECTION -->
+    <section id="merkle-trees" class="content-section">
+        <div class="section-header">
+            <h2>🌳 Merkle Trees</h2>
+            <p class="section-meta">From Mastering Bitcoin, Chapter 9, Lines 212-374</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🔍 Efficient Transaction Summarization</h3>
+            <blockquote>
+                "A merkle tree, also known as a binary hash tree, is a data structure used for efficiently summarizing and verifying the integrity of large sets of data."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 215-217</cite>
+            </blockquote>
+            
+            <p>Merkle trees enable Bitcoin's Simplified Payment Verification (SPV), allowing lightweight clients to verify transactions without downloading entire blocks. The structure aggregates all transaction hashes into a single 32-byte merkle root stored in the block header.</p>
+            
+            <blockquote>
+                "When N data elements are hashed and summarized in a merkle tree, you can check to see if any one data element is included in the tree with at most 2*log₂(N) calculations."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 229-231</cite>
+            </blockquote>
+            
+            <p>This logarithmic efficiency means verifying a transaction in a block containing 65,535 transactions requires only 32 hash calculations (16 for the merkle path, 16 for verification). As blocks grow from 16 transactions to 65,535 transactions, merkle paths increase merely from 128 bytes to 512 bytes—a testament to the structure's scalability.</p>
+        </div>
+        
+        <div class="code-demo">
+            <h4>💻 Merkle Tree Construction</h4>
+            <p>This demonstration builds a merkle tree from transactions, showing step-by-step hash calculations:</p>
+            <div class="code-editor">
+                <code><pre>
+function buildMerkleTree(transactions) {
+    // Step 1: Hash each transaction (leaf nodes)
+    let nodes = transactions.map(tx => sha256(sha256(tx)));
+    
+    // Step 2: Build tree bottom-up
+    while (nodes.length > 1) {
+        let newLevel = [];
+        for (let i = 0; i < nodes.length; i += 2) {
+            if (i + 1 < nodes.length) {
+                // Pair exists: concatenate and hash
+                newLevel.push(sha256(nodes[i] + nodes[i + 1]));
+            } else {
+                // Odd number: duplicate last hash
+                newLevel.push(nodes[i]);
+            }
+        }
+        nodes = newLevel;
+    }
+    
+    // Step 3: Return merkle root
+    return nodes[0];
+}</pre></code>
+            </div>
+            <button class="run-button" onclick="runMerkleDemo()">🚀 Run Merkle Tree Demo</button>
+            <div class="code-output" id="merkle-output">
+                <em>Click "Run Merkle Tree Demo" to see the algorithm in action...</em>
+            </div>
+        </div>
+        
+        <div class="concept-card">
+            <h3>📱 SPV: Simplified Payment Verification</h3>
+            <p>Merkle trees enable lightweight Bitcoin clients to verify transactions without downloading complete blocks. An SPV node downloads only 80-byte block headers, requesting merkle paths only for transactions relevant to the user's wallet. This reduces bandwidth requirements from ~1 MB per block to less than 1 KB, enabling Bitcoin wallets on mobile devices with limited storage and bandwidth.</p>
+            
+            <p>The verification process works as follows: The SPV node receives a transaction and a merkle path (sequence of hashes linking the transaction to the merkle root). It hashes the transaction, combines it with the first hash in the path, hashes the result, combines with the next path hash, and continues until computing a final hash. If this final hash matches the merkle root in a block header the node already downloaded, the transaction is proven to exist in that block—all without downloading any other transactions in the block.</p>
+        </div>
+    </section>
+    
+    <!-- NETWORKS SECTION -->
+    <section id="networks" class="content-section">
+        <div class="section-header">
+            <h2>🌐 Test Blockchains & Networks</h2>
+            <p class="section-meta">From Mastering Bitcoin, Chapter 9, Lines 394-545</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🔴 Mainnet: The Production Network</h3>
+            <p>Mainnet represents the production Bitcoin network, the blockchain created by Satoshi Nakamoto on January 3, 2009. Every transaction on mainnet transfers real bitcoin with market value measured in fiat currency exchanges. Mining on mainnet requires substantial capital investment in specialized ASIC hardware and ongoing electricity expenditure, but provides robust security through the computational resources attackers must control to threaten blockchain integrity.</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🟡 Testnet3: The Test Network</h3>
+            <blockquote>
+                "Testnet is the name of the test blockchain, network, and currency that is used for testing purposes. The testnet is a fully featured live P2P network, with wallets, test bitcoins (testnet coins), mining, and all the other features of mainnet. There are really only two differences: testnet coins are meant to be worthless and mining difficulty should be low enough that anyone can mine testnet coins relatively easily."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 402-407</cite>
+            </blockquote>
+            
+            <p>The current testnet iteration, testnet3, launched in February 2011 after previous testnets suffered from excessive mining activity that increased difficulty and inadvertently gave test coins exchange value—outcomes fundamentally incompatible with providing freely available coins for any developer. As of 2017, testnet3 exceeded 20 gigabytes, demonstrating even test networks accumulate substantial data requiring consideration in development environment planning.</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🟢 Regtest: Regression Testing Network</h3>
+            <blockquote>
+                "Regtest, which stands for 'Regression Testing,' is a Bitcoin Core feature that allows you to create a local blockchain for testing purposes. Unlike testnet3, which is a public and shared test blockchain, the regtest blockchains are intended to be run as closed systems for local testing."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 488-491</cite>
+            </blockquote>
+            
+            <p>Regtest operates as a completely isolated local blockchain that developers can launch from scratch, creating new genesis blocks and controlling all aspects of blockchain state. The ability to instantly mine blocks on demand without waiting for proof-of-work solution discovery makes regtest ideal for automated testing, allowing test suites to create specific blockchain conditions, execute software under test, and verify outcomes within seconds.</p>
+        </div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Network</th>
+                    <th>Purpose</th>
+                    <th>Coins</th>
+                    <th>Mining</th>
+                    <th>Size (2017)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Mainnet</strong></td>
+                    <td>Production</td>
+                    <td>Real value</td>
+                    <td>ASIC, high difficulty</td>
+                    <td>>100 GB</td>
+                </tr>
+                <tr>
+                    <td><strong>Testnet3</strong></td>
+                    <td>Public testing</td>
+                    <td>Worthless</td>
+                    <td>CPU/GPU, low difficulty</td>
+                    <td>>20 GB</td>
+                </tr>
+                <tr>
+                    <td><strong>Regtest</strong></td>
+                    <td>Local testing</td>
+                    <td>N/A</td>
+                    <td>Instant mining</td>
+                    <td>Minimal</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="concept-card">
+            <h3>🔄 Development Pipeline</h3>
+            <blockquote>
+                "You can use the test blockchains to establish a development pipeline. Test your code locally on a regtest as you develop it. Once you are ready to try it on a public network, switch to testnet... Finally, once you are confident your code works as expected, switch to mainnet to deploy it in production."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 540-545</cite>
+            </blockquote>
+            
+            <p>This progression from regtest through testnet to mainnet provides graduated risk management, catching the majority of defects in environments where failures cost nothing, enabling confident mainnet deployment minimizing the probability of bugs affecting real users or funds.</p>
+        </div>
+    </section>
+    
+    <!-- PROTOCOLS SECTION -->
+    <section id="protocols" class="content-section">
+        <div class="section-header">
+            <h2>⚙️ Protocol Evolution</h2>
+            <p class="section-meta">From Blockchain Research Report, Section 6</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🔧 SegWit: Segregated Witness (2017)</h3>
+            <p><span class="info-badge">BIP-141</span> <span class="info-badge">Activated: August 24, 2017</span> <span class="info-badge">Block 481,824</span></p>
+            
+            <p>Segregated Witness introduced significant improvements to Bitcoin protocol through separating transaction signature data (the "witness") from base transaction data. This restructuring eliminated transaction malleability—a vulnerability where third parties could modify signatures to different but still-valid forms, changing transaction identifiers without invalidating transactions.</p>
+            
+            <p>SegWit enabled higher-layer protocols like Lightning Network that depend on creating chains of presigned transactions referencing specific TXIDs. Additionally, SegWit introduced a block weight metric replacing simple block size limits, counting witness data at one-quarter the weight of non-witness data, effectively increasing block capacity from 1 megabyte to approximately 4 megabytes for witness-heavy transactions while maintaining backward compatibility.</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🌿 Taproot (2021)</h3>
+            <p><span class="info-badge">BIP-340/341/342</span> <span class="info-badge">Activated: November 14, 2021</span> <span class="info-badge">Block 709,632</span></p>
+            
+            <p>Taproot represents Bitcoin's most significant protocol upgrade since SegWit, introducing three integrated improvements: Schnorr signatures (BIP-340) replacing ECDSA for provably secure signature aggregation, Taproot outputs (BIP-341) enabling complex scripts to appear identical to simple single-signature transactions, and Tapscript (BIP-342) validation procedures extending Bitcoin Script with Schnorr operations.</p>
+            
+            <p>Benefits include 30-75% savings on multi-signature transactions through signature aggregation, enhanced privacy by making all transaction types indistinguishable on-chain, and improved efficiency via batch signature verification. The upgrade maintains Bitcoin's commitment to backward compatibility through soft fork deployment, allowing old nodes to continue operating without mandatory software updates.</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>⚡ Lightning Network (2018+)</h3>
+            <p>The Lightning Network, launched in 2018, implements Layer 2 payment channels enabling instant off-chain transactions settled periodically on Bitcoin's base blockchain. Lightning achieves sub-second transaction finality versus Bitcoin's 10-minute block interval, supports millions of transactions per second versus Bitcoin's 5-7 TPS base layer capacity, and requires minimal fees compared to on-chain transaction costs.</p>
+            
+            <p>Lightning's architecture builds bidirectional payment channels between parties, routing payments across channel networks, and utilizing Hash Time-Locked Contracts (HTLCs) for trustless multi-hop transfers. The system requires SegWit's transaction malleability fix for secure operation, demonstrating how protocol layers build upon one another to achieve capabilities impossible at any single layer alone.</p>
+        </div>
+        
+        <div class="visual-demo">
+            <h4>📅 Bitcoin Protocol Timeline</h4>
+            <div style="background: white; padding: 1.5rem; border-radius: 8px;">
+                <p><strong>2009:</strong> Bitcoin Genesis Block (January 3) - Network launch</p>
+                <p><strong>2017:</strong> SegWit Activation (August 24) - Transaction malleability fix, capacity increase</p>
+                <p><strong>2018:</strong> Lightning Network Mainnet Launch - Layer 2 payment channels</p>
+                <p><strong>2021:</strong> Taproot Activation (November 14) - Schnorr signatures, privacy improvements</p>
+                <p><strong>2025:</strong> Ongoing Development - Continued protocol refinement and scaling solutions</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- QUIZ SECTION -->
+    <section id="quiz" class="content-section" style="background: linear-gradient(135deg, #E3F2FD, #FFF9E6); padding: 3rem 1rem;">
+        <div class="quiz-container">
+            <div class="section-header">
+                <h2>🎯 Test Your Knowledge!</h2>
+                <p class="section-meta">25 questions covering all concepts from this chapter</p>
+            </div>
+            
+            <div class="quiz-card" id="quiz-card">
+                <div class="quiz-progress">
+                    <div class="quiz-progress-bar" id="quiz-progress" style="width: 0%;">0%</div>
+                </div>
+                
+                <div id="quiz-content">
+                    <p style="text-align: center; font-size: 1.2rem;">
+                        Ready to test your blockchain knowledge? This interactive quiz covers all major concepts from Chapter 9!
+                    </p>
+                    <p style="text-align: center; margin-top: 2rem;">
+                        <button class="run-button" onclick="startQuiz()">🚀 Start Quiz</button>
+                    </p>
+                </div>
+            </div>
+            
+            <div id="quiz-results" style="display: none;">
+                <div class="quiz-card">
+                    <h3 style="text-align: center;">Quiz Complete!</h3>
+                    <div class="quiz-score" id="final-score">0/25</div>
+                    <p style="text-align: center; font-size: 1.2rem;">
+                        <span id="score-message"></span>
+                    </p>
+                    <p style="text-align: center; margin-top: 2rem;">
+                        <button class="run-button" onclick="restartQuiz()">🔄 Try Again</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- FOOTER -->
+    <footer>
+        <p><strong>SEN0401: Special Topics in Software Engineering - Blockchain</strong></p>
+        <p>Based on "Mastering Bitcoin" (2nd Edition, 2017) by Andreas M. Antonopoulos</p>
+        <p>Istanbul Kültür University | Prof. Yusuf Altunel</p>
+        <p style="margin-top: 1rem;">
+            <a href="https://www.oreilly.com/library/view/mastering-bitcoin-2nd/9781491954379/" target="_blank">📚 Read Mastering Bitcoin</a> | 
+            <a href="https://bitcoin.org/bitcoin.pdf" target="_blank">📄 Bitcoin Whitepaper</a>
+        </p>
+        <p style="margin-top: 1rem; font-size: 0.9rem;">© 2025 Istanbul Kültür University. Educational use only.</p>
+    </footer>
+    
+    <script>
+        // ===========================================
+        // NAVIGATION TOGGLE (MOBILE)
+        // ===========================================
+        function toggleNav() {
+            const navLinks = document.getElementById('nav-links');
+            navLinks.classList.toggle('active');
+        }
+        
+        // Enforce sticky navigation (ALWAYS visible)
+        window.addEventListener('scroll', function() {
+            const nav = document.getElementById('main-nav');
+            nav.style.position = 'fixed';
+            nav.style.top = '0';
+            nav.style.zIndex = '1000';
+        });
+        
+        // ===========================================
+        // MERKLE TREE DEMO
+        // ===========================================
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        
+        async function runMerkleDemo() {
+            const output = document.getElementById('merkle-output');
+            output.innerHTML = '<p><strong>Building Merkle Tree...</strong></p>';
+            
+            // Sample transactions
+            const transactions = [
+                'TX1: Alice pays Bob 1 BTC',
+                'TX2: Carol pays Dave 0.5 BTC',
+                'TX3: Eve pays Frank 2 BTC',
+                'TX4: Grace pays Henry 0.3 BTC'
+            ];
+            
+            output.innerHTML += '<p><strong>Step 1: Hash each transaction (leaf nodes)</strong></p>';
+            
+            let nodes = [];
+            for (let tx of transactions) {
+                const hash1 = await sha256(tx);
+                const hash2 = await sha256(hash1);
+                nodes.push(hash2);
+                output.innerHTML += `<p style="font-size: 0.9rem;">${tx.substring(0, 30)}... → ${hash2.substring(0, 16)}...</p>`;
+            }
+            
+            output.innerHTML += '<p><strong>Step 2: Pair and hash until one root remains</strong></p>';
+            
+            let level = 1;
+            while (nodes.length > 1) {
+                let newLevel = [];
+                for (let i = 0; i < nodes.length; i += 2) {
+                    if (i + 1 < nodes.length) {
+                        const combined = nodes[i] + nodes[i + 1];
+                        const hash = await sha256(combined);
+                        newLevel.push(hash);
+                        output.innerHTML += `<p style="font-size: 0.9rem;">Level ${level}: ${hash.substring(0, 16)}...</p>`;
+                    } else {
+                        newLevel.push(nodes[i]);
+                    }
+                }
+                nodes = newLevel;
+                level++;
+            }
+            
+            output.innerHTML += `<p><strong>✅ Merkle Root: </strong><code style="font-size: 0.8rem;">${nodes[0]}</code></p>`;
+            output.innerHTML += '<p><em>This 32-byte merkle root is stored in the block header!</em></p>';
+        }
+        
+        // ===========================================
+        // QUIZ SYSTEM
+        // ===========================================
+        const quizQuestions = [
+            {
+                id: 1,
+                question: "What is the blockchain data structure?",
+                options: [
+                    "An ordered, back-linked list of blocks of transactions",
+                    "A random collection of transaction data",
+                    "A centralized database of bitcoin",
+                    "A peer-to-peer network protocol"
+                ],
+                correct: 0,
+                explanation: "According to Antonopoulos (2017, Line 4), 'The blockchain data structure is an ordered, back-linked list of blocks of transactions.' This is the fundamental definition."
+            },
+            {
+                id: 2,
+                question: "How many bytes is the block header?",
+                options: ["64 bytes", "80 bytes", "128 bytes", "256 bytes"],
+                correct: 1,
+                explanation: "The block header is exactly 80 bytes (Antonopoulos, 2017, Line 57), containing six fields: version (4B), previous hash (32B), merkle root (32B), timestamp (4B), difficulty (4B), and nonce (4B)."
+            },
+            {
+                id: 3,
+                question: "How many bytes is the Previous Block Hash field in the block header?",
+                options: ["16 bytes", "24 bytes", "32 bytes", "64 bytes"],
+                correct: 2,
+                explanation: "The Previous Block Hash field is 32 bytes (Antonopoulos, 2017, Line 78), storing the SHA256 hash of the parent block's header."
+            },
+            {
+                id: 4,
+                question: "What happens when an old block in the blockchain is modified?",
+                options: [
+                    "Only that block's hash changes",
+                    "The entire blockchain is reset",
+                    "All subsequent blocks must be recalculated (cascade effect)",
+                    "Nothing happens; modifications are not possible"
+                ],
+                correct: 2,
+                explanation: "The cascade effect ensures that modifying a block changes its hash, which invalidates all child blocks, requiring recalculation of the entire chain from that point forward (Antonopoulos, 2017, Lines 33-35)."
+            },
+            {
+                id: 5,
+                question: "When was the Bitcoin genesis block created?",
+                options: ["December 25, 2008", "January 3, 2009", "February 11, 2009", "March 1, 2009"],
+                correct: 1,
+                explanation: "The genesis block was created on January 3, 2009 (Antonopoulos, 2017, Line 125), marking the birth of the Bitcoin blockchain."
+            },
+            {
+                id: 6,
+                question: "What is the efficiency of merkle tree verification?",
+                options: ["O(N)", "O(N²)", "O(log₂ N)", "O(1)"],
+                correct: 2,
+                explanation: "Merkle trees enable verification in at most 2*log₂(N) calculations (Antonopoulos, 2017, Lines 229-231), providing logarithmic efficiency."
+            },
+            {
+                id: 7,
+                question: "Is block height unique during a blockchain fork?",
+                options: [
+                    "Yes, block height is always unique",
+                    "No, multiple blocks can have the same height during a fork",
+                    "Only on mainnet",
+                    "Block height doesn't exist during forks"
+                ],
+                correct: 1,
+                explanation: "During a fork, multiple competing blocks can temporarily share the same height (Antonopoulos, 2017, Lines 110-113), making block height non-unique until fork resolution."
+            },
+            {
+                id: 8,
+                question: "How many blocks must pass before a coinbase transaction can be spent?",
+                options: ["6 blocks", "50 blocks", "100 blocks", "144 blocks"],
+                correct: 2,
+                explanation: "Coinbase transactions require 100 blocks of maturity before spending (Antonopoulos, 2017, Lines 47-48), ensuring block stability before rewards become spendable."
+            },
+            {
+                id: 9,
+                question: "What is the primary purpose of regtest?",
+                options: [
+                    "Production Bitcoin network",
+                    "Public testing with worthless coins",
+                    "Local testing with instant block mining",
+                    "Storing real bitcoin safely"
+                ],
+                correct: 2,
+                explanation: "Regtest enables local testing with instant block mining (Antonopoulos, 2017, Lines 488-491), ideal for automated testing without network dependencies."
+            },
+            {
+                id: 10,
+                question: "When was SegWit activated on Bitcoin mainnet?",
+                options: [
+                    "January 3, 2009",
+                    "August 24, 2017",
+                    "November 14, 2021",
+                    "December 21, 2025"
+                ],
+                correct: 1,
+                explanation: "SegWit (BIP-141) activated on August 24, 2017, at block 481,824, fixing transaction malleability and increasing effective block capacity."
+            },
+            {
+                id: 11,
+                question: "What cryptographic hash function does Bitcoin use for block hashing?",
+                options: ["MD5", "SHA1", "SHA256 (applied twice)", "SHA512"],
+                correct: 2,
+                explanation: "Bitcoin uses double-SHA256 hashing (Antonopoulos, 2017, Line 12 and 87), applying SHA256 twice for additional security."
+            },
+            {
+                id: 12,
+                question: "How many fields are in a block header?",
+                options: ["4 fields", "6 fields", "8 fields", "10 fields"],
+                correct: 1,
+                explanation: "The block header contains exactly 6 fields: version, previous block hash, merkle root, timestamp, difficulty target, and nonce."
+            },
+            {
+                id: 13,
+                question: "What is the hidden message in the genesis block?",
+                options: [
+                    "Bitcoin is the future",
+                    "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks",
+                    "Satoshi Nakamoto was here",
+                    "Happy New Year 2009"
+                ],
+                correct: 1,
+                explanation: "The genesis block contains the Times headline: 'The Times 03/Jan/2009 Chancellor on brink of second bailout for banks' (Antonopoulos, 2017, Lines 167-169)."
+            },
+            {
+                id: 14,
+                question: "What does SPV stand for?",
+                options: [
+                    "Secure Payment Verification",
+                    "Simplified Payment Verification",
+                    "Standard Protocol Validation",
+                    "System Performance Verification"
+                ],
+                correct: 1,
+                explanation: "SPV stands for Simplified Payment Verification (Antonopoulos, 2017, Line 372), enabling lightweight clients to verify transactions using merkle paths."
+            },
+            {
+                id: 15,
+                question: "How many blocks are considered safe for confirmation (the 'topsoil')?",
+                options: ["1 block", "3 blocks", "6 blocks", "12 blocks"],
+                correct: 2,
+                explanation: "The top six blocks are considered like topsoil—subject to possible reorganization (Antonopoulos, 2017, Line 45). Beyond six blocks, stability increases substantially."
+            },
+            {
+                id: 16,
+                question: "What database does Bitcoin Core use for blockchain metadata?",
+                options: ["MySQL", "PostgreSQL", "LevelDB", "MongoDB"],
+                correct: 2,
+                explanation: "Bitcoin Core stores blockchain metadata using Google's LevelDB database (Antonopoulos, 2017, Lines 5-6)."
+            },
+            {
+                id: 17,
+                question: "What was the main benefit of the Taproot upgrade?",
+                options: [
+                    "Faster block times",
+                    "Larger block size",
+                    "Schnorr signatures and improved privacy",
+                    "Proof-of-Stake consensus"
+                ],
+                correct: 2,
+                explanation: "Taproot (BIP-340/341/342, activated November 14, 2021) introduced Schnorr signatures, MAST, and improved privacy by making complex transactions indistinguishable from simple ones."
+            },
+            {
+                id: 18,
+                question: "What is a blockchain fork?",
+                options: [
+                    "A bug in the Bitcoin software",
+                    "A situation where different blocks are discovered almost simultaneously",
+                    "A hard drive failure",
+                    "A network outage"
+                ],
+                correct: 1,
+                explanation: "A blockchain fork occurs when different blocks are discovered almost simultaneously by different miners (Antonopoulos, 2017, Lines 20-22), creating temporary branches."
+            },
+            {
+                id: 19,
+                question: "What is the merkle root?",
+                options: [
+                    "The first transaction in a block",
+                    "A hash summarizing all transactions in a block",
+                    "The block's timestamp",
+                    "The mining difficulty"
+                ],
+                correct: 1,
+                explanation: "The merkle root is a 32-byte hash summarizing all transactions in the block (Antonopoulos, 2017, Line 79), stored in the block header."
+            },
+            {
+                id: 20,
+                question: "Which Bitcoin Improvement Proposal (BIP) specified SegWit?",
+                options: ["BIP-9", "BIP-32", "BIP-141", "BIP-340"],
+                correct: 2,
+                explanation: "BIP-141 specified Segregated Witness (SegWit), activated in August 2017."
+            },
+            {
+                id: 21,
+                question: "What is the approximate average size of a Bitcoin transaction?",
+                options: ["80 bytes", "250 bytes", "500 bytes", "1000 bytes"],
+                correct: 1,
+                explanation: "The average transaction is at least 250 bytes (Antonopoulos, 2017, Line 57), making complete blocks much larger than their 80-byte headers."
+            },
+            {
+                id: 22,
+                question: "When did testnet3 restart?",
+                options: ["January 2009", "February 2011", "August 2017", "November 2021"],
+                correct: 1,
+                explanation: "Testnet3 restarted in February 2011 (Antonopoulos, 2017, Line 418) after previous testnet iterations developed problems with excessive mining difficulty."
+            },
+            {
+                id: 23,
+                question: "What does the nonce field in the block header do?",
+                options: [
+                    "Stores the block timestamp",
+                    "References the previous block",
+                    "Serves as a counter for Proof-of-Work mining",
+                    "Contains the merkle root"
+                ],
+                correct: 2,
+                explanation: "The nonce is a 4-byte counter used for the Proof-of-Work algorithm (Antonopoulos, 2017, Line 82), incremented during mining to find valid block hashes."
+            },
+            {
+                id: 24,
+                question: "What does the 'longest chain rule' mean?",
+                options: [
+                    "The physically longest blockchain wins",
+                    "The chain with most transactions wins",
+                    "The chain with greatest cumulative proof-of-work wins",
+                    "The oldest chain wins"
+                ],
+                correct: 2,
+                explanation: "The longest chain rule means nodes adopt the branch with greatest cumulative proof-of-work (measured by chain length under constant difficulty), resolving forks in favor of the chain with most computational effort invested."
+            },
+            {
+                id: 25,
+                question: "What year was the Lightning Network launched on mainnet?",
+                options: ["2009", "2017", "2018", "2021"],
+                correct: 2,
+                explanation: "The Lightning Network launched on Bitcoin mainnet in 2018, providing Layer 2 payment channels for instant, low-fee transactions."
+            }
+        ];
+        
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+        
+        function startQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+            document.getElementById('quiz-results').style.display = 'none';
+            document.getElementById('quiz-card').style.display = 'block';
+            displayQuestion();
+        }
+        
+        function displayQuestion() {
+            if (currentQuestion >= quizQuestions.length) {
+                showResults();
+                return;
+            }
+            
+            const question = quizQuestions[currentQuestion];
+            answered = false;
+            
+            const progress = ((currentQuestion) / quizQuestions.length) * 100;
+            document.getElementById('quiz-progress').style.width = progress + '%';
+            document.getElementById('quiz-progress').textContent = Math.round(progress) + '%';
+            
+            let html = `
+                <div class="question-text">
+                    <strong>Question ${currentQuestion + 1} of ${quizQuestions.length}</strong><br>
+                    ${question.question}
+                </div>
+                <div class="quiz-options">
+            `;
+            
+            question.options.forEach((option, index) => {
+                html += `
+                    <div class="quiz-option" onclick="selectAnswer(${index})">
+                        ${option}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            document.getElementById('quiz-content').innerHTML = html;
+        }
+        
+        function selectAnswer(selectedIndex) {
+            if (answered) return;
+            
+            answered = true;
+            const question = quizQuestions[currentQuestion];
+            const options = document.querySelectorAll('.quiz-option');
+            
+            options.forEach((option, index) => {
+                if (index === question.correct) {
+                    option.classList.add('correct');
+                }
+                if (index === selectedIndex && index !== question.correct) {
+                    option.classList.add('incorrect');
+                }
+                option.style.cursor = 'default';
+            });
+            
+            const isCorrect = selectedIndex === question.correct;
+            if (isCorrect) score++;
+            
+            const feedback = document.createElement('div');
+            feedback.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'incorrect');
+            feedback.innerHTML = `
+                <p><strong>${isCorrect ? '✅ Correct!' : '❌ Incorrect'}</strong></p>
+                <p>${question.explanation}</p>
+                <p style="text-align: center; margin-top: 1rem;">
+                    <button class="run-button" onclick="nextQuestion()">
+                        ${currentQuestion < quizQuestions.length - 1 ? 'Next Question ➡️' : 'See Results 🎉'}
+                    </button>
+                </p>
+            `;
+            
+            document.getElementById('quiz-content').appendChild(feedback);
+        }
+        
+        function nextQuestion() {
+            currentQuestion++;
+            displayQuestion();
+        }
+        
+        function showResults() {
+            document.getElementById('quiz-card').style.display = 'none';
+            document.getElementById('quiz-results').style.display = 'block';
+            
+            const percentage = (score / quizQuestions.length) * 100;
+            document.getElementById('final-score').textContent = score + '/' + quizQuestions.length;
+            
+            let message = '';
+            if (percentage >= 90) {
+                message = '🎉 Outstanding! You have mastered blockchain concepts!';
+            } else if (percentage >= 75) {
+                message = '👏 Excellent! You have a strong understanding of blockchain!';
+            } else if (percentage >= 60) {
+                message = '👍 Good job! You understand the fundamentals.';
+            } else {
+                message = '📚 Keep studying! Review the chapter and try again.';
+            }
+            
+            document.getElementById('score-message').textContent = message;
+            
+            // Update progress bar to 100%
+            document.getElementById('quiz-progress').style.width = '100%';
+            document.getElementById('quiz-progress').textContent = '100%';
+        }
+        
+        function restartQuiz() {
+            startQuiz();
+        }
+        
+        // ===========================================
+        // SMOOTH SCROLL & ACCESSIBILITY
+        // ===========================================
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // ===========================================
+        // FADE-IN ANIMATION ON SCROLL
+        // ===========================================
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.concept-card, .visual-demo, .code-demo').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

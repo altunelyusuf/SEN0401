@@ -1,0 +1,1246 @@
+@prefix : <http://example.org/blockchain#> .
+@prefix bc: <http://example.org/blockchain#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+#################################################################
+#
+#    BLOCKCHAIN TECHNOLOGY ONTOLOGY
+#    Version 1.0.0
+#    
+#    Based on: "Mastering Bitcoin" (2nd Edition, 2017)
+#    Author: Andreas M. Antonopoulos
+#    Publisher: O'Reilly Media
+#    
+#    Enhanced with research covering 2017-2025 developments
+#    including SegWit, Taproot, and Lightning Network
+#
+#################################################################
+
+<http://example.org/blockchain> a owl:Ontology ;
+    dcterms:title "Blockchain Technology Ontology"@en ;
+    dcterms:description """Comprehensive ontology of blockchain technology based on 
+'Mastering Bitcoin' (2nd Edition, Andreas M. Antonopoulos, 2017) with enhancements 
+reflecting developments through 2025. Covers blockchain structures, processes, 
+protocols, networks, and components including Segregated Witness (SegWit), 
+Taproot upgrade, and Lightning Network."""@en ;
+    dcterms:abstract """This ontology formalizes blockchain concepts encompassing:
+- Core data structures (blockchain, blocks, transactions)
+- Cryptographic foundations (SHA256, Merkle trees, digital signatures)
+- Consensus mechanisms (Proof-of-Work)
+- Protocol upgrades (SegWit 2017, Taproot 2021)
+- Network types (mainnet, testnet, regtest, Lightning Network)
+- Block types and transaction types
+- Storage mechanisms and software components"""@en ;
+    dcterms:created "2025-12-21"^^xsd:date ;
+    dcterms:modified "2025-12-21"^^xsd:date ;
+    dcterms:creator "Blockchain Ontology Engineering Project"@en ;
+    dcterms:source <https://www.oreilly.com/library/view/mastering-bitcoin-2nd/9781491954379/>,
+                   <https://en.wikipedia.org/wiki/SegWit>,
+                   <https://en.wikipedia.org/wiki/Lightning_Network>,
+                   <https://chain.link/education-hub/schnorr-signature> ;
+    dcterms:license <http://creativecommons.org/licenses/by/4.0/> ;
+    dcterms:conformsTo <http://example.org/meta/v5.2.0>,
+                        <http://example.org/quality/v1.2.0> ;
+    dcterms:subject "Blockchain"@en,
+                    "Bitcoin"@en,
+                    "Distributed Ledger"@en,
+                    "Cryptocurrency"@en ;
+    owl:versionInfo "1.0.0" ;
+    owl:versionIRI <http://example.org/blockchain/v1.0.0> ;
+    prov:wasGeneratedBy [
+        a prov:Activity ;
+        rdfs:label "Systematic Blockchain Ontology Engineering"@en ;
+        rdfs:comment "Six-phase development process with anti-hallucination controls and quality validation"@en ;
+        prov:startedAtTime "2025-12-21T00:00:00Z"^^xsd:dateTime ;
+        prov:endedAtTime "2025-12-21T10:00:00Z"^^xsd:dateTime ;
+        prov:used <file:///mnt/user-data/uploads/Chapter_9_The_Blockchain_txt.txt>
+    ] .
+
+#################################################################
+#
+#    Annotation Properties
+#
+#################################################################
+
+:sourceEvidence a owl:AnnotationProperty ;
+    rdfs:label "source evidence"@en ;
+    rdfs:comment "Links concept to its source evidence for traceability"@en .
+
+:sourceType a owl:AnnotationProperty ;
+    rdfs:label "source type"@en ;
+    rdfs:comment "Type of source evidence: DirectText, ResearchCitation, LogicalInference, Standard"@en .
+
+:sourceDocument a owl:AnnotationProperty ;
+    rdfs:label "source document"@en ;
+    rdfs:comment "Document providing evidence for concept"@en .
+
+:sourceLine a owl:AnnotationProperty ;
+    rdfs:label "source line"@en ;
+    rdfs:comment "Line number in source document"@en .
+
+:sourceQuote a owl:AnnotationProperty ;
+    rdfs:label "source quote"@en ;
+    rdfs:comment "Direct quote from source"@en .
+
+:confidence a owl:AnnotationProperty ;
+    rdfs:label "confidence"@en ;
+    rdfs:comment "Confidence score for assertion (0.0-1.0)"@en .
+
+#################################################################
+#
+#    Object Properties
+#
+#################################################################
+
+:hasParentBlock a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "has parent block"@en ;
+    rdfs:domain :Block ;
+    rdfs:range :Block ;
+    rdfs:comment "Every block except genesis has exactly one parent"@en ;
+    skos:definition "Links block to its parent via previous block hash field"@en ;
+    skos:example "Block at height 100 has parent at height 99"@en .
+
+:hasChildBlock a owl:ObjectProperty ;
+    rdfs:label "has child block"@en ;
+    rdfs:domain :Block ;
+    rdfs:range :Block ;
+    owl:inverseOf :hasParentBlock ;
+    skos:definition "Links parent block to its child blocks"@en ;
+    rdfs:comment "Block can temporarily have multiple children during fork"@en ;
+    skos:example "During fork, one block may have two children competing"@en .
+
+:containsTransaction a owl:ObjectProperty ;
+    rdfs:label "contains transaction"@en ;
+    rdfs:domain :Block ;
+    rdfs:range :Transaction ;
+    skos:definition "Links block to transactions it contains"@en ;
+    rdfs:comment "Blocks aggregate transactions for inclusion in ledger"@en .
+
+:hasBlockHeader a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "has block header"@en ;
+    rdfs:domain :Block ;
+    rdfs:range :BlockHeader ;
+    skos:definition "Links block to its 80-byte metadata header"@en .
+
+:hasBlockHash a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "has block hash"@en ;
+    rdfs:domain :Block ;
+    rdfs:range :BlockHash ;
+    skos:definition "Links block to its computed cryptographic hash identifier"@en .
+
+:hasMerkleRoot a owl:ObjectProperty, owl:FunctionalProperty ;
+    rdfs:label "has merkle root"@en ;
+    rdfs:domain :BlockHeader ;
+    rdfs:range :MerkleTreeRoot ;
+    skos:definition "Links block header to merkle tree root hash summarizing transactions"@en .
+
+:uses a owl:ObjectProperty ;
+    rdfs:label "uses"@en ;
+    rdfs:domain :BlockchainConcept ;
+    rdfs:range :BlockchainConcept ;
+    skos:definition "General usage relationship between blockchain concepts"@en .
+
+:implements a owl:ObjectProperty ;
+    rdfs:label "implements"@en ;
+    rdfs:domain :SoftwareComponent ;
+    rdfs:range :BlockchainProtocol ;
+    skos:definition "Software component implements protocol or standard"@en .
+
+:introducedIn a owl:ObjectProperty ;
+    rdfs:label "introduced in"@en ;
+    rdfs:domain :BlockchainConcept ;
+    rdfs:range :ProtocolUpgrade ;
+    skos:definition "Concept was introduced in specific protocol upgrade"@en ;
+    skos:example "Schnorr signatures introduced in Taproot upgrade"@en .
+
+:supersedes a owl:ObjectProperty ;
+    rdfs:label "supersedes"@en ;
+    rdfs:domain :ProtocolUpgrade ;
+    rdfs:range :ProtocolUpgrade ;
+    skos:definition "Newer protocol upgrade supersedes older one"@en .
+
+#################################################################
+#
+#    Data Properties
+#
+#################################################################
+
+### Block Properties ###
+
+:blockSize a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "block size"@en ;
+    rdfs:domain :Block ;
+    rdfs:range xsd:nonNegativeInteger ;
+    skos:definition "Size of block in bytes following block size field"@en ;
+    rdfs:comment "Does not include the 4-byte block size field itself"@en .
+
+:blockHeight a owl:DatatypeProperty ;
+    rdfs:label "block height"@en ;
+    rdfs:domain :Block ;
+    rdfs:range xsd:nonNegativeInteger ;
+    skos:definition "Position in blockchain with genesis block at height 0"@en ;
+    rdfs:comment "Not unique during forks - multiple blocks can have same height"@en ;
+    skos:example "Block height on January 1, 2017 was approximately 446,000"@en .
+
+:blockWeight a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "block weight"@en ;
+    rdfs:domain :Block ;
+    rdfs:range xsd:nonNegativeInteger ;
+    skos:definition "Block weight in weight units introduced in SegWit"@en ;
+    rdfs:comment "Maximum 4,000,000 weight units; witness data counts as 1/4 weight"@en .
+
+:transactionCounter a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "transaction counter"@en ;
+    rdfs:domain :Block ;
+    rdfs:range xsd:nonNegativeInteger ;
+    skos:definition "Count of transactions following in block"@en ;
+    rdfs:comment "Variable integer (VarInt) format, 1-9 bytes"@en .
+
+### Block Header Properties ###
+
+:version a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "version"@en ;
+    rdfs:domain :BlockHeader ;
+    rdfs:range xsd:nonNegativeInteger ;
+    skos:definition "Version number to track software and protocol upgrades"@en ;
+    rdfs:comment "4 bytes"@en .
+
+:previousBlockHash a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "previous block hash"@en ;
+    rdfs:domain :BlockHeader ;
+    rdfs:range xsd:hexBinary ;
+    skos:definition "32-byte reference to hash of previous (parent) block in chain"@en .
+
+:merkleRoot a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "merkle root"@en ;
+    rdfs:domain :BlockHeader ;
+    rdfs:range xsd:hexBinary ;
+    skos:definition "32-byte hash of root of merkle tree of block's transactions"@en .
+
+:timestamp a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "timestamp"@en ;
+    rdfs:domain :BlockHeader ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "Approximate creation time of block in seconds from Unix Epoch"@en ;
+    rdfs:comment "4 bytes"@en .
+
+:difficultyTarget a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "difficulty target"@en ;
+    rdfs:domain :BlockHeader ;
+    rdfs:range xsd:hexBinary ;
+    skos:definition "Proof-of-Work algorithm difficulty target for this block"@en ;
+    rdfs:comment "4 bytes"@en .
+
+:nonce a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "nonce"@en ;
+    rdfs:domain :BlockHeader ;
+    rdfs:range xsd:nonNegativeInteger ;
+    skos:definition "Counter used for Proof-of-Work algorithm"@en ;
+    rdfs:comment "4 bytes; incremented during mining to find valid block hash"@en .
+
+### Transaction Properties ###
+
+:transactionID a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "transaction ID"@en ;
+    rdfs:domain :Transaction ;
+    rdfs:range xsd:hexBinary ;
+    skos:definition "Unique transaction identifier (TXID)"@en ;
+    rdfs:comment "SegWit fixes transaction malleability by removing signatures from TXID computation"@en .
+
+### Protocol Upgrade Properties ###
+
+:activationDate a owl:DatatypeProperty ;
+    rdfs:label "activation date"@en ;
+    rdfs:domain :ProtocolUpgrade ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "Date when protocol upgrade activated on network"@en .
+
+:activationBlockHeight a owl:DatatypeProperty ;
+    rdfs:label "activation block height"@en ;
+    rdfs:domain :ProtocolUpgrade ;
+    rdfs:range xsd:nonNegativeInteger ;
+    skos:definition "Block height at which protocol upgrade activated"@en .
+
+:bipNumber a owl:DatatypeProperty ;
+    rdfs:label "BIP number"@en ;
+    rdfs:domain :ProtocolUpgrade ;
+    rdfs:range xsd:string ;
+    skos:definition "Bitcoin Improvement Proposal number"@en ;
+    skos:example "BIP-141"@en, "BIP-340"@en .
+
+#################################################################
+#
+#    Classes
+#
+#################################################################
+
+### Root Concept ###
+
+:BlockchainConcept a owl:Class ;
+    rdfs:label "Blockchain Concept"@en ;
+    skos:definition "Root class for all blockchain-related concepts encompassing structures, processes, protocols, applications, and components"@en ;
+    rdfs:comment "Top-level abstraction for blockchain domain ontology"@en .
+
+### Level 2: Major Categories ###
+
+:BlockchainStructure a owl:Class ;
+    rdfs:label "Blockchain Structure"@en ;
+    rdfs:subClassOf :BlockchainConcept ;
+    skos:definition "Data structures and architectural components of blockchain systems"@en ;
+    rdfs:comment "Includes blocks, transactions, hashes, merkle trees, identifiers"@en .
+
+:BlockchainProcess a owl:Class ;
+    rdfs:label "Blockchain Process"@en ;
+    rdfs:subClassOf :BlockchainConcept ;
+    skos:definition "Processes, algorithms, and operations within blockchain systems"@en ;
+    rdfs:comment "Includes mining, validation, hashing, linking, fork resolution"@en .
+
+:BlockchainProtocol a owl:Class ;
+    rdfs:label "Blockchain Protocol"@en ;
+    rdfs:subClassOf :BlockchainConcept ;
+    skos:definition "Protocol specifications, upgrades, and standards"@en ;
+    rdfs:comment "Includes soft forks, hard forks, consensus algorithms, signature schemes"@en .
+
+:BlockchainNetwork a owl:Class ;
+    rdfs:label "Blockchain Network"@en ;
+    rdfs:subClassOf :BlockchainConcept ;
+    skos:definition "Network types and configurations for blockchain operation"@en ;
+    rdfs:comment "Includes mainnet, testnet, regtest, layer-2 networks"@en .
+
+:BlockchainComponent a owl:Class ;
+    rdfs:label "Blockchain Component"@en ;
+    rdfs:subClassOf :BlockchainConcept ;
+    skos:definition "Software and system components supporting blockchain operation"@en ;
+    rdfs:comment "Includes software clients, storage mechanisms, node implementations"@en .
+
+:BlockchainCharacteristic a owl:Class ;
+    rdfs:label "Blockchain Characteristic"@en ;
+    rdfs:subClassOf :BlockchainConcept ;
+    skos:definition "Properties and characteristics of blockchain systems"@en ;
+    rdfs:comment "Includes immutability, decentralization, transparency, security"@en .
+
+### Core Data Structures ###
+
+:DataStructure a owl:Class ;
+    rdfs:label "Data Structure"@en ;
+    rdfs:subClassOf :BlockchainStructure ;
+    skos:definition "Fundamental data structures in blockchain systems"@en .
+
+:Blockchain a owl:Class ;
+    rdfs:label "Blockchain"@en ;
+    rdfs:subClassOf :DataStructure ;
+    skos:definition "Ordered, back-linked list of blocks of transactions"@en ;
+    skos:altLabel "Distributed Ledger"@en, "Block Chain"@en ;
+    rdfs:comment "Can be stored as flat file or in database; Bitcoin Core uses LevelDB"@en ;
+    skos:example "Bitcoin blockchain containing all blocks from genesis to current tip"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "4" ;
+        :sourceQuote "The blockchain data structure is an ordered, back-linked list of blocks of transactions." ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:Block a owl:Class ;
+    rdfs:label "Block"@en ;
+    rdfs:subClassOf :DataStructure ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty :hasBlockHeader ;
+        owl:cardinality "1"^^xsd:nonNegativeInteger
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty :containsTransaction ;
+        owl:minCardinality "1"^^xsd:nonNegativeInteger
+    ] ;
+    skos:definition "Container data structure aggregating transactions for inclusion in the blockchain"@en ;
+    rdfs:comment "Consists of 80-byte header plus transactions; complete block ~1000x larger than header"@en ;
+    skos:example "Block containing 500+ transactions, typical size much larger than 80-byte header"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "54" ;
+        :sourceQuote "A block is a container data structure that aggregates transactions for inclusion in the public ledger, the blockchain." ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:BlockHeader a owl:Class ;
+    rdfs:label "Block Header"@en ;
+    rdfs:subClassOf :DataStructure ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty :version ;
+        owl:cardinality "1"^^xsd:nonNegativeInteger
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty :previousBlockHash ;
+        owl:cardinality "1"^^xsd:nonNegativeInteger
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty :merkleRoot ;
+        owl:cardinality "1"^^xsd:nonNegativeInteger
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty :timestamp ;
+        owl:cardinality "1"^^xsd:nonNegativeInteger
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty :difficultyTarget ;
+        owl:cardinality "1"^^xsd:nonNegativeInteger
+    ] ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty :nonce ;
+        owl:cardinality "1"^^xsd:nonNegativeInteger
+    ] ;
+    skos:definition "80-byte metadata structure containing version, previous block hash, merkle root, timestamp, difficulty target, and nonce"@en ;
+    rdfs:comment "Three sets of metadata: previous block reference, mining-related fields, and merkle root"@en ;
+    skos:example "Header with version 2, previous hash, merkle root, timestamp 1231006505, difficulty, nonce"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "65" ;
+        :sourceQuote "80 bytes Block Header Several fields form the block header" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:Transaction a owl:Class ;
+    rdfs:label "Transaction"@en ;
+    rdfs:subClassOf :DataStructure ;
+    skos:definition "Record of value transfer between addresses in blockchain"@en ;
+    rdfs:comment "Average transaction at least 250 bytes; average block contains 500+ transactions"@en ;
+    skos:example "Transaction transferring 1.5 BTC from address A to address B"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "54" ;
+        :sourceQuote "A block is a container data structure that aggregates transactions" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Block Type Taxonomy ###
+
+:BlockType a owl:Class ;
+    rdfs:label "Block Type"@en ;
+    rdfs:subClassOf :Block ;
+    skos:definition "Classification of blocks by role and position in blockchain"@en .
+
+:GenesisBlock a owl:Class ;
+    rdfs:label "Genesis Block"@en ;
+    rdfs:subClassOf :BlockType ;
+    rdfs:subClassOf [
+        a owl:Restriction ;
+        owl:onProperty :blockHeight ;
+        owl:hasValue "0"^^xsd:nonNegativeInteger
+    ] ;
+    skos:definition "First block in blockchain created in 2009, common ancestor of all blocks"@en ;
+    skos:altLabel "Block 0"@en ;
+    rdfs:comment "Statically encoded in Bitcoin client software; cannot be altered"@en ;
+    skos:example "Bitcoin genesis block hash: 000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "17" ;
+        :sourceQuote "the first block ever created, known as the genesis block" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:RegularBlock a owl:Class ;
+    rdfs:label "Regular Block"@en ;
+    rdfs:subClassOf :BlockType ;
+    skos:definition "Standard block added to main blockchain after genesis"@en ;
+    rdfs:comment "Has exactly one parent; can temporarily have multiple children during fork"@en .
+
+:OrphanBlock a owl:Class ;
+    rdfs:label "Orphan Block"@en ;
+    rdfs:subClassOf :BlockType ;
+    skos:definition "Valid block not part of main blockchain due to fork resolution"@en ;
+    rdfs:comment "Occurs when fork is resolved and one child block is chosen over another"@en ;
+    :sourceEvidence [
+        :sourceType "LogicalInference" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "22" ;
+        :sourceQuote "Eventually, only one child block becomes part of the blockchain" ;
+        :confidence "0.95"^^xsd:decimal
+    ] .
+
+:StaleBlock a owl:Class ;
+    rdfs:label "Stale Block"@en ;
+    rdfs:subClassOf :BlockType ;
+    skos:definition "Block that was valid but later superseded by longer chain"@en ;
+    skos:altLabel "Uncle Block"@en ;
+    rdfs:comment "Similar to orphan block but specifically refers to blocks in shorter chain"@en .
+
+### Transaction Type Taxonomy ###
+
+:TransactionType a owl:Class ;
+    rdfs:label "Transaction Type"@en ;
+    rdfs:subClassOf :Transaction ;
+    skos:definition "Classification of transactions by purpose and structure"@en .
+
+:CoinbaseTransaction a owl:Class ;
+    rdfs:label "Coinbase Transaction"@en ;
+    rdfs:subClassOf :TransactionType ;
+    skos:definition "First transaction in block containing newly mined bitcoin, spendable after 100 blocks"@en ;
+    rdfs:comment "Reward for mining; must mature 100 blocks before spending"@en ;
+    skos:example "Coinbase transaction awarding 6.25 BTC to miner plus transaction fees"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "48" ;
+        :sourceQuote "the coinbase transaction—the transaction containing newly mined bitcoin—can be spent" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:StandardTransaction a owl:Class ;
+    rdfs:label "Standard Transaction"@en ;
+    rdfs:subClassOf :TransactionType ;
+    skos:definition "Regular peer-to-peer value transfer transaction"@en ;
+    rdfs:comment "Most common transaction type transferring bitcoin between addresses"@en .
+
+:SegWitTransaction a owl:Class ;
+    rdfs:label "SegWit Transaction"@en ;
+    rdfs:subClassOf :TransactionType ;
+    skos:definition "Transaction using segregated witness format with separated signature data"@en ;
+    rdfs:comment "Introduced in BIP-141 (2017); witness data stored separately, counted as 1/4 weight"@en ;
+    :introducedIn :SegregatedWitness ;
+    :sourceEvidence [
+        :sourceType "ResearchCitation" ;
+        :sourceDocument "https://en.wikipedia.org/wiki/SegWit" ;
+        :sourceQuote "Segregated Witness was activated on 24 August 2017" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Cryptographic Structures ###
+
+:CryptographicStructure a owl:Class ;
+    rdfs:label "Cryptographic Structure"@en ;
+    rdfs:subClassOf :BlockchainStructure ;
+    skos:definition "Cryptographic data structures ensuring security and integrity"@en .
+
+:MerkleTree a owl:Class ;
+    rdfs:label "Merkle Tree"@en ;
+    rdfs:subClassOf :CryptographicStructure ;
+    skos:definition "Hash tree data structure for efficient transaction summarization"@en ;
+    rdfs:comment "Binary tree where leaves are transaction hashes and nodes are hashes of child pairs"@en ;
+    skos:example "Merkle tree of 4 transactions creates 7 nodes total"@en .
+
+:MerkleTreeRoot a owl:Class ;
+    rdfs:label "Merkle Tree Root"@en ;
+    rdfs:subClassOf :MerkleTree ;
+    skos:definition "32-byte root hash of merkle tree summarizing all transactions in block"@en ;
+    rdfs:comment "Stored in block header; allows efficient verification of transaction inclusion"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "73" ;
+        :sourceQuote "the merkle tree root, a data structure used to efficiently summarize all the transactions in the block" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:MAST a owl:Class ;
+    rdfs:label "MAST"@en ;
+    rdfs:subClassOf :MerkleTree ;
+    skos:definition "Merkelized Alternative Script Trees - merkle tree hiding unused transaction conditions"@en ;
+    skos:altLabel "Merkelized Alternative Script Trees"@en ;
+    rdfs:comment "Introduced in Taproot; only executed script path revealed on-chain"@en ;
+    :introducedIn :TaprootUpgrade ;
+    :sourceEvidence [
+        :sourceType "ResearchCitation" ;
+        :sourceDocument "https://trustmachines.co/learn/bitcoin-taproot-upgrade-basic-breakdown/" ;
+        :sourceQuote "MAST (Merkelized Alternative Script Trees) hides any preset conditions tied to transactions" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:Hash a owl:Class ;
+    rdfs:label "Hash"@en ;
+    rdfs:subClassOf :CryptographicStructure ;
+    skos:definition "Output of cryptographic hash function"@en ;
+    rdfs:comment "One-way function producing fixed-size output"@en .
+
+:BlockHash a owl:Class ;
+    rdfs:label "Block Hash"@en ;
+    rdfs:subClassOf :Hash ;
+    skos:definition "32-byte SHA256 hash computed by hashing block header twice"@en ;
+    skos:altLabel "Block Header Hash"@en ;
+    rdfs:comment "Uniquely identifies block; computed by nodes, not stored in block structure"@en ;
+    skos:example "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "86" ;
+        :sourceQuote "The primary identifier of a block is its cryptographic hash, a digital fingerprint, made by hashing the block header twice through the SHA256 algorithm" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Identifiers ###
+
+:Identifier a owl:Class ;
+    rdfs:label "Identifier"@en ;
+    rdfs:subClassOf :BlockchainStructure ;
+    skos:definition "Unique identifiers for blockchain elements"@en .
+
+:BlockHeight a owl:Class ;
+    rdfs:label "Block Height"@en ;
+    rdfs:subClassOf :Identifier ;
+    skos:definition "Position of block in blockchain, with genesis block at height 0"@en ;
+    rdfs:comment "Not unique during forks - multiple blocks can compete for same height"@en ;
+    skos:example "Block height on January 1, 2017 was approximately 446,000"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "101" ;
+        :sourceQuote "A second way to identify a block is by its position in the blockchain, called the block height" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Processes ###
+
+:ConsensusProcess a owl:Class ;
+    rdfs:label "Consensus Process"@en ;
+    rdfs:subClassOf :BlockchainProcess ;
+    skos:definition "Processes achieving network agreement on blockchain state"@en .
+
+:Mining a owl:Class ;
+    rdfs:label "Mining"@en ;
+    rdfs:subClassOf :ConsensusProcess ;
+    skos:definition "Process of discovering new blocks through proof-of-work computation"@en ;
+    rdfs:comment "Miners increment nonce to find hash below difficulty target"@en ;
+    skos:example "Mining involves billions of hash computations to find valid block"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "21" ;
+        :sourceQuote "when different blocks are discovered almost simultaneously by different miners" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:BlockValidation a owl:Class ;
+    rdfs:label "Block Validation"@en ;
+    rdfs:subClassOf :ConsensusProcess ;
+    skos:definition "Process of verifying block validity according to protocol rules"@en ;
+    rdfs:comment "Nodes independently validate blocks before accepting to chain"@en .
+
+:ForkResolution a owl:Class ;
+    rdfs:label "Fork Resolution"@en ;
+    rdfs:subClassOf :ConsensusProcess ;
+    skos:definition "Process resolving blockchain fork where one chain becomes canonical"@en ;
+    rdfs:comment "Longest chain (most cumulative proof-of-work) wins"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "22" ;
+        :sourceQuote "Eventually, only one child block becomes part of the blockchain and the 'fork' is resolved" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:CryptographicProcess a owl:Class ;
+    rdfs:label "Cryptographic Process"@en ;
+    rdfs:subClassOf :BlockchainProcess ;
+    skos:definition "Cryptographic operations ensuring security"@en .
+
+:HashComputation a owl:Class ;
+    rdfs:label "Hash Computation"@en ;
+    rdfs:subClassOf :CryptographicProcess ;
+    skos:definition "Computing cryptographic hash of data using SHA256 algorithm"@en ;
+    rdfs:comment "Block hash computed by double SHA256 of block header"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "86" ;
+        :sourceQuote "made by hashing the block header twice through the SHA256 algorithm" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:SignatureGeneration a owl:Class ;
+    rdfs:label "Signature Generation"@en ;
+    rdfs:subClassOf :CryptographicProcess ;
+    skos:definition "Creating digital signatures for transaction authorization"@en ;
+    rdfs:comment "Uses private key to sign transaction; verified with public key"@en .
+
+:SignatureVerification a owl:Class ;
+    rdfs:label "Signature Verification"@en ;
+    rdfs:subClassOf :CryptographicProcess ;
+    skos:definition "Verifying digital signature authenticity using public key"@en .
+
+:ChainProcess a owl:Class ;
+    rdfs:label "Chain Process"@en ;
+    rdfs:subClassOf :BlockchainProcess ;
+    skos:definition "Processes involving blockchain structure manipulation"@en .
+
+:BlockLinking a owl:Class ;
+    rdfs:label "Block Linking"@en ;
+    rdfs:subClassOf :ChainProcess ;
+    skos:definition "Connecting blocks via previous block hash creating chain"@en ;
+    rdfs:comment "Each block references parent through previous block hash in header"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "7" ;
+        :sourceQuote "Blocks are linked 'back,' each referring to the previous block in the chain" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:CascadeEffect a owl:Class ;
+    rdfs:label "Cascade Effect"@en ;
+    rdfs:subClassOf :ChainProcess ;
+    skos:definition "Propagation of hash changes through all descendant blocks when parent modified"@en ;
+    rdfs:comment "Ensures immutability - changing old block requires recalculating all subsequent blocks"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "33" ;
+        :sourceQuote "This cascade effect ensures that once a block has many generations following it, it cannot be changed without forcing a recalculation of all subsequent blocks" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:ChainRecalculation a owl:Class ;
+    rdfs:label "Chain Recalculation"@en ;
+    rdfs:subClassOf :ChainProcess ;
+    skos:definition "Recalculating all subsequent blocks when earlier block is modified"@en ;
+    rdfs:comment "Would require enormous computation (and energy consumption)"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "35" ;
+        :sourceQuote "such a recalculation would require enormous computation (and therefore energy consumption)" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Protocol Upgrades ###
+
+:ProtocolUpgrade a owl:Class ;
+    rdfs:label "Protocol Upgrade"@en ;
+    rdfs:subClassOf :BlockchainProtocol ;
+    skos:definition "Changes to Bitcoin protocol rules and specifications"@en .
+
+:SoftFork a owl:Class ;
+    rdfs:label "Soft Fork"@en ;
+    rdfs:subClassOf :ProtocolUpgrade ;
+    skos:definition "Backward-compatible protocol change where new rules are subset of old rules"@en ;
+    rdfs:comment "Old nodes continue to see new blocks as valid; no chain split"@en ;
+    skos:example "SegWit and Taproot were both soft forks"@en ;
+    :sourceEvidence [
+        :sourceType "ResearchCitation" ;
+        :sourceDocument "https://learnmeabitcoin.com/beginners/guide/segwit/" ;
+        :sourceQuote "With the SegWit upgrade, transactions and blocks still follow the current rules of the bitcoin network, so all nodes still see SegWit blocks as valid" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:HardFork a owl:Class ;
+    rdfs:label "Hard Fork"@en ;
+    rdfs:subClassOf :ProtocolUpgrade ;
+    skos:definition "Non-backward-compatible protocol change requiring all nodes to upgrade"@en ;
+    rdfs:comment "Can create separate blockchain if consensus not achieved"@en ;
+    skos:example "Bitcoin Cash split in 2017 was a hard fork"@en .
+
+:SegregatedWitness a owl:Class ;
+    rdfs:label "Segregated Witness"@en ;
+    rdfs:subClassOf :SoftFork ;
+    skos:definition "Soft fork activated August 24, 2017 (BIP-141) separating witness data from transaction data"@en ;
+    skos:altLabel "SegWit"@en ;
+    rdfs:comment "Fixes transaction malleability; increases effective block size to ~4MB; enables Lightning Network"@en ;
+    skos:example "Witness data counted as 1/4 weight, allowing more transactions per block"@en ;
+    :activationDate "2017-08-24T01:57:37Z"^^xsd:dateTime ;
+    :activationBlockHeight "481824"^^xsd:nonNegativeInteger ;
+    :bipNumber "BIP-141" ;
+    :sourceEvidence [
+        :sourceType "ResearchCitation" ;
+        :sourceDocument "https://en.wikipedia.org/wiki/SegWit" ;
+        :sourceQuote "Segregated Witness was activated on 24 August 2017" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:TaprootUpgrade a owl:Class ;
+    rdfs:label "Taproot"@en ;
+    rdfs:subClassOf :SoftFork ;
+    skos:definition "Soft fork activated November 14, 2021 comprising BIP-340, BIP-341, BIP-342"@en ;
+    rdfs:comment "Introduces Schnorr signatures; enhances privacy and efficiency; most significant upgrade since SegWit"@en ;
+    skos:example "Multi-signature transactions appear identical to single-signature transactions"@en ;
+    :activationDate "2021-11-14T00:00:00Z"^^xsd:dateTime ;
+    :activationBlockHeight "709632"^^xsd:nonNegativeInteger ;
+    :bipNumber "BIP-340, BIP-341, BIP-342" ;
+    :sourceEvidence [
+        :sourceType "ResearchCitation" ;
+        :sourceDocument "https://chain.link/education-hub/schnorr-signature" ;
+        :sourceQuote "Schnorr signatures were implemented in BIP-340 within the Taproot soft fork upgrade, which was activated at block 709,632 on November 14, 2021" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Cryptographic Schemes ###
+
+:CryptographicScheme a owl:Class ;
+    rdfs:label "Cryptographic Scheme"@en ;
+    rdfs:subClassOf :BlockchainProtocol ;
+    skos:definition "Cryptographic algorithms and signature schemes"@en .
+
+:SignatureScheme a owl:Class ;
+    rdfs:label "Signature Scheme"@en ;
+    rdfs:subClassOf :CryptographicScheme ;
+    skos:definition "Algorithm for creating and verifying digital signatures"@en .
+
+:ECDSA a owl:Class ;
+    rdfs:label "ECDSA"@en ;
+    rdfs:subClassOf :SignatureScheme ;
+    skos:definition "Elliptic Curve Digital Signature Algorithm - original Bitcoin signature scheme"@en ;
+    skos:altLabel "Elliptic Curve Digital Signature Algorithm"@en ;
+    rdfs:comment "Used from Bitcoin inception until Taproot introduced Schnorr as alternative"@en .
+
+:SchnorrSignatures a owl:Class ;
+    rdfs:label "Schnorr Signatures"@en ;
+    rdfs:subClassOf :SignatureScheme ;
+    skos:definition "Signature scheme introduced in BIP-340 offering aggregation, provable security, and improved efficiency"@en ;
+    rdfs:comment "Enables key aggregation; reduces transaction size by ~30%; supports batch verification"@en ;
+    :introducedIn :TaprootUpgrade ;
+    :sourceEvidence [
+        :sourceType "ResearchCitation" ;
+        :sourceDocument "https://seb.stanfordblockchain.xyz/core-protocol-layer/taproot-upgrade" ;
+        :sourceQuote "Schnorr signatures have much stronger security properties than ECDSA, and are 'strongly unforgable under chosen message attack' (SUF-CMA)" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:HashAlgorithm a owl:Class ;
+    rdfs:label "Hash Algorithm"@en ;
+    rdfs:subClassOf :CryptographicScheme ;
+    skos:definition "Cryptographic hash function"@en .
+
+:SHA256 a owl:Class ;
+    rdfs:label "SHA256"@en ;
+    rdfs:subClassOf :HashAlgorithm ;
+    skos:definition "Secure Hash Algorithm 256-bit - cryptographic hash used for block hashing"@en ;
+    skos:altLabel "Secure Hash Algorithm 256"@en ;
+    rdfs:comment "Block hash computed by double SHA256 of block header"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "12" ;
+        :sourceQuote "generated using the SHA256 cryptographic hash algorithm on the header of the block" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:ConsensusAlgorithm a owl:Class ;
+    rdfs:label "Consensus Algorithm"@en ;
+    rdfs:subClassOf :BlockchainProtocol ;
+    skos:definition "Algorithm for achieving network consensus on blockchain state"@en .
+
+:ProofOfWork a owl:Class ;
+    rdfs:label "Proof of Work"@en ;
+    rdfs:subClassOf :ConsensusAlgorithm ;
+    skos:definition "Consensus algorithm requiring computational work using difficulty target and nonce"@en ;
+    skos:altLabel "PoW"@en ;
+    rdfs:comment "Miners find nonce such that block hash is below difficulty target"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "81" ;
+        :sourceQuote "The Proof-of-Work algorithm difficulty target for this block" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Scripting Languages ###
+
+:ScriptingLanguage a owl:Class ;
+    rdfs:label "Scripting Language"@en ;
+    rdfs:subClassOf :BlockchainProtocol ;
+    skos:definition "Programming language for transaction conditions and smart contracts"@en .
+
+:BitcoinScript a owl:Class ;
+    rdfs:label "Bitcoin Script"@en ;
+    rdfs:subClassOf :ScriptingLanguage ;
+    skos:definition "Original Bitcoin stack-based scripting language for transaction validation"@en ;
+    rdfs:comment "Stack-based, non-Turing complete language for security"@en .
+
+:Tapscript a owl:Class ;
+    rdfs:label "Tapscript"@en ;
+    rdfs:subClassOf :BitcoinScript ;
+    skos:definition "Updated scripting language in BIP-342 supporting Schnorr signatures"@en ;
+    rdfs:comment "Modified opcodes: OP_CHECKSIG, OP_CHECKSIGVERIFY; new opcode: OP_CHECKSIGADD"@en ;
+    :introducedIn :TaprootUpgrade ;
+    :sourceEvidence [
+        :sourceType "ResearchCitation" ;
+        :sourceDocument "https://seb.stanfordblockchain.xyz/core-protocol-layer/taproot-upgrade" ;
+        :sourceQuote "BIP 342 modifies Bitcoin Script commands to make them compatible with BIP 340 and BIP 341" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Address Types ###
+
+:AddressType a owl:Class ;
+    rdfs:label "Address Type"@en ;
+    rdfs:subClassOf :BlockchainProtocol ;
+    skos:definition "Format for blockchain addresses representing transaction outputs"@en .
+
+:PayToPubKeyHash a owl:Class ;
+    rdfs:label "Pay-to-PubKey-Hash"@en ;
+    rdfs:subClassOf :AddressType ;
+    skos:definition "Original address type paying directly to public key hash"@en ;
+    skos:altLabel "P2PKH"@en ;
+    rdfs:comment "Most common traditional Bitcoin address format"@en .
+
+:PayToScriptHash a owl:Class ;
+    rdfs:label "Pay-to-Script-Hash"@en ;
+    rdfs:subClassOf :AddressType ;
+    skos:definition "Address type paying to script hash enabling complex spending conditions"@en ;
+    skos:altLabel "P2SH"@en ;
+    rdfs:comment "Allows multi-signature and other complex conditions"@en .
+
+:PayToTaproot a owl:Class ;
+    rdfs:label "Pay-to-Taproot"@en ;
+    rdfs:subClassOf :AddressType ;
+    skos:definition "Taproot address type unifying P2PKH and P2SH introduced in BIP-341"@en ;
+    skos:altLabel "P2TR"@en ;
+    rdfs:comment "Makes all transaction types appear identical for privacy"@en ;
+    :introducedIn :TaprootUpgrade ;
+    :sourceEvidence [
+        :sourceType "ResearchCitation" ;
+        :sourceDocument "https://seb.stanfordblockchain.xyz/core-protocol-layer/taproot-upgrade" ;
+        :sourceQuote "Pay to Taproot (P2TP) is a method used to unify these two separate architectures" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Networks ###
+
+:MainNetwork a owl:Class ;
+    rdfs:label "Main Network"@en ;
+    rdfs:subClassOf :BlockchainNetwork ;
+    skos:definition "Primary production Bitcoin network with real economic value"@en ;
+    skos:altLabel "Mainnet"@en ;
+    rdfs:comment "Contains all bitcoin with real value; opposite of test networks"@en .
+
+:TestNetwork a owl:Class ;
+    rdfs:label "Test Network"@en ;
+    rdfs:subClassOf :BlockchainNetwork ;
+    skos:definition "Non-production network for testing and development without real value"@en ;
+    rdfs:comment "Allows developers to experiment without risking real bitcoin"@en .
+
+:Testnet3 a owl:Class ;
+    rdfs:label "Testnet3"@en ;
+    rdfs:subClassOf :TestNetwork ;
+    skos:definition "Third iteration of testnet, restarted February 2011, over 20GB in 2017"@en ;
+    rdfs:comment "Large blockchain; will take day to sync; not lightweight"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "418" ;
+        :sourceQuote "The current testnet is called testnet3, the third iteration of testnet, restarted in February 2011" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:Segnet a owl:Class ;
+    rdfs:label "Segnet"@en ;
+    rdfs:subClassOf :TestNetwork ;
+    skos:definition "Special-purpose testnet launched 2016 for Segregated Witness testing"@en ;
+    rdfs:comment "No longer necessary after SegWit added to testnet3"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "480" ;
+        :sourceQuote "In 2016, a special-purpose testnet was launched to aid in development and testing of Segregated Witness (aka segwit; see Appendix D). This test blockchain is called segnet" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:RegtestNetwork a owl:Class ;
+    rdfs:label "Regression Test Network"@en ;
+    rdfs:subClassOf :BlockchainNetwork ;
+    skos:definition "Local blockchain for testing, closed system created from scratch"@en ;
+    skos:altLabel "Regtest"@en ;
+    rdfs:comment "Run with single node or few nodes; launch from scratch creating local genesis"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "488" ;
+        :sourceQuote "Regtest, which stands for 'Regression Testing,' is a Bitcoin Core feature that allows you to create a local blockchain for testing purposes" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:Layer2Network a owl:Class ;
+    rdfs:label "Layer 2 Network"@en ;
+    rdfs:subClassOf :BlockchainNetwork ;
+    skos:definition "Secondary network layer built on top of base blockchain for scalability"@en ;
+    rdfs:comment "Transactions occur off-chain; final settlement on-chain"@en .
+
+:LightningNetwork a owl:Class ;
+    rdfs:label "Lightning Network"@en ;
+    rdfs:subClassOf :Layer2Network ;
+    skos:definition "Second-layer payment protocol enabling instant off-chain micropayments through bidirectional payment channels"@en ;
+    rdfs:comment "Launched 2018; millions of TPS potential; sub-second transactions; minimal fees"@en ;
+    skos:example "Payment channel between Alice and Bob for instant coffee payments"@en ;
+    :sourceEvidence [
+        :sourceType "ResearchCitation" ;
+        :sourceDocument "https://en.wikipedia.org/wiki/Lightning_Network" ;
+        :sourceQuote "The Lightning Network (LN) is a payment protocol built on the bitcoin blockchain. It is intended to enable fast transactions" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Software Components ###
+
+:SoftwareComponent a owl:Class ;
+    rdfs:label "Software Component"@en ;
+    rdfs:subClassOf :BlockchainComponent ;
+    skos:definition "Software applications and tools for blockchain operation"@en .
+
+:BitcoinCore a owl:Class ;
+    rdfs:label "Bitcoin Core"@en ;
+    rdfs:subClassOf :SoftwareComponent ;
+    skos:definition "Reference Bitcoin client implementation"@en ;
+    rdfs:comment "Contains genesis block statically encoded; uses LevelDB for metadata storage"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "5" ;
+        :sourceQuote "The Bitcoin Core client stores the blockchain metadata using Google's LevelDB database" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:Bitcoind a owl:Class ;
+    rdfs:label "Bitcoind"@en ;
+    rdfs:subClassOf :SoftwareComponent ;
+    skos:definition "Bitcoin daemon that can run on mainnet, testnet, or regtest"@en ;
+    rdfs:comment "Command-line Bitcoin node software"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "430" ;
+        :sourceQuote "$ bitcoind -testnet" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:BitcoinCLI a owl:Class ;
+    rdfs:label "Bitcoin CLI"@en ;
+    rdfs:subClassOf :SoftwareComponent ;
+    skos:definition "Bitcoin command-line interface tool for interacting with bitcoind"@en ;
+    rdfs:comment "Must specify network flag matching bitcoind (e.g., -testnet)"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "434" ;
+        :sourceQuote "To connect to bitcoind, you use the bitcoin-cli command-line tool" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:LightningNode a owl:Class ;
+    rdfs:label "Lightning Node"@en ;
+    rdfs:subClassOf :SoftwareComponent ;
+    skos:definition "Software connecting to Lightning Network for sending and receiving bitcoin off-chain"@en ;
+    rdfs:comment "Implementations: LND (Lightning Labs), c-lightning (Blockstream), Eclair (ACINQ)"@en ;
+    :sourceEvidence [
+        :sourceType "ResearchCitation" ;
+        :sourceDocument "https://bitcoinmagazine.com/technical/bitcoin-layer-2-lightning-network" ;
+        :sourceQuote "major implementations having been built by Blockstream (CLN), Lightning Labs (LND), ACINQ (Eclair), and Spiral (LDK)" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Storage Mechanisms ###
+
+:StorageMechanism a owl:Class ;
+    rdfs:label "Storage Mechanism"@en ;
+    rdfs:subClassOf :BlockchainComponent ;
+    skos:definition "Data storage systems for blockchain data persistence"@en .
+
+:FlatFileStorage a owl:Class ;
+    rdfs:label "Flat File Storage"@en ;
+    rdfs:subClassOf :StorageMechanism ;
+    skos:definition "Storing blockchain data as flat file on disk"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "5" ;
+        :sourceQuote "The blockchain can be stored as a flat file" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:DatabaseStorage a owl:Class ;
+    rdfs:label "Database Storage"@en ;
+    rdfs:subClassOf :StorageMechanism ;
+    skos:definition "Storing blockchain data in database system for efficient querying"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "5" ;
+        :sourceQuote "or in a simple database" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:LevelDB a owl:Class ;
+    rdfs:label "LevelDB"@en ;
+    rdfs:subClassOf :DatabaseStorage ;
+    skos:definition "Google's LevelDB key-value store used by Bitcoin Core for blockchain metadata"@en ;
+    rdfs:comment "Fast key-value storage; used for indexing and retrieval"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "6" ;
+        :sourceQuote "The Bitcoin Core client stores the blockchain metadata using Google's LevelDB database" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Characteristics ###
+
+:Immutability a owl:Class ;
+    rdfs:label "Immutability"@en ;
+    rdfs:subClassOf :BlockchainCharacteristic ;
+    skos:definition "Property where deep blockchain history cannot be changed without enormous computation"@en ;
+    rdfs:comment "Key feature of Bitcoin security; cascade effect ensures immutability"@en ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "38" ;
+        :sourceQuote "the existence of a long chain of blocks makes the blockchain's deep history immutable, which is a key feature of bitcoin's security" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+:Decentralization a owl:Class ;
+    rdfs:label "Decentralization"@en ;
+    rdfs:subClassOf :BlockchainCharacteristic ;
+    skos:definition "Distributed control with no single authority or central point of failure"@en ;
+    rdfs:comment "Peer-to-peer network; no single entity controls blockchain"@en .
+
+:Transparency a owl:Class ;
+    rdfs:label "Transparency"@en ;
+    rdfs:subClassOf :BlockchainCharacteristic ;
+    skos:definition "Public visibility of all transactions and blocks on blockchain"@en ;
+    rdfs:comment "Anyone can verify blockchain; full nodes validate independently"@en .
+
+:Security a owl:Class ;
+    rdfs:label "Security"@en ;
+    rdfs:subClassOf :BlockchainCharacteristic ;
+    skos:definition "Cryptographic protection ensuring data integrity and transaction validity"@en ;
+    rdfs:comment "Based on SHA256, digital signatures, proof-of-work"@en .
+
+#################################################################
+#
+#    Disjoint Classes
+#
+#################################################################
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( :GenesisBlock :RegularBlock :OrphanBlock :StaleBlock ) .
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( :CoinbaseTransaction :StandardTransaction :SegWitTransaction ) .
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( :SoftFork :HardFork ) .
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( :MainNetwork :TestNetwork :RegtestNetwork :Layer2Network ) .
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( :ECDSA :SchnorrSignatures ) .
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( :BlockchainStructure :BlockchainProcess :BlockchainProtocol :BlockchainNetwork :BlockchainComponent :BlockchainCharacteristic ) .
+
+#################################################################
+#
+#    Individuals (Representative Instances)
+#
+#################################################################
+
+### Bitcoin Genesis Block ###
+
+:BitcoinGenesisBlock a :GenesisBlock ;
+    rdfs:label "Bitcoin Genesis Block"@en ;
+    rdfs:comment "First block ever created in Bitcoin blockchain on January 3, 2009"@en ;
+    :blockHeight "0"^^xsd:nonNegativeInteger ;
+    :hasBlockHash [
+        a :BlockHash ;
+        rdfs:label "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"@en
+    ] ;
+    :hasBlockHeader [
+        a :BlockHeader ;
+        :timestamp "2009-01-03T18:15:05Z"^^xsd:dateTime
+    ] ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "90" ;
+        :sourceQuote "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f is the block hash of the first bitcoin block ever created" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Regtest Genesis Block ###
+
+:RegtestGenesisBlock a :GenesisBlock ;
+    rdfs:label "Regtest Genesis Block"@en ;
+    rdfs:comment "Genesis block for regression test network"@en ;
+    :blockHeight "0"^^xsd:nonNegativeInteger ;
+    :hasBlockHash [
+        a :BlockHash ;
+        rdfs:label "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"@en
+    ] ;
+    :sourceEvidence [
+        :sourceType "DirectText" ;
+        :sourceDocument "Chapter_9_The_Blockchain_txt.txt" ;
+        :sourceLine "507" ;
+        :sourceQuote "bestblockhash: 0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206" ;
+        :confidence "1.0"^^xsd:decimal
+    ] .
+
+### Example Regular Block ###
+
+:ExampleBlock446000 a :RegularBlock ;
+    rdfs:label "Example Block at Height 446000"@en ;
+    rdfs:comment "Representative block from January 1, 2017"@en ;
+    :blockHeight "446000"^^xsd:nonNegativeInteger ;
+    :transactionCounter "500"^^xsd:nonNegativeInteger .
+
+### Example SegWit Transaction ###
+
+:ExampleSegWitTransaction a :SegWitTransaction ;
+    rdfs:label "Example SegWit Transaction"@en ;
+    rdfs:comment "Representative Segregated Witness transaction with separated witness data"@en ;
+    :introducedIn :SegregatedWitness .
+
+### Example Lightning Payment Channel ###
+
+:ExampleLightningChannel a owl:NamedIndividual ;
+    rdfs:label "Example Lightning Payment Channel"@en ;
+    rdfs:comment "Bidirectional payment channel on Lightning Network between two parties"@en ;
+    rdf:type owl:Thing .
+
+### SegWit Activation Instance ###
+
+:SegWitActivation a owl:NamedIndividual ;
+    rdfs:label "SegWit Activation Event"@en ;
+    rdfs:comment "Activation of Segregated Witness on Bitcoin mainnet"@en ;
+    :activationDate "2017-08-24T01:57:37Z"^^xsd:dateTime ;
+    :activationBlockHeight "481824"^^xsd:nonNegativeInteger .
+
+### Taproot Activation Instance ###
+
+:TaprootActivation a owl:NamedIndividual ;
+    rdfs:label "Taproot Activation Event"@en ;
+    rdfs:comment "Activation of Taproot upgrade on Bitcoin mainnet"@en ;
+    :activationDate "2021-11-14T00:00:00Z"^^xsd:dateTime ;
+    :activationBlockHeight "709632"^^xsd:nonNegativeInteger .
+
+### SHA256 Algorithm Instance ###
+
+:SHA256Algorithm a :SHA256 ;
+    rdfs:label "SHA256 Hash Function"@en ;
+    rdfs:comment "Cryptographic hash function used throughout Bitcoin"@en .
+
+### Proof-of-Work Instance ###
+
+:BitcoinProofOfWork a :ProofOfWork ;
+    rdfs:label "Bitcoin Proof-of-Work"@en ;
+    rdfs:comment "Bitcoin's consensus mechanism based on computational work"@en .
+
+#################################################################
+#
+#    END OF BLOCKCHAIN ONTOLOGY v1.0.0
+#
+#################################################################

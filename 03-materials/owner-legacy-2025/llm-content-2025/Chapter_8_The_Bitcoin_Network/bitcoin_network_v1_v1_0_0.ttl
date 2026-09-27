@@ -1,0 +1,773 @@
+@prefix bitcoin: <http://example.org/bitcoin-network#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+
+# ============================================================================
+# BITCOIN NETWORK ONTOLOGY - STRUCTURE DESIGN
+# Phase 2: Core Class Hierarchy and Properties
+# ============================================================================
+
+<http://example.org/bitcoin-network> a owl:Ontology ;
+    dcterms:title "Bitcoin Network Ontology"@en ;
+    dcterms:description "Comprehensive ontology for Bitcoin P2P network concepts"@en ;
+    dcterms:created "2025-12-19"^^xsd:date ;
+    dcterms:creator "Claude Sonnet 4.5"@en ;
+    owl:versionInfo "1.0.0-structure" ;
+    owl:versionIRI <http://example.org/bitcoin-network/v1.0.0-structure> .
+
+# ============================================================================
+# TOP-LEVEL CLASSES (Level 1)
+# ============================================================================
+
+bitcoin:BitcoinNetworkConcept a owl:Class ;
+    rdfs:label "Bitcoin Network Concept"@en ;
+    skos:definition "Top-level class for all Bitcoin network-related concepts"@en .
+
+# ============================================================================
+# MAIN CATEGORIES (Level 2)
+# ============================================================================
+
+bitcoin:NetworkArchitecture a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Network Architecture"@en ;
+    skos:definition "Structural organization and design principles of Bitcoin network"@en .
+
+bitcoin:Node a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Bitcoin Node"@en ;
+    skos:definition "Computer participating in Bitcoin P2P network"@en .
+
+bitcoin:Protocol a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Network Protocol"@en ;
+    skos:definition "Communication protocol used in Bitcoin network"@en .
+
+bitcoin:NetworkService a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Network Service"@en ;
+    skos:definition "Functionality provided by network nodes"@en .
+
+bitcoin:DataStructure a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Data Structure"@en ;
+    skos:definition "Data organization used in network operations"@en .
+
+bitcoin:DiscoveryMechanism a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Discovery Mechanism"@en ;
+    skos:definition "Method for finding and connecting to peers"@en .
+
+bitcoin:SecurityFeature a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Security Feature"@en ;
+    skos:definition "Security and privacy mechanism in network"@en .
+
+bitcoin:NetworkComponent a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Network Component"@en ;
+    skos:definition "Physical or logical component of network infrastructure"@en .
+
+bitcoin:CommunicationMechanism a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Communication Mechanism"@en ;
+    skos:definition "Method for message exchange between nodes"@en .
+
+# ============================================================================
+# NODE TYPES (Level 3 - Core Hierarchy)
+# ============================================================================
+
+bitcoin:FullNode a owl:Class ;
+    rdfs:subClassOf bitcoin:Node ;
+    rdfs:label "Full Node"@en ;
+    skos:definition "Node maintaining complete up-to-date copy of blockchain"@en ;
+    owl:disjointWith bitcoin:SPVNode .
+
+bitcoin:SPVNode a owl:Class ;
+    rdfs:subClassOf bitcoin:Node ;
+    rdfs:label "SPV Node"@en ;
+    skos:definition "Simplified Payment Verification node with only block headers"@en ;
+    skos:altLabel "Lightweight Node"@en .
+
+bitcoin:MiningNode a owl:Class ;
+    rdfs:subClassOf bitcoin:Node ;
+    rdfs:label "Mining Node"@en ;
+    skos:definition "Node competing to create new blocks via Proof-of-Work"@en .
+
+bitcoin:WalletNode a owl:Class ;
+    rdfs:subClassOf bitcoin:Node ;
+    rdfs:label "Wallet Node"@en ;
+    skos:definition "Node managing user wallets and cryptographic keys"@en .
+
+bitcoin:EdgeRouter a owl:Class ;
+    rdfs:subClassOf bitcoin:FullNode ;
+    rdfs:label "Edge Router Node"@en ;
+    skos:definition "Full node without mining/wallet for service infrastructure"@en .
+
+bitcoin:GatewayServer a owl:Class ;
+    rdfs:subClassOf bitcoin:Node ;
+    rdfs:label "Gateway Server"@en ;
+    skos:definition "Node bridging different protocols"@en .
+
+bitcoin:ListeningNode a owl:Class ;
+    rdfs:subClassOf bitcoin:Node ;
+    rdfs:label "Listening Node"@en ;
+    skos:definition "Node accepting inbound connections"@en .
+
+bitcoin:NonListeningNode a owl:Class ;
+    rdfs:subClassOf bitcoin:Node ;
+    rdfs:label "Non-Listening Node"@en ;
+    skos:definition "Node making only outbound connections"@en ;
+    owl:disjointWith bitcoin:ListeningNode .
+
+# ============================================================================
+# PROTOCOL HIERARCHY (Level 3)
+# ============================================================================
+
+bitcoin:BitcoinP2PProtocol a owl:Class ;
+    rdfs:subClassOf bitcoin:Protocol ;
+    rdfs:label "Bitcoin P2P Protocol"@en ;
+    skos:definition "Bitcoin peer-to-peer communication protocol"@en .
+
+bitcoin:BitcoinP2PV1 a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinP2PProtocol ;
+    rdfs:label "Bitcoin P2P Protocol V1"@en ;
+    skos:definition "Original unencrypted Bitcoin P2P protocol"@en .
+
+bitcoin:BitcoinP2PV2 a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinP2PProtocol ;
+    rdfs:label "Bitcoin P2P Protocol V2 (BIP 324)"@en ;
+    skos:definition "Encrypted P2P transport protocol with opportunistic encryption"@en .
+
+bitcoin:CompactBlockProtocol a owl:Class ;
+    rdfs:subClassOf bitcoin:Protocol ;
+    rdfs:label "Compact Block Relay Protocol"@en ;
+    skos:definition "Bandwidth-efficient block propagation protocol (BIP 152)"@en .
+
+bitcoin:StratumProtocol a owl:Class ;
+    rdfs:subClassOf bitcoin:Protocol ;
+    rdfs:label "Stratum Protocol"@en ;
+    skos:definition "Mining pool communication protocol"@en .
+
+# ============================================================================
+# NETWORK SERVICES (Level 3)
+# ============================================================================
+
+bitcoin:RoutingService a owl:Class ;
+    rdfs:subClassOf bitcoin:NetworkService ;
+    rdfs:label "Routing Service"@en ;
+    skos:definition "Network participation and message relay functionality"@en .
+
+bitcoin:ValidationService a owl:Class ;
+    rdfs:subClassOf bitcoin:NetworkService ;
+    rdfs:label "Validation Service"@en ;
+    skos:definition "Transaction and block verification functionality"@en .
+
+bitcoin:PropagationService a owl:Class ;
+    rdfs:subClassOf bitcoin:NetworkService ;
+    rdfs:label "Propagation Service"@en ;
+    skos:definition "Relaying transactions and blocks to peers"@en .
+
+bitcoin:BlockchainStorage a owl:Class ;
+    rdfs:subClassOf bitcoin:NetworkService ;
+    rdfs:label "Blockchain Storage"@en ;
+    skos:definition "Maintaining complete or partial blockchain copy"@en .
+
+bitcoin:MiningService a owl:Class ;
+    rdfs:subClassOf bitcoin:NetworkService ;
+    rdfs:label "Mining Service"@en ;
+    skos:definition "Block creation via Proof-of-Work computation"@en .
+
+bitcoin:WalletService a owl:Class ;
+    rdfs:subClassOf bitcoin:NetworkService ;
+    rdfs:label "Wallet Service"@en ;
+    skos:definition "Key management and transaction creation"@en .
+
+# ============================================================================
+# DATA STRUCTURES (Level 3)
+# ============================================================================
+
+bitcoin:Mempool a owl:Class ;
+    rdfs:subClassOf bitcoin:DataStructure ;
+    rdfs:label "Memory Pool"@en ;
+    skos:definition "Temporary storage for unconfirmed transactions"@en ;
+    skos:altLabel "Transaction Pool"@en .
+
+bitcoin:OrphanPool a owl:Class ;
+    rdfs:subClassOf bitcoin:DataStructure ;
+    rdfs:label "Orphan Pool"@en ;
+    skos:definition "Storage for transactions with missing parents"@en .
+
+bitcoin:UTXOPool a owl:Class ;
+    rdfs:subClassOf bitcoin:DataStructure ;
+    rdfs:label "UTXO Pool"@en ;
+    skos:definition "Set of all unspent transaction outputs"@en ;
+    skos:altLabel "UTXO Set"@en .
+
+# ============================================================================
+# OBJECT PROPERTIES (Relationships)
+# ============================================================================
+
+bitcoin:hasNodeType a owl:ObjectProperty ;
+    rdfs:label "has node type"@en ;
+    rdfs:domain bitcoin:Node ;
+    rdfs:range bitcoin:Node ;
+    skos:definition "Indicates the specific type of a node"@en .
+
+bitcoin:usesProtocol a owl:ObjectProperty ;
+    rdfs:label "uses protocol"@en ;
+    rdfs:domain bitcoin:Node ;
+    rdfs:range bitcoin:Protocol ;
+    skos:definition "Node uses specified communication protocol"@en .
+
+bitcoin:providesService a owl:ObjectProperty ;
+    rdfs:label "provides service"@en ;
+    rdfs:domain bitcoin:Node ;
+    rdfs:range bitcoin:NetworkService ;
+    skos:definition "Node provides specified network service"@en .
+
+bitcoin:connectsTo a owl:ObjectProperty ;
+    rdfs:label "connects to"@en ;
+    rdfs:domain bitcoin:Node ;
+    rdfs:range bitcoin:Node ;
+    skos:definition "Node establishes connection to another node"@en ;
+    rdf:type owl:SymmetricProperty .
+
+bitcoin:relaysTo a owl:ObjectProperty ;
+    rdfs:label "relays to"@en ;
+    rdfs:domain bitcoin:Node ;
+    rdfs:range bitcoin:Node ;
+    skos:definition "Node relays messages to another node"@en .
+
+bitcoin:maintainsData a owl:ObjectProperty ;
+    rdfs:label "maintains data"@en ;
+    rdfs:domain bitcoin:Node ;
+    rdfs:range bitcoin:DataStructure ;
+    skos:definition "Node maintains specified data structure"@en .
+
+bitcoin:implementsProtocol a owl:ObjectProperty ;
+    rdfs:label "implements protocol"@en ;
+    rdfs:domain bitcoin:NetworkComponent ;
+    rdfs:range bitcoin:Protocol ;
+    skos:definition "Component implements specified protocol"@en .
+
+bitcoin:hasSecurityFeature a owl:ObjectProperty ;
+    rdfs:label "has security feature"@en ;
+    rdfs:domain bitcoin:Protocol ;
+    rdfs:range bitcoin:SecurityFeature ;
+    skos:definition "Protocol includes specified security feature"@en .
+
+bitcoin:supersedes a owl:ObjectProperty ;
+    rdfs:label "supersedes"@en ;
+    rdfs:domain bitcoin:Protocol ;
+    rdfs:range bitcoin:Protocol ;
+    skos:definition "Protocol replaces or supersedes another protocol"@en .
+
+# ============================================================================
+# DATATYPE PROPERTIES
+# ============================================================================
+
+bitcoin:portNumber a owl:DatatypeProperty ;
+    rdfs:label "port number"@en ;
+    rdfs:domain bitcoin:Node ;
+    rdfs:range xsd:integer ;
+    skos:definition "TCP port number used for connections"@en .
+
+bitcoin:protocolVersion a owl:DatatypeProperty ;
+    rdfs:label "protocol version"@en ;
+    rdfs:domain bitcoin:Protocol ;
+    rdfs:range xsd:integer ;
+    skos:definition "Version number of protocol implementation"@en .
+
+bitcoin:blockchainSize a owl:DatatypeProperty ;
+    rdfs:label "blockchain size"@en ;
+    rdfs:domain bitcoin:Node ;
+    rdfs:range xsd:decimal ;
+    skos:definition "Size of blockchain in gigabytes"@en .
+
+bitcoin:connectionCount a owl:DatatypeProperty ;
+    rdfs:label "connection count"@en ;
+    rdfs:domain bitcoin:Node ;
+    rdfs:range xsd:integer ;
+    skos:definition "Number of peer connections"@en .
+
+bitcoin:hasEncryption a owl:DatatypeProperty ;
+    rdfs:label "has encryption"@en ;
+    rdfs:domain bitcoin:Protocol ;
+    rdfs:range xsd:boolean ;
+    skos:definition "Indicates whether protocol uses encryption"@en .
+
+bitcoin:isDeprecated a owl:DatatypeProperty ;
+    rdfs:label "is deprecated"@en ;
+    rdfs:range xsd:boolean ;
+    skos:definition "Indicates whether concept is deprecated"@en .
+
+bitcoin:deprecationDate a owl:DatatypeProperty ;
+    rdfs:label "deprecation date"@en ;
+    rdfs:range xsd:date ;
+    skos:definition "Date when concept was deprecated"@en .
+
+bitcoin:deploymentDate a owl:DatatypeProperty ;
+    rdfs:label "deployment date"@en ;
+    rdfs:range xsd:date ;
+    skos:definition "Date when concept was deployed"@en .
+
+# ============================================================================
+# CARDINALITY RESTRICTIONS
+# ============================================================================
+
+bitcoin:FullNode rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty bitcoin:maintainsData ;
+    owl:someValuesFrom bitcoin:UTXOPool
+] .
+
+bitcoin:FullNode rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty bitcoin:providesService ;
+    owl:someValuesFrom bitcoin:ValidationService
+] .
+
+bitcoin:Node rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty bitcoin:connectsTo ;
+    owl:minCardinality "1"^^xsd:nonNegativeInteger
+] .
+
+bitcoin:Node rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty bitcoin:usesProtocol ;
+    owl:someValuesFrom bitcoin:Protocol
+] .
+
+bitcoin:MiningNode rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty bitcoin:providesService ;
+    owl:someValuesFrom bitcoin:MiningService
+] .
+
+bitcoin:SPVNode rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty bitcoin:maintainsData ;
+    owl:someValuesFrom bitcoin:Mempool
+] .
+
+# ============================================================================
+# DISJOINTNESS AXIOMS
+# ============================================================================
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( bitcoin:FullNode bitcoin:SPVNode ) .
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( bitcoin:ListeningNode bitcoin:NonListeningNode ) .
+
+[] a owl:AllDisjointClasses ;
+    owl:members ( bitcoin:BitcoinP2PV1 bitcoin:BitcoinP2PV2 ) .
+
+# ============================================================================
+# END OF STRUCTURE DESIGN
+# ============================================================================
+# Structure copied, now adding populated concepts...
+
+# ============================================================================
+# PHASE 3 ADDITIONS: DETAILED CONCEPT POPULATION
+# ============================================================================
+
+# PROTOCOL MESSAGES (Level 3-4)
+# ============================================================================
+
+bitcoin:ProtocolMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:CommunicationMechanism ;
+    rdfs:label "Protocol Message"@en ;
+    skos:definition "Message exchanged between Bitcoin network peers"@en .
+
+bitcoin:VersionMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Version Message"@en ;
+    skos:definition "Handshake message exchanging node identification information"@en ;
+    dcterms:source <https://developer.bitcoin.org/reference/p2p_networking.html> ;
+    skos:example "nVersion=70016, nLocalServices=NODE_NETWORK|NODE_WITNESS"@en .
+
+bitcoin:VerackMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Verack Message"@en ;
+    skos:definition "Version acknowledgment message completing handshake"@en ;
+    dcterms:source <https://developer.bitcoin.org/reference/p2p_networking.html> .
+
+bitcoin:AddrMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Addr Message"@en ;
+    skos:definition "Message propagating peer IP addresses for network discovery"@en ;
+    dcterms:source <https://developer.bitcoin.org/reference/p2p_networking.html> .
+
+bitcoin:GetaddrMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Getaddr Message"@en ;
+    skos:definition "Message requesting peer addresses from connected node"@en .
+
+bitcoin:InvMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Inv Message"@en ;
+    skos:definition "Inventory announcement message for transactions or blocks"@en .
+
+bitcoin:GetdataMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Getdata Message"@en ;
+    skos:definition "Data request message specifying desired inventory items"@en .
+
+bitcoin:BlockMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Block Message"@en ;
+    skos:definition "Message transmitting full serialized block"@en .
+
+bitcoin:TxMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Tx Message"@en ;
+    skos:definition "Message transmitting transaction data"@en .
+
+bitcoin:PingMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Ping Message"@en ;
+    skos:definition "Keepalive message checking peer connectivity"@en .
+
+bitcoin:PongMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Pong Message"@en ;
+    skos:definition "Keepalive response to ping message"@en .
+
+# COMPACT BLOCK MESSAGES (BIP 152)
+# ============================================================================
+
+bitcoin:SendcmpctMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Sendcmpct Message"@en ;
+    skos:definition "Message negotiating compact block relay mode"@en ;
+    dcterms:source <https://bips.dev/152/> .
+
+bitcoin:CmpctblockMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Cmpctblock Message"@en ;
+    skos:definition "Compact block announcement with short transaction IDs"@en ;
+    dcterms:source <https://bips.dev/152/> .
+
+bitcoin:GetblocktxnMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Getblocktxn Message"@en ;
+    skos:definition "Request for missing transactions from compact block"@en ;
+    dcterms:source <https://bips.dev/152/> .
+
+bitcoin:BlocktxnMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Blocktxn Message"@en ;
+    skos:definition "Response providing missing transactions"@en ;
+    dcterms:source <https://bips.dev/152/> .
+
+# BLOOM FILTER MESSAGES (BIP 37 - DEPRECATED)
+# ============================================================================
+
+bitcoin:FilterloadMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Filterload Message"@en ;
+    skos:definition "Message setting bloom filter for SPV node (deprecated)"@en ;
+    bitcoin:isDeprecated "true"^^xsd:boolean ;
+    bitcoin:deprecationDate "2019"^^xsd:gYear ;
+    dcterms:source <https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki> ;
+    skos:note "Deprecated due to privacy and DoS concerns. Use BIP 157/158 instead."@en .
+
+bitcoin:FilteraddMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Filteradd Message"@en ;
+    skos:definition "Message adding pattern to existing bloom filter (deprecated)"@en ;
+    bitcoin:isDeprecated "true"^^xsd:boolean .
+
+bitcoin:FilterclearMessage a owl:Class ;
+    rdfs:subClassOf bitcoin:ProtocolMessage ;
+    rdfs:label "Filterclear Message"@en ;
+    skos:definition "Message clearing bloom filter (deprecated)"@en ;
+    bitcoin:isDeprecated "true"^^xsd:boolean .
+
+# SECURITY FEATURES (Level 3)
+# ============================================================================
+
+bitcoin:Encryption a owl:Class ;
+    rdfs:subClassOf bitcoin:SecurityFeature ;
+    rdfs:label "Encryption"@en ;
+    skos:definition "Cryptographic protection of network communications"@en .
+
+bitcoin:BIP324Encryption a owl:Class ;
+    rdfs:subClassOf bitcoin:Encryption ;
+    rdfs:label "BIP 324 Encryption"@en ;
+    skos:definition "Opportunistic encryption using ChaCha20-Poly1305"@en ;
+    bitcoin:deploymentDate "2023"^^xsd:gYear ;
+    dcterms:source <https://bips.dev/324/> ;
+    skos:example "ElligatorSwift key exchange + AEAD cipher"@en .
+
+bitcoin:TorTransport a owl:Class ;
+    rdfs:subClassOf bitcoin:SecurityFeature ;
+    rdfs:label "Tor Transport"@en ;
+    skos:definition "Anonymous network routing for Bitcoin connections"@en ;
+    dcterms:source <https://www.torproject.org/> ;
+    skos:example "Bitcoin node running as Tor hidden service"@en .
+
+bitcoin:I2PTransport a owl:Class ;
+    rdfs:subClassOf bitcoin:SecurityFeature ;
+    rdfs:label "I2P Transport"@en ;
+    skos:definition "Invisible Internet Project anonymous network support"@en ;
+    bitcoin:deploymentDate "2020"^^xsd:gYear .
+
+bitcoin:BloomFilter a owl:Class ;
+    rdfs:subClassOf bitcoin:SecurityFeature ;
+    rdfs:label "Bloom Filter"@en ;
+    skos:definition "Probabilistic data structure for SPV transaction filtering"@en ;
+    bitcoin:isDeprecated "true"^^xsd:boolean ;
+    bitcoin:deprecationDate "2019"^^xsd:gYear ;
+    dcterms:source <https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki> ;
+    skos:note "Replaced by Compact Block Filters (BIP 157/158)"@en .
+
+bitcoin:CompactBlockFilter a owl:Class ;
+    rdfs:subClassOf bitcoin:SecurityFeature ;
+    rdfs:label "Compact Block Filter"@en ;
+    skos:definition "Server-generated filters for light client privacy (BIP 157/158)"@en ;
+    bitcoin:deploymentDate "2021"^^xsd:gYear ;
+    dcterms:source <https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki> ;
+    skos:altLabel "Neutrino Filter"@en .
+
+# DISCOVERY MECHANISMS (Level 3)
+# ============================================================================
+
+bitcoin:DNSSeed a owl:Class ;
+    rdfs:subClassOf bitcoin:DiscoveryMechanism ;
+    rdfs:label "DNS Seed"@en ;
+    skos:definition "DNS server providing list of Bitcoin node IP addresses"@en ;
+    dcterms:source <https://github.com/bitcoinbook/bitcoinbook> ;
+    skos:example "seed.bitcoin.sipa.be returns node IPs"@en .
+
+bitcoin:SeedNode a owl:Class ;
+    rdfs:subClassOf bitcoin:DiscoveryMechanism ;
+    rdfs:label "Seed Node"@en ;
+    skos:definition "Hardcoded IP address for initial network bootstrap"@en .
+
+bitcoin:PeerExchange a owl:Class ;
+    rdfs:subClassOf bitcoin:DiscoveryMechanism ;
+    rdfs:label "Peer Exchange"@en ;
+    skos:definition "Addr message propagation between connected peers"@en .
+
+bitcoin:AddressCaching a owl:Class ;
+    rdfs:subClassOf bitcoin:DiscoveryMechanism ;
+    rdfs:label "Address Caching"@en ;
+    skos:definition "Local storage of successful peer connection addresses"@en .
+
+# RELAY NETWORKS (Level 3)
+# ============================================================================
+
+bitcoin:RelayNetwork a owl:Class ;
+    rdfs:subClassOf bitcoin:NetworkComponent ;
+    rdfs:label "Relay Network"@en ;
+    skos:definition "Specialized network for fast block propagation to miners"@en .
+
+bitcoin:FIBRE a owl:Class ;
+    rdfs:subClassOf bitcoin:RelayNetwork ;
+    rdfs:label "FIBRE"@en ;
+    skos:definition "Fast Internet Bitcoin Relay Engine using UDP and FEC"@en ;
+    bitcoin:deploymentDate "2016"^^xsd:gYear ;
+    dcterms:source <http://bitcoinfibre.org/> ;
+    skos:example "UDP-based relay with forward error correction"@en .
+
+bitcoin:BitcoinRelayNetwork a owl:Class ;
+    rdfs:subClassOf bitcoin:RelayNetwork ;
+    rdfs:label "Bitcoin Relay Network"@en ;
+    skos:definition "Original fast relay network by Matt Corallo (2015-2016)"@en ;
+    bitcoin:isDeprecated "true"^^xsd:boolean ;
+    bitcoin:deprecationDate "2016"^^xsd:gYear ;
+    skos:note "Replaced by FIBRE in 2016"@en .
+
+bitcoin:FalconRelayNetwork a owl:Class ;
+    rdfs:subClassOf bitcoin:RelayNetwork ;
+    rdfs:label "Falcon Relay Network"@en ;
+    skos:definition "Proposed cut-through routing relay network (research)"@en ;
+    skos:note "Proposal phase, production status uncertain"@en .
+
+# SERVICE FLAGS (Level 3)
+# ============================================================================
+
+bitcoin:ServiceFlag a owl:Class ;
+    rdfs:subClassOf bitcoin:NetworkService ;
+    rdfs:label "Service Flag"@en ;
+    skos:definition "Bitfield indicating node capabilities and services"@en .
+
+bitcoin:NODE_NETWORK a owl:Class ;
+    rdfs:subClassOf bitcoin:ServiceFlag ;
+    rdfs:label "NODE_NETWORK"@en ;
+    skos:definition "Indicates full node with complete blockchain"@en ;
+    dcterms:source <https://developer.bitcoin.org/> .
+
+bitcoin:NODE_BLOOM a owl:Class ;
+    rdfs:subClassOf bitcoin:ServiceFlag ;
+    rdfs:label "NODE_BLOOM"@en ;
+    skos:definition "Indicates support for bloom filter queries (BIP 111)"@en .
+
+bitcoin:NODE_WITNESS a owl:Class ;
+    rdfs:subClassOf bitcoin:ServiceFlag ;
+    rdfs:label "NODE_WITNESS"@en ;
+    skos:definition "Indicates SegWit support (BIP 144)"@en ;
+    bitcoin:deploymentDate "2017"^^xsd:gYear .
+
+bitcoin:NODE_P2P_V2 a owl:Class ;
+    rdfs:subClassOf bitcoin:ServiceFlag ;
+    rdfs:label "NODE_P2P_V2"@en ;
+    skos:definition "Indicates BIP 324 v2 encrypted transport support"@en ;
+    bitcoin:deploymentDate "2023"^^xsd:gYear ;
+    dcterms:source <https://bips.dev/324/> .
+
+bitcoin:NODE_NETWORK_LIMITED a owl:Class ;
+    rdfs:subClassOf bitcoin:ServiceFlag ;
+    rdfs:label "NODE_NETWORK_LIMITED"@en ;
+    skos:definition "Indicates pruned node serving recent blocks only"@en .
+
+bitcoin:NODE_COMPACT_FILTERS a owl:Class ;
+    rdfs:subClassOf bitcoin:ServiceFlag ;
+    rdfs:label "NODE_COMPACT_FILTERS"@en ;
+    skos:definition "Indicates compact block filters support (BIP 157)"@en .
+
+# PROTOCOL ENHANCEMENTS (Level 3)
+# ============================================================================
+
+bitcoin:SegWit a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "SegWit"@en ;
+    skos:definition "Segregated Witness protocol upgrade (August 2017)"@en ;
+    bitcoin:deploymentDate "2017-08"^^xsd:gYearMonth ;
+    dcterms:source <https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki> ;
+    skos:altLabel "Segregated Witness"@en .
+
+bitcoin:Taproot a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Taproot"@en ;
+    skos:definition "Schnorr signatures and MAST upgrade (November 2021)"@en ;
+    bitcoin:deploymentDate "2021-11"^^xsd:gYearMonth ;
+    dcterms:source <https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki> .
+
+# SOFTWARE IMPLEMENTATIONS (Level 3)
+# ============================================================================
+
+bitcoin:SoftwareImplementation a owl:Class ;
+    rdfs:subClassOf bitcoin:NetworkComponent ;
+    rdfs:label "Software Implementation"@en ;
+    skos:definition "Bitcoin network client software"@en .
+
+bitcoin:BitcoinCore a owl:Class ;
+    rdfs:subClassOf bitcoin:SoftwareImplementation ;
+    rdfs:label "Bitcoin Core"@en ;
+    skos:definition "Reference Bitcoin implementation (formerly Bitcoin-Qt)"@en ;
+    dcterms:source <https://github.com/bitcoin/bitcoin> ;
+    skos:example "Bitcoin Core 26.0 with BIP 324 support"@en .
+
+bitcoin:BitcoinJ a owl:Class ;
+    rdfs:subClassOf bitcoin:SoftwareImplementation ;
+    rdfs:label "BitcoinJ"@en ;
+    skos:definition "Java Bitcoin library for SPV clients"@en .
+
+bitcoin:Libbitcoin a owl:Class ;
+    rdfs:subClassOf bitcoin:SoftwareImplementation ;
+    rdfs:label "Libbitcoin"@en ;
+    skos:definition "C++ Bitcoin library and toolkit"@en .
+
+bitcoin:btcd a owl:Class ;
+    rdfs:subClassOf bitcoin:SoftwareImplementation ;
+    rdfs:label "btcd"@en ;
+    skos:definition "Go language Bitcoin implementation"@en .
+
+bitcoin:bcoin a owl:Class ;
+    rdfs:subClassOf bitcoin:SoftwareImplementation ;
+    rdfs:label "bcoin"@en ;
+    skos:definition "JavaScript/Node.js Bitcoin implementation"@en .
+
+# ATTACK VECTORS (Level 3)
+# ============================================================================
+
+bitcoin:AttackVector a owl:Class ;
+    rdfs:subClassOf bitcoin:BitcoinNetworkConcept ;
+    rdfs:label "Attack Vector"@en ;
+    skos:definition "Potential security threat to Bitcoin network"@en .
+
+bitcoin:EclipseAttack a owl:Class ;
+    rdfs:subClassOf bitcoin:AttackVector ;
+    rdfs:label "Eclipse Attack"@en ;
+    skos:definition "Isolating node by controlling all its connections"@en ;
+    skos:note "BIP 324 encryption raises cost of this attack"@en .
+
+bitcoin:SybilAttack a owl:Class ;
+    rdfs:subClassOf bitcoin:AttackVector ;
+    rdfs:label "Sybil Attack"@en ;
+    skos:definition "Creating multiple fake network identities"@en .
+
+bitcoin:DoSAttack a owl:Class ;
+    rdfs:subClassOf bitcoin:AttackVector ;
+    rdfs:label "DoS Attack"@en ;
+    skos:definition "Denial of Service attack on network nodes"@en ;
+    skos:altLabel "Denial of Service Attack"@en .
+
+bitcoin:ManInTheMiddleAttack a owl:Class ;
+    rdfs:subClassOf bitcoin:AttackVector ;
+    rdfs:label "Man-in-the-Middle Attack"@en ;
+    skos:definition "Intercepting and potentially altering peer communications"@en ;
+    skos:altLabel "MitM Attack"@en .
+
+# DESIGN PRINCIPLES (Level 3)
+# ============================================================================
+
+bitcoin:DesignPrinciple a owl:Class ;
+    rdfs:subClassOf bitcoin:NetworkArchitecture ;
+    rdfs:label "Design Principle"@en ;
+    skos:definition "Fundamental principle guiding Bitcoin network design"@en .
+
+bitcoin:Decentralization a owl:Class ;
+    rdfs:subClassOf bitcoin:DesignPrinciple ;
+    rdfs:label "Decentralization"@en ;
+    skos:definition "Absence of central authority or control point"@en .
+
+bitcoin:Resilience a owl:Class ;
+    rdfs:subClassOf bitcoin:DesignPrinciple ;
+    rdfs:label "Resilience"@en ;
+    skos:definition "Network ability to withstand failures and attacks"@en .
+
+bitcoin:Openness a owl:Class ;
+    rdfs:subClassOf bitcoin:DesignPrinciple ;
+    rdfs:label "Openness"@en ;
+    skos:definition "Open participation without permission requirements"@en .
+
+bitcoin:Reciprocity a owl:Class ;
+    rdfs:subClassOf bitcoin:DesignPrinciple ;
+    rdfs:label "Reciprocity"@en ;
+    skos:definition "Mutual exchange incentivizing network participation"@en .
+
+# ADDITIONAL PROPERTIES
+# ============================================================================
+
+bitcoin:replacedBy a owl:ObjectProperty ;
+    rdfs:label "replaced by"@en ;
+    skos:definition "Indicates concept was replaced by another"@en .
+
+bitcoin:succeeds a owl:ObjectProperty ;
+    rdfs:label "succeeds"@en ;
+    skos:definition "Comes after in temporal or version sequence"@en .
+
+bitcoin:isCompatibleWith a owl:ObjectProperty ;
+    rdfs:label "is compatible with"@en ;
+    skos:definition "Can interoperate with specified concept"@en .
+
+# PROPERTY CHAINS
+# ============================================================================
+
+bitcoin:indirectlyConnectsTo a owl:ObjectProperty ;
+    rdfs:label "indirectly connects to"@en ;
+    owl:propertyChainAxiom ( bitcoin:connectsTo bitcoin:connectsTo ) .
+
+# ============================================================================
+# END OF BITCOIN NETWORK ONTOLOGY v1.0
+# ============================================================================

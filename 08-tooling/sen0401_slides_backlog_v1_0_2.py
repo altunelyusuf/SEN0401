@@ -1,6 +1,6 @@
 """Backlog stage of the SEN0401 slide lineage: admission only. Every item Proposed; no task yet -
 tasks are produced by planning, and only for what is planned into an iteration."""
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 from sen0401_slides_stages_v1_0_1 import CHAPTERS, KIND, cid
 
 # Planning of 2026-09-24, approved by the owner: chapters 1 and 2 in the first iteration, until
@@ -139,6 +139,12 @@ ex:Iter_1 a backlog:Iteration ; rdfs:label "First iteration: chapter 1, before t
 
 
 FEEDBACK = """
+ex:Finding_OwnerMaterials2025Imported a backlog:RetrospectiveFinding ;
+    rdfs:label "The owner's 2025 materials imported, and a games-strategy analysis prepared"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "The owner supplied last year's LLM-built SEN0401 materials (Content_LLM.zip: pages, games, chapter ontologies, reports, prompts, the 2nd-edition book and its chapter-text extracts) and asked for them to be kept, all of them, together with the twelve 2025 slide decks (Chapters.zip), and for a risk-benefit analysis of embedding games in the pages versus building them on their own." ;
+    backlog:hasRemedy "All 144 files copied byte-identical, each digest compared, into 03-materials/owner-legacy-2025/ under versioned names; 03-materials/owner-legacy-2025/legacy_inventory_v1_0_0.json records each file's original name, digest, role and its closest 3rd-edition chapters, measured by the lift of each chapter's own concepts in the file's text over their median across all files: the 2025 decks for 2nd-edition chapters 8 to 12 match 3rd-edition chapters 10 to 14. 06-quality/games_strategy_risk_benefit_v1_0.md scores three strategies on nine criteria from measured 2025 evidence - the transactions page took 12 builds in about 13.5 hours; games appear in the week 2 to chapter 4 pages and then disappear; chapter 3's ten specified games were not delivered as files - totals 21 embedded, 34 standalone, 39 standalone on a shared shell linked from the pages, at equal weights. The choice is the owner's. Recorded at 2026-09-27T08:38:41." .
+
 ex:Finding_PagesOnSharedTemplate942 a backlog:RetrospectiveFinding ;
     rdfs:label "All three SEN0401 pages rebuilt on the template SEN0414's pages use"@en ;
     backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Page_Ch01, ex:ST_Page_Ch02, ex:ST_Page_Numbers ; backlog:hasFindingScope backlog:Scope_Methodology ;

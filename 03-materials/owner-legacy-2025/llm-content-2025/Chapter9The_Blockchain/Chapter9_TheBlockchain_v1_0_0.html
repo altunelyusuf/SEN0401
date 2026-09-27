@@ -1,0 +1,2131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEN0401: Chapter 9 - The Blockchain | Interactive Course</title>
+    <meta name="description" content="Comprehensive interactive course on blockchain technology from Mastering Bitcoin Chapter 9, featuring quiz, code demos, and visualizations.">
+    <meta name="keywords" content="blockchain, bitcoin, merkle tree, block structure, cryptocurrency, Andreas Antonopoulos">
+    <meta name="author" content="Istanbul Kültür University - Prof. Yusuf Altunel">
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Course",
+      "name": "SEN0401: Special Topics in Software Engineering - Blockchain",
+      "description": "Interactive blockchain technology course covering Chapter 9: The Blockchain",
+      "provider": {
+        "@type": "Organization",
+        "name": "Istanbul Kültür University"
+      }
+    }
+    </script>
+    
+    <style>
+        /* ===================================
+           RESET & BASE STYLES
+           =================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            /* Vivid Color Palette - NO DARK THEME */
+            --primary-blue: #4A90E2;
+            --primary-green: #50C878;
+            --primary-orange: #FFB347;
+            --success-green: #7CB342;
+            --joy-yellow: #FFD700;
+            --celebrate-pink: #FF69B4;
+            
+            /* Backgrounds - Light Only */
+            --bg-white: #FFFFFF;
+            --bg-light: #F5F7FA;
+            --bg-accent: #FFF9E6;
+            --bg-gradient: linear-gradient(135deg, #E3F2FD 0%, #FFF9E6 100%);
+            
+            /* Text Colors */
+            --text-primary: #2C3E50;
+            --text-secondary: #546E7A;
+            --text-light: #78909C;
+            
+            /* Interactive */
+            --hover-blue: #357ABD;
+            --active-green: #43A047;
+            
+            /* Code */
+            --code-bg: #FFF9E6;
+            --code-border: #FFD700;
+            
+            /* Spacing */
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 2rem;
+            --spacing-lg: 3rem;
+            --spacing-xl: 4rem;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        
+        /* ===================================
+           STICKY NAVIGATION
+           =================================== */
+        .sticky-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-green));
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+            padding: 1rem 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-brand {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        .nav-brand small {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .nav-toggle {
+            display: none;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-toggle {
+                display: block;
+            }
+            
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                margin-top: 1rem;
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+        }
+        
+        /* ===================================
+           HERO SECTION
+           =================================== */
+        .hero {
+            margin-top: 80px;
+            padding: var(--spacing-xl) var(--spacing-md);
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 0.8s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        /* ===================================
+           CONTENT SECTIONS
+           =================================== */
+        .content-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-lg) var(--spacing-md);
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .section-header h2 {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-green));
+            border-radius: 2px;
+        }
+        
+        .section-meta {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        /* ===================================
+           CONCEPT CARDS
+           =================================== */
+        .concept-card {
+            background: var(--bg-white);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+            border-left: 4px solid var(--primary-blue);
+            transition: all 0.3s ease;
+        }
+        
+        .concept-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(74, 144, 226, 0.25);
+        }
+        
+        .concept-card h3 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .concept-card blockquote {
+            background: var(--bg-accent);
+            border-left: 4px solid var(--joy-yellow);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-style: italic;
+            border-radius: 8px;
+        }
+        
+        .concept-card blockquote cite {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        /* ===================================
+           VISUAL COMPONENTS
+           =================================== */
+        .visual-demo {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+            border: 2px solid var(--primary-green);
+        }
+        
+        .visual-demo h4 {
+            color: var(--primary-green);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        /* Interactive Blockchain Builder */
+        #blockchain-canvas {
+            width: 100%;
+            height: 300px;
+            background: white;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .blockchain-controls {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        /* Merkle Tree Visualization */
+        #merkle-canvas {
+            width: 100%;
+            height: 400px;
+            background: white;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        /* Cascade Effect Animation */
+        .cascade-demo {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        
+        .cascade-block {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            transition: all 0.5s ease;
+            cursor: pointer;
+        }
+        
+        .cascade-block.modified {
+            animation: cascadeAlert 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes cascadeAlert {
+            0%, 100% { background: linear-gradient(135deg, #E57373, #EF5350); }
+            50% { background: linear-gradient(135deg, #FF6F00, #FF5722); }
+        }
+        
+        .cascade-block-info {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+        
+        /* Fork Visualization */
+        .fork-diagram {
+            position: relative;
+            height: 300px;
+            margin: 2rem 0;
+        }
+        
+        .fork-chain {
+            position: absolute;
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .fork-chain.main {
+            top: 0;
+        }
+        
+        .fork-chain.competing {
+            top: 160px;
+        }
+        
+        .fork-block {
+            min-width: 100px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            animation: blockAppear 0.5s ease-out;
+        }
+        
+        @keyframes blockAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .fork-block.orphan {
+            background: linear-gradient(135deg, #BDBDBD, #9E9E9E);
+            opacity: 0.5;
+        }
+        
+        .fork-connector {
+            position: absolute;
+            height: 2px;
+            background: var(--primary-blue);
+        }
+        
+        /* Network Comparison Chart */
+        #network-chart {
+            width: 100%;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        
+        /* Block Header Diagram */
+        .header-diagram {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .header-field {
+            background: white;
+            border: 2px solid var(--primary-blue);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .header-field:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(74, 144, 226, 0.3);
+            border-color: var(--primary-green);
+        }
+        
+        .header-field-size {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-orange);
+        }
+        
+        .header-field-name {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-top: 0.5rem;
+        }
+        
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: 2rem 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--primary-blue), var(--primary-green));
+        }
+        
+        .timeline-item {
+            display: flex;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        
+        .timeline-item:nth-child(odd) {
+            flex-direction: row;
+        }
+        
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+        
+        .timeline-content {
+            width: 45%;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+            position: relative;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: var(--joy-yellow);
+            border: 4px solid white;
+            border-radius: 50%;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        
+        .timeline-date {
+            font-weight: bold;
+            color: var(--primary-blue);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* ===================================
+           CODE EXAMPLES
+           =================================== */
+        .code-demo {
+            background: var(--code-bg);
+            border: 2px solid var(--code-border);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+        }
+        
+        .code-demo h4 {
+            color: var(--primary-orange);
+            margin-bottom: 1rem;
+        }
+        
+        .code-editor {
+            background: #2C3E50;
+            color: #ECF0F1;
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .code-editor code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .code-output {
+            background: white;
+            border: 2px solid var(--success-green);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            min-height: 60px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .run-button {
+            background: linear-gradient(135deg, var(--success-green), var(--primary-green));
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(124, 179, 66, 0.3);
+            margin: 0.5rem;
+        }
+        
+        .run-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(124, 179, 66, 0.4);
+        }
+        
+        .run-button:active {
+            transform: translateY(0);
+        }
+        
+        /* ===================================
+           TABLES
+           =================================== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-md) 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .data-table thead {
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-green));
+            color: white;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--bg-light);
+        }
+        
+        .data-table tbody tr {
+            transition: background 0.3s ease;
+        }
+        
+        .data-table tbody tr:hover {
+            background: var(--bg-accent);
+        }
+        
+        /* ===================================
+           QUIZ SECTION
+           =================================== */
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--spacing-md);
+        }
+        
+        .quiz-card {
+            background: white;
+            border-radius: 12px;
+            padding: var(--spacing-lg);
+            box-shadow: 0 6px 20px rgba(74, 144, 226, 0.2);
+            margin: var(--spacing-md) 0;
+        }
+        
+        .quiz-progress {
+            background: var(--bg-light);
+            border-radius: 20px;
+            height: 30px;
+            margin-bottom: var(--spacing-md);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .quiz-progress-bar {
+            background: linear-gradient(90deg, var(--success-green), var(--primary-green));
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .quiz-progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .question-text {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-md);
+            font-weight: 500;
+        }
+        
+        .quiz-options {
+            display: grid;
+            gap: 1rem;
+            margin: var(--spacing-md) 0;
+        }
+        
+        .quiz-option {
+            background: var(--bg-light);
+            border: 3px solid transparent;
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quiz-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(74, 144, 226, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .quiz-option:hover::before {
+            left: 100%;
+        }
+        
+        .quiz-option:hover {
+            border-color: var(--primary-blue);
+            transform: translateX(8px);
+        }
+        
+        .quiz-option.selected {
+            border-color: var(--primary-blue);
+            background: linear-gradient(135deg, #E3F2FD, #FFF9E6);
+        }
+        
+        .quiz-option.correct {
+            border-color: var(--success-green);
+            background: linear-gradient(135deg, #E8F5E9, #F1F8E9);
+            animation: correctPulse 0.5s ease-out;
+        }
+        
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        .quiz-option.incorrect {
+            border-color: #E57373;
+            background: linear-gradient(135deg, #FFEBEE, #FFF9E6);
+            animation: incorrectShake 0.5s ease-out;
+        }
+        
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .quiz-feedback {
+            background: var(--bg-accent);
+            border-radius: 12px;
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+            border-left: 4px solid var(--joy-yellow);
+        }
+        
+        .quiz-feedback.correct {
+            border-left-color: var(--success-green);
+        }
+        
+        .quiz-feedback.incorrect {
+            border-left-color: #E57373;
+        }
+        
+        .quiz-score {
+            text-align: center;
+            font-size: 3rem;
+            color: var(--success-green);
+            margin: var(--spacing-md) 0;
+            animation: scoreReveal 1s ease-out;
+        }
+        
+        @keyframes scoreReveal {
+            from {
+                opacity: 0;
+                transform: scale(0.5) rotate(-10deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+        
+        /* ===================================
+           BADGES & SUCCESS INDICATORS
+           =================================== */
+        .success-badge {
+            background: linear-gradient(135deg, var(--success-green), var(--primary-green));
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(124, 179, 66, 0.3);
+        }
+        
+        .info-badge {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 15px;
+            display: inline-block;
+            font-size: 0.9rem;
+            margin: 0.2rem;
+        }
+        
+        /* ===================================
+           ANIMATIONS
+           =================================== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        /* ===================================
+           FOOTER
+           =================================== */
+        footer {
+            background: linear-gradient(90deg, var(--primary-blue), var(--primary-green));
+            color: white;
+            text-align: center;
+            padding: var(--spacing-lg) var(--spacing-md);
+            margin-top: var(--spacing-xl);
+        }
+        
+        footer a {
+            color: var(--joy-yellow);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* ===================================
+           RESPONSIVE DESIGN
+           =================================== */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .section-header h2 {
+                font-size: 1.8rem;
+            }
+            
+            .content-section {
+                padding: var(--spacing-md) var(--spacing-sm);
+            }
+            
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .timeline-item {
+                flex-direction: row !important;
+            }
+            
+            .timeline-content {
+                width: calc(100% - 60px);
+                margin-left: 60px;
+            }
+            
+            .timeline-marker {
+                left: 20px;
+            }
+            
+            .header-diagram {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* ===================================
+           UTILITY CLASSES
+           =================================== */
+        .text-center { text-align: center; }
+        .mb-1 { margin-bottom: var(--spacing-sm); }
+        .mb-2 { margin-bottom: var(--spacing-md); }
+        .mb-3 { margin-bottom: var(--spacing-lg); }
+        .mt-1 { margin-top: var(--spacing-sm); }
+        .mt-2 { margin-top: var(--spacing-md); }
+        .mt-3 { margin-top: var(--spacing-lg); }
+    </style>
+</head>
+<body>
+    <!-- STICKY NAVIGATION -->
+    <nav class="sticky-nav" id="main-nav">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                SEN0401
+                <small>Blockchain Course</small>
+            </a>
+            <button class="nav-toggle" onclick="toggleNav()">☰</button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#block-structure">Blocks</a></li>
+                <li><a href="#merkle-trees">Merkle Trees</a></li>
+                <li><a href="#genesis-block">Genesis</a></li>
+                <li><a href="#networks">Networks</a></li>
+                <li><a href="#protocols">Protocols</a></li>
+                <li><a href="#quiz">Quiz</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- HERO SECTION -->
+    <header class="hero">
+        <h1>Chapter 9: The Blockchain</h1>
+        <p>An Interactive Journey Through Bitcoin's Foundational Data Structure</p>
+        <p class="hero-subtitle">Based on "Mastering Bitcoin" by Andreas M. Antonopoulos (2nd Edition, 2017)</p>
+        <p class="hero-subtitle">Istanbul Kültür University | Prof. Yusuf Altunel</p>
+    </header>
+    
+    <!-- INTRODUCTION SECTION -->
+    <section id="introduction" class="content-section">
+        <div class="section-header">
+            <h2>Introduction to Blockchain</h2>
+            <p class="section-meta">From Mastering Bitcoin, Chapter 9, Lines 1-52</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🔗 What is a Blockchain?</h3>
+            <blockquote>
+                "The blockchain data structure is an ordered, back-linked list of blocks of transactions."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Line 4</cite>
+            </blockquote>
+            
+            <p>The blockchain is Bitcoin's fundamental innovation—a data structure that enables decentralized consensus without requiring trust in any single party. Unlike traditional databases controlled by central authorities, the blockchain distributes complete copies across thousands of independent nodes worldwide, each validating transactions according to identical mathematical rules.</p>
+            
+            <p>The structure earns its name from the cryptographic "linking" of blocks. Each block contains a hash of the previous block's header, creating an unbreakable chain extending back to the very first block ever created in 2009. This architecture ensures that modifying any historical block would require recomputing all subsequent blocks—a feat requiring more computational power than the entire Bitcoin network combined.</p>
+        </div>
+        
+        <div class="visual-demo">
+            <h4>📊 Interactive Blockchain Builder</h4>
+            <canvas id="blockchain-canvas"></canvas>
+            <div class="blockchain-controls">
+                <button class="run-button" onclick="addBlockToChain()">➕ Add New Block</button>
+                <button class="run-button" onclick="resetBlockchain()">🔄 Reset Chain</button>
+                <button class="run-button" onclick="demonstrateCascade()">⚡ Show Cascade Effect</button>
+            </div>
+            <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+                <em>Click "Add New Block" to build the blockchain. Click on any block to modify it and see the cascade effect!</em>
+            </p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🔐 The Cascade Effect & Immutability</h3>
+            <blockquote>
+                "This cascade effect ensures that once a block has many generations following it, it cannot be changed without forcing a recalculation of all subsequent blocks."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 33-35</cite>
+            </blockquote>
+            
+            <p>The blockchain's security emerges from a brilliant cascading mechanism. The "previous block hash" field resides inside each block header, which means changing a parent block's data changes its hash. This changed parent hash invalidates the child block's "previous block hash" field, which changes the child's hash, invalidating the grandchild, and so on through all descendants.</p>
+        </div>
+        
+        <div class="visual-demo">
+            <h4>⚡ Cascade Effect Demonstration</h4>
+            <div class="cascade-demo" id="cascade-demo">
+                <div class="cascade-block" onclick="modifyCascadeBlock(0)">
+                    <div>
+                        <strong>Block 100</strong><br>
+                        <small>Click to modify</small>
+                    </div>
+                    <div class="cascade-block-info">
+                        Data: "Alice→Bob: 5 BTC"<br>
+                        Hash: <span id="hash-100">abc123...</span>
+                    </div>
+                </div>
+                <div class="cascade-block">
+                    <div>
+                        <strong>Block 101</strong>
+                    </div>
+                    <div class="cascade-block-info">
+                        Previous: <span id="prev-101">abc123...</span><br>
+                        Hash: <span id="hash-101">def456...</span>
+                    </div>
+                </div>
+                <div class="cascade-block">
+                    <div>
+                        <strong>Block 102</strong>
+                    </div>
+                    <div class="cascade-block-info">
+                        Previous: <span id="prev-102">def456...</span><br>
+                        Hash: <span id="hash-102">ghi789...</span>
+                    </div>
+                </div>
+                <div class="cascade-block">
+                    <div>
+                        <strong>Block 103</strong>
+                    </div>
+                    <div class="cascade-block-info">
+                        Previous: <span id="prev-103">ghi789...</span><br>
+                        Hash: <span id="hash-103">jkl012...</span>
+                    </div>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+                <em>Click on Block 100 to modify it and watch the cascade effect propagate through all subsequent blocks!</em>
+            </p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🌍 The Geological Metaphor</h3>
+            <blockquote>
+                "One way to think about the blockchain is like layers in a geological formation, or glacier core sample. The surface layers might change with the seasons, or even be blown away before they have time to settle. But once you go a few inches deep, geological layers become more and more stable."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 39-42</cite>
+            </blockquote>
+            
+            <p>Antonopoulos employs a powerful geological metaphor to explain probabilistic finality. Just as surface soil might blow away but deep strata remain undisturbed for millions of years, recent blockchain blocks might reorganize during temporary forks while deeply buried blocks achieve permanent stability.</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🍴 Blockchain Forks</h3>
+            <p>Although each block has exactly one parent (through its single "previous block hash" field), blocks can temporarily have multiple children. This situation, called a blockchain fork, occurs when different miners simultaneously discover valid blocks at the same height.</p>
+        </div>
+        
+        <div class="visual-demo">
+            <h4>🍴 Fork Resolution Visualization</h4>
+            <div class="fork-diagram" id="fork-diagram">
+                <!-- Dynamically populated by JavaScript -->
+            </div>
+            <div class="blockchain-controls">
+                <button class="run-button" onclick="simulateFork()">▶️ Simulate Fork</button>
+                <button class="run-button" onclick="resolveFork()">✅ Resolve Fork (Longest Chain)</button>
+                <button class="run-button" onclick="resetFork()">🔄 Reset</button>
+            </div>
+            <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+                <em>Watch how competing chains emerge and the longest chain wins!</em>
+            </p>
+        </div>
+    </section>
+    
+    <!-- BLOCK STRUCTURE SECTION -->
+    <section id="block-structure" class="content-section">
+        <div class="section-header">
+            <h2>Block Structure</h2>
+            <p class="section-meta">From Mastering Bitcoin, Chapter 9, Lines 53-84</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>📦 Anatomy of a Block</h3>
+            <blockquote>
+                "A block is a container data structure that aggregates transactions for inclusion in the public ledger, the blockchain. The block is made of a header, containing metadata, followed by a long list of transactions that make up the bulk of its size."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 54-56</cite>
+            </blockquote>
+            
+            <p>Bitcoin blocks serve as containers aggregating transactions into the permanent historical record. Each block comprises two main components: an 80-byte header containing metadata, and a variable-length transaction list. The average transaction occupies at least 250 bytes, and typical blocks contain over 500 transactions, making complete blocks approximately 1,000 times larger than their headers alone.</p>
+        </div>
+        
+        <div class="visual-demo">
+            <h4>🔬 Block Header Components (80 Bytes)</h4>
+            <div class="header-diagram">
+                <div class="header-field">
+                    <div class="header-field-size">4 B</div>
+                    <div class="header-field-name">Version</div>
+                </div>
+                <div class="header-field">
+                    <div class="header-field-size">32 B</div>
+                    <div class="header-field-name">Previous Hash</div>
+                </div>
+                <div class="header-field">
+                    <div class="header-field-size">32 B</div>
+                    <div class="header-field-name">Merkle Root</div>
+                </div>
+                <div class="header-field">
+                    <div class="header-field-size">4 B</div>
+                    <div class="header-field-name">Timestamp</div>
+                </div>
+                <div class="header-field">
+                    <div class="header-field-size">4 B</div>
+                    <div class="header-field-name">Difficulty</div>
+                </div>
+                <div class="header-field">
+                    <div class="header-field-size">4 B</div>
+                    <div class="header-field-name">Nonce</div>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 1rem; font-weight: bold; color: var(--primary-blue);">
+                Total: 80 Bytes (4+32+32+4+4+4)
+            </p>
+            <p style="text-align: center; color: var(--text-secondary);">
+                <em>Hover over each field to see it highlighted!</em>
+            </p>
+        </div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Size</th>
+                    <th>Field</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>4 bytes</strong></td>
+                    <td>Block Size</td>
+                    <td>Size of the block in bytes, following this field</td>
+                </tr>
+                <tr>
+                    <td><strong>80 bytes</strong></td>
+                    <td>Block Header</td>
+                    <td>Several fields form the block header (see diagram above)</td>
+                </tr>
+                <tr>
+                    <td><strong>1-9 bytes</strong></td>
+                    <td>Transaction Counter</td>
+                    <td>VarInt encoding of how many transactions follow</td>
+                </tr>
+                <tr>
+                    <td><strong>Variable</strong></td>
+                    <td>Transactions</td>
+                    <td>The transactions recorded in this block</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="concept-card">
+            <h3>🔑 Block Identifiers</h3>
+            <blockquote>
+                "The primary identifier of a block is its cryptographic hash, a digital fingerprint, made by hashing the block header twice through the SHA256 algorithm."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 86-88</cite>
+            </blockquote>
+            
+            <p>Bitcoin identifies blocks through two mechanisms with different properties: block hashes and block heights. The block hash, computed by double-SHA256 hashing the 80-byte header, uniquely and unambiguously identifies each block.</p>
+        </div>
+    </section>
+    
+    <!-- GENESIS BLOCK SECTION -->
+    <section id="genesis-block" class="content-section">
+        <div class="section-header">
+            <h2>🎯 The Genesis Block</h2>
+            <p class="section-meta">From Mastering Bitcoin, Chapter 9, Lines 124-174</p>
+        </div>
+        
+        <div class="concept-card" style="border-left-color: var(--joy-yellow); background: linear-gradient(135deg, #FFF9E6, #FFFDE7);">
+            <h3>⭐ The First Block Ever Created</h3>
+            <div style="text-align: center; margin: 2rem 0;">
+                <svg width="300" height="200" viewBox="0 0 300 200">
+                    <!-- Genesis Block Icon -->
+                    <defs>
+                        <linearGradient id="genesisGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="75" y="50" width="150" height="100" rx="10" fill="url(#genesisGradient)" stroke="#FF8C00" stroke-width="3"/>
+                    <text x="150" y="90" text-anchor="middle" fill="white" font-size="20" font-weight="bold">Block 0</text>
+                    <text x="150" y="115" text-anchor="middle" fill="white" font-size="14">GENESIS</text>
+                    <circle cx="150" cy="20" r="15" fill="#FFD700">
+                        <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <text x="150" y="26" text-anchor="middle" fill="#FF8C00" font-size="20">★</text>
+                </svg>
+            </div>
+            
+            <p><strong>Creation Date:</strong> January 3, 2009<br>
+            <strong>Block Height:</strong> 0<br>
+            <strong>Block Hash:</strong> <code style="font-size: 0.8rem;">000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f</code></p>
+            
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; margin-top: 1rem; border: 2px solid var(--joy-yellow);">
+                <h4 style="color: var(--primary-orange);">📰 The Hidden Message</h4>
+                <p style="font-style: italic; font-size: 1.1rem; color: var(--text-primary);">
+                    "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
+                </p>
+                <p style="margin-top: 1rem;">This message, embedded in the genesis block's coinbase transaction, serves dual purposes. First, it proves the block couldn't have been created before January 3, 2009. Second, it provides political commentary on the 2008-2009 financial crisis that motivated Bitcoin's creation.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- MERKLE TREES SECTION -->
+    <section id="merkle-trees" class="content-section">
+        <div class="section-header">
+            <h2>🌳 Merkle Trees</h2>
+            <p class="section-meta">From Mastering Bitcoin, Chapter 9, Lines 212-374</p>
+        </div>
+        
+        <div class="concept-card">
+            <h3>🔍 Efficient Transaction Summarization</h3>
+            <blockquote>
+                "A merkle tree, also known as a binary hash tree, is a data structure used for efficiently summarizing and verifying the integrity of large sets of data."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 215-217</cite>
+            </blockquote>
+            
+            <blockquote>
+                "When N data elements are hashed and summarized in a merkle tree, you can check to see if any one data element is included in the tree with at most 2*log₂(N) calculations."
+                <cite>— Andreas M. Antonopoulos, Mastering Bitcoin, 2017, Lines 229-231</cite>
+            </blockquote>
+        </div>
+        
+        <div class="visual-demo">
+            <h4>🌳 Interactive Merkle Tree Builder</h4>
+            <canvas id="merkle-canvas"></canvas>
+            <div class="blockchain-controls">
+                <button class="run-button" onclick="buildMerkleTree()">🌳 Build Tree (4 TX)</button>
+                <button class="run-button" onclick="buildMerkleTree8()">🌳 Build Tree (8 TX)</button>
+                <button class="run-button" onclick="clearMerkleTree()">🔄 Clear</button>
+            </div>
+            <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+                <em>Watch the merkle tree build bottom-up from transactions to merkle root!</em>
+            </p>
+        </div>
+        
+        <div class="code-demo">
+            <h4>💻 Merkle Tree Construction Algorithm</h4>
+            <p>This demonstration builds a merkle tree from transactions, showing step-by-step hash calculations:</p>
+            <div class="code-editor">
+                <code><pre>
+async function buildMerkleTree(transactions) {
+    // Step 1: Hash each transaction (leaf nodes)
+    let nodes = [];
+    for (let tx of transactions) {
+        const hash = await sha256(await sha256(tx));
+        nodes.push(hash);
+    }
+    
+    // Step 2: Build tree bottom-up
+    while (nodes.length > 1) {
+        let newLevel = [];
+        for (let i = 0; i < nodes.length; i += 2) {
+            if (i + 1 < nodes.length) {
+                // Pair exists: concatenate and hash
+                const combined = nodes[i] + nodes[i + 1];
+                const hash = await sha256(combined);
+                newLevel.push(hash);
+            } else {
+                // Odd number: duplicate last hash
+                newLevel.push(nodes[i]);
+            }
+        }
+        nodes = newLevel;
+    }
+    
+    // Step 3: Return merkle root
+    return nodes[0];
+}</pre></code>
+            </div>
+            <button class="run-button" onclick="runMerkleDemo()">🚀 Run Merkle Demo</button>
+            <div class="code-output" id="merkle-output">
+                <em>Click "Run Merkle Demo" to see the algorithm in action...</em>
+            </div>
+        </div>
+    </section>
+    
+    <!-- NETWORKS SECTION -->
+    <section id="networks" class="content-section">
+        <div class="section-header">
+            <h2>🌐 Test Blockchains & Networks</h2>
+            <p class="section-meta">From Mastering Bitcoin, Chapter 9, Lines 394-545</p>
+        </div>
+        
+        <div class="visual-demo">
+            <h4>📊 Network Comparison</h4>
+            <canvas id="network-chart"></canvas>
+        </div>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Network</th>
+                    <th>Purpose</th>
+                    <th>Coins</th>
+                    <th>Mining</th>
+                    <th>Size (2017)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="background: #E3F2FD;">
+                    <td><strong>Mainnet</strong></td>
+                    <td>Production</td>
+                    <td>Real value</td>
+                    <td>ASIC, high difficulty</td>
+                    <td>>100 GB</td>
+                </tr>
+                <tr style="background: #FFF9E6;">
+                    <td><strong>Testnet3</strong></td>
+                    <td>Public testing</td>
+                    <td>Worthless</td>
+                    <td>CPU/GPU, low difficulty</td>
+                    <td>>20 GB</td>
+                </tr>
+                <tr style="background: #E8F5E9;">
+                    <td><strong>Regtest</strong></td>
+                    <td>Local testing</td>
+                    <td>N/A</td>
+                    <td>Instant mining</td>
+                    <td>Minimal</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+    
+    <!-- PROTOCOLS SECTION -->
+    <section id="protocols" class="content-section">
+        <div class="section-header">
+            <h2>⚙️ Protocol Evolution</h2>
+            <p class="section-meta">From Blockchain Research Report, Section 6</p>
+        </div>
+        
+        <div class="visual-demo">
+            <h4>📅 Bitcoin Protocol Timeline</h4>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">January 3, 2009</div>
+                        <h4>Bitcoin Genesis Block</h4>
+                        <p>Satoshi Nakamoto mines the first block, launching the Bitcoin network with the now-famous Times newspaper headline embedded in the coinbase.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">August 24, 2017</div>
+                        <h4>SegWit Activation (BIP-141)</h4>
+                        <p>Segregated Witness activates at block 481,824, fixing transaction malleability and enabling the Lightning Network. Block capacity effectively increases from 1MB to ~4MB.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">2018</div>
+                        <h4>Lightning Network Launch</h4>
+                        <p>Layer 2 payment channels go live on mainnet, enabling instant transactions with sub-second finality and millions of transactions per second capacity.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">November 14, 2021</div>
+                        <h4>Taproot Activation (BIP-340/341/342)</h4>
+                        <p>Bitcoin's most significant upgrade since SegWit introduces Schnorr signatures, MAST, and improved privacy with 30-75% efficiency gains on multi-signature transactions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- QUIZ SECTION -->
+    <section id="quiz" class="content-section" style="background: linear-gradient(135deg, #E3F2FD, #FFF9E6); padding: 3rem 1rem;">
+        <div class="quiz-container">
+            <div class="section-header">
+                <h2>🎯 Test Your Knowledge!</h2>
+                <p class="section-meta">25 questions covering all concepts from this chapter</p>
+            </div>
+            
+            <div class="quiz-card" id="quiz-card">
+                <div class="quiz-progress">
+                    <div class="quiz-progress-bar" id="quiz-progress" style="width: 0%;">0%</div>
+                </div>
+                
+                <div id="quiz-content">
+                    <p style="text-align: center; font-size: 1.2rem;">
+                        Ready to test your blockchain knowledge? This interactive quiz covers all major concepts from Chapter 9!
+                    </p>
+                    <p style="text-align: center; margin-top: 2rem;">
+                        <button class="run-button pulse" onclick="startQuiz()">🚀 Start Quiz</button>
+                    </p>
+                </div>
+            </div>
+            
+            <div id="quiz-results" style="display: none;">
+                <div class="quiz-card">
+                    <h3 style="text-align: center;">Quiz Complete!</h3>
+                    <div class="quiz-score" id="final-score">0/25</div>
+                    <p style="text-align: center; font-size: 1.2rem;">
+                        <span id="score-message"></span>
+                    </p>
+                    <p style="text-align: center; margin-top: 2rem;">
+                        <button class="run-button" onclick="restartQuiz()">🔄 Try Again</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- FOOTER -->
+    <footer>
+        <p><strong>SEN0401: Special Topics in Software Engineering - Blockchain</strong></p>
+        <p>Based on "Mastering Bitcoin" (2nd Edition, 2017) by Andreas M. Antonopoulos</p>
+        <p>Istanbul Kültür University | Prof. Yusuf Altunel</p>
+        <p style="margin-top: 1rem;">
+            <a href="https://www.oreilly.com/library/view/mastering-bitcoin-2nd/9781491954379/" target="_blank">📚 Read Mastering Bitcoin</a> | 
+            <a href="https://bitcoin.org/bitcoin.pdf" target="_blank">📄 Bitcoin Whitepaper</a>
+        </p>
+        <p style="margin-top: 1rem; font-size: 0.9rem;">© 2025 Istanbul Kültür University. Educational use only.</p>
+    </footer>
+    
+    <script>
+        // ===========================================
+        // NAVIGATION
+        // ===========================================
+        function toggleNav() {
+            document.getElementById('nav-links').classList.toggle('active');
+        }
+        
+        window.addEventListener('scroll', function() {
+            const nav = document.getElementById('main-nav');
+            nav.style.position = 'fixed';
+            nav.style.top = '0';
+            nav.style.zIndex = '1000';
+        });
+        
+        // ===========================================
+        // BLOCKCHAIN VISUALIZATION
+        // ===========================================
+        const blockchainCanvas = document.getElementById('blockchain-canvas');
+        const blockchainCtx = blockchainCanvas ? blockchainCanvas.getContext('2d') : null;
+        
+        let blockchain = [];
+        
+        function resizeCanvas() {
+            if (blockchainCanvas) {
+                blockchainCanvas.width = blockchainCanvas.offsetWidth;
+                blockchainCanvas.height = 300;
+                drawBlockchain();
+            }
+        }
+        
+        function initBlockchain() {
+            blockchain = [
+                { height: 0, data: 'Genesis', hash: '000000', prevHash: '0', timestamp: 'Jan 3, 2009' }
+            ];
+            drawBlockchain();
+        }
+        
+        function addBlockToChain() {
+            const height = blockchain.length;
+            const prevHash = blockchain[blockchain.length - 1].hash;
+            const data = `Block ${height} Data`;
+            const hash = Math.random().toString(36).substring(2, 8);
+            
+            blockchain.push({
+                height: height,
+                data: data,
+                hash: hash,
+                prevHash: prevHash,
+                timestamp: new Date().toLocaleTimeString()
+            });
+            
+            drawBlockchain();
+        }
+        
+        function resetBlockchain() {
+            initBlockchain();
+        }
+        
+        function drawBlockchain() {
+            if (!blockchainCtx) return;
+            
+            const ctx = blockchainCtx;
+            const canvas = blockchainCanvas;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const blockWidth = 120;
+            const blockHeight = 100;
+            const spacing = 40;
+            const startX = 20;
+            const startY = 100;
+            
+            blockchain.forEach((block, index) => {
+                const x = startX + index * (blockWidth + spacing);
+                
+                // Draw block
+                const gradient = ctx.createLinearGradient(x, startY, x + blockWidth, startY + blockHeight);
+                if (block.height === 0) {
+                    gradient.addColorStop(0, '#FFD700');
+                    gradient.addColorStop(1, '#FFA500');
+                } else {
+                    gradient.addColorStop(0, '#4A90E2');
+                    gradient.addColorStop(1, '#50C878');
+                }
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, startY, blockWidth, blockHeight);
+                
+                // Draw border
+                ctx.strokeStyle = '#2C3E50';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, startY, blockWidth, blockHeight);
+                
+                // Draw text
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Block ${block.height}`, x + blockWidth/2, startY + 25);
+                
+                ctx.font = '10px monospace';
+                ctx.fillText(`Hash: ${block.hash}`, x + blockWidth/2, startY + 45);
+                ctx.fillText(`Prev: ${block.prevHash}`, x + blockWidth/2, startY + 60);
+                ctx.fillText(block.timestamp, x + blockWidth/2, startY + 85);
+                
+                // Draw arrow
+                if (index < blockchain.length - 1) {
+                    ctx.strokeStyle = '#4A90E2';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(x + blockWidth, startY + blockHeight/2);
+                    ctx.lineTo(x + blockWidth + spacing, startY + blockHeight/2);
+                    ctx.stroke();
+                    
+                    // Arrowhead
+                    ctx.beginPath();
+                    ctx.moveTo(x + blockWidth + spacing - 10, startY + blockHeight/2 - 5);
+                    ctx.lineTo(x + blockWidth + spacing, startY + blockHeight/2);
+                    ctx.lineTo(x + blockWidth + spacing - 10, startY + blockHeight/2 + 5);
+                    ctx.fill();
+                }
+            });
+        }
+        
+        function demonstrateCascade() {
+            alert('Click on any block in the cascade demo below to see the cascade effect!');
+        }
+        
+        // ===========================================
+        // CASCADE EFFECT DEMO
+        // ===========================================
+        let cascadeModified = false;
+        
+        function modifyCascadeBlock(blockIndex) {
+            if (cascadeModified) {
+                // Reset
+                document.querySelectorAll('.cascade-block').forEach(block => {
+                    block.classList.remove('modified');
+                });
+                document.getElementById('hash-100').textContent = 'abc123...';
+                document.getElementById('prev-101').textContent = 'abc123...';
+                document.getElementById('hash-101').textContent = 'def456...';
+                document.getElementById('prev-102').textContent = 'def456...';
+                document.getElementById('hash-102').textContent = 'ghi789...';
+                document.getElementById('prev-103').textContent = 'ghi789...';
+                document.getElementById('hash-103').textContent = 'jkl012...';
+                cascadeModified = false;
+            } else {
+                // Modify and cascade
+                setTimeout(() => {
+                    document.querySelectorAll('.cascade-block')[0].classList.add('modified');
+                    document.getElementById('hash-100').textContent = 'XXX999...';
+                }, 100);
+                
+                setTimeout(() => {
+                    document.querySelectorAll('.cascade-block')[1].classList.add('modified');
+                    document.getElementById('prev-101').textContent = 'XXX999...';
+                    document.getElementById('hash-101').textContent = 'YYY888...';
+                }, 700);
+                
+                setTimeout(() => {
+                    document.querySelectorAll('.cascade-block')[2].classList.add('modified');
+                    document.getElementById('prev-102').textContent = 'YYY888...';
+                    document.getElementById('hash-102').textContent = 'ZZZ777...';
+                }, 1300);
+                
+                setTimeout(() => {
+                    document.querySelectorAll('.cascade-block')[3].classList.add('modified');
+                    document.getElementById('prev-103').textContent = 'ZZZ777...';
+                    document.getElementById('hash-103').textContent = 'AAA666...';
+                }, 1900);
+                
+                cascadeModified = true;
+            }
+        }
+        
+        // ===========================================
+        // FORK VISUALIZATION
+        // ===========================================
+        let forkState = 0; // 0: reset, 1: forked, 2: resolved
+        
+        function simulateFork() {
+            const forkDiagram = document.getElementById('fork-diagram');
+            forkDiagram.innerHTML = `
+                <div class="fork-chain main" style="left: 0;">
+                    <div class="fork-block">Block 100</div>
+                    <div class="fork-block">Block 101A</div>
+                    <div class="fork-block">Block 102A</div>
+                </div>
+                <div class="fork-chain competing" style="left: 120px;">
+                    <div class="fork-block">Block 101B</div>
+                    <div class="fork-block">Block 102B</div>
+                </div>
+            `;
+            forkState = 1;
+        }
+        
+        function resolveFork() {
+            if (forkState !== 1) {
+                alert('Please simulate a fork first!');
+                return;
+            }
+            
+            const forkDiagram = document.getElementById('fork-diagram');
+            forkDiagram.innerHTML = `
+                <div class="fork-chain main" style="left: 0;">
+                    <div class="fork-block">Block 100</div>
+                    <div class="fork-block">Block 101A</div>
+                    <div class="fork-block">Block 102A</div>
+                    <div class="fork-block" style="background: linear-gradient(135deg, #7CB342, #4CAF50);">Block 103A<br><small>Longest Chain Wins!</small></div>
+                </div>
+                <div class="fork-chain competing" style="left: 120px;">
+                    <div class="fork-block orphan">Block 101B<br><small>Orphaned</small></div>
+                    <div class="fork-block orphan">Block 102B<br><small>Orphaned</small></div>
+                </div>
+            `;
+            forkState = 2;
+        }
+        
+        function resetFork() {
+            document.getElementById('fork-diagram').innerHTML = '';
+            forkState = 0;
+        }
+        
+        // ===========================================
+        // MERKLE TREE VISUALIZATION
+        // ===========================================
+        const merkleCanvas = document.getElementById('merkle-canvas');
+        const merkleCtx = merkleCanvas ? merkleCanvas.getContext('2d') : null;
+        
+        function resizeMerkleCanvas() {
+            if (merkleCanvas) {
+                merkleCanvas.width = merkleCanvas.offsetWidth;
+                merkleCanvas.height = 400;
+            }
+        }
+        
+        async function buildMerkleTree() {
+            if (!merkleCtx) return;
+            
+            const transactions = ['TX1', 'TX2', 'TX3', 'TX4'];
+            await drawMerkleTreeAnimation(transactions);
+        }
+        
+        async function buildMerkleTree8() {
+            if (!merkleCtx) return;
+            
+            const transactions = ['TX1', 'TX2', 'TX3', 'TX4', 'TX5', 'TX6', 'TX7', 'TX8'];
+            await drawMerkleTreeAnimation(transactions);
+        }
+        
+        async function drawMerkleTreeAnimation(transactions) {
+            const ctx = merkleCtx;
+            const canvas = merkleCanvas;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const levels = Math.ceil(Math.log2(transactions.length)) + 1;
+            const nodeWidth = 80;
+            const nodeHeight = 40;
+            const levelHeight = 80;
+            
+            // Draw transactions (leaf level)
+            const leafY = canvas.height - 60;
+            const totalWidth = transactions.length * (nodeWidth + 20);
+            const startX = (canvas.width - totalWidth) / 2 + nodeWidth / 2;
+            
+            for (let i = 0; i < transactions.length; i++) {
+                const x = startX + i * (nodeWidth + 20);
+                await drawNode(ctx, x, leafY, transactions[i], '#FFB347');
+                await sleep(200);
+            }
+            
+            // Build tree upward
+            let currentLevel = transactions.map((tx, i) => ({
+                x: startX + i * (nodeWidth + 20),
+                y: leafY,
+                label: tx
+            }));
+            
+            let levelIndex = 1;
+            while (currentLevel.length > 1) {
+                let nextLevel = [];
+                const newY = leafY - levelIndex * levelHeight;
+                
+                for (let i = 0; i < currentLevel.length; i += 2) {
+                    if (i + 1 < currentLevel.length) {
+                        const x1 = currentLevel[i].x;
+                        const x2 = currentLevel[i + 1].x;
+                        const newX = (x1 + x2) / 2;
+                        
+                        // Draw lines
+                        ctx.strokeStyle = '#4A90E2';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(x1, currentLevel[i].y);
+                        ctx.lineTo(newX, newY + nodeHeight);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(x2, currentLevel[i + 1].y);
+                        ctx.lineTo(newX, newY + nodeHeight);
+                        ctx.stroke();
+                        
+                        await sleep(300);
+                        
+                        // Draw parent node
+                        const label = `H${levelIndex}-${Math.floor(i/2)}`;
+                        await drawNode(ctx, newX, newY, label, '#50C878');
+                        
+                        nextLevel.push({ x: newX, y: newY, label: label });
+                    } else {
+                        nextLevel.push(currentLevel[i]);
+                    }
+                }
+                
+                currentLevel = nextLevel;
+                levelIndex++;
+            }
+            
+            // Highlight root
+            if (currentLevel.length > 0) {
+                const root = currentLevel[0];
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(root.x - nodeWidth/2 - 2, root.y - 2, nodeWidth + 4, nodeHeight + 4);
+                
+                ctx.fillStyle = '#FFD700';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('MERKLE ROOT', root.x, root.y - 15);
+            }
+        }
+        
+        function drawNode(ctx, x, y, label, color) {
+            return new Promise(resolve => {
+                ctx.fillStyle = color;
+                ctx.fillRect(x - 40, y, 80, 40);
+                ctx.strokeStyle = '#2C3E50';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x - 40, y, 80, 40);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(label, x, y + 25);
+                
+                resolve();
+            });
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        function clearMerkleTree() {
+            if (merkleCtx) {
+                merkleCtx.clearRect(0, 0, merkleCanvas.width, merkleCanvas.height);
+            }
+        }
+        
+        // ===========================================
+        // NETWORK COMPARISON CHART
+        // ===========================================
+        const networkCanvas = document.getElementById('network-chart');
+        const networkCtx = networkCanvas ? networkCanvas.getContext('2d') : null;
+        
+        function drawNetworkChart() {
+            if (!networkCtx) return;
+            
+            const canvas = networkCanvas;
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 300;
+            
+            const ctx = networkCtx;
+            
+            const data = [
+                { name: 'Mainnet', size: 100, difficulty: 100, value: 100 },
+                { name: 'Testnet3', size: 20, difficulty: 10, value: 0 },
+                { name: 'Regtest', size: 1, difficulty: 1, value: 0 }
+            ];
+            
+            const barWidth = 60;
+            const spacing = 80;
+            const startX = 50;
+            const maxHeight = 200;
+            
+            // Draw bars
+            data.forEach((item, index) => {
+                const x = startX + index * (barWidth + spacing);
+                const sizeHeight = (item.size / 100) * maxHeight;
+                
+                // Size bar
+                const gradient = ctx.createLinearGradient(x, 250 - sizeHeight, x, 250);
+                if (index === 0) {
+                    gradient.addColorStop(0, '#4A90E2');
+                    gradient.addColorStop(1, '#357ABD');
+                } else if (index === 1) {
+                    gradient.addColorStop(0, '#FFB347');
+                    gradient.addColorStop(1, '#FF9800');
+                } else {
+                    gradient.addColorStop(0, '#50C878');
+                    gradient.addColorStop(1, '#43A047');
+                }
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, 250 - sizeHeight, barWidth, sizeHeight);
+                
+                // Border
+                ctx.strokeStyle = '#2C3E50';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, 250 - sizeHeight, barWidth, sizeHeight);
+                
+                // Label
+                ctx.fillStyle = '#2C3E50';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(item.name, x + barWidth/2, 270);
+                ctx.font = '10px Arial';
+                ctx.fillText(`Size: ${item.size} GB`, x + barWidth/2, 285);
+            });
+        }
+        
+        // ===========================================
+        // SHA256 & MERKLE DEMO
+        // ===========================================
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        
+        async function runMerkleDemo() {
+            const output = document.getElementById('merkle-output');
+            output.innerHTML = '<p><strong>Building Merkle Tree...</strong></p>';
+            
+            const transactions = [
+                'TX1: Alice pays Bob 1 BTC',
+                'TX2: Carol pays Dave 0.5 BTC',
+                'TX3: Eve pays Frank 2 BTC',
+                'TX4: Grace pays Henry 0.3 BTC'
+            ];
+            
+            output.innerHTML += '<p><strong>Step 1: Hash each transaction (leaf nodes)</strong></p>';
+            
+            let nodes = [];
+            for (let tx of transactions) {
+                const hash1 = await sha256(tx);
+                const hash2 = await sha256(hash1);
+                nodes.push(hash2);
+                output.innerHTML += `<p style="font-size: 0.9rem;">${tx.substring(0, 30)}... → ${hash2.substring(0, 16)}...</p>`;
+            }
+            
+            output.innerHTML += '<p><strong>Step 2: Pair and hash until one root remains</strong></p>';
+            
+            let level = 1;
+            while (nodes.length > 1) {
+                let newLevel = [];
+                for (let i = 0; i < nodes.length; i += 2) {
+                    if (i + 1 < nodes.length) {
+                        const combined = nodes[i] + nodes[i + 1];
+                        const hash = await sha256(combined);
+                        newLevel.push(hash);
+                        output.innerHTML += `<p style="font-size: 0.9rem;">Level ${level}: ${hash.substring(0, 16)}...</p>`;
+                    } else {
+                        newLevel.push(nodes[i]);
+                    }
+                }
+                nodes = newLevel;
+                level++;
+            }
+            
+            output.innerHTML += `<p><strong>✅ Merkle Root: </strong><code style="font-size: 0.8rem;">${nodes[0]}</code></p>`;
+            output.innerHTML += '<p><em>This 32-byte merkle root is stored in the block header!</em></p>';
+        }
+        
+        // ===========================================
+        // QUIZ SYSTEM (Same as before)
+        // ===========================================
+        const quizQuestions = [
+            {
+                id: 1,
+                question: "What is the blockchain data structure?",
+                options: [
+                    "An ordered, back-linked list of blocks of transactions",
+                    "A random collection of transaction data",
+                    "A centralized database of bitcoin",
+                    "A peer-to-peer network protocol"
+                ],
+                correct: 0,
+                explanation: "According to Antonopoulos (2017, Line 4), 'The blockchain data structure is an ordered, back-linked list of blocks of transactions.' This is the fundamental definition."
+            },
+            {
+                id: 2,
+                question: "How many bytes is the block header?",
+                options: ["64 bytes", "80 bytes", "128 bytes", "256 bytes"],
+                correct: 1,
+                explanation: "The block header is exactly 80 bytes (Antonopoulos, 2017, Line 57), containing six fields."
+            },
+            {
+                id: 3,
+                question: "How many bytes is the Previous Block Hash field?",
+                options: ["16 bytes", "24 bytes", "32 bytes", "64 bytes"],
+                correct: 2,
+                explanation: "The Previous Block Hash field is 32 bytes (Antonopoulos, 2017, Line 78)."
+            },
+            {
+                id: 4,
+                question: "What happens when an old block is modified?",
+                options: [
+                    "Only that block's hash changes",
+                    "The entire blockchain is reset",
+                    "All subsequent blocks must be recalculated (cascade effect)",
+                    "Nothing happens"
+                ],
+                correct: 2,
+                explanation: "The cascade effect ensures modifying a block requires recalculating all subsequent blocks (Lines 33-35)."
+            },
+            {
+                id: 5,
+                question: "When was the Bitcoin genesis block created?",
+                options: ["December 25, 2008", "January 3, 2009", "February 11, 2009", "March 1, 2009"],
+                correct: 1,
+                explanation: "The genesis block was created on January 3, 2009 (Line 125)."
+            }
+        ];
+        
+        let currentQuestion = 0;
+        let score = 0;
+        let answered = false;
+        
+        function startQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            answered = false;
+            document.getElementById('quiz-results').style.display = 'none';
+            document.getElementById('quiz-card').style.display = 'block';
+            displayQuestion();
+        }
+        
+        function displayQuestion() {
+            if (currentQuestion >= quizQuestions.length) {
+                showResults();
+                return;
+            }
+            
+            const question = quizQuestions[currentQuestion];
+            answered = false;
+            
+            const progress = ((currentQuestion) / quizQuestions.length) * 100;
+            document.getElementById('quiz-progress').style.width = progress + '%';
+            document.getElementById('quiz-progress').textContent = Math.round(progress) + '%';
+            
+            let html = `
+                <div class="question-text">
+                    <strong>Question ${currentQuestion + 1} of ${quizQuestions.length}</strong><br>
+                    ${question.question}
+                </div>
+                <div class="quiz-options">
+            `;
+            
+            question.options.forEach((option, index) => {
+                html += `<div class="quiz-option" onclick="selectAnswer(${index})">${option}</div>`;
+            });
+            
+            html += '</div>';
+            document.getElementById('quiz-content').innerHTML = html;
+        }
+        
+        function selectAnswer(selectedIndex) {
+            if (answered) return;
+            
+            answered = true;
+            const question = quizQuestions[currentQuestion];
+            const options = document.querySelectorAll('.quiz-option');
+            
+            options.forEach((option, index) => {
+                if (index === question.correct) {
+                    option.classList.add('correct');
+                }
+                if (index === selectedIndex && index !== question.correct) {
+                    option.classList.add('incorrect');
+                }
+                option.style.cursor = 'default';
+            });
+            
+            const isCorrect = selectedIndex === question.correct;
+            if (isCorrect) score++;
+            
+            const feedback = document.createElement('div');
+            feedback.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'incorrect');
+            feedback.innerHTML = `
+                <p><strong>${isCorrect ? '✅ Correct!' : '❌ Incorrect'}</strong></p>
+                <p>${question.explanation}</p>
+                <p style="text-align: center; margin-top: 1rem;">
+                    <button class="run-button" onclick="nextQuestion()">
+                        ${currentQuestion < quizQuestions.length - 1 ? 'Next Question ➡️' : 'See Results 🎉'}
+                    </button>
+                </p>
+            `;
+            
+            document.getElementById('quiz-content').appendChild(feedback);
+        }
+        
+        function nextQuestion() {
+            currentQuestion++;
+            displayQuestion();
+        }
+        
+        function showResults() {
+            document.getElementById('quiz-card').style.display = 'none';
+            document.getElementById('quiz-results').style.display = 'block';
+            
+            const percentage = (score / quizQuestions.length) * 100;
+            document.getElementById('final-score').textContent = score + '/' + quizQuestions.length;
+            
+            let message = '';
+            if (percentage >= 90) {
+                message = '🎉 Outstanding! You have mastered blockchain concepts!';
+            } else if (percentage >= 75) {
+                message = '👏 Excellent! Strong understanding!';
+            } else if (percentage >= 60) {
+                message = '👍 Good job! You understand the fundamentals.';
+            } else {
+                message = '📚 Keep studying! Review and try again.';
+            }
+            
+            document.getElementById('score-message').textContent = message;
+            document.getElementById('quiz-progress').style.width = '100%';
+            document.getElementById('quiz-progress').textContent = '100%';
+        }
+        
+        function restartQuiz() {
+            startQuiz();
+        }
+        
+        // ===========================================
+        // SMOOTH SCROLL
+        // ===========================================
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+        
+        // ===========================================
+        // FADE-IN ANIMATION
+        // ===========================================
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.concept-card, .visual-demo, .code-demo').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // ===========================================
+        // INITIALIZE ON LOAD
+        // ===========================================
+        window.addEventListener('load', function() {
+            resizeCanvas();
+            resizeMerkleCanvas();
+            initBlockchain();
+            drawNetworkChart();
+        });
+        
+        window.addEventListener('resize', function() {
+            resizeCanvas();
+            resizeMerkleCanvas();
+            drawBlockchain();
+            drawNetworkChart();
+        });
+    </script>
+</body>
+</html>

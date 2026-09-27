@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- SEO Optimization: Meta Tags per SEO_Optimization_Ontology -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SEN0401 Blockchain Wallets Course - Istanbul Kültür University. Comprehensive guide to cryptocurrency wallets, HD wallets, BIP standards, MPC, and account abstraction.">
+    <meta name="keywords" content="blockchain, cryptocurrency wallet, HD wallet, BIP-32, BIP-39, BIP-44, Bitcoin, Ethereum, MPC, account abstraction, ERC-4337">
+    <meta name="author" content="Istanbul Kültür University - Computer Engineering Department">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#6366f1">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="SEN0401: Blockchain Wallets - Interactive Course">
+    <meta property="og:description" content="Master cryptocurrency wallet technology from basics to advanced concepts including HD wallets, BIP standards, and modern innovations.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Course",
+        "name": "SEN0401: Special Topics in Software Engineering - Blockchain Wallets",
+        "description": "Comprehensive course on blockchain wallet technology covering HD wallets, BIP standards, security mechanisms, and modern innovations.",
+        "provider": {
+            "@type": "Organization",
+            "name": "Istanbul Kültür University",
+            "department": "Computer Engineering"
+        },
+        "educationalLevel": "Graduate",
+        "teaches": ["Blockchain Technology", "Cryptocurrency Wallets", "Cryptographic Key Management", "BIP Standards"],
+        "hasCourseInstance": {
+            "@type": "CourseInstance",
+            "courseMode": "online",
+            "instructor": {
+                "@type": "Person",
+                "name": "Prof. Dr. Yusuf Uzun"
+            }
+        }
+    }
+    </script>
+    
+    <title>SEN0401: Blockchain Wallets | Istanbul Kültür University</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Prism.js for Code Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* ============================================
+           CSS VARIABLES - JOYFUL COLOR THEME
+           ============================================ */
+        :root {
+            /* Primary Colors - Vibrant & Joyful */
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --warning-gradient: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            
+            /* Solid Colors */
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --danger: #ef4444;
+            
+            /* Background Colors */
+            --bg-light: #fafbfc;
+            --bg-white: #ffffff;
+            --bg-gradient: linear-gradient(180deg, #fdfbfb 0%, #ebedee 100%);
+            --bg-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            
+            /* Text Colors */
+            --text-dark: #1f2937;
+            --text-medium: #4b5563;
+            --text-light: #9ca3af;
+            --text-white: #ffffff;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
+            
+            /* Border Radius */
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.5rem;
+            --radius-full: 9999px;
+            
+            /* Spacing */
+            --nav-height: 70px;
+            
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+        
+        /* ============================================
+           RESET & BASE STYLES
+           ============================================ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: var(--nav-height);
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 16px;
+            line-height: 1.7;
+            color: var(--text-dark);
+            background: var(--bg-light);
+            overflow-x: hidden;
+        }
+        
+        /* ============================================
+           STICKY NAVIGATION - ALWAYS VISIBLE
+           ============================================ */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-height);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+            z-index: 1000;
+            transition: var(--transition-normal);
+        }
+        
+        .navbar.scrolled {
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .navbar-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        
+        .navbar-brand .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--primary-gradient);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            list-style: none;
+        }
+        
+        .navbar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            text-decoration: none;
+            color: var(--text-medium);
+            font-weight: 500;
+            font-size: 0.9rem;
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+        }
+        
+        .navbar-menu a:hover,
+        .navbar-menu a.active {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .navbar-menu a i {
+            font-size: 0.85rem;
+        }
+        
+        .nav-cta {
+            background: var(--primary-gradient) !important;
+            color: white !important;
+            padding: 0.6rem 1.25rem !important;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg) !important;
+        }
+        
+        /* Mobile Menu Toggle */
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+        
+        /* ============================================
+           HERO SECTION
+           ============================================ */
+        .hero {
+            min-height: 100vh;
+            background: var(--bg-hero);
+            padding: calc(var(--nav-height) + 4rem) 2rem 4rem;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        
+        /* Animated Background Shapes */
+        .hero-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .hero-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite;
+        }
+        
+        .hero-shape:nth-child(1) {
+            width: 400px;
+            height: 400px;
+            background: #ffffff;
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+        
+        .hero-shape:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            background: #f093fb;
+            bottom: -50px;
+            left: -50px;
+            animation-delay: -5s;
+        }
+        
+        .hero-shape:nth-child(3) {
+            width: 200px;
+            height: 200px;
+            background: #ffffff;
+            top: 50%;
+            left: 30%;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(5deg); }
+            66% { transform: translateY(20px) rotate(-5deg); }
+        }
+        
+        .hero-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-content {
+            color: white;
+        }
+        
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            animation: slideInLeft 0.8s ease;
+        }
+        
+        .hero-badge i {
+            color: #fbbf24;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            animation: slideInLeft 0.8s ease 0.1s both;
+        }
+        
+        .hero-title span {
+            background: linear-gradient(90deg, #fbbf24, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            animation: slideInLeft 0.8s ease 0.2s both;
+        }
+        
+        .hero-stats {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            animation: slideInLeft 0.8s ease 0.3s both;
+        }
+        
+        .hero-stat {
+            text-align: center;
+        }
+        
+        .hero-stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            display: block;
+        }
+        
+        .hero-stat-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            animation: slideInLeft 0.8s ease 0.4s both;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            border: none;
+        }
+        
+        .btn-primary {
+            background: white;
+            color: var(--primary-dark);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Hero Visual */
+        .hero-visual {
+            position: relative;
+            animation: slideInRight 1s ease 0.3s both;
+        }
+        
+        .wallet-illustration {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-2xl);
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .wallet-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .wallet-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        
+        .wallet-card-header h4 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+        
+        .wallet-card-header i {
+            font-size: 1.5rem;
+        }
+        
+        .wallet-balance {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .wallet-address {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.7);
+            background: rgba(0,0,0,0.2);
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            word-break: break-all;
+        }
+        
+        .key-derivation-visual {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            color: white;
+        }
+        
+        .key-node {
+            background: rgba(255,255,255,0.1);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            text-align: center;
+            font-size: 0.75rem;
+            border: 1px dashed rgba(255,255,255,0.3);
+            transition: var(--transition-fast);
+        }
+        
+        .key-node:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+        
+        .key-node i {
+            display: block;
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* ============================================
+           SECTION STYLES
+           ============================================ */
+        .section {
+            padding: 5rem 2rem;
+            position: relative;
+        }
+        
+        .section-alt {
+            background: var(--bg-white);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.1));
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+        
+        .section-title span {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-medium);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        /* ============================================
+           COURSE OVERVIEW SECTION
+           ============================================ */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .overview-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .overview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: var(--transition-normal);
+        }
+        
+        .overview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .overview-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .overview-card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            color: white;
+        }
+        
+        .overview-card:nth-child(1) .overview-card-icon { background: var(--primary-gradient); }
+        .overview-card:nth-child(2) .overview-card-icon { background: var(--success-gradient); }
+        .overview-card:nth-child(3) .overview-card-icon { background: var(--warning-gradient); }
+        .overview-card:nth-child(4) .overview-card-icon { background: var(--secondary-gradient); }
+        .overview-card:nth-child(5) .overview-card-icon { background: var(--info-gradient); }
+        .overview-card:nth-child(6) .overview-card-icon { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
+        
+        .overview-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+        }
+        
+        .overview-card p {
+            color: var(--text-medium);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .overview-card .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 1rem;
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+        
+        .overview-card .card-link:hover {
+            gap: 0.75rem;
+        }
+        
+        /* ============================================
+           LEARNING OBJECTIVES
+           ============================================ */
+        .objectives-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+        
+        .objectives-content h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+        }
+        
+        .objectives-list {
+            list-style: none;
+        }
+        
+        .objectives-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .objectives-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .objective-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            background: var(--success-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+        
+        .objective-text {
+            font-size: 1rem;
+            color: var(--text-medium);
+        }
+        
+        .objective-text strong {
+            color: var(--text-dark);
+        }
+        
+        .objectives-visual {
+            position: relative;
+        }
+        
+        .progress-ring {
+            background: var(--bg-white);
+            border-radius: var(--radius-2xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+        }
+        
+        .progress-ring-circle {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+        }
+        
+        .progress-ring-circle svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle circle {
+            fill: none;
+            stroke-width: 12;
+            stroke-linecap: round;
+        }
+        
+        .progress-ring-circle .bg {
+            stroke: #e5e7eb;
+        }
+        
+        .progress-ring-circle .progress {
+            stroke: url(#progressGradient);
+            stroke-dasharray: 565;
+            stroke-dashoffset: 565;
+            animation: progressAnimation 2s ease forwards;
+        }
+        
+        @keyframes progressAnimation {
+            to { stroke-dashoffset: 56; }
+        }
+        
+        .progress-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .progress-label {
+            font-size: 1rem;
+            color: var(--text-medium);
+        }
+        
+        /* ============================================
+           RESPONSIVE DESIGN
+           ============================================ */
+        @media (max-width: 1024px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .hero-stats {
+                justify-content: center;
+            }
+            
+            .hero-buttons {
+                justify-content: center;
+            }
+            
+            .hero-visual {
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            
+            .objectives-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar-menu {
+                position: fixed;
+                top: var(--nav-height);
+                left: 0;
+                right: 0;
+                background: white;
+                flex-direction: column;
+                padding: 1rem;
+                box-shadow: var(--shadow-lg);
+                transform: translateY(-100%);
+                opacity: 0;
+                visibility: hidden;
+                transition: var(--transition-normal);
+            }
+            
+            .navbar-menu.open {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .navbar-menu a {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .mobile-toggle {
+                display: block;
+            }
+            
+            .hero-title {
+                font-size: 2.25rem;
+            }
+            
+            .hero-stats {
+                flex-wrap: wrap;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+        
+        /* ============================================
+           SCROLL PROGRESS INDICATOR
+           ============================================ */
+        .scroll-progress {
+            position: fixed;
+            top: var(--nav-height);
+            left: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            z-index: 999;
+            transition: width 0.1s linear;
+        }
+        
+        /* ============================================
+           BACK TO TOP BUTTON
+           ============================================ */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-normal);
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        /* ============================================
+           TOOLTIP STYLES
+           ============================================ */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+        
+        [data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-dark);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-fast);
+            z-index: 100;
+        }
+        
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* ============================================
+           ANIMATION UTILITIES
+           ============================================ */
+        .fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        .stagger-5 { animation-delay: 0.5s; }
+        .stagger-6 { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+    
+    <!-- ====================================
+         STICKY NAVIGATION - ALWAYS VISIBLE
+         ==================================== -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-container">
+            <a href="#" class="navbar-brand">
+                <div class="logo-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <span>SEN0401</span>
+            </a>
+            
+            <ul class="navbar-menu" id="navMenu">
+                <li><a href="#overview"><i class="fas fa-home"></i> Overview</a></li>
+                <li><a href="#fundamentals"><i class="fas fa-cubes"></i> Fundamentals</a></li>
+                <li><a href="#hd-wallets"><i class="fas fa-sitemap"></i> HD Wallets</a></li>
+                <li><a href="#bip-standards"><i class="fas fa-file-code"></i> BIP Standards</a></li>
+                <li><a href="#advanced"><i class="fas fa-rocket"></i> Advanced</a></li>
+                <li><a href="#security"><i class="fas fa-shield-alt"></i> Security</a></li>
+                <li><a href="#quiz" class="nav-cta"><i class="fas fa-question-circle"></i> Quiz</a></li>
+            </ul>
+            
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- ====================================
+         HERO SECTION
+         ==================================== -->
+    <section class="hero" id="hero">
+        <div class="hero-shapes">
+            <div class="hero-shape"></div>
+            <div class="hero-shape"></div>
+            <div class="hero-shape"></div>
+        </div>
+        
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-star"></i>
+                    Istanbul Kültür University • Computer Engineering
+                </div>
+                
+                <h1 class="hero-title">
+                    SEN0401: <span>Blockchain Wallets</span>
+                </h1>
+                
+                <p class="hero-subtitle">
+                    Master cryptocurrency wallet technology from foundational concepts to cutting-edge innovations. 
+                    Explore HD wallets, BIP standards, MPC, smart contract wallets, and account abstraction.
+                </p>
+                
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">12+</span>
+                        <span class="hero-stat-label">Modules</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">50+</span>
+                        <span class="hero-stat-label">Concepts</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value">25+</span>
+                        <span class="hero-stat-label">Interactive Examples</span>
+                    </div>
+                </div>
+                
+                <div class="hero-buttons">
+                    <a href="#overview" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Learning
+                    </a>
+                    <a href="#quiz" class="btn btn-secondary">
+                        <i class="fas fa-question-circle"></i> Take Quiz
+                    </a>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <div class="wallet-illustration">
+                    <div class="wallet-card">
+                        <div class="wallet-card-header">
+                            <h4>HD Wallet</h4>
+                            <i class="fab fa-bitcoin"></i>
+                        </div>
+                        <div class="wallet-balance">1.2345 BTC</div>
+                        <div class="wallet-address">bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq</div>
+                    </div>
+                    
+                    <div class="key-derivation-visual">
+                        <div class="key-node">
+                            <i class="fas fa-key"></i>
+                            Master Seed
+                        </div>
+                        <div class="key-node">
+                            <i class="fas fa-code-branch"></i>
+                            m/44'/0'/0'
+                        </div>
+                        <div class="key-node">
+                            <i class="fas fa-qrcode"></i>
+                            Address
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- ====================================
+         COURSE OVERVIEW SECTION
+         ==================================== -->
+    <section class="section" id="overview">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">
+                    <i class="fas fa-book-open"></i> Course Overview
+                </span>
+                <h2 class="section-title">What You'll <span>Learn</span></h2>
+                <p class="section-subtitle">
+                    A comprehensive journey through blockchain wallet technology, from basic concepts to advanced implementations based on Antonopoulos (2017) and modern innovations.
+                </p>
+            </div>
+            
+            <div class="overview-grid">
+                <div class="overview-card fade-in stagger-1">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3>Wallet Fundamentals</h3>
+                    <p>Understand what wallets really are: containers for cryptographic keys, not coins. Learn about key pairs, addresses, and the fundamental architecture.</p>
+                    <a href="#fundamentals" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="overview-card fade-in stagger-2">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-sitemap"></i>
+                    </div>
+                    <h3>HD Wallet Architecture</h3>
+                    <p>Master Hierarchical Deterministic wallets - derive unlimited keys from a single seed. Understand key derivation, chain codes, and tree structures.</p>
+                    <a href="#hd-wallets" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="overview-card fade-in stagger-3">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-file-code"></i>
+                    </div>
+                    <h3>BIP Standards</h3>
+                    <p>Deep dive into Bitcoin Improvement Proposals: BIP-32, BIP-39, BIP-44, BIP-49, BIP-84, and BIP-86. Learn derivation paths and mnemonic codes.</p>
+                    <a href="#bip-standards" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="overview-card fade-in stagger-4">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h3>MPC Wallets</h3>
+                    <p>Explore Multi-Party Computation: threshold signatures, FROST protocol, and how institutions secure billions in digital assets without single points of failure.</p>
+                    <a href="#mpc-wallets" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="overview-card fade-in stagger-5">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h3>Smart Contract Wallets</h3>
+                    <p>Understand ERC-4337 account abstraction, EIP-7702, paymasters, and how programmable wallets are revolutionizing user experience.</p>
+                    <a href="#smart-wallets" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="overview-card fade-in stagger-6">
+                    <div class="overview-card-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Security & Recovery</h3>
+                    <p>Learn about hardware wallets, secure elements, social recovery, guardian systems, and best practices for protecting digital assets.</p>
+                    <a href="#security" class="card-link">
+                        Explore <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- ====================================
+         LEARNING OBJECTIVES SECTION
+         ==================================== -->
+    <section class="section section-alt" id="objectives">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">
+                    <i class="fas fa-bullseye"></i> Learning Objectives
+                </span>
+                <h2 class="section-title">Course <span>Goals</span></h2>
+                <p class="section-subtitle">
+                    By the end of this course, you will have mastered all aspects of blockchain wallet technology.
+                </p>
+            </div>
+            
+            <div class="objectives-container">
+                <div class="objectives-content">
+                    <h3>After completing this course, you will be able to:</h3>
+                    <ul class="objectives-list">
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Explain</strong> why wallets contain keys, not coins, and describe the relationship between private keys, public keys, and addresses.</span>
+                        </li>
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Compare</strong> nondeterministic (JBOK) wallets with deterministic and HD wallets, articulating the advantages of each.</span>
+                        </li>
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Implement</strong> BIP-32 key derivation and understand the mathematical foundations of HD wallets.</span>
+                        </li>
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Generate</strong> and validate BIP-39 mnemonic phrases with proper entropy and checksum verification.</span>
+                        </li>
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Navigate</strong> BIP-44/49/84/86 derivation paths and understand their purpose for different address types.</span>
+                        </li>
+                        <li>
+                            <span class="objective-icon"><i class="fas fa-check"></i></span>
+                            <span class="objective-text"><strong>Analyze</strong> MPC protocols, threshold signatures, and ERC-4337 account abstraction architectures.</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="objectives-visual">
+                    <div class="progress-ring">
+                        <div class="progress-ring-circle">
+                            <svg viewBox="0 0 200 200">
+                                <defs>
+                                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#667eea" />
+                                        <stop offset="100%" stop-color="#764ba2" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="bg" cx="100" cy="100" r="90" />
+                                <circle class="progress" cx="100" cy="100" r="90" />
+                            </svg>
+                            <span class="progress-value">90%</span>
+                        </div>
+                        <p class="progress-label">Target Competency Level</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+    
+    <!-- ====================================
+         SCRIPTS
+         ==================================== -->
+    <script>
+        // ========================================
+        // NAVIGATION FUNCTIONALITY
+        // ========================================
+        const navbar = document.getElementById('navbar');
+        const mobileToggle = document.getElementById('mobileToggle');
+        const navMenu = document.getElementById('navMenu');
+        const scrollProgress = document.getElementById('scrollProgress');
+        const backToTop = document.getElementById('backToTop');
+        
+        // Scroll handler for navbar styling and progress
+        window.addEventListener('scroll', () => {
+            // Navbar shadow on scroll
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            
+            // Scroll progress bar
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / docHeight) * 100;
+            scrollProgress.style.width = progress + '%';
+            
+            // Back to top button visibility
+            if (window.scrollY > 500) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+        
+        // Mobile menu toggle
+        mobileToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('open');
+            const icon = mobileToggle.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+        
+        // Close mobile menu on link click
+        document.querySelectorAll('.navbar-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('open');
+                const icon = mobileToggle.querySelector('i');
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-times');
+            });
+        });
+        
+        // Back to top functionality
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // Active nav link on scroll
+        const sections = document.querySelectorAll('section[id]');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            document.querySelectorAll('.navbar-menu a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+        
+        // ========================================
+        // INTERSECTION OBSERVER FOR ANIMATIONS
+        // ========================================
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.overview-card, .concept-card').forEach(card => {
+            observer.observe(card);
+        });
+        
+        console.log('SEN0401 Blockchain Wallets Course - Phase 1 Loaded Successfully');
+    </script>
+</body>
+</html>

@@ -1,0 +1,2772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEN0401 - Week 2: How Bitcoin Works</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #9b59b6;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --info-color: #1abc9c;
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --text-dark: #2c3e50;
+            --text-light: #ecf0f1;
+            --card-bg: #ffffff;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Sticky Navigation */
+        .sticky-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            padding: 1rem 2rem;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-brand {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-brand .coin-icon {
+            animation: coinSpin 3s linear infinite;
+        }
+
+        @keyframes coinSpin {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--text-light);
+            transition: var(--transition);
+            transform: translateX(-50%);
+        }
+
+        .nav-links a:hover::before {
+            width: 80%;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 120px auto 2rem;
+            padding: 0 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102,126,234,0.1) 0%, transparent 70%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--info-color);
+            margin-bottom: 1rem;
+        }
+
+        .learning-objectives {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .objective-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 1.5rem;
+            border-radius: 20px;
+            color: var(--text-light);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .objective-card:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 0 15px 40px rgba(102,126,234,0.4);
+        }
+
+        .objective-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Content Sections */
+        .content-section {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            animation: fadeInUp 0.8s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .content-section:nth-child(2) { animation-delay: 0.1s; }
+        .content-section:nth-child(3) { animation-delay: 0.2s; }
+        .content-section:nth-child(4) { animation-delay: 0.3s; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .section-icon {
+            font-size: 2.5rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--info-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Transaction Flow Diagram */
+        .transaction-flow {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, rgba(52,152,219,0.1), rgba(155,89,182,0.1));
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: var(--primary-color);
+            animation: slideRight 1.5s ease-in-out infinite;
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        @keyframes slideRight {
+            0%, 100% { transform: translateY(-50%) translateX(0); }
+            50% { transform: translateY(-50%) translateX(5px); }
+        }
+
+        .flow-step:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(52,152,219,0.3);
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-light);
+            border-radius: 50%;
+            line-height: 50px;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Interactive Coding Section */
+        .code-playground {
+            background: #1e1e1e;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .code-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-light);
+            padding: 1rem;
+            border-radius: 10px 10px 0 0;
+            margin: -1.5rem -1.5rem 1rem;
+            font-weight: 600;
+        }
+
+        .code-editor {
+            font-family: 'Fira Code', monospace;
+            color: #d4d4d4;
+            background: #1e1e1e;
+            border: 2px solid #3c3c3c;
+            border-radius: 10px;
+            padding: 1rem;
+            min-height: 200px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            resize: vertical;
+        }
+
+        .code-output {
+            background: #0f0f0f;
+            border: 2px solid var(--success-color);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: var(--success-color);
+            font-family: 'Fira Code', monospace;
+            min-height: 100px;
+        }
+
+        .run-button {
+            background: linear-gradient(135deg, var(--success-color), var(--info-color));
+            color: var(--text-light);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .run-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(46,204,113,0.4);
+        }
+
+        /* Quiz Section */
+        .quiz-container {
+            background: linear-gradient(135deg, rgba(155,89,182,0.1), rgba(52,152,219,0.1));
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .quiz-question {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .quiz-question h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .quiz-option {
+            background: linear-gradient(135deg, rgba(52,152,219,0.05), rgba(155,89,182,0.05));
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary-color);
+            transform: translateX(10px);
+            background: linear-gradient(135deg, rgba(52,152,219,0.15), rgba(155,89,182,0.15));
+        }
+
+        .quiz-option.selected {
+            border-color: var(--info-color);
+            background: linear-gradient(135deg, rgba(26,188,156,0.2), rgba(52,152,219,0.2));
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success-color);
+            background: linear-gradient(135deg, rgba(46,204,113,0.2), rgba(26,188,156,0.2));
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--accent-color);
+            background: linear-gradient(135deg, rgba(231,76,60,0.2), rgba(243,156,18,0.2));
+        }
+
+        .quiz-feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .quiz-feedback.correct {
+            background: rgba(46,204,113,0.2);
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .quiz-feedback.incorrect {
+            background: rgba(231,76,60,0.2);
+            color: var(--accent-color);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* Game Cards */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .game-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 20px;
+            padding: 2rem;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            transition: var(--transition);
+        }
+
+        .game-card:hover::before {
+            top: -60%;
+            right: -60%;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px) rotate(-2deg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .game-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-card p {
+            position: relative;
+            z-index: 1;
+            opacity: 0.9;
+        }
+
+        .play-button {
+            background: rgba(255,255,255,0.3);
+            color: var(--text-light);
+            border: 2px solid var(--text-light);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: var(--transition);
+            position: relative;
+            z-index: 1;
+        }
+
+        .play-button:hover {
+            background: var(--text-light);
+            color: var(--primary-color);
+        }
+
+        /* Charts and Visualizations */
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 2rem 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .data-table thead {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-light);
+        }
+
+        .data-table th {
+            padding: 1.25rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .data-table td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .data-table tbody tr {
+            transition: var(--transition);
+            background: var(--card-bg);
+        }
+
+        .data-table tbody tr:hover {
+            background: linear-gradient(135deg, rgba(52,152,219,0.05), rgba(155,89,182,0.05));
+            transform: scale(1.01);
+        }
+
+        /* Progress Tracker */
+        .progress-tracker {
+            background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(26,188,156,0.1));
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.3);
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), var(--info-color));
+            transition: width 1s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 30px;
+            padding: 3rem;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--accent-color);
+            color: var(--text-light);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            transform: rotate(90deg);
+            background: var(--warning-color);
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: linear-gradient(135deg, rgba(52,152,219,0.1), rgba(155,89,182,0.1));
+            border-left: 5px solid var(--info-color);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .info-card.warning {
+            border-left-color: var(--warning-color);
+            background: linear-gradient(135deg, rgba(243,156,18,0.1), rgba(231,76,60,0.1));
+        }
+
+        .info-card.success {
+            border-left-color: var(--success-color);
+            background: linear-gradient(135deg, rgba(46,204,113,0.1), rgba(26,188,156,0.1));
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .container {
+                margin-top: 200px;
+                padding: 0 1rem;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .transaction-flow {
+                grid-template-columns: 1fr;
+            }
+
+            .flow-step::after {
+                content: '↓';
+                right: 50%;
+                top: auto;
+                bottom: -1.5rem;
+                transform: translateX(50%);
+            }
+        }
+
+        /* Animation Utilities */
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Score Display */
+        .score-display {
+            background: linear-gradient(135deg, var(--warning-color), var(--accent-color));
+            color: var(--text-light);
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 5px 15px rgba(243,156,18,0.4);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            border-bottom: 2px dotted var(--primary-color);
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text-dark);
+            color: var(--text-light);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            white-space: nowrap;
+            font-size: 0.9rem;
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        /* Interactive Elements */
+        .interactive-demo {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-light);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52,152,219,0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), var(--info-color));
+            color: var(--text-light);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(46,204,113,0.4);
+        }
+
+        /* Blockchain Animation */
+        .blockchain-viz {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding: 2rem 0;
+        }
+
+        .block {
+            min-width: 200px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-light);
+            padding: 1.5rem;
+            border-radius: 15px;
+            position: relative;
+            animation: blockAppear 0.5s ease-out;
+        }
+
+        @keyframes blockAppear {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .block::after {
+            content: '⛓️';
+            position: absolute;
+            right: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+        }
+
+        .block:last-child::after {
+            display: none;
+        }
+
+        /* Footer */
+        .footer {
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            color: var(--text-light);
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+            border-radius: 30px 30px 0 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sticky Navigation -->
+    <nav class="sticky-nav">
+        <div class="nav-content">
+            <a href="#" class="nav-brand">
+                <span class="coin-icon">₿</span>
+                SEN0401: Blockchain Technology
+            </a>
+            <ul class="nav-links">
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#transactions">Transactions</a></li>
+                <li><a href="#mining">Mining</a></li>
+                <li><a href="#coding">Coding</a></li>
+                <li><a href="#games">Games</a></li>
+                <li><a href="#quiz">Quiz</a></li>
+                <li><a href="#resources">Resources</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero" id="overview">
+            <div class="hero-content">
+                <h1>Week 2: How Bitcoin Works</h1>
+                <p class="hero-subtitle">Transactions, Blocks, Mining, and the Blockchain</p>
+                <p>Welcome to an interactive journey through the Bitcoin ecosystem! In this module, you'll explore the fundamental mechanisms that power the world's first decentralized cryptocurrency.</p>
+                
+                <div class="learning-objectives">
+                    <div class="objective-card">
+                        <h3>🎯 Understand</h3>
+                        <p>Explain transaction flow and the mining process in detail</p>
+                    </div>
+                    <div class="objective-card">
+                        <h3>🔧 Apply</h3>
+                        <p>Trace a complete Bitcoin transaction lifecycle</p>
+                    </div>
+                    <div class="objective-card">
+                        <h3>🔍 Analyze</h3>
+                        <p>Evaluate the security mechanisms that protect the network</p>
+                    </div>
+                </div>
+
+                <!-- Progress Tracker -->
+                <div class="progress-tracker">
+                    <h3>Your Learning Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressBar" style="width: 0%;">0%</div>
+                    </div>
+                    <p>Complete activities and quizzes to track your progress!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bitcoin Overview -->
+        <section class="content-section" id="bitcoin-overview">
+            <div class="section-header">
+                <span class="section-icon">🌐</span>
+                <h2>Bitcoin Overview</h2>
+            </div>
+
+            <p>The Bitcoin system represents a revolutionary approach to digital currency, fundamentally different from traditional banking and payment systems. Instead of relying on a central trusted authority, Bitcoin achieves trust as an <span class="tooltip" data-tooltip="Trust that arises from the interactions of multiple participants">emergent property</span> from the interactions of different participants in the network.</p>
+
+            <div class="info-card">
+                <h3>🔑 Key Concept: Decentralized Trust</h3>
+                <p>Unlike traditional banks that act as trusted intermediaries, Bitcoin distributes trust across thousands of network participants. No single entity controls the system, making it resistant to censorship and central points of failure.</p>
+            </div>
+
+            <!-- Bitcoin System Components -->
+            <h3>Bitcoin System Components</h3>
+            <div class="transaction-flow">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <h4>👤 Users & Wallets</h4>
+                    <p>Users control wallets containing cryptographic keys that authorize transactions</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <h4>📝 Transactions</h4>
+                    <p>Signed messages transferring value between addresses</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <h4>🌍 Network</h4>
+                    <p>Peer-to-peer propagation of transactions and blocks</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <h4>⛏️ Miners</h4>
+                    <p>Validators who create new blocks through computational work</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">5</div>
+                    <h4>⛓️ Blockchain</h4>
+                    <p>Authoritative distributed ledger of all transactions</p>
+                </div>
+            </div>
+
+            <!-- Blockchain Explorers -->
+            <div class="info-card success">
+                <h3>🔍 Popular Blockchain Explorers</h3>
+                <p>Blockchain explorers are web applications that let you search and visualize Bitcoin transactions and blocks:</p>
+                <ul style="margin-top: 1rem; padding-left: 2rem;">
+                    <li><strong>Bitcoin Block Explorer</strong> - blockchain.com</li>
+                    <li><strong>BlockCypher Explorer</strong> - blockcypher.com</li>
+                    <li><strong>blockchain.info</strong> - Real-time network stats</li>
+                    <li><strong>BitPay Insight</strong> - Developer-friendly interface</li>
+                </ul>
+            </div>
+
+            <!-- Interactive Demo: Network Visualization -->
+            <div class="interactive-demo">
+                <h3>Interactive: Bitcoin Network Visualization</h3>
+                <p>Click to simulate a transaction propagating through the network:</p>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="simulateNetworkPropagation()">🚀 Send Transaction</button>
+                    <button class="btn btn-success" onclick="resetNetwork()">🔄 Reset</button>
+                </div>
+                <div id="networkCanvas" style="min-height: 300px; background: #f8f9fa; border-radius: 15px; margin-top: 1rem; position: relative;"></div>
+            </div>
+        </section>
+
+        <!-- Bitcoin Transactions -->
+        <section class="content-section" id="transactions">
+            <div class="section-header">
+                <span class="section-icon">💸</span>
+                <h2>Bitcoin Transactions</h2>
+            </div>
+
+            <p>A Bitcoin transaction is a signed data structure that transfers value from transaction inputs to outputs. Transactions are not encrypted—they're public records that anyone can view and verify.</p>
+
+            <!-- Real-World Example: Alice Buys Coffee -->
+            <h3>📖 Real-World Example: Buying a Cup of Coffee</h3>
+            <div class="info-card">
+                <p><strong>Scenario:</strong> Alice wants to buy a cup of coffee from Bob's Cafe using Bitcoin.</p>
+                <ul style="margin-top: 1rem; padding-left: 2rem;">
+                    <li><strong>Price:</strong> $1.50 USD = 0.015 BTC</li>
+                    <li><strong>Alice's Balance:</strong> 0.10 BTC (received from Joe)</li>
+                    <li><strong>Payment:</strong> 0.015 BTC to Bob</li>
+                    <li><strong>Change:</strong> 0.085 BTC back to Alice</li>
+                    <li><strong>Fee:</strong> 0.0005 BTC (half a millibitcoin)</li>
+                </ul>
+            </div>
+
+            <!-- Transaction Structure -->
+            <h3>Transaction Structure</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Inputs</strong></td>
+                        <td>References to previous transaction outputs</td>
+                        <td>0.10 BTC from Joe</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Outputs</strong></td>
+                        <td>New destinations for the bitcoin value</td>
+                        <td>0.015 to Bob, 0.085 to Alice</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Digital Signature</strong></td>
+                        <td>Proof of ownership from the sender</td>
+                        <td>Alice's signature</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Transaction Fee</strong></td>
+                        <td>Implicit (input - outputs)</td>
+                        <td>0.0005 BTC</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- UTXO Model -->
+            <div class="info-card warning">
+                <h3>🔐 The UTXO Model</h3>
+                <p><strong>Unspent Transaction Outputs (UTXO)</strong> are the fundamental building blocks of Bitcoin accounting:</p>
+                <ul style="margin-top: 1rem; padding-left: 2rem;">
+                    <li>Bitcoin doesn't have "account balances" like traditional banks</li>
+                    <li>Instead, your wallet's balance is the sum of all UTXOs you control</li>
+                    <li>Each UTXO can only be spent once (prevents double-spending)</li>
+                    <li>When spent, UTXOs are consumed entirely and create new UTXOs</li>
+                </ul>
+            </div>
+
+            <!-- Transaction Chain Visualization -->
+            <h3>Transaction Chain Visualization</h3>
+            <div class="blockchain-viz" id="transactionChain">
+                <div class="block">
+                    <h4>Joe → Alice</h4>
+                    <p>0.10 BTC</p>
+                    <small>Cash exchange</small>
+                </div>
+                <div class="block">
+                    <h4>Alice → Bob</h4>
+                    <p>0.015 BTC</p>
+                    <small>Coffee purchase</small>
+                </div>
+                <div class="block">
+                    <h4>Bob → Gopesh</h4>
+                    <p>Payment</p>
+                    <small>Website design</small>
+                </div>
+            </div>
+
+            <!-- Common Transaction Forms -->
+            <h3>Common Transaction Forms</h3>
+            <div class="transaction-flow">
+                <div class="flow-step">
+                    <h4>Simple Payment</h4>
+                    <p>1 Input → 2 Outputs</p>
+                    <p>(Payment + Change)</p>
+                    <small style="opacity: 0.7;">Most common form</small>
+                </div>
+                <div class="flow-step">
+                    <h4>Aggregating</h4>
+                    <p>Multiple Inputs → 1 Output</p>
+                    <p>(Consolidation)</p>
+                    <small style="opacity: 0.7;">Cleaning up small amounts</small>
+                </div>
+                <div class="flow-step">
+                    <h4>Distributing</h4>
+                    <p>1 Input → Multiple Outputs</p>
+                    <p>(Payroll/Batch)</p>
+                    <small style="opacity: 0.7;">Used by businesses</small>
+                </div>
+            </div>
+
+            <!-- Bitcoin Units Chart -->
+            <div class="chart-container">
+                <h3>Bitcoin Unit Denominations</h3>
+                <canvas id="unitsChart"></canvas>
+            </div>
+
+            <div class="info-card">
+                <h3>💡 Key Insight: Making Change</h3>
+                <p>Just like physical currency, Bitcoin transactions often require "change." If you have a 0.10 BTC UTXO and need to pay 0.015 BTC, the transaction creates two outputs: 0.015 BTC to the recipient and 0.085 BTC back to you as change. The change goes to a new address in your wallet for privacy reasons.</p>
+            </div>
+        </section>
+
+        <!-- Mining Section -->
+        <section class="content-section" id="mining">
+            <div class="section-header">
+                <span class="section-icon">⛏️</span>
+                <h2>Bitcoin Mining</h2>
+            </div>
+
+            <p>Mining is the process by which transactions are verified and added to the blockchain. It serves two critical purposes: securing the network through computational work and distributing new bitcoins according to a fixed schedule.</p>
+
+            <!-- Mining Process -->
+            <h3>The Mining Process</h3>
+            <div class="transaction-flow">
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <h4>Collect Transactions</h4>
+                    <p>Gather unconfirmed transactions from the network</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <h4>Validate</h4>
+                    <p>Verify all transactions follow consensus rules</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <h4>Build Block</h4>
+                    <p>Create new block with transactions</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <h4>Proof-of-Work</h4>
+                    <p>Find solution to cryptographic puzzle</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">5</div>
+                    <h4>Broadcast</h4>
+                    <p>Share valid block with network</p>
+                </div>
+                <div class="flow-step">
+                    <div class="step-number">6</div>
+                    <h4>Earn Reward</h4>
+                    <p>Collect block reward + fees</p>
+                </div>
+            </div>
+
+            <!-- Proof-of-Work Explained -->
+            <div class="info-card">
+                <h3>🧩 Proof-of-Work: The Sudoku Analogy</h3>
+                <p>Proof-of-Work is like a giant competitive sudoku game:</p>
+                <ul style="margin-top: 1rem; padding-left: 2rem;">
+                    <li><strong>Asymmetric Difficulty:</strong> Very hard to solve, but easy to verify</li>
+                    <li><strong>Target Time:</strong> Automatically adjusts to maintain ~10 minute solution time</li>
+                    <li><strong>Competition:</strong> Thousands of miners race simultaneously</li>
+                    <li><strong>Reward:</strong> Winner gets newly minted bitcoin + transaction fees</li>
+                </ul>
+            </div>
+
+            <!-- Mining Statistics -->
+            <h3>Mining Statistics & Trends</h3>
+            <div class="chart-container">
+                <canvas id="miningChart"></canvas>
+            </div>
+
+            <!-- Mining Economics Table -->
+            <h3>Mining Economics</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Era</th>
+                        <th>Hardware</th>
+                        <th>Hash Rate</th>
+                        <th>Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>2009-2010</strong></td>
+                        <td>CPU Mining</td>
+                        <td>MH/s</td>
+                        <td>Very Low</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2010-2013</strong></td>
+                        <td>GPU Mining</td>
+                        <td>GH/s</td>
+                        <td>Low-Medium</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2013-2015</strong></td>
+                        <td>FPGA Mining</td>
+                        <td>TH/s</td>
+                        <td>Medium-High</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2015-Present</strong></td>
+                        <td>ASIC Mining</td>
+                        <td>PH/s - EH/s</td>
+                        <td>Very High</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Block Confirmation -->
+            <div class="info-card success">
+                <h3>✅ Block Confirmations</h3>
+                <p>Each block added on top of your transaction increases its security:</p>
+                <ul style="margin-top: 1rem; padding-left: 2rem;">
+                    <li><strong>0 Confirmations:</strong> Transaction broadcast, not yet mined</li>
+                    <li><strong>1 Confirmation:</strong> Included in a block (10 min average)</li>
+                    <li><strong>3 Confirmations:</strong> Safe for small purchases (~30 min)</li>
+                    <li><strong>6 Confirmations:</strong> Considered final (~60 min)</li>
+                    <li><strong>6+ Confirmations:</strong> Essentially irreversible</li>
+                </ul>
+            </div>
+
+            <!-- Interactive Mining Simulator -->
+            <div class="interactive-demo">
+                <h3>Interactive: Mining Simulator</h3>
+                <p>Experience the mining process by trying to find a valid hash:</p>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="startMining()">⛏️ Start Mining</button>
+                    <button class="btn btn-success" onclick="stopMining()">⏸️ Stop</button>
+                </div>
+                <div id="miningOutput" style="margin-top: 1rem; padding: 1rem; background: #1e1e1e; color: #2ecc71; border-radius: 10px; font-family: 'Fira Code', monospace; min-height: 150px;">
+                    Ready to mine...
+                </div>
+                <div class="score-display" id="hashesAttempted">Hashes Attempted: 0</div>
+            </div>
+
+            <!-- Blockchain Visualization -->
+            <h3>Blockchain Structure</h3>
+            <div class="info-card warning">
+                <p><strong>Block #277316</strong> containing Alice's transaction is linked to 277,316 previous blocks, creating an immutable chain back to the <span class="tooltip" data-tooltip="The first block ever created">Genesis Block</span>.</p>
+            </div>
+
+            <div class="blockchain-viz">
+                <div class="block">
+                    <h4>Block #277314</h4>
+                    <p>Previous Block</p>
+                    <small>19 min ago</small>
+                </div>
+                <div class="block">
+                    <h4>Block #277315</h4>
+                    <p>Previous Block</p>
+                    <small>14 min ago</small>
+                </div>
+                <div class="block" style="background: linear-gradient(135deg, #f39c12, #e74c3c);">
+                    <h4>Block #277316</h4>
+                    <p>Alice's Transaction</p>
+                    <small>5 min ago</small>
+                </div>
+                <div class="block">
+                    <h4>Block #277317</h4>
+                    <p>New Block</p>
+                    <small>Just now</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Coding Section -->
+        <section class="content-section" id="coding">
+            <div class="section-header">
+                <span class="section-icon">💻</span>
+                <h2>Interactive Coding Examples</h2>
+            </div>
+
+            <p>Learn by doing! Complete these interactive coding challenges to understand Bitcoin's underlying mechanics.</p>
+
+            <!-- Coding Example 1: Hash Function -->
+            <div class="code-playground">
+                <div class="code-header">📝 Challenge 1: Understanding SHA-256 Hashing</div>
+                <p style="color: #d4d4d4; margin-bottom: 1rem;">Bitcoin uses the SHA-256 cryptographic hash function. Try hashing different inputs to see how it works:</p>
+                <textarea class="code-editor" id="code1" rows="8">// JavaScript Example: SHA-256 Hash Function
+// Modify the input and click "Run" to see the hash
+
+async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Try changing this input:
+const input = "Hello Bitcoin!";
+sha256(input).then(hash => console.log("Hash:", hash));</textarea>
+                <button class="run-button" onclick="runCode1()">▶️ Run Code</button>
+                <div class="code-output" id="output1"></div>
+            </div>
+
+            <!-- Coding Example 2: Transaction Verification -->
+            <div class="code-playground">
+                <div class="code-header">📝 Challenge 2: Verify Transaction Balance</div>
+                <p style="color: #d4d4d4; margin-bottom: 1rem;">Write a function to verify that a transaction's inputs equal its outputs plus fee:</p>
+                <textarea class="code-editor" id="code2" rows="12">// JavaScript Example: Transaction Verification
+// Complete the verifyTransaction function
+
+function verifyTransaction(inputs, outputs, fee) {
+    // TODO: Calculate total input value
+    const totalInput = inputs.reduce((sum, input) => sum + input.value, 0);
+    
+    // TODO: Calculate total output value
+    const totalOutput = outputs.reduce((sum, output) => sum + output.value, 0);
+    
+    // TODO: Check if inputs = outputs + fee
+    return totalInput === (totalOutput + fee);
+}
+
+// Test case:
+const inputs = [{value: 0.10}];
+const outputs = [{value: 0.015}, {value: 0.085}];
+const fee = 0.0005;
+
+console.log("Transaction valid?", verifyTransaction(inputs, outputs, fee));</textarea>
+                <button class="run-button" onclick="runCode2()">▶️ Run Code</button>
+                <div class="code-output" id="output2"></div>
+            </div>
+
+            <!-- Coding Example 3: Proof-of-Work Simulation -->
+            <div class="code-playground">
+                <div class="code-header">📝 Challenge 3: Proof-of-Work Simulation</div>
+                <p style="color: #d4d4d4; margin-bottom: 1rem;">Simulate finding a valid proof-of-work by finding a hash with leading zeros:</p>
+                <textarea class="code-editor" id="code3" rows="18">// JavaScript Example: Proof-of-Work
+// This simulates mining by finding a hash with a certain number of leading zeros
+
+async function findProofOfWork(data, difficulty) {
+    let nonce = 0;
+    const target = '0'.repeat(difficulty);
+    
+    while (true) {
+        const block = data + nonce;
+        const hash = await sha256(block);
+        
+        if (hash.startsWith(target)) {
+            return { nonce, hash, attempts: nonce + 1 };
+        }
+        
+        nonce++;
+        if (nonce % 10000 === 0) {
+            console.log(`Tried ${nonce} hashes...`);
+        }
+        if (nonce > 1000000) break; // Safety limit
+    }
+    return null;
+}
+
+async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Try different difficulty levels (1-5)
+findProofOfWork("Block Data: Alice->Bob 0.015 BTC", 3)
+    .then(result => console.log("Found!", result));</textarea>
+                <button class="run-button" onclick="runCode3()">▶️ Run Code</button>
+                <div class="code-output" id="output3"></div>
+            </div>
+
+            <!-- Coding Example 4: UTXO Calculation -->
+            <div class="code-playground">
+                <div class="code-header">📝 Challenge 4: Calculate Wallet Balance from UTXOs</div>
+                <p style="color: #d4d4d4; margin-bottom: 1rem;">Calculate a wallet's total balance from its unspent transaction outputs:</p>
+                <textarea class="code-editor" id="code4" rows="15">// JavaScript Example: UTXO Balance Calculation
+
+function calculateBalance(utxos) {
+    // TODO: Sum all UTXO values
+    return utxos.reduce((total, utxo) => total + utxo.value, 0);
+}
+
+// Alice's UTXOs
+const aliceUTXOs = [
+    { txid: "abc123", vout: 0, value: 0.085 },  // Change from coffee
+    { txid: "def456", vout: 1, value: 0.05 },   // New payment
+    { txid: "ghi789", vout: 0, value: 0.02 }    // Another payment
+];
+
+const balance = calculateBalance(aliceUTXOs);
+console.log(`Alice's Balance: ${balance} BTC`);
+console.log(`Alice's Balance: ${balance * 100000000} satoshis`);</textarea>
+                <button class="run-button" onclick="runCode4()">▶️ Run Code</button>
+                <div class="code-output" id="output4"></div>
+            </div>
+
+            <!-- Coding Example 5: Block Validation -->
+            <div class="code-playground">
+                <div class="code-header">📝 Challenge 5: Block Validation</div>
+                <p style="color: #d4d4d4; margin-bottom: 1rem;">Validate that a block's hash meets the difficulty target:</p>
+                <textarea class="code-editor" id="code5" rows="16">// JavaScript Example: Block Validation
+
+function isValidBlock(blockHash, difficulty) {
+    // TODO: Check if hash has required number of leading zeros
+    const target = '0'.repeat(difficulty);
+    return blockHash.startsWith(target);
+}
+
+// Test cases
+const blocks = [
+    { hash: "0000abc123def456...", difficulty: 4 },
+    { hash: "000abc123def456...", difficulty: 4 },
+    { hash: "00000abc123def456...", difficulty: 5 }
+];
+
+blocks.forEach((block, i) => {
+    const valid = isValidBlock(block.hash, block.difficulty);
+    console.log(`Block ${i + 1}: ${valid ? '✅ Valid' : '❌ Invalid'}`);
+});</textarea>
+                <button class="run-button" onclick="runCode5()">▶️ Run Code</button>
+                <div class="code-output" id="output5"></div>
+            </div>
+        </section>
+
+        <!-- Games Section -->
+        <section class="content-section" id="games">
+            <div class="section-header">
+                <span class="section-icon">🎮</span>
+                <h2>Gamification: Learning Through Play</h2>
+            </div>
+
+            <p>Master blockchain concepts through these interactive games!</p>
+
+            <div class="games-grid">
+                <!-- Game 1: Transaction Builder -->
+                <div class="game-card" onclick="openGame('transactionBuilder')">
+                    <h3>🔨 Transaction Builder</h3>
+                    <p>Build valid Bitcoin transactions by selecting inputs and outputs. Learn about UTXOs, change addresses, and transaction fees!</p>
+                    <button class="play-button">Play Now</button>
+                </div>
+
+                <!-- Game 2: Mining Race -->
+                <div class="game-card" onclick="openGame('miningRace')">
+                    <h3>⛏️ Mining Race</h3>
+                    <p>Compete against other miners to find valid proof-of-work hashes. Experience the competitive nature of Bitcoin mining!</p>
+                    <button class="play-button">Play Now</button>
+                </div>
+
+                <!-- Game 3: Blockchain Inspector -->
+                <div class="game-card" onclick="openGame('blockchainInspector')">
+                    <h3>🔍 Blockchain Inspector</h3>
+                    <p>Navigate through a real blockchain structure. Trace transactions from block to block and understand chain continuity!</p>
+                    <button class="play-button">Play Now</button>
+                </div>
+
+                <!-- Game 4: Double Spend Defense -->
+                <div class="game-card" onclick="openGame('doubleSpend')">
+                    <h3>🛡️ Double Spend Defense</h3>
+                    <p>Identify and prevent double-spending attacks. Learn how Bitcoin's consensus mechanism protects against fraud!</p>
+                    <button class="play-button">Play Now</button>
+                </div>
+
+                <!-- Game 5: Hash Puzzle Challenge -->
+                <div class="game-card" onclick="openGame('hashPuzzle')">
+                    <h3>🧩 Hash Puzzle Challenge</h3>
+                    <p>Solve cryptographic hash puzzles of increasing difficulty. Understand the mathematics behind proof-of-work!</p>
+                    <button class="play-button">Play Now</button>
+                </div>
+
+                <!-- Game 6: Network Propagation -->
+                <div class="game-card" onclick="openGame('networkProp')">
+                    <h3>🌐 Network Propagation</h3>
+                    <p>Manage transaction and block propagation across a peer-to-peer network. Optimize for speed and efficiency!</p>
+                    <button class="play-button">Play Now</button>
+                </div>
+
+                <!-- Game 7: Fee Estimator -->
+                <div class="game-card" onclick="openGame('feeEstimator')">
+                    <h3>💰 Fee Estimator</h3>
+                    <p>Set optimal transaction fees based on network congestion. Balance speed vs cost in real market conditions!</p>
+                    <button class="play-button">Play Now</button>
+                </div>
+
+                <!-- Game 8: Wallet Manager -->
+                <div class="game-card" onclick="openGame('walletManager')">
+                    <h3>💼 Wallet Manager</h3>
+                    <p>Manage multiple wallets, keys, and addresses. Practice secure key management and privacy best practices!</p>
+                    <button class="play-button">Play Now</button>
+                </div>
+
+                <!-- Game 9: Consensus Builder -->
+                <div class="game-card" onclick="openGame('consensus')">
+                    <h3>🤝 Consensus Builder</h3>
+                    <p>Build consensus across network nodes. Experience how distributed systems reach agreement without central authority!</p>
+                    <button class="play-button">Play Now</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section class="content-section" id="quiz">
+            <div class="section-header">
+                <span class="section-icon">❓</span>
+                <h2>Knowledge Check Quiz</h2>
+            </div>
+
+            <p>Test your understanding with these Kahoot-style quiz questions!</p>
+
+            <div class="quiz-container">
+                <!-- Question 1 -->
+                <div class="quiz-question">
+                    <h3>Question 1: What is the fundamental principle behind Bitcoin's security?</h3>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>A)</span> Central authority validation
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>B)</span> Bank encryption protocols
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">
+                            <span>C)</span> Decentralized trust through distributed consensus
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>D)</span> Government regulation
+                        </div>
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="quiz-question">
+                    <h3>Question 2: In the UTXO model, what happens when you spend bitcoin?</h3>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>A)</span> Your account balance is decreased
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">
+                            <span>B)</span> Previous outputs are consumed and new outputs are created
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>C)</span> Coins are transferred directly between accounts
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>D)</span> The blockchain is rewritten
+                        </div>
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="quiz-question">
+                    <h3>Question 3: How much is 1 satoshi?</h3>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>A)</span> 0.001 BTC
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">
+                            <span>B)</span> 0.00000001 BTC (1/100,000,000)
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>C)</span> 0.0001 BTC
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>D)</span> 0.01 BTC
+                        </div>
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="quiz-question">
+                    <h3>Question 4: What is the average time between Bitcoin blocks?</h3>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>A)</span> 1 minute
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">
+                            <span>B)</span> 10 minutes
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>C)</span> 30 minutes
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>D)</span> 60 minutes
+                        </div>
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Question 5 -->
+                <div class="quiz-question">
+                    <h3>Question 5: Why are transaction fees necessary?</h3>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>A)</span> To pay banks for processing
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">
+                            <span>B)</span> To incentivize miners to include transactions in blocks
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>C)</span> To fund Bitcoin development
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>D)</span> They are not necessary
+                        </div>
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Question 6 -->
+                <div class="quiz-question">
+                    <h3>Question 6: What does "proof-of-work" prove?</h3>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>A)</span> That you own Bitcoin
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>B)</span> That you are a legitimate user
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">
+                            <span>C)</span> That computational work was performed to find a valid block
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>D)</span> That the transaction is valid
+                        </div>
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Question 7 -->
+                <div class="quiz-question">
+                    <h3>Question 7: How many confirmations are considered final for high-value transactions?</h3>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>A)</span> 1 confirmation
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>B)</span> 3 confirmations
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">
+                            <span>C)</span> 6 confirmations
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>D)</span> 12 confirmations
+                        </div>
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Question 8 -->
+                <div class="quiz-question">
+                    <h3>Question 8: What happens if transaction inputs are less than outputs?</h3>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>A)</span> The transaction is automatically adjusted
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">
+                            <span>B)</span> The transaction is invalid and rejected
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>C)</span> New bitcoin is created
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>D)</span> The network covers the difference
+                        </div>
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Question 9 -->
+                <div class="quiz-question">
+                    <h3>Question 9: What is a "change address"?</h3>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>A)</span> An address where you can change your password
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">
+                            <span>B)</span> An address that receives the unspent portion of a transaction
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>C)</span> An address used to exchange currencies
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>D)</span> An address that can be modified
+                        </div>
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Question 10 -->
+                <div class="quiz-question">
+                    <h3>Question 10: How does Bitcoin prevent double-spending?</h3>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>A)</span> Through bank verification
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, true)">
+                            <span>B)</span> Through distributed consensus and the blockchain
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>C)</span> Through encryption
+                        </div>
+                        <div class="quiz-option" onclick="selectAnswer(this, false)">
+                            <span>D)</span> Through user honesty
+                        </div>
+                    </div>
+                    <div class="quiz-feedback" style="display: none;"></div>
+                </div>
+
+                <!-- Quiz Score -->
+                <div class="score-display" id="quizScore">Score: 0 / 10</div>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="resetQuiz()">🔄 Reset Quiz</button>
+                    <button class="btn btn-success" onclick="showQuizSummary()">📊 Show Summary</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources Section -->
+        <section class="content-section" id="resources">
+            <div class="section-header">
+                <span class="section-icon">📚</span>
+                <h2>Additional Resources & AI Agent Integration</h2>
+            </div>
+
+            <h3>📖 Preparation Materials</h3>
+            <div class="info-card">
+                <ul style="padding-left: 2rem;">
+                    <li><strong>Chapter 2 Reading:</strong> "How Bitcoin Works" (This Module)</li>
+                    <li><strong>Interactive Simulation:</strong> <a href="https://andersbrownworth.com/blockchain/" target="_blank" style="color: var(--primary-color);">Blockchain Demo</a></li>
+                    <li><strong>Transaction Explorer:</strong> <a href="https://blockexplorer.com/" target="_blank" style="color: var(--primary-color);">BlockExplorer.com</a></li>
+                    <li><strong>Network Statistics:</strong> <a href="https://blockchain.info/charts" target="_blank" style="color: var(--primary-color);">Blockchain.info Charts</a></li>
+                </ul>
+            </div>
+
+            <h3>🤖 AI Agent Exercise: Transaction Monitor</h3>
+            <div class="info-card success">
+                <h4>Design Challenge: Build a Transaction Confirmation Monitor</h4>
+                <p><strong>Objective:</strong> Design an AI agent that monitors Bitcoin transactions and notifies users about confirmation status.</p>
+                
+                <h4 style="margin-top: 1.5rem;">Requirements:</h4>
+                <ul style="padding-left: 2rem;">
+                    <li>Monitor blockchain for specific transaction IDs</li>
+                    <li>Track confirmation count (0, 1, 3, 6+)</li>
+                    <li>Send notifications at key milestones</li>
+                    <li>Estimate time to next confirmation</li>
+                    <li>Handle blockchain reorganizations</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem;">Implementation Ideas:</h4>
+                <div style="background: rgba(255,255,255,0.5); padding: 1rem; border-radius: 10px; margin-top: 1rem;">
+                    <pre style="margin: 0; white-space: pre-wrap; font-family: 'Fira Code', monospace; font-size: 0.9rem;">class TransactionMonitor:
+    def __init__(self, tx_id):
+        self.tx_id = tx_id
+        self.confirmations = 0
+        
+    async def monitor(self):
+        while self.confirmations < 6:
+            # Query blockchain API
+            status = await self.check_status()
+            
+            if status.confirmations > self.confirmations:
+                self.confirmations = status.confirmations
+                self.notify_user()
+            
+            await asyncio.sleep(60)  # Check every minute
+            
+    def notify_user(self):
+        milestones = {
+            1: "Transaction confirmed!",
+            3: "Transaction secure (3 conf)",
+            6: "Transaction final (6 conf)"
+        }
+        if self.confirmations in milestones:
+            send_notification(milestones[self.confirmations])</pre>
+                </div>
+            </div>
+
+            <h3>📊 Current Bitcoin Network Statistics</h3>
+            <div class="chart-container">
+                <canvas id="networkStatsChart"></canvas>
+            </div>
+
+            <h3>🔗 Useful Links</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Description</th>
+                        <th>Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Bitcoin Whitepaper</strong></td>
+                        <td>Original Satoshi Nakamoto paper</td>
+                        <td><a href="https://bitcoin.org/bitcoin.pdf" target="_blank" style="color: var(--primary-color);">Read PDF</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bitcoin.org</strong></td>
+                        <td>Official Bitcoin resources</td>
+                        <td><a href="https://bitcoin.org" target="_blank" style="color: var(--primary-color);">Visit</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bitcoin Developer Guide</strong></td>
+                        <td>Technical documentation</td>
+                        <td><a href="https://developer.bitcoin.org" target="_blank" style="color: var(--primary-color);">Visit</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mastering Bitcoin (Book)</strong></td>
+                        <td>Open-source Bitcoin book</td>
+                        <td><a href="https://github.com/bitcoinbook/bitcoinbook" target="_blank" style="color: var(--primary-color);">GitHub</a></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>📝 Concept Map: Bitcoin Architecture</h3>
+            <div style="background: var(--card-bg); padding: 2rem; border-radius: 15px; margin: 2rem 0;">
+                <div class="mermaid">
+                    graph TB
+                        A[Bitcoin System] --> B[Users & Wallets]
+                        A --> C[Transactions]
+                        A --> D[Network]
+                        A --> E[Miners]
+                        A --> F[Blockchain]
+                        
+                        B --> B1[Private Keys]
+                        B --> B2[Public Keys]
+                        B --> B3[Addresses]
+                        
+                        C --> C1[Inputs]
+                        C --> C2[Outputs]
+                        C --> C3[Signatures]
+                        
+                        D --> D1[Peer-to-Peer]
+                        D --> D2[Propagation]
+                        D --> D3[Validation]
+                        
+                        E --> E1[Proof-of-Work]
+                        E --> E2[Block Creation]
+                        E --> E3[Rewards]
+                        
+                        F --> F1[Blocks]
+                        F --> F2[Chain]
+                        F --> F3[Consensus]
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <h3>SEN0401 - Special Topics in Software Engineering: Blockchain</h3>
+        <p>Week 2: How Bitcoin Works</p>
+        <p style="margin-top: 1rem; opacity: 0.8;">© 2025 - Interactive Learning Platform</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Built with modern web technologies for an enhanced learning experience</p>
+    </footer>
+
+    <!-- Game Modal -->
+    <div class="modal" id="gameModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">×</button>
+            <div id="gameContent"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+
+        // Progress Tracking
+        let progress = 0;
+        let quizScore = 0;
+        let totalQuestions = 10;
+
+        function updateProgress(increment) {
+            progress = Math.min(100, progress + increment);
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressBar').textContent = Math.round(progress) + '%';
+        }
+
+        // Smooth Scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Network Propagation Simulation
+        function simulateNetworkPropagation() {
+            const canvas = document.getElementById('networkCanvas');
+            canvas.innerHTML = '<div style="padding: 2rem; text-align: center;"><h3 style="color: var(--success-color);">🚀 Transaction Broadcasting...</h3><p>Your transaction is propagating through the peer-to-peer network!</p></div>';
+            
+            setTimeout(() => {
+                canvas.innerHTML += '<div style="padding: 1rem; text-align: center; color: var(--primary-color);">✅ Reached 50% of nodes in 2.3 seconds</div>';
+            }, 1000);
+            
+            setTimeout(() => {
+                canvas.innerHTML += '<div style="padding: 1rem; text-align: center; color: var(--info-color);">✅ Reached 95% of nodes in 4.7 seconds</div>';
+            }, 2000);
+            
+            setTimeout(() => {
+                canvas.innerHTML += '<div style="padding: 1rem; text-align: center; color: var(--success-color); font-weight: 600;">✅ Transaction fully propagated across the network!</div>';
+                updateProgress(5);
+            }, 3000);
+        }
+
+        function resetNetwork() {
+            document.getElementById('networkCanvas').innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-dark);">Ready to broadcast a new transaction...</div>';
+        }
+
+        // Mining Simulator
+        let miningInterval;
+        let hashCount = 0;
+
+        function startMining() {
+            hashCount = 0;
+            const output = document.getElementById('miningOutput');
+            output.innerHTML = 'Mining started...\n';
+            
+            miningInterval = setInterval(() => {
+                hashCount += Math.floor(Math.random() * 10000) + 5000;
+                document.getElementById('hashesAttempted').textContent = `Hashes Attempted: ${hashCount.toLocaleString()}`;
+                
+                output.innerHTML += `\nTrying nonce ${hashCount}...`;
+                output.scrollTop = output.scrollHeight;
+                
+                // Simulate finding a block
+                if (Math.random() < 0.02) {
+                    output.innerHTML += '\n\n✅ BLOCK FOUND!\n';
+                    output.innerHTML += `Hash: 0000abc123def456...\n`;
+                    output.innerHTML += `Nonce: ${hashCount}\n`;
+                    output.innerHTML += `Reward: 6.25 BTC + fees\n`;
+                    stopMining();
+                    updateProgress(10);
+                }
+            }, 500);
+        }
+
+        function stopMining() {
+            clearInterval(miningInterval);
+        }
+
+        // Code Execution Functions
+        async function runCode1() {
+            const code = document.getElementById('code1').value;
+            const output = document.getElementById('output1');
+            output.innerHTML = 'Running...\n';
+            
+            try {
+                const oldLog = console.log;
+                console.log = (...args) => {
+                    output.innerHTML += args.join(' ') + '\n';
+                };
+                
+                await eval(code);
+                console.log = oldLog;
+                updateProgress(8);
+            } catch (error) {
+                output.innerHTML += 'Error: ' + error.message;
+            }
+        }
+
+        function runCode2() {
+            const code = document.getElementById('code2').value;
+            const output = document.getElementById('output2');
+            output.innerHTML = 'Running...\n';
+            
+            try {
+                const oldLog = console.log;
+                console.log = (...args) => {
+                    output.innerHTML += args.join(' ') + '\n';
+                };
+                
+                eval(code);
+                console.log = oldLog;
+                updateProgress(8);
+            } catch (error) {
+                output.innerHTML += 'Error: ' + error.message;
+            }
+        }
+
+        async function runCode3() {
+            const code = document.getElementById('code3').value;
+            const output = document.getElementById('output3');
+            output.innerHTML = 'Running...\n';
+            
+            try {
+                const oldLog = console.log;
+                console.log = (...args) => {
+                    output.innerHTML += args.join(' ') + '\n';
+                    output.scrollTop = output.scrollHeight;
+                };
+                
+                await eval(code);
+                console.log = oldLog;
+                updateProgress(10);
+            } catch (error) {
+                output.innerHTML += 'Error: ' + error.message;
+            }
+        }
+
+        function runCode4() {
+            const code = document.getElementById('code4').value;
+            const output = document.getElementById('output4');
+            output.innerHTML = 'Running...\n';
+            
+            try {
+                const oldLog = console.log;
+                console.log = (...args) => {
+                    output.innerHTML += args.join(' ') + '\n';
+                };
+                
+                eval(code);
+                console.log = oldLog;
+                updateProgress(8);
+            } catch (error) {
+                output.innerHTML += 'Error: ' + error.message;
+            }
+        }
+
+        function runCode5() {
+            const code = document.getElementById('code5').value;
+            const output = document.getElementById('output5');
+            output.innerHTML = 'Running...\n';
+            
+            try {
+                const oldLog = console.log;
+                console.log = (...args) => {
+                    output.innerHTML += args.join(' ') + '\n';
+                };
+                
+                eval(code);
+                console.log = oldLog;
+                updateProgress(8);
+            } catch (error) {
+                output.innerHTML += 'Error: ' + error.message;
+            }
+        }
+
+        // Quiz Functions
+        function selectAnswer(element, isCorrect) {
+            // Remove previous selections
+            const options = element.parentElement.querySelectorAll('.quiz-option');
+            options.forEach(opt => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            // Mark selected
+            element.classList.add('selected');
+            
+            // Show feedback
+            const feedback = element.parentElement.nextElementSibling;
+            feedback.style.display = 'block';
+            
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedback.className = 'quiz-feedback correct';
+                feedback.innerHTML = '✅ Correct! Great job!';
+                quizScore++;
+                updateProgress(3);
+            } else {
+                element.classList.add('incorrect');
+                feedback.className = 'quiz-feedback incorrect';
+                feedback.innerHTML = '❌ Incorrect. Try reviewing the material above.';
+            }
+            
+            // Update score
+            document.getElementById('quizScore').textContent = `Score: ${quizScore} / ${totalQuestions}`;
+        }
+
+        function resetQuiz() {
+            quizScore = 0;
+            document.getElementById('quizScore').textContent = `Score: 0 / ${totalQuestions}`;
+            
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+            });
+            
+            document.querySelectorAll('.quiz-feedback').forEach(fb => {
+                fb.style.display = 'none';
+            });
+        }
+
+        function showQuizSummary() {
+            const percentage = (quizScore / totalQuestions * 100).toFixed(0);
+            let message = '';
+            let emoji = '';
+            
+            if (percentage >= 90) {
+                message = 'Excellent! You\'ve mastered this material! 🏆';
+                emoji = '🌟';
+            } else if (percentage >= 70) {
+                message = 'Good job! You have a solid understanding! 👍';
+                emoji = '✅';
+            } else if (percentage >= 50) {
+                message = 'Not bad! Consider reviewing some sections. 📚';
+                emoji = '💡';
+            } else {
+                message = 'Keep studying! The material will click soon! 💪';
+                emoji = '📖';
+            }
+            
+            alert(`${emoji} Quiz Summary ${emoji}\n\nScore: ${quizScore} / ${totalQuestions} (${percentage}%)\n\n${message}`);
+            
+            if (percentage >= 70) {
+                updateProgress(15);
+            }
+        }
+
+        // Game Functions
+        function openGame(gameName) {
+            const modal = document.getElementById('gameModal');
+            const content = document.getElementById('gameContent');
+            
+            const games = {
+                transactionBuilder: {
+                    title: '🔨 Transaction Builder',
+                    content: `
+                        <h2>Transaction Builder Game</h2>
+                        <p>Build a valid Bitcoin transaction!</p>
+                        <div style="margin: 2rem 0;">
+                            <h3>Available UTXOs:</h3>
+                            <div style="display: grid; gap: 1rem; margin: 1rem 0;">
+                                <div style="padding: 1rem; background: linear-gradient(135deg, rgba(52,152,219,0.1), rgba(155,89,182,0.1)); border-radius: 10px;">
+                                    UTXO #1: 0.05 BTC
+                                    <button class="btn btn-primary" style="margin-left: 1rem;" onclick="selectUTXO(0.05)">Select</button>
+                                </div>
+                                <div style="padding: 1rem; background: linear-gradient(135deg, rgba(52,152,219,0.1), rgba(155,89,182,0.1)); border-radius: 10px;">
+                                    UTXO #2: 0.10 BTC
+                                    <button class="btn btn-primary" style="margin-left: 1rem;" onclick="selectUTXO(0.10)">Select</button>
+                                </div>
+                            </div>
+                            
+                            <h3 style="margin-top: 2rem;">Build Transaction:</h3>
+                            <input type="number" id="paymentAmount" placeholder="Payment Amount (BTC)" step="0.001" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid var(--primary-color); margin: 1rem 0;">
+                            <button class="btn btn-success" style="width: 100%;" onclick="buildTransaction()">🔨 Build Transaction</button>
+                            <div id="txResult" style="margin-top: 1rem;"></div>
+                        </div>
+                    `
+                },
+                miningRace: {
+                    title: '⛏️ Mining Race',
+                    content: `
+                        <h2>Mining Race</h2>
+                        <p>Compete to find a valid hash!</p>
+                        <div style="margin: 2rem 0;">
+                            <div class="score-display">Your Hash Rate: <span id="yourHashRate">0</span> H/s</div>
+                            <div class="score-display" style="background: linear-gradient(135deg, var(--accent-color), var(--warning-color));">Competitor Hash Rate: <span id="compHashRate">0</span> H/s</div>
+                            <button class="btn btn-success" style="width: 100%; margin: 1rem 0;" onclick="startRace()">🏁 Start Race!</button>
+                            <div id="raceResult" style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 10px; min-height: 100px;"></div>
+                        </div>
+                    `
+                },
+                blockchainInspector: {
+                    title: '🔍 Blockchain Inspector',
+                    content: `
+                        <h2>Blockchain Inspector</h2>
+                        <p>Navigate through the blockchain!</p>
+                        <div style="margin: 2rem 0;">
+                            <div class="blockchain-viz" style="overflow-x: auto;">
+                                <div class="block" style="cursor: pointer;" onclick="inspectBlock(1)">
+                                    <h4>Block #277314</h4>
+                                    <p>420 transactions</p>
+                                </div>
+                                <div class="block" style="cursor: pointer;" onclick="inspectBlock(2)">
+                                    <h4>Block #277315</h4>
+                                    <p>385 transactions</p>
+                                </div>
+                                <div class="block" style="cursor: pointer; background: linear-gradient(135deg, #f39c12, #e74c3c);" onclick="inspectBlock(3)">
+                                    <h4>Block #277316</h4>
+                                    <p>Alice's Transaction</p>
+                                </div>
+                            </div>
+                            <div id="blockDetails" style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 10px;">
+                                Click a block to inspect its details...
+                            </div>
+                        </div>
+                    `
+                },
+                doubleSpend: {
+                    title: '🛡️ Double Spend Defense',
+                    content: `
+                        <h2>Double Spend Defense</h2>
+                        <p>Identify and prevent double-spending attempts!</p>
+                        <div style="margin: 2rem 0;">
+                            <div class="info-card warning">
+                                <h3>Suspicious Activity Detected!</h3>
+                                <p>Review these transactions and identify the double-spend attempt:</p>
+                            </div>
+                            <div style="display: grid; gap: 1rem; margin: 1.5rem 0;">
+                                <div style="padding: 1rem; background: #fff; border-radius: 10px; border: 2px solid transparent; cursor: pointer;" onclick="checkDoubleSpend(this, false)">
+                                    <strong>Transaction A:</strong><br>
+                                    Input: UTXO #123 (0.5 BTC)<br>
+                                    Output: Bob's Address (0.5 BTC)
+                                </div>
+                                <div style="padding: 1rem; background: #fff; border-radius: 10px; border: 2px solid transparent; cursor: pointer;" onclick="checkDoubleSpend(this, true)">
+                                    <strong>Transaction B:</strong><br>
+                                    Input: UTXO #123 (0.5 BTC)<br>
+                                    Output: Charlie's Address (0.5 BTC)
+                                </div>
+                                <div style="padding: 1rem; background: #fff; border-radius: 10px; border: 2px solid transparent; cursor: pointer;" onclick="checkDoubleSpend(this, false)">
+                                    <strong>Transaction C:</strong><br>
+                                    Input: UTXO #456 (0.3 BTC)<br>
+                                    Output: David's Address (0.3 BTC)
+                                </div>
+                            </div>
+                            <div id="doubleSpendResult"></div>
+                        </div>
+                    `
+                },
+                hashPuzzle: {
+                    title: '🧩 Hash Puzzle Challenge',
+                    content: `
+                        <h2>Hash Puzzle Challenge</h2>
+                        <p>Find inputs that produce hashes with specific properties!</p>
+                        <div style="margin: 2rem 0;">
+                            <div class="info-card">
+                                <h3>Challenge: Find a hash starting with "00"</h3>
+                                <p>Enter different inputs and see their SHA-256 hashes:</p>
+                            </div>
+                            <input type="text" id="puzzleInput" placeholder="Enter your guess..." style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid var(--primary-color); margin: 1rem 0;">
+                            <button class="btn btn-primary" style="width: 100%;" onclick="checkHashPuzzle()">🎯 Check Hash</button>
+                            <div id="puzzleResult" style="margin-top: 1rem; padding: 1rem; background: #1e1e1e; color: #2ecc71; border-radius: 10px; font-family: 'Fira Code', monospace; min-height: 80px;"></div>
+                        </div>
+                    `
+                },
+                networkProp: {
+                    title: '🌐 Network Propagation',
+                    content: `
+                        <h2>Network Propagation Game</h2>
+                        <p>Optimize transaction propagation across the network!</p>
+                        <div style="margin: 2rem 0;">
+                            <div class="info-card">
+                                <p>Your goal: Propagate transactions to all nodes as quickly as possible!</p>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin: 2rem 0;" id="networkNodes">
+                                <!-- Nodes will be generated here -->
+                            </div>
+                            <button class="btn btn-success" style="width: 100%;" onclick="propagateNetwork()">🚀 Propagate Transaction</button>
+                            <div class="score-display" id="propagationTime">Propagation Time: 0s</div>
+                        </div>
+                    `
+                },
+                feeEstimator: {
+                    title: '💰 Fee Estimator',
+                    content: `
+                        <h2>Fee Estimator Game</h2>
+                        <p>Set optimal transaction fees based on network conditions!</p>
+                        <div style="margin: 2rem 0;">
+                            <div class="info-card warning">
+                                <h3>Current Network Status:</h3>
+                                <p>Mempool Size: <strong>45,000 unconfirmed transactions</strong></p>
+                                <p>Network Congestion: <strong>High</strong></p>
+                            </div>
+                            <h3 style="margin: 1.5rem 0;">Set Your Fee:</h3>
+                            <input type="range" id="feeSlider" min="1" max="100" value="50" style="width: 100%;" oninput="updateFeeEstimate(this.value)">
+                            <div style="display: flex; justify-content: space-between; margin: 0.5rem 0;">
+                                <span>Low (slow)</span>
+                                <span id="feeDisplay">50 sat/byte</span>
+                                <span>High (fast)</span>
+                            </div>
+                            <div id="feeEstimateResult" style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 10px;">
+                                <strong>Estimated Confirmation Time:</strong> <span id="confirmTime">~20 minutes</span>
+                            </div>
+                            <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="submitFeeEstimate()">✅ Submit Transaction</button>
+                        </div>
+                    `
+                },
+                walletManager: {
+                    title: '💼 Wallet Manager',
+                    content: `
+                        <h2>Wallet Manager Game</h2>
+                        <p>Manage multiple wallets and practice security!</p>
+                        <div style="margin: 2rem 0;">
+                            <div class="info-card success">
+                                <h3>Your Wallets:</h3>
+                                <ul style="padding-left: 2rem; margin-top: 1rem;">
+                                    <li><strong>Main Wallet:</strong> 0.5 BTC</li>
+                                    <li><strong>Savings Wallet:</strong> 2.3 BTC</li>
+                                    <li><strong>Trading Wallet:</strong> 0.15 BTC</li>
+                                </ul>
+                            </div>
+                            <h3 style="margin: 1.5rem 0;">Security Challenge:</h3>
+                            <p>Which action is MOST secure?</p>
+                            <div style="display: grid; gap: 1rem; margin: 1rem 0;">
+                                <div style="padding: 1rem; background: #fff; border-radius: 10px; cursor: pointer; border: 2px solid transparent;" onclick="checkSecurity(this, false)">
+                                    Store private keys in a text file
+                                </div>
+                                <div style="padding: 1rem; background: #fff; border-radius: 10px; cursor: pointer; border: 2px solid transparent;" onclick="checkSecurity(this, true)">
+                                    Use a hardware wallet with 2FA
+                                </div>
+                                <div style="padding: 1rem; background: #fff; border-radius: 10px; cursor: pointer; border: 2px solid transparent;" onclick="checkSecurity(this, false)">
+                                    Email yourself the backup phrase
+                                </div>
+                            </div>
+                            <div id="securityResult"></div>
+                        </div>
+                    `
+                },
+                consensus: {
+                    title: '🤝 Consensus Builder',
+                    content: `
+                        <h2>Consensus Builder Game</h2>
+                        <p>Achieve distributed consensus across network nodes!</p>
+                        <div style="margin: 2rem 0;">
+                            <div class="info-card">
+                                <p><strong>Scenario:</strong> A new block has been proposed. Get majority agreement from nodes.</p>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0;">
+                                <div class="flow-step" onclick="toggleNode(this)" style="cursor: pointer;">
+                                    <h4>Node 1</h4>
+                                    <p id="node1">❓ Undecided</p>
+                                </div>
+                                <div class="flow-step" onclick="toggleNode(this)" style="cursor: pointer;">
+                                    <h4>Node 2</h4>
+                                    <p id="node2">❓ Undecided</p>
+                                </div>
+                                <div class="flow-step" onclick="toggleNode(this)" style="cursor: pointer;">
+                                    <h4>Node 3</h4>
+                                    <p id="node3">❓ Undecided</p>
+                                </div>
+                                <div class="flow-step" onclick="toggleNode(this)" style="cursor: pointer;">
+                                    <h4>Node 4</h4>
+                                    <p id="node4">❓ Undecided</p>
+                                </div>
+                                <div class="flow-step" onclick="toggleNode(this)" style="cursor: pointer;">
+                                    <h4>Node 5</h4>
+                                    <p id="node5">❓ Undecided</p>
+                                </div>
+                                <div class="flow-step" onclick="toggleNode(this)" style="cursor: pointer;">
+                                    <h4>Node 6</h4>
+                                    <p id="node6">❓ Undecided</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-success" style="width: 100%;" onclick="checkConsensus()">✅ Check Consensus</button>
+                            <div id="consensusResult" style="margin-top: 1rem;"></div>
+                        </div>
+                    `
+                }
+            };
+            
+            const game = games[gameName];
+            content.innerHTML = game.content;
+            modal.classList.add('active');
+            updateProgress(2);
+        }
+
+        function closeModal() {
+            document.getElementById('gameModal').classList.remove('active');
+        }
+
+        // Game Helper Functions
+        let selectedUTXO = 0;
+        function selectUTXO(amount) {
+            selectedUTXO = amount;
+            alert(`Selected UTXO: ${amount} BTC`);
+        }
+
+        function buildTransaction() {
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const result = document.getElementById('txResult');
+            
+            if (!selectedUTXO) {
+                result.innerHTML = '<div class="info-card warning">Please select a UTXO first!</div>';
+                return;
+            }
+            
+            if (amount > selectedUTXO) {
+                result.innerHTML = '<div class="info-card warning">❌ Insufficient funds! Amount exceeds UTXO value.</div>';
+                return;
+            }
+            
+            const change = selectedUTXO - amount - 0.0001; // 0.0001 BTC fee
+            result.innerHTML = `
+                <div class="info-card success">
+                    <h3>✅ Transaction Built Successfully!</h3>
+                    <p><strong>Input:</strong> ${selectedUTXO} BTC</p>
+                    <p><strong>Payment:</strong> ${amount} BTC</p>
+                    <p><strong>Change:</strong> ${change.toFixed(4)} BTC</p>
+                    <p><strong>Fee:</strong> 0.0001 BTC</p>
+                </div>
+            `;
+            updateProgress(5);
+        }
+
+        function startRace() {
+            const result = document.getElementById('raceResult');
+            const yourRate = document.getElementById('yourHashRate');
+            const compRate = document.getElementById('compHashRate');
+            let yourHashes = 0;
+            let compHashes = 0;
+            
+            result.innerHTML = 'Racing...\n';
+            
+            const raceInterval = setInterval(() => {
+                yourHashes += Math.floor(Math.random() * 50000) + 20000;
+                compHashes += Math.floor(Math.random() * 40000) + 25000;
+                
+                yourRate.textContent = yourHashes.toLocaleString();
+                compRate.textContent = compHashes.toLocaleString();
+                
+                if (yourHashes > 500000 || compHashes > 500000) {
+                    clearInterval(raceInterval);
+                    if (yourHashes > compHashes) {
+                        result.innerHTML = '<div class="info-card success">🏆 You Won! Block mined successfully!</div>';
+                        updateProgress(10);
+                    } else {
+                        result.innerHTML = '<div class="info-card warning">😔 Competitor won this round. Try again!</div>';
+                    }
+                }
+            }, 500);
+        }
+
+        function inspectBlock(blockNum) {
+            const details = document.getElementById('blockDetails');
+            const blocks = {
+                1: {
+                    number: 277314,
+                    transactions: 420,
+                    hash: '0000000000000001b6b9a13b095e96db41c4a928b97ef2d944a9b31b2cc7bdc4',
+                    timestamp: '2025-10-17 10:23:45'
+                },
+                2: {
+                    number: 277315,
+                    transactions: 385,
+                    hash: '00000000000000024d0a46e5c5e8f8e7c1c8b7a6b5b4b3b2b1b0a9a8a7a6a5a4',
+                    timestamp: '2025-10-17 10:37:12'
+                },
+                3: {
+                    number: 277316,
+                    transactions: 420,
+                    hash: '0000000000000003a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4',
+                    timestamp: '2025-10-17 10:52:38',
+                    special: 'Contains Alice\'s transaction!'
+                }
+            };
+            
+            const block = blocks[blockNum];
+            details.innerHTML = `
+                <h3>Block #${block.number}</h3>
+                <table style="width: 100%; margin-top: 1rem;">
+                    <tr><td><strong>Hash:</strong></td><td><code>${block.hash}</code></td></tr>
+                    <tr><td><strong>Transactions:</strong></td><td>${block.transactions}</td></tr>
+                    <tr><td><strong>Timestamp:</strong></td><td>${block.timestamp}</td></tr>
+                    ${block.special ? `<tr><td colspan="2" style="color: var(--success-color); font-weight: 600;">✨ ${block.special}</td></tr>` : ''}
+                </table>
+            `;
+            updateProgress(3);
+        }
+
+        function checkDoubleSpend(element, isDoubleSpend) {
+            const result = document.getElementById('doubleSpendResult');
+            const options = element.parentElement.querySelectorAll('div');
+            options.forEach(opt => opt.style.border = '2px solid transparent');
+            
+            if (isDoubleSpend) {
+                element.style.border = '2px solid var(--accent-color)';
+                result.innerHTML = '<div class="info-card success">✅ Correct! Transaction B is trying to spend the same UTXO #123 as Transaction A. This is a double-spend attempt!</div>';
+                updateProgress(8);
+            } else {
+                element.style.border = '2px solid var(--warning-color)';
+                result.innerHTML = '<div class="info-card warning">❌ Incorrect. Look for transactions using the same input UTXO!</div>';
+            }
+        }
+
+        async function checkHashPuzzle() {
+            const input = document.getElementById('puzzleInput').value;
+            const result = document.getElementById('puzzleResult');
+            
+            if (!input) {
+                result.innerHTML = 'Please enter an input!';
+                return;
+            }
+            
+            const hash = await sha256(input);
+            result.innerHTML = `Input: "${input}"\nHash: ${hash}\n\n`;
+            
+            if (hash.startsWith('00')) {
+                result.innerHTML += '🎉 SUCCESS! You found a hash starting with "00"!';
+                updateProgress(10);
+            } else if (hash.startsWith('0')) {
+                result.innerHTML += '👍 Close! You found one leading zero. Try again!';
+            } else {
+                result.innerHTML += '❌ No leading zeros. Keep trying!';
+            }
+        }
+
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function propagateNetwork() {
+            // Initialize nodes
+            const nodesContainer = document.getElementById('networkNodes');
+            if (!nodesContainer.innerHTML) {
+                for (let i = 1; i <= 16; i++) {
+                    nodesContainer.innerHTML += `
+                        <div id="node${i}" style="padding: 1rem; background: #e0e0e0; border-radius: 10px; text-align: center;">
+                            Node ${i}
+                        </div>
+                    `;
+                }
+            }
+            
+            let propagated = 0;
+            const totalNodes = 16;
+            let startTime = Date.now();
+            
+            const propInterval = setInterval(() => {
+                if (propagated < totalNodes) {
+                    propagated++;
+                    document.getElementById(`node${propagated}`).style.background = 'linear-gradient(135deg, var(--success-color), var(--info-color))';
+                    document.getElementById(`node${propagated}`).style.color = 'white';
+                    
+                    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                    document.getElementById('propagationTime').textContent = `Propagation Time: ${elapsed}s`;
+                } else {
+                    clearInterval(propInterval);
+                    updateProgress(8);
+                }
+            }, 200);
+        }
+
+        function updateFeeEstimate(value) {
+            document.getElementById('feeDisplay').textContent = value + ' sat/byte';
+            
+            let time;
+            if (value < 20) time = '~2 hours';
+            else if (value < 40) time = '~60 minutes';
+            else if (value < 60) time = '~30 minutes';
+            else if (value < 80) time = '~15 minutes';
+            else time = '~10 minutes';
+            
+            document.getElementById('confirmTime').textContent = time;
+        }
+
+        function submitFeeEstimate() {
+            const fee = document.getElementById('feeSlider').value;
+            let message;
+            
+            if (fee > 60) {
+                message = '✅ Excellent! Your transaction will be confirmed quickly!';
+                updateProgress(8);
+            } else if (fee > 30) {
+                message = '👍 Good choice for moderate priority!';
+                updateProgress(5);
+            } else {
+                message = '⏰ Low fee selected. Your transaction may take a while.';
+            }
+            
+            alert(message);
+        }
+
+        function checkSecurity(element, isCorrect) {
+            const result = document.getElementById('securityResult');
+            const options = element.parentElement.querySelectorAll('div');
+            options.forEach(opt => opt.style.border = '2px solid transparent');
+            
+            if (isCorrect) {
+                element.style.border = '2px solid var(--success-color)';
+                result.innerHTML = '<div class="info-card success">✅ Correct! Hardware wallets with 2FA provide the best security!</div>';
+                updateProgress(8);
+            } else {
+                element.style.border = '2px solid var(--accent-color)';
+                result.innerHTML = '<div class="info-card warning">❌ Insecure! Never store keys in plain text or email them!</div>';
+            }
+        }
+
+        let nodeStates = {};
+        function toggleNode(element) {
+            const nodeId = element.querySelector('h4').textContent;
+            const nodePara = element.querySelector('p');
+            
+            if (!nodeStates[nodeId]) nodeStates[nodeId] = 0;
+            
+            nodeStates[nodeId] = (nodeStates[nodeId] + 1) % 3;
+            
+            const states = ['❓ Undecided', '✅ Accept', '❌ Reject'];
+            const colors = ['', 'var(--success-color)', 'var(--accent-color)'];
+            
+            nodePara.textContent = states[nodeStates[nodeId]];
+            nodePara.style.color = colors[nodeStates[nodeId]];
+        }
+
+        function checkConsensus() {
+            const result = document.getElementById('consensusResult');
+            let accepts = 0;
+            let rejects = 0;
+            
+            Object.values(nodeStates).forEach(state => {
+                if (state === 1) accepts++;
+                if (state === 2) rejects++;
+            });
+            
+            const total = Object.keys(nodeStates).length;
+            
+            if (accepts > total / 2) {
+                result.innerHTML = `<div class="info-card success">🎉 Consensus Achieved! ${accepts} nodes accepted the block (${((accepts/total)*100).toFixed(0)}% majority)</div>`;
+                updateProgress(10);
+            } else {
+                result.innerHTML = `<div class="info-card warning">❌ No Consensus. Need majority acceptance. Current: ${accepts} accepts, ${rejects} rejects, ${total - accepts - rejects} undecided</div>`;
+            }
+        }
+
+        // Initialize Charts
+        window.addEventListener('load', function() {
+            // Units Chart
+            const unitsCtx = document.getElementById('unitsChart').getContext('2d');
+            new Chart(unitsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Bitcoin (BTC)', 'Millibitcoin (mBTC)', 'Microbitcoin (μBTC)', 'Satoshi'],
+                    datasets: [{
+                        label: 'Denomination Value',
+                        data: [100000000, 100000, 100, 1],
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.8)',
+                            'rgba(155, 89, 182, 0.8)',
+                            'rgba(26, 188, 156, 0.8)',
+                            'rgba(243, 156, 18, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(52, 152, 219)',
+                            'rgb(155, 89, 182)',
+                            'rgb(26, 188, 156)',
+                            'rgb(243, 156, 18)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            type: 'logarithmic',
+                            title: {
+                                display: true,
+                                text: 'Value in Satoshis (log scale)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Bitcoin Unit Denominations (in Satoshis)',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Mining Evolution Chart
+            const miningCtx = document.getElementById('miningChart').getContext('2d');
+            new Chart(miningCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2009', '2010', '2011', '2013', '2015', '2017', '2020', '2023', '2025'],
+                    datasets: [{
+                        label: 'Network Hash Rate (EH/s)',
+                        data: [0.000001, 0.00001, 0.001, 0.05, 0.5, 5, 100, 400, 600],
+                        borderColor: 'rgb(46, 204, 113)',
+                        backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            type: 'logarithmic',
+                            title: {
+                                display: true,
+                                text: 'Hash Rate (EH/s - log scale)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Bitcoin Network Hash Rate Evolution',
+                            font: { size: 16 }
+                        }
+                    }
+                }
+            });
+
+            // Network Stats Chart
+            const statsCtx = document.getElementById('networkStatsChart').getContext('2d');
+            new Chart(statsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Confirmed Transactions', 'Pending in Mempool', 'Total Daily Volume'],
+                    datasets: [{
+                        data: [350000, 45000, 280000],
+                        backgroundColor: [
+                            'rgba(46, 204, 113, 0.8)',
+                            'rgba(243, 156, 18, 0.8)',
+                            'rgba(52, 152, 219, 0.8)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Current Bitcoin Network Statistics',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        });
+
+        // Scroll Progress Indicator
+        window.addEventListener('scroll', function() {
+            const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            if (scrollPercentage > 80 && progress < 10) {
+                updateProgress(5);
+            }
+        });
+
+        // Initial animation
+        setTimeout(() => {
+            updateProgress(5);
+        }, 1000);
+    </script>
+</body>
+</html>
