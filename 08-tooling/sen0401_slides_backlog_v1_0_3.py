@@ -1,6 +1,6 @@
 """Backlog stage of the SEN0401 slide lineage: admission only. Every item Proposed; no task yet -
 tasks are produced by planning, and only for what is planned into an iteration."""
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 from sen0401_slides_stages_v1_0_1 import CHAPTERS, KIND, cid
 
 # Planning of 2026-09-24, approved by the owner: chapters 1 and 2 in the first iteration, until
@@ -139,6 +139,12 @@ ex:Iter_1 a backlog:Iteration ; rdfs:label "First iteration: chapter 1, before t
 
 
 FEEDBACK = """
+ex:Finding_SecondEditionLicence a backlog:RetrospectiveFinding ;
+    rdfs:label "The 2nd-edition book files in this public repository are openly licensed"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "SEN0401 is public and, since 0.19.0, holds the owner's copy of Mastering Bitcoin 2nd edition (PDF) and its chapter-text copies; their licence had not been verified." ;
+    backlog:hasRemedy "Verified on 2026-09-27T23:00:44 from the authors' repository: its current README (commit 275c4eb) licenses the 2nd edition under CC BY-SA 4.0; at the 2nd-edition print tags it was CC BY-NC-ND 4.0 with a CC BY-SA release announced. Keeping the files public is therefore permitted with attribution and the same licence; 03-materials/owner-legacy-2025/ATTRIBUTION_v1_0.md gives both." .
+
 ex:Finding_OwnerMaterials2025Imported a backlog:RetrospectiveFinding ;
     rdfs:label "The owner's 2025 materials imported, and a games-strategy analysis prepared"@en ;
     backlog:belongsToLineage ex:Lineage ; backlog:hasFindingScope backlog:Scope_Methodology ;

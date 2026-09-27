@@ -4,7 +4,7 @@
 STAGES names how many stages are closed; COMMITS records the commit that closed each, filled in
 from the publish result - never guessed. Times are read from the clock or from commits only.
 """
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 import hashlib, os, sys
 import rdflib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -47,7 +47,7 @@ def main():
     if STAGES >= 3: t += st.goal_block()
     if STAGES >= 4: t += st.objective_block(with_movers=STAGES >= 5).replace("__BASE_AT__", BASE_AT)
     if STAGES >= 5 or STAGES == 6:
-        import sen0401_slides_backlog_v1_0_2 as bk
+        import sen0401_slides_backlog_v1_0_3 as bk
         t += bk.backlog_block()
     for n, name in enumerate(ORDER[:min(STAGES, 5)]):
         t += '\nex:Out_%s a backlog:StageOutput ;\n    rdfs:label "Closure of the %s stage"@en ;\n    backlog:belongsToLineage ex:Lineage ;\n    backlog:outputOfStage backlog:Stage_%s ;%s\n    backlog:hasStateDigest "__D_%s__" ;\n    backlog:closedAtCommit "%s" .\n' % (
