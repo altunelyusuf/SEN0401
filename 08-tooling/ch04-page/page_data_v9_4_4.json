@@ -1,0 +1,1511 @@
+{
+ "_version": "9.4.4",
+ "visuals": {},
+ "course": {
+  "_version": "2.0.0",
+  "name": "SEN0401 Block Chain",
+  "line": "SEN0401 Block Chain",
+  "chapter_sub": "chapter {n} of Mastering Bitcoin, 3rd edition",
+  "chapter_intro": "Chapter {n} of <i>Mastering Bitcoin</i>, 3rd edition (Antonopoulos and Harding, 2023), free under CC BY-SA 4.0, renewed for SEN0401.",
+  "playground": {
+   "label": "Toy proof-of-work miner (uses input)",
+   "code": "import hashlib\nprefix = input('Block data: ')\nzeros = int(input('Leading zeros required: '))\nnonce = 0\nwhile not hashlib.sha256(f'{prefix}-{nonce}'.encode()).hexdigest().startswith('0' * zeros):\n    nonce += 1\nprint(f'nonce {nonce} gives', hashlib.sha256(f'{prefix}-{nonce}'.encode()).hexdigest())",
+   "inputs": "SEN0401|4"
+  },
+  "corpus": {
+   "book": [],
+   "course": [],
+   "note": "SEN0401 has no textbook ontology for Mastering Bitcoin and no course ontology yet; the agents search the chapter's ontology, document and research record and the page itself."
+  }
+ },
+ "discussion": [
+  [
+   "Noticeable issues",
+   "What stood out in this chapter, and what surprised you?"
+  ],
+  [
+   "Interesting details",
+   "What is the most interesting point? Do you find Bitcoin inspiring, and why?"
+  ],
+  [
+   "Unclarified issues",
+   "Which points need further explanation? Select one critical issue from the chapter and explain it."
+  ]
+ ],
+ "research_file": "sen0401_ch04_research_v1_0_0.ttl",
+ "chapter": 4,
+ "unit": null,
+ "title": "Keys and addresses: from a random number to a payable string, recomputed and cross-checked",
+ "python": "Python 3.14.4",
+ "nodes": [
+  {
+   "id": "Keys",
+   "label": "Keys",
+   "level": 1,
+   "parent": null,
+   "body": "Keys and Addresses begins with Alice paying Bob without the network learning who either is, using the scheme of the original paper in which a payment goes to a public key and is signed by the spender (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Keys",
+   "class_iri": "http://example.org/sen0401/ch04#Keys"
+  },
+  {
+   "id": "KeyPair",
+   "label": "Key pair",
+   "level": 2,
+   "parent": "Keys",
+   "body": "Public Key Cryptography and its subsections introduce the pair of a private and a public key (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_KeyPair",
+   "class_iri": "http://example.org/sen0401/ch04#KeyPair"
+  },
+  {
+   "id": "PublicKeyCryptography",
+   "label": "Public key cryptography",
+   "level": 3,
+   "parent": "KeyPair",
+   "body": "Asymmetric cryptography is not used to encrypt transactions: its useful property is that a private key produces a signature that anyone with the public key can verify, while only the private key's owner could have produced it (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_PublicKeyCryptography",
+   "class_iri": "http://example.org/sen0401/ch04#PublicKeyCryptography",
+   "example": "signatures, not secrecy",
+   "definition": "Public key cryptography lets a private key produce a signature that anyone can check against the public key, which is what Bitcoin uses it for, not for encrypting transactions."
+  },
+  {
+   "id": "PrivateKey",
+   "label": "Private key",
+   "level": 3,
+   "parent": "KeyPair",
+   "body": "A private key is a number picked at random between 0 and n minus 1, where n, about 1.1578 times 10 to the 77 in the book, is the order of the curve, and it must come from a cryptographically secure random number generator (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_PrivateKey",
+   "class_iri": "http://example.org/sen0401/ch04#PrivateKey",
+   "example": "a random number below n",
+   "definition": "A private key is a number picked at random between 1 and n minus 1, where n, about 1.1579 times 10 to the 77, is the order of the curve and slightly less than 2 to the 256.",
+   "io": {
+    "code": "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141 < 2**256",
+    "out": "True",
+    "tree": {
+     "label": "Compare",
+     "kind": "Compare",
+     "children": [
+      {
+       "label": "115792089237316195423570985008687907852837564279074904382605163141518161494337",
+       "kind": "Constant",
+       "children": []
+      },
+      {
+       "label": "**",
+       "kind": "BinOp",
+       "children": [
+        {
+         "label": "2",
+         "kind": "Constant",
+         "children": []
+        },
+        {
+         "label": "256",
+         "kind": "Constant",
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "115792089237316195423570985008687907852837564279074904382605163141518161494337 < 2 ** 256",
+      "focus": "2 ** 256",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007913129639936"
+     },
+     {
+      "expr": "115792089237316195423570985008687907852837564279074904382605163141518161494337 < 115792089237316195423570985008687907853269984665640564039457584007913129639936",
+      "focus": "115792089237316195423570985008687907852837564279074904382605163141518161494337 < 115792089237316195423570985008687907853269984665640564039457584007913129639936",
+      "value": "True"
+     }
+    ]
+   }
+  },
+  {
+   "id": "PublicKey",
+   "label": "Public key",
+   "level": 3,
+   "parent": "KeyPair",
+   "body": "The public key is K = k x G, the private key multiplied by the constant generator point of secp256k1, and for the book's example key it is the point whose x coordinate begins F028892B (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_PublicKey",
+   "class_iri": "http://example.org/sen0401/ch04#PublicKey",
+   "example": "K = k x G",
+   "definition": "A public key is the point K = k x G obtained by multiplying the generator point by the private key, which is easy in one direction and infeasible to reverse."
+  },
+  {
+   "id": "RandomSource",
+   "label": "Randomness",
+   "level": 2,
+   "parent": "Keys",
+   "body": "The chapter warns against writing your own random number code or using a simple generator, and asks for a cryptographically secure one with enough entropy (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_RandomSource",
+   "class_iri": "http://example.org/sen0401/ch04#RandomSource"
+  },
+  {
+   "id": "SecureRandomness",
+   "label": "Secure randomness",
+   "level": 3,
+   "parent": "RandomSource",
+   "body": "Python's documentation says the secrets module generates cryptographically strong random numbers suitable for secrets and should be used in preference to the random module, which is designed for modelling and simulation (Python Software Foundation, 2026).",
+   "section_iri": "http://example.org/sen0401/ch04#S_SecureRandomness",
+   "class_iri": "http://example.org/sen0401/ch04#SecureRandomness",
+   "example": "secrets rather than random",
+   "definition": "A private key must come from a cryptographically secure random source; Python's secrets module is documented for that use and its random module for simulation."
+  },
+  {
+   "id": "Curve",
+   "label": "The curve",
+   "level": 2,
+   "parent": "Keys",
+   "body": "Elliptic Curve Cryptography Explained describes the curve Bitcoin uses and the arithmetic on its points (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Curve",
+   "class_iri": "http://example.org/sen0401/ch04#Curve"
+  },
+  {
+   "id": "Secp256k1",
+   "label": "The secp256k1 curve",
+   "level": 3,
+   "parent": "Curve",
+   "body": "The book says secp256k1 was established by NIST, but the curve is defined in SEC 2 from Certicom Research, whose Table 2 lists it with no NIST recommendation and lists secp256r1 with one (Certicom Research, 2010).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Secp256k1",
+   "class_iri": "http://example.org/sen0401/ch04#Secp256k1",
+   "example": "y squared equals x cubed plus 7 over F(p)",
+   "definition": "The secp256k1 curve, y squared = x cubed + 7 over the prime field with p = 2 to the 256 minus 2 to the 32 minus 977, is defined in SEC 2 by Certicom Research and is not a NIST-recommended curve.",
+   "io": {
+    "code": "2**256 - 2**32 - 2**9 - 2**8 - 2**7 - 2**6 - 2**4 - 1 == 2**256 - 2**32 - 977",
+    "out": "True",
+    "tree": {
+     "label": "Compare",
+     "kind": "Compare",
+     "children": [
+      {
+       "label": "-",
+       "kind": "BinOp",
+       "children": [
+        {
+         "label": "-",
+         "kind": "BinOp",
+         "children": [
+          {
+           "label": "-",
+           "kind": "BinOp",
+           "children": [
+            {
+             "label": "-",
+             "kind": "BinOp",
+             "children": [
+              {
+               "label": "-",
+               "kind": "BinOp",
+               "children": [
+                {
+                 "label": "-",
+                 "kind": "BinOp",
+                 "children": [
+                  {
+                   "label": "-",
+                   "kind": "BinOp",
+                   "children": [
+                    {
+                     "label": "**",
+                     "kind": "BinOp",
+                     "children": [
+                      {
+                       "label": "2",
+                       "kind": "Constant",
+                       "children": []
+                      },
+                      {
+                       "label": "256",
+                       "kind": "Constant",
+                       "children": []
+                      }
+                     ]
+                    },
+                    {
+                     "label": "**",
+                     "kind": "BinOp",
+                     "children": [
+                      {
+                       "label": "2",
+                       "kind": "Constant",
+                       "children": []
+                      },
+                      {
+                       "label": "32",
+                       "kind": "Constant",
+                       "children": []
+                      }
+                     ]
+                    }
+                   ]
+                  },
+                  {
+                   "label": "**",
+                   "kind": "BinOp",
+                   "children": [
+                    {
+                     "label": "2",
+                     "kind": "Constant",
+                     "children": []
+                    },
+                    {
+                     "label": "9",
+                     "kind": "Constant",
+                     "children": []
+                    }
+                   ]
+                  }
+                 ]
+                },
+                {
+                 "label": "**",
+                 "kind": "BinOp",
+                 "children": [
+                  {
+                   "label": "2",
+                   "kind": "Constant",
+                   "children": []
+                  },
+                  {
+                   "label": "8",
+                   "kind": "Constant",
+                   "children": []
+                  }
+                 ]
+                }
+               ]
+              },
+              {
+               "label": "**",
+               "kind": "BinOp",
+               "children": [
+                {
+                 "label": "2",
+                 "kind": "Constant",
+                 "children": []
+                },
+                {
+                 "label": "7",
+                 "kind": "Constant",
+                 "children": []
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "label": "**",
+             "kind": "BinOp",
+             "children": [
+              {
+               "label": "2",
+               "kind": "Constant",
+               "children": []
+              },
+              {
+               "label": "6",
+               "kind": "Constant",
+               "children": []
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "label": "**",
+           "kind": "BinOp",
+           "children": [
+            {
+             "label": "2",
+             "kind": "Constant",
+             "children": []
+            },
+            {
+             "label": "4",
+             "kind": "Constant",
+             "children": []
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "label": "1",
+         "kind": "Constant",
+         "children": []
+        }
+       ]
+      },
+      {
+       "label": "-",
+       "kind": "BinOp",
+       "children": [
+        {
+         "label": "-",
+         "kind": "BinOp",
+         "children": [
+          {
+           "label": "**",
+           "kind": "BinOp",
+           "children": [
+            {
+             "label": "2",
+             "kind": "Constant",
+             "children": []
+            },
+            {
+             "label": "256",
+             "kind": "Constant",
+             "children": []
+            }
+           ]
+          },
+          {
+           "label": "**",
+           "kind": "BinOp",
+           "children": [
+            {
+             "label": "2",
+             "kind": "Constant",
+             "children": []
+            },
+            {
+             "label": "32",
+             "kind": "Constant",
+             "children": []
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "label": "977",
+         "kind": "Constant",
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "2 ** 256 - 2 ** 32 - 2 ** 9 - 2 ** 8 - 2 ** 7 - 2 ** 6 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "2 ** 256",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007913129639936"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007913129639936 - 2 ** 32 - 2 ** 9 - 2 ** 8 - 2 ** 7 - 2 ** 6 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "2 ** 32",
+      "value": "4294967296"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007913129639936 - 4294967296 - 2 ** 9 - 2 ** 8 - 2 ** 7 - 2 ** 6 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "115792089237316195423570985008687907853269984665640564039457584007913129639936 - 4294967296",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007908834672640"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834672640 - 2 ** 9 - 2 ** 8 - 2 ** 7 - 2 ** 6 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "2 ** 9",
+      "value": "512"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834672640 - 512 - 2 ** 8 - 2 ** 7 - 2 ** 6 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "115792089237316195423570985008687907853269984665640564039457584007908834672640 - 512",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007908834672128"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834672128 - 2 ** 8 - 2 ** 7 - 2 ** 6 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "2 ** 8",
+      "value": "256"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834672128 - 256 - 2 ** 7 - 2 ** 6 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "115792089237316195423570985008687907853269984665640564039457584007908834672128 - 256",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007908834671872"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671872 - 2 ** 7 - 2 ** 6 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "2 ** 7",
+      "value": "128"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671872 - 128 - 2 ** 6 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "115792089237316195423570985008687907853269984665640564039457584007908834671872 - 128",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007908834671744"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671744 - 2 ** 6 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "2 ** 6",
+      "value": "64"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671744 - 64 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "115792089237316195423570985008687907853269984665640564039457584007908834671744 - 64",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007908834671680"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671680 - 2 ** 4 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "2 ** 4",
+      "value": "16"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671680 - 16 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "115792089237316195423570985008687907853269984665640564039457584007908834671680 - 16",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007908834671664"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671664 - 1 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "115792089237316195423570985008687907853269984665640564039457584007908834671664 - 1",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007908834671663"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671663 == 2 ** 256 - 2 ** 32 - 977",
+      "focus": "2 ** 256",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007913129639936"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671663 == 115792089237316195423570985008687907853269984665640564039457584007913129639936 - 2 ** 32 - 977",
+      "focus": "2 ** 32",
+      "value": "4294967296"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671663 == 115792089237316195423570985008687907853269984665640564039457584007913129639936 - 4294967296 - 977",
+      "focus": "115792089237316195423570985008687907853269984665640564039457584007913129639936 - 4294967296",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007908834672640"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671663 == 115792089237316195423570985008687907853269984665640564039457584007908834672640 - 977",
+      "focus": "115792089237316195423570985008687907853269984665640564039457584007908834672640 - 977",
+      "value": "115792089237316195423570985008687907853269984665640564039457584007908834671663"
+     },
+     {
+      "expr": "115792089237316195423570985008687907853269984665640564039457584007908834671663 == 115792089237316195423570985008687907853269984665640564039457584007908834671663",
+      "focus": "115792089237316195423570985008687907853269984665640564039457584007908834671663 == 115792089237316195423570985008687907853269984665640564039457584007908834671663",
+      "value": "True"
+     }
+    ]
+   }
+  },
+  {
+   "id": "PointMultiplication",
+   "label": "Elliptic curve multiplication",
+   "level": 3,
+   "parent": "Curve",
+   "body": "Adding a point to itself is drawing a tangent and reflecting the third intersection, multiplication by k extends that addition, and the toolkit does it in about 256 doublings and additions for the book's key (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_PointMultiplication",
+   "class_iri": "http://example.org/sen0401/ch04#PointMultiplication",
+   "example": "double and add",
+   "definition": "Multiplying a point by a whole number k is adding it to itself k times, done in about 256 doublings and additions by the double-and-add method."
+  },
+  {
+   "id": "Format",
+   "label": "Format",
+   "level": 1,
+   "parent": null,
+   "body": "Base58check Encoding, Compressed Public Keys and Private Key Formats describe how keys and hashes become text (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Format",
+   "class_iri": "http://example.org/sen0401/ch04#Format"
+  },
+  {
+   "id": "KeyEncoding",
+   "label": "Key encoding",
+   "level": 2,
+   "parent": "Format",
+   "body": "The same public key can be written in two forms and the same private key exported in two forms (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_KeyEncoding",
+   "class_iri": "http://example.org/sen0401/ch04#KeyEncoding"
+  },
+  {
+   "id": "CompressedPublicKey",
+   "label": "Compressed public key",
+   "level": 3,
+   "parent": "KeyEncoding",
+   "body": "A compressed public key of 33 bytes carries the prefix 02 or 03 for the parity of y and the x coordinate, and the y coordinate is recovered from y squared = x cubed + 7 (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_CompressedPublicKey",
+   "class_iri": "http://example.org/sen0401/ch04#CompressedPublicKey",
+   "example": "33 bytes: 02 or 03 and x",
+   "definition": "A compressed public key keeps only x and one byte for the parity of y, 33 bytes instead of 65, and the y coordinate is recovered by solving the curve equation.",
+   "io": {
+    "code": "round(1 - 33 / 65, 3)",
+    "out": "0.492",
+    "tree": {
+     "label": "call",
+     "kind": "Call",
+     "children": [
+      {
+       "label": "round",
+       "kind": "Name",
+       "children": []
+      },
+      {
+       "label": "-",
+       "kind": "BinOp",
+       "children": [
+        {
+         "label": "1",
+         "kind": "Constant",
+         "children": []
+        },
+        {
+         "label": "/",
+         "kind": "BinOp",
+         "children": [
+          {
+           "label": "33",
+           "kind": "Constant",
+           "children": []
+          },
+          {
+           "label": "65",
+           "kind": "Constant",
+           "children": []
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "label": "3",
+       "kind": "Constant",
+       "children": []
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "round(1 - 33 / 65, 3)",
+      "focus": "33 / 65",
+      "value": "0.5076923076923077"
+     },
+     {
+      "expr": "round(1 - 0.5076923076923077, 3)",
+      "focus": "1 - 0.5076923076923077",
+      "value": "0.49230769230769234"
+     },
+     {
+      "expr": "round(0.49230769230769234, 3)",
+      "focus": "round(0.49230769230769234, 3)",
+      "value": "0.492"
+     }
+    ]
+   }
+  },
+  {
+   "id": "UncompressedPublicKey",
+   "label": "Uncompressed public key",
+   "level": 3,
+   "parent": "KeyEncoding",
+   "body": "The uncompressed key is 04 followed by x and y, 65 bytes, and hashing it gives a different commitment and so a different address from the compressed key of the same private key (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_UncompressedPublicKey",
+   "class_iri": "http://example.org/sen0401/ch04#UncompressedPublicKey",
+   "example": "65 bytes: 04, x and y",
+   "definition": "An uncompressed public key is the prefix 04 followed by the x and y coordinates, 65 bytes, and it hashes to a different address than the compressed form of the same key."
+  },
+  {
+   "id": "WalletImportFormat",
+   "label": "Wallet import format (WIF)",
+   "level": 3,
+   "parent": "KeyEncoding",
+   "body": "The book's example private key exports as the WIF 5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn and, with the 01 suffix, as the WIF-compressed KxFC1jmwwCoACiCAWZ3eXa96mBM6tb3TYzGmf6YwgdGWZgawvrtJ (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_WalletImportFormat",
+   "class_iri": "http://example.org/sen0401/ch04#WalletImportFormat",
+   "example": "5J3m... and KxFC...",
+   "definition": "The wallet import format is the base58check encoding of version byte 0x80 and the private key, with a 0x01 suffix for the compressed form, which changes the first character from 5 to K or L."
+  },
+  {
+   "id": "Checksummed",
+   "label": "Checksummed text",
+   "level": 2,
+   "parent": "Format",
+   "body": "Base58check adds a version byte and a checksum to data before encoding it (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Checksummed",
+   "class_iri": "http://example.org/sen0401/ch04#Checksummed"
+  },
+  {
+   "id": "Base58Check",
+   "label": "Base58check encoding",
+   "level": 3,
+   "parent": "Checksummed",
+   "body": "Base58 is base64 without 0, O, l, I, plus and slash, and base58check appends the first four bytes of the double SHA-256 of the prefixed data as a checksum (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Base58Check",
+   "class_iri": "http://example.org/sen0401/ch04#Base58Check",
+   "example": "an alphabet without 0, O, l and I",
+   "definition": "Base58check encodes a version byte, the data and the first four bytes of a double SHA-256 checksum in a 58-character alphabet that leaves out the characters easily mistaken for each other.",
+   "io": {
+    "code": "len('123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz')",
+    "out": "58",
+    "tree": {
+     "label": "call",
+     "kind": "Call",
+     "children": [
+      {
+       "label": "len",
+       "kind": "Name",
+       "children": []
+      },
+      {
+       "label": "'123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'",
+       "kind": "Constant",
+       "children": []
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "len('123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz')",
+      "focus": "len('123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz')",
+      "value": "58"
+     }
+    ]
+   }
+  },
+  {
+   "id": "VersionPrefix",
+   "label": "Version prefix",
+   "level": 3,
+   "parent": "Checksummed",
+   "body": "The version byte 0x00 gives an address starting with 1, 0x05 starts with 3, 0x80 gives a WIF starting with 5, K or L, and 0x0488B21E gives xpub (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_VersionPrefix",
+   "class_iri": "http://example.org/sen0401/ch04#VersionPrefix",
+   "example": "0x00 gives 1, 0x05 gives 3",
+   "definition": "The version byte makes the encoded text start with a recognisable character: 1 for a P2PKH address, 3 for P2SH, 5, K or L for a WIF key, and xpub for a BIP32 extended public key."
+  },
+  {
+   "id": "Address",
+   "label": "Address",
+   "level": 1,
+   "parent": null,
+   "body": "Legacy Addresses for P2PKH, Legacy Pay to Script Hash and Bech32 Addresses describe the ways a payer is given a receiver's script (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Address",
+   "class_iri": "http://example.org/sen0401/ch04#Address"
+  },
+  {
+   "id": "Legacy",
+   "label": "Legacy addresses",
+   "level": 2,
+   "parent": "Address",
+   "body": "The legacy address types use base58check and are two of the script templates Bitcoin supports (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Legacy",
+   "class_iri": "http://example.org/sen0401/ch04#Legacy"
+  },
+  {
+   "id": "Commitment",
+   "label": "Hash commitment (HASH160)",
+   "level": 3,
+   "parent": "Legacy",
+   "body": "The book commits to an answer with a SHA-256 value beginning 94d7a772 and reveals it by hashing the sentence again, and Bitcoin commits to a public key the same way with RIPEMD-160 of its SHA-256 (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Commitment",
+   "class_iri": "http://example.org/sen0401/ch04#Commitment",
+   "example": "a hash of the public key",
+   "definition": "A hash function output is a commitment to its input; Bitcoin commits to a public key with HASH160, the RIPEMD-160 of the SHA-256 of it, 20 bytes instead of 65.",
+   "io": {
+    "code": "__import__('hashlib').sha256(b'2007.  He said about a year and a half before Oct 2008\\n').hexdigest()",
+    "out": "'94d7a772612c8f2f2ec609d41f5bd3d04a5aa1dfe3582f04af517d396a302e4e'",
+    "tree": {
+     "label": "call",
+     "kind": "Call",
+     "children": [
+      {
+       "label": "Attribute",
+       "kind": "Attribute",
+       "children": [
+        {
+         "label": "call",
+         "kind": "Call",
+         "children": [
+          {
+           "label": "Attribute",
+           "kind": "Attribute",
+           "children": [
+            {
+             "label": "call",
+             "kind": "Call",
+             "children": [
+              {
+               "label": "__import__",
+               "kind": "Name",
+               "children": []
+              },
+              {
+               "label": "'hashlib'",
+               "kind": "Constant",
+               "children": []
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "label": "b'2007.  He said about a year and a half before Oct 2008\\n'",
+           "kind": "Constant",
+           "children": []
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    "steps": []
+   }
+  },
+  {
+   "id": "P2pkhAddress",
+   "label": "P2PKH address",
+   "level": 3,
+   "parent": "Legacy",
+   "body": "For the book's key, the compressed public key gives the address 1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZy and the uncompressed one 1424C2F4bC9JidNjjTUZCbUxv6Sa1Mt62x, and Bitcoin Core 31.1 derives the same two from the public keys (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch04#S_P2pkhAddress",
+   "class_iri": "http://example.org/sen0401/ch04#P2pkhAddress",
+   "example": "1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZy",
+   "definition": "A P2PKH address is the base58check encoding of version 0x00 and the HASH160 of the public key, and a compressed and an uncompressed key give two different addresses."
+  },
+  {
+   "id": "P2shAddress",
+   "label": "P2SH address",
+   "level": 3,
+   "parent": "Legacy",
+   "body": "P2SH lets an output commit to a redeem script with HASH160, its address uses version 5 and starts with 3, and the book's example 3F6i6kwkevjR7AsAd4te2YB2zZyASEm1HM has a valid checksum (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_P2shAddress",
+   "class_iri": "http://example.org/sen0401/ch04#P2shAddress",
+   "example": "3F6i6kwkevjR7AsAd4te2YB2zZyASEm1HM",
+   "definition": "A P2SH address commits with HASH160 to a redeem script instead of a key, uses version byte 0x05 and starts with 3."
+  },
+  {
+   "id": "Segwit",
+   "label": "Segwit addresses",
+   "level": 2,
+   "parent": "Address",
+   "body": "Bech32 Addresses, Problems with Bech32 Addresses and Bech32m describe the address format for segregated witness outputs (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Segwit",
+   "class_iri": "http://example.org/sen0401/ch04#Segwit"
+  },
+  {
+   "id": "Bech32Address",
+   "label": "Bech32 address",
+   "level": 3,
+   "parent": "Segwit",
+   "body": "A bech32 address such as bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee is 42 characters for a 20-byte witness program and 62 for a 32-byte one, and the book's reference library and the toolkit both produce it from the script's program (Wuille, 2020).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Bech32Address",
+   "class_iri": "http://example.org/sen0401/ch04#Bech32Address",
+   "example": "bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee",
+   "definition": "A bech32 address is a human-readable part, the separator 1, a witness version, a witness program and a six-character checksum, in one case of a 32-character alphabet.",
+   "io": {
+    "code": "len('bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee')",
+    "out": "42",
+    "tree": {
+     "label": "call",
+     "kind": "Call",
+     "children": [
+      {
+       "label": "len",
+       "kind": "Name",
+       "children": []
+      },
+      {
+       "label": "'bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee'",
+       "kind": "Constant",
+       "children": []
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "len('bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee')",
+      "focus": "len('bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee')",
+      "value": "42"
+     }
+    ]
+   }
+  },
+  {
+   "id": "Bech32mAddress",
+   "label": "Bech32m address",
+   "level": 3,
+   "parent": "Segwit",
+   "body": "Bech32m changes the checksum constant from 1 to 0x2bc830a3 and is used from segwit version 1, so the taproot example bc1p9nh05ha8wrljf7ru236awm4t2x0d5ctkkywmu9sclnm4t0av2vgs4k3au7 carries a bech32m checksum (Wuille, 2020).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Bech32mAddress",
+   "class_iri": "http://example.org/sen0401/ch04#Bech32mAddress",
+   "example": "bc1p9nh05ha8wrljf7ru236awm4t2x0d5ctkkywmu9sclnm4t0av2vgs4k3au7",
+   "definition": "Bech32m differs from bech32 only in the constant merged into the checksum, 0x2bc830a3 instead of 1, and is required for witness version 1 and later.",
+   "io": {
+    "code": "hex(0x2bc830a3)",
+    "out": "'0x2bc830a3'",
+    "tree": {
+     "label": "call",
+     "kind": "Call",
+     "children": [
+      {
+       "label": "hex",
+       "kind": "Name",
+       "children": []
+      },
+      {
+       "label": "734539939",
+       "kind": "Constant",
+       "children": []
+      }
+     ]
+    },
+    "steps": []
+   }
+  },
+  {
+   "id": "WitnessProgram",
+   "label": "Witness program",
+   "level": 3,
+   "parent": "Segwit",
+   "body": "A witness program is 2 to 40 bytes, exactly 20 or 32 for version 0, and for version 1 the book's example is a 32-byte point on the secp256k1 curve (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_WitnessProgram",
+   "class_iri": "http://example.org/sen0401/ch04#WitnessProgram",
+   "example": "20 or 32 bytes for version 0",
+   "definition": "The witness program is 2 to 40 bytes and, for witness version 0, exactly 20 or 32; for version 1, taproot, it is a 32-byte point."
+  },
+  {
+   "id": "ErrorDetection",
+   "label": "Error detection",
+   "level": 3,
+   "parent": "Segwit",
+   "body": "Bitcoin Core validates the book's typo example as invalid with a bech32m checksum error at positions 25 and 40, the two characters the book underlines, and rejects the length-extension strings that carry only a bech32 checksum (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch04#S_ErrorDetection",
+   "class_iri": "http://example.org/sen0401/ch04#ErrorDetection",
+   "example": "detects, and locates, typing errors",
+   "definition": "Bech32 is guaranteed to detect any error affecting four characters or fewer, and Bitcoin Core points to where a typing error is, while bech32's original constant let a q be added before a final p without detection, which bech32m fixes."
+  },
+  {
+   "id": "Practice",
+   "label": "Practice",
+   "level": 1,
+   "parent": null,
+   "body": "Vanity Addresses, Paper Wallets and the sections after them describe what is done with keys and addresses beyond the basics (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Practice",
+   "class_iri": "http://example.org/sen0401/ch04#Practice"
+  },
+  {
+   "id": "Modern",
+   "label": "Practice now",
+   "level": 2,
+   "parent": "Practice",
+   "body": "Some of that practice has changed in current software (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Modern",
+   "class_iri": "http://example.org/sen0401/ch04#Modern"
+  },
+  {
+   "id": "DefaultAddressType",
+   "label": "Default address type",
+   "level": 3,
+   "parent": "Modern",
+   "body": "Bitcoin Core 31.1 lists the address types legacy, p2sh-segwit, bech32 and bech32m and defaults to bech32, and a new wallet's default address is a version 0 witness address (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch04#S_DefaultAddressType",
+   "class_iri": "http://example.org/sen0401/ch04#DefaultAddressType",
+   "example": "bech32 by default, bech32m on request",
+   "definition": "Bitcoin Core's addresstype option defaults to bech32, a P2WPKH address, and the four types are legacy, p2sh-segwit, bech32 and bech32m, the last a taproot address."
+  },
+  {
+   "id": "KeyExport",
+   "label": "Exporting a single key",
+   "level": 3,
+   "parent": "Modern",
+   "body": "Bitcoin Core 30.0 removed the legacy wallet RPCs including dumpprivkey and importprivkey, and the 31.1 release answers that they are unknown commands (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch04#S_KeyExport",
+   "class_iri": "http://example.org/sen0401/ch04#KeyExport",
+   "example": "no dumpprivkey any more",
+   "definition": "Deterministic descriptor wallets no longer export single keys, and Bitcoin Core removed dumpprivkey and importprivkey in 30.0, while a WIF key can still be used inside a descriptor."
+  },
+  {
+   "id": "PassphraseProtection",
+   "label": "Passphrase-protected key",
+   "level": 3,
+   "parent": "Modern",
+   "body": "The BIPs repository lists BIP38, a passphrase-protected private key, as Deployed and carries the comment summary Unanimously Discourage for implementation (Caldwell, 2012).",
+   "section_iri": "http://example.org/sen0401/ch04#S_PassphraseProtection",
+   "class_iri": "http://example.org/sen0401/ch04#PassphraseProtection",
+   "example": "BIP38",
+   "definition": "BIP38 encrypts a private key under a passphrase; the BIPs repository lists it as Deployed with the comment summary Unanimously Discourage for implementation, and the 3rd edition does not cover it."
+  },
+  {
+   "id": "VanityAddress",
+   "label": "Vanity address",
+   "level": 3,
+   "parent": "Modern",
+   "body": "Vanity addresses were popular early and are almost gone, and the book's table of search times is exact in frequency and consistent with its own rule up to seven characters (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_VanityAddress",
+   "class_iri": "http://example.org/sen0401/ch04#VanityAddress",
+   "example": "1Kids and 58 to the fourth",
+   "definition": "A vanity address starts with a chosen string found by trying keys one after another, and each further character multiplies the work by 58, so four characters take 58 to the fourth, about 11 million keys.",
+   "io": {
+    "code": "58**4",
+    "out": "11316496",
+    "tree": {
+     "label": "**",
+     "kind": "BinOp",
+     "children": [
+      {
+       "label": "58",
+       "kind": "Constant",
+       "children": []
+      },
+      {
+       "label": "4",
+       "kind": "Constant",
+       "children": []
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "58 ** 4",
+      "focus": "58 ** 4",
+      "value": "11316496"
+     }
+    ]
+   }
+  },
+  {
+   "id": "PaperWallet",
+   "label": "Paper wallet",
+   "level": 3,
+   "parent": "Modern",
+   "body": "The book calls paper wallets an obsolete technology that is dangerous for most users and shows them only for information (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_PaperWallet",
+   "class_iri": "http://example.org/sen0401/ch04#PaperWallet",
+   "example": "a private key on paper",
+   "definition": "A paper wallet is a private key printed on paper, which the 3rd edition calls an obsolete technology and dangerous for most users."
+  },
+  {
+   "id": "Assurance",
+   "label": "Assurance",
+   "level": 2,
+   "parent": "Practice",
+   "body": "An implementation of bech32m can be tested against published vectors (Wuille, 2020).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Assurance",
+   "class_iri": "http://example.org/sen0401/ch04#Assurance"
+  },
+  {
+   "id": "TestVectors",
+   "label": "BIP350 test vectors",
+   "level": 3,
+   "parent": "Assurance",
+   "body": "BIP350 publishes 8 valid and 15 invalid segwit address vectors and 7 valid bech32m strings, and the toolkit and the reference library both pass all of the address vectors (Wuille, 2020).",
+   "section_iri": "http://example.org/sen0401/ch04#S_TestVectors",
+   "class_iri": "http://example.org/sen0401/ch04#TestVectors",
+   "example": "BIP350's list of valid and invalid addresses",
+   "definition": "The BIP350 test vectors give valid and invalid segwit addresses and bech32m strings against which any bech32m implementation should be run, including those for future witness versions."
+  },
+  {
+   "id": "Semantics",
+   "label": "Semantics",
+   "level": 1,
+   "parent": null,
+   "body": "The course theme of semantic technologies meets the chapter in what a key pair is: an identifier whose holder can prove control (World Wide Web Consortium, 2022).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Semantics",
+   "class_iri": "http://example.org/sen0401/ch04#Semantics"
+  },
+  {
+   "id": "Identifiers",
+   "label": "Identifiers",
+   "level": 2,
+   "parent": "Semantics",
+   "body": "Keys and decentralized identifiers both name a subject and let its controller prove control (World Wide Web Consortium, 2022).",
+   "section_iri": "http://example.org/sen0401/ch04#S_Identifiers",
+   "class_iri": "http://example.org/sen0401/ch04#Identifiers"
+  },
+  {
+   "id": "KeyControlProof",
+   "label": "Proof of control by a key",
+   "level": 3,
+   "parent": "Identifiers",
+   "body": "A signature by the private key proves control of the public key and so of the funds or the identifier, without permission from a registry (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch04#S_KeyControlProof",
+   "class_iri": "http://example.org/sen0401/ch04#KeyControlProof",
+   "example": "signing to prove control",
+   "definition": "Whoever holds a private key can prove control of the matching public key by signing, without a central registry or anyone's permission."
+  },
+  {
+   "id": "DecentralizedIdentifier",
+   "label": "Decentralized identifier (DID)",
+   "level": 3,
+   "parent": "Identifiers",
+   "body": "W3C's Decentralized Identifiers are URIs that associate a subject with a DID document that can express cryptographic material and verification methods, designed so a controller can prove control without permission from any other party (World Wide Web Consortium, 2022).",
+   "section_iri": "http://example.org/sen0401/ch04#S_DecentralizedIdentifier",
+   "class_iri": "http://example.org/sen0401/ch04#DecentralizedIdentifier",
+   "example": "a DID and its DID document",
+   "definition": "A decentralized identifier is a URI that associates a subject with a DID document that can carry verification methods such as public keys, so its controller can prove control without permission from another party."
+  }
+ ],
+ "relations": [
+  {
+   "source": "KeyPair",
+   "target": "Keys",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "PublicKeyCryptography",
+   "target": "KeyPair",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "PrivateKey",
+   "target": "KeyPair",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "PublicKey",
+   "target": "KeyPair",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "RandomSource",
+   "target": "Keys",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "SecureRandomness",
+   "target": "RandomSource",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Curve",
+   "target": "Keys",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Secp256k1",
+   "target": "Curve",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "PointMultiplication",
+   "target": "Curve",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "KeyEncoding",
+   "target": "Format",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "CompressedPublicKey",
+   "target": "KeyEncoding",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "UncompressedPublicKey",
+   "target": "KeyEncoding",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "WalletImportFormat",
+   "target": "KeyEncoding",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Checksummed",
+   "target": "Format",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Base58Check",
+   "target": "Checksummed",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "VersionPrefix",
+   "target": "Checksummed",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Legacy",
+   "target": "Address",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Commitment",
+   "target": "Legacy",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "P2pkhAddress",
+   "target": "Legacy",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "P2shAddress",
+   "target": "Legacy",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Segwit",
+   "target": "Address",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Bech32Address",
+   "target": "Segwit",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Bech32mAddress",
+   "target": "Segwit",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "WitnessProgram",
+   "target": "Segwit",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "ErrorDetection",
+   "target": "Segwit",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Modern",
+   "target": "Practice",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "DefaultAddressType",
+   "target": "Modern",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "KeyExport",
+   "target": "Modern",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "PassphraseProtection",
+   "target": "Modern",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "VanityAddress",
+   "target": "Modern",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "PaperWallet",
+   "target": "Modern",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Assurance",
+   "target": "Practice",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "TestVectors",
+   "target": "Assurance",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Identifiers",
+   "target": "Semantics",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "KeyControlProof",
+   "target": "Identifiers",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "DecentralizedIdentifier",
+   "target": "Identifiers",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "CompressedPublicKey",
+   "target": "PublicKey",
+   "type": "mentions",
+   "evidence": "the document's section on Compressed public key names Public key"
+  },
+  {
+   "source": "UncompressedPublicKey",
+   "target": "PrivateKey",
+   "type": "mentions",
+   "evidence": "the document's section on Uncompressed public key names Private key"
+  },
+  {
+   "source": "WalletImportFormat",
+   "target": "PrivateKey",
+   "type": "mentions",
+   "evidence": "the document's section on Wallet import format (WIF) names Private key"
+  },
+  {
+   "source": "Commitment",
+   "target": "PublicKey",
+   "type": "mentions",
+   "evidence": "the document's section on Hash commitment (HASH160) names Public key"
+  },
+  {
+   "source": "P2pkhAddress",
+   "target": "PublicKey",
+   "type": "mentions",
+   "evidence": "the document's section on P2PKH address names Public key"
+  },
+  {
+   "source": "P2pkhAddress",
+   "target": "CompressedPublicKey",
+   "type": "mentions",
+   "evidence": "the document's section on P2PKH address names Compressed public key"
+  },
+  {
+   "source": "WitnessProgram",
+   "target": "Secp256k1",
+   "type": "mentions",
+   "evidence": "the document's section on Witness program names The secp256k1 curve"
+  },
+  {
+   "source": "PassphraseProtection",
+   "target": "PrivateKey",
+   "type": "mentions",
+   "evidence": "the document's section on Passphrase-protected key names Private key"
+  },
+  {
+   "source": "KeyControlProof",
+   "target": "PrivateKey",
+   "type": "mentions",
+   "evidence": "the document's section on Proof of control by a key names Private key"
+  },
+  {
+   "source": "KeyControlProof",
+   "target": "PublicKey",
+   "type": "mentions",
+   "evidence": "the document's section on Proof of control by a key names Public key"
+  }
+ ],
+ "agents": [
+  {
+   "id": "agent-KeyPair",
+   "name": "Key pair agent",
+   "subject": "KeyPair",
+   "covers": [
+    "PublicKeyCryptography",
+    "PrivateKey",
+    "PublicKey",
+    "KeyPair"
+   ]
+  },
+  {
+   "id": "agent-RandomSource",
+   "name": "Randomness agent",
+   "subject": "RandomSource",
+   "covers": [
+    "SecureRandomness",
+    "RandomSource"
+   ]
+  },
+  {
+   "id": "agent-Curve",
+   "name": "The curve agent",
+   "subject": "Curve",
+   "covers": [
+    "Secp256k1",
+    "PointMultiplication",
+    "Curve"
+   ]
+  },
+  {
+   "id": "agent-KeyEncoding",
+   "name": "Key encoding agent",
+   "subject": "KeyEncoding",
+   "covers": [
+    "CompressedPublicKey",
+    "UncompressedPublicKey",
+    "WalletImportFormat",
+    "KeyEncoding"
+   ]
+  },
+  {
+   "id": "agent-Checksummed",
+   "name": "Checksummed text agent",
+   "subject": "Checksummed",
+   "covers": [
+    "Base58Check",
+    "VersionPrefix",
+    "Checksummed"
+   ]
+  },
+  {
+   "id": "agent-Legacy",
+   "name": "Legacy addresses agent",
+   "subject": "Legacy",
+   "covers": [
+    "Commitment",
+    "P2pkhAddress",
+    "P2shAddress",
+    "Legacy"
+   ]
+  },
+  {
+   "id": "agent-Segwit",
+   "name": "Segwit addresses agent",
+   "subject": "Segwit",
+   "covers": [
+    "Bech32Address",
+    "Bech32mAddress",
+    "WitnessProgram",
+    "ErrorDetection",
+    "Segwit"
+   ]
+  },
+  {
+   "id": "agent-Modern",
+   "name": "Practice now agent",
+   "subject": "Modern",
+   "covers": [
+    "DefaultAddressType",
+    "KeyExport",
+    "PassphraseProtection",
+    "VanityAddress",
+    "PaperWallet",
+    "Modern"
+   ]
+  },
+  {
+   "id": "agent-Assurance",
+   "name": "Assurance agent",
+   "subject": "Assurance",
+   "covers": [
+    "TestVectors",
+    "Assurance"
+   ]
+  },
+  {
+   "id": "agent-Identifiers",
+   "name": "Identifiers agent",
+   "subject": "Identifiers",
+   "covers": [
+    "KeyControlProof",
+    "DecentralizedIdentifier",
+    "Identifiers"
+   ]
+  }
+ ],
+ "findings": [
+  [
+   "Background",
+   "Chapter 4 follows a payment's receiver from the private key, a random number, to the public key by elliptic curve multiplication, to the ways a public key becomes something a payer can type: the original pay to public key, the P2PKH commitment in base58check, compressed keys, P2SH, and the bech32 and bech32m segwit addresses, with private key formats, vanity addresses and paper wallets at the end."
+  ],
+  [
+   "Comparative analysis",
+   "The chapter's worked example reproduces in full, and from three independent directions: for the private key 1E99...AEDD a Python toolkit written for this chapter gives the book's public key coordinates, its compressed and uncompressed forms, both P2PKH addresses and both WIF strings; Bitcoin Core 31.1 gives the same two addresses from the public keys and from the WIF strings through descriptors and validates every address the chapter prints; and the book's own bech32 reference library gives its four segwit addresses, as does the toolkit, which also passes all 8 valid and 15 invalid BIP350 segwit vectors."
+  ],
+  [
+   "Comparative analysis",
+   "One statement in the chapter does not match its primary source: the book says secp256k1 was established by the National Institute of Standards and Technology, but the curve is defined in SEC 2 of the Standards for Efficient Cryptography, published by Certicom Research, and that document's Table 2 marks secp256k1 as not among the NIST-recommended curves while secp256r1 is."
+  ],
+  [
+   "Comparative analysis",
+   "The chapter's vanity-address table is exact in its frequencies from one to ten characters and gives 23 quintillion for eleven where 58 to the eleventh is 25 quintillion; its search times follow the rule average time equals half the frequency over 100,000 keys a second for patterns up to seven characters and are about a third shorter than that rule gives from eight characters on: 13 to 18 years against 20, 800 years against 1,180, 46,000 against 68,000 and 2.5 million against 4.0 million."
+  ],
+  [
+   "Comparative analysis",
+   "The bech32 error guarantees the chapter cites hold on the book's own P2WPKH address: none of its 39-character data part's one-character substitutions, none of its two-character substitutions and none of 200,000 random three- and four-character substitutions still carries a valid checksum, and the six length-extension strings the chapter prints carry a valid bech32 checksum and no valid bech32m checksum."
+  ],
+  [
+   "Comparative analysis",
+   "The chapter's collision-attack figures need updating to the network as it is: the book puts all miners at about 2 to the 80 hashes an hour in early 2023 and 2 to the 128 hashes at about 32 billion years, while a third party's estimate of the hash rate now is about 2.8 times that hourly figure and puts 2 to the 128 hashes at about 11 billion years."
+  ],
+  [
+   "Conclusion",
+   "For the course theme, a key pair is an identifier whose holder can prove control without asking anyone, the property W3C's Decentralized Identifiers are designed around: a DID is a URI that associates a subject with a DID document that can carry cryptographic material such as verification methods, and its controller can prove control without permission from any other party."
+  ],
+  [
+   "Contemporary developments",
+   "The bech32 family the chapter presents is now deployed: the BIPs repository gives BIP173 and BIP350 the status Deployed, Bitcoin Core 31.1 hands out bech32 P2WPKH addresses by default, bech32m taproot addresses on request, and validates the chapter's typo and length-extension examples as the book describes, locating the two typing errors at positions 25 and 40 and refusing all six strings that carry only a bech32 checksum after a version 1 witness."
+  ],
+  [
+   "Contemporary developments",
+   "The wallet the owner's notes drive with getnewaddress and dumpprivkey has changed: the 31.1 release still creates addresses but no longer knows dumpprivkey or importprivkey, which the 30.0 release notes list among the removed legacy wallet RPCs, and its default address is a bech32 P2WPKH address rather than the 1J7... address of the notes; a single WIF key can still be turned into an address through a descriptor such as pkh(WIF)."
+  ],
+  [
+   "Course notes",
+   "The owner's course notes for this chapter (2021, after the 2nd edition) add topics the 3rd edition's chapter no longer carries or treats differently, each checked: generating a private key with the operating system's random source, for which Python's documentation recommends the secrets module over the random module; the passphrase-protected key of BIP38, which the BIPs repository still marks Deployed but with the comment summary Unanimously Discourage for implementation; the Bitcoin Core commands getnewaddress and dumpprivkey (see the finding on the wallet); and vanity pools and paper wallets, which the 3rd edition keeps but calls obsolete or almost gone."
+  ]
+ ],
+ "refs": [
+  [
+   "BIP173 and BIP350: Base32 address format and Bech32m, the BIPs repository (Wuille, 2020), Status lines and test vectors",
+   "https://raw.githubusercontent.com/bitcoin/bips/master/bip-0350.mediawiki"
+  ],
+  [
+   "BIP38: Passphrase-protected private key, the BIPs repository (Caldwell, 2012)",
+   "https://raw.githubusercontent.com/bitcoin/bips/master/bip-0038.mediawiki"
+  ],
+  [
+   "Bitcoin Core 30.0 release notes: legacy wallet RPCs removed, among them dumpprivkey and importprivkey (Bitcoin Core, 2026)",
+   "https://raw.githubusercontent.com/bitcoin/bitcoin/05bc2f53ce0cb239c17dbdd6b261bd2db7d2a940/doc/release-notes/release-notes-30.0.md"
+  ],
+  [
+   "Bitcoin Core 31.1 release, downloaded, checked against its checksums and signatures, and run as an offline node: descriptors, address validation and wallet addresses (Bitcoin Core, 2026); evidence in 08-tooling/ch03-evidence and ch04-evidence",
+   "https://bitcoincore.org/bin/bitcoin-core-31.1/"
+  ],
+  [
+   "Bitcoin network hash rate, mempool.space API, read 2026-09-28 (Mempool Space, 2026), a third party's estimate",
+   "https://mempool.space/api/v1/mining/hashrate/3m"
+  ],
+  [
+   "Course notes: Chapter_4_KeysAddresses.pptx, SEN0401 (then CSE0469) Blockchain, Yusuf Altunel, 2021 - based on Mastering Bitcoin 2nd edition; the owner's file in 03-materials/owner-legacy-2025 (sha256 c390329c7a065303)",
+   "urn:sen0401:course-notes:Chapter_4_KeysAddresses.pptx:c390329c7a065303"
+  ],
+  [
+   "Decentralized Identifiers (DIDs) v1.0, W3C Recommendation, 19 July 2022 (World Wide Web Consortium, 2022)",
+   "https://www.w3.org/TR/did-core/"
+  ],
+  [
+   "Mastering Bitcoin, 3rd edition - Chapter 4, Keys and Addresses (Antonopoulos and Harding, O'Reilly, 2023; CC BY-SA 4.0; tag third_edition_print1)",
+   "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/third_edition_print1/ch04_keys.adoc"
+  ],
+  [
+   "Python 3.14.4 documentation source: the secrets module, Doc/library/secrets.rst at the tag v3.14.4 (Python Software Foundation, 2026)",
+   "https://raw.githubusercontent.com/python/cpython/v3.14.4/Doc/library/secrets.rst"
+  ],
+  [
+   "SEC 2: Recommended Elliptic Curve Domain Parameters, version 2.0, Standards for Efficient Cryptography (Certicom Research, 2010)",
+   "https://www.secg.org/sec2-v2.pdf"
+  ],
+  [
+   "sipa/bech32 reference implementation for Python, segwit_addr.py, the code the book runs (Wuille, 2020)",
+   "https://raw.githubusercontent.com/sipa/bech32/master/ref/python/segwit_addr.py"
+  ]
+ ]
+}

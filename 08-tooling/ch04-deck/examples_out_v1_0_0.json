@@ -1,0 +1,219 @@
+{
+ "_version": "1.0.0",
+ "_python": "3.14.4",
+ "range": [
+  [
+   "n = N",
+   ""
+  ],
+  [
+   "n < 2**256",
+   "True"
+  ],
+  [
+   "P == 2**256 - 2**32 - 2**9 - 2**8 - 2**7 - 2**6 - 2**4 - 1",
+   "True"
+  ],
+  [
+   "import secrets",
+   ""
+  ],
+  [
+   "k = secrets.randbelow(n - 1) + 1",
+   ""
+  ],
+  [
+   "0 < k < n",
+   "True"
+  ]
+ ],
+ "curve": [
+  [
+   "x = 55066263022277343669578718895168534326250603453777594175500187360389116729240",
+   ""
+  ],
+  [
+   "y = 32670510020758816978083085130507043184471273380659243275938904335757337482424",
+   ""
+  ],
+  [
+   "(x ** 3 + 7 - y ** 2) % P",
+   "0"
+  ]
+ ],
+ "pubkey": [
+  [
+   "k = 0x1E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD",
+   ""
+  ],
+  [
+   "K = ec_mul(k)",
+   ""
+  ],
+  [
+   "hex(K[0])",
+   "'0xf028892bad7ed57d2fb57bf33081d5cfcf6f9ed3d3d7f159c2e2fff579dc341a'"
+  ],
+  [
+   "hex(K[1])",
+   "'0x7cf33da18bd734c600b96a72bbc4749d5141c90ec8ac328ae52ddfe2e505bdb'"
+  ],
+  [
+   "ec_mul(N) is None",
+   "True"
+  ]
+ ],
+ "compress": [
+  [
+   "K = ec_mul(0x1E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD)",
+   ""
+  ],
+  [
+   "pub = pub_bytes(K)",
+   ""
+  ],
+  [
+   "pub.hex()",
+   "'03f028892bad7ed57d2fb57bf33081d5cfcf6f9ed3d3d7f159c2e2fff579dc341a'"
+  ],
+  [
+   "len(pub), len(pub_bytes(K, False))",
+   "(33, 65)"
+  ],
+  [
+   "decompress(pub) == K",
+   "True"
+  ]
+ ],
+ "commit": [
+  [
+   "hashlib.sha256(b'2007.  He said about a year and a half before Oct 2008\\n').hexdigest()",
+   "'94d7a772612c8f2f2ec609d41f5bd3d04a5aa1dfe3582f04af517d396a302e4e'"
+  ],
+  [
+   "K = ec_mul(0x1E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD)",
+   ""
+  ],
+  [
+   "hash160(pub_bytes(K)).hex()",
+   "'bbc1e42a39d05a4cc61752d6963b7f69d09bb27b'"
+  ],
+  [
+   "hash160(pub_bytes(K)) == hash160(pub_bytes(K, False))",
+   "False"
+  ]
+ ],
+ "addr": [
+  [
+   "K = ec_mul(0x1E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD)",
+   ""
+  ],
+  [
+   "p2pkh(pub_bytes(K))",
+   "'1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZy'"
+  ],
+  [
+   "p2pkh(pub_bytes(K, False))",
+   "'1424C2F4bC9JidNjjTUZCbUxv6Sa1Mt62x'"
+  ]
+ ],
+ "wif": [
+  [
+   "k = 0x1E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD",
+   ""
+  ],
+  [
+   "wif(k, False)",
+   "'5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn'"
+  ],
+  [
+   "wif(k)",
+   "'KxFC1jmwwCoACiCAWZ3eXa96mBM6tb3TYzGmf6YwgdGWZgawvrtJ'"
+  ],
+  [
+   "b58check_decode(wif(k)).hex()",
+   "'801e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd01'"
+  ]
+ ],
+ "prefix": [
+  [
+   "[b58check(bytes([v]) + bytes(20))[0] for v in (0x00, 0x05, 0xc4)]",
+   "['1', '3', '2']"
+  ],
+  [
+   "b58check(b'\\x80' + bytes(32) + b'\\x01')[0], b58check(b'\\x80' + b'\\xff' * 32 + b'\\x01')[0]",
+   "('K', 'L')"
+  ],
+  [
+   "b58check(bytes.fromhex('0488B21E') + bytes(74))[:4]",
+   "'xpub'"
+  ]
+ ],
+ "collide": [
+  [
+   "hr = 9.5e20",
+   ""
+  ],
+  [
+   "round(hr * 3600 / 2**80, 1)",
+   "2.8"
+  ],
+  [
+   "round(2**128 / hr / 31_557_600 / 1e9)",
+   "11"
+  ],
+  [
+   "round(2**128 / (2**80 / 3600) / 31_557_600 / 1e9)",
+   "32"
+  ]
+ ],
+ "bech": [
+  [
+   "segwit_address('bc', 0, bytes.fromhex(PROG_WPKH))",
+   "'bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee'"
+  ],
+  [
+   "segwit_address('bc', 0, bytes.fromhex(PROG_WSH))",
+   "'bc1qvj9r9egtd7mu2gemy28kpf4zefq4ssqzdzzycj7zjhk4arpavfhsct5a3p'"
+  ],
+  [
+   "segwit_address('bc', 1, bytes.fromhex(PROG_TR))",
+   "'bc1p9nh05ha8wrljf7ru236awm4t2x0d5ctkkywmu9sclnm4t0av2vgs4k3au7'"
+  ],
+  [
+   "segwit_address('bc', 16, bytes.fromhex('0000'))",
+   "'bc1sqqqqkfw08p'"
+  ]
+ ],
+ "ext": [
+  [
+   "BECH32, hex(BECH32M)",
+   "(1, '0x2bc830a3')"
+  ],
+  [
+   "[bech_check(a) == BECH32 for a in EXT]",
+   "[True, True, True, True, True, True]"
+  ],
+  [
+   "[bech_check(a) == BECH32M for a in EXT]",
+   "[False, False, False, False, False, False]"
+  ]
+ ],
+ "vanity": [
+  [
+   "[58**n for n in (2, 3, 4)]",
+   "[3364, 195112, 11316496]"
+  ],
+  [
+   "round(58**8 / 2 / 100_000 / 31_557_600, 1)",
+   "20.3"
+  ],
+  [
+   "58**11",
+   "24986644000165537792"
+  ]
+ ],
+ "_snippets": {
+  "ec": "def ec_add(a, b):\n    if a is None: return b\n    if b is None: return a\n    if a[0] == b[0] and (a[1] + b[1]) % P == 0: return None\n    m = (3 * a[0] * a[0] * pow(2 * a[1], -1, P) if a == b else (b[1] - a[1]) * pow(b[0] - a[0], -1, P)) % P\n    x = (m * m - a[0] - b[0]) % P\n    return (x, (m * (a[0] - x) - a[1]) % P)\ndef ec_mul(k, pt=G):\n    out = None\n    while k:\n        if k & 1: out = ec_add(out, pt)\n        pt = ec_add(pt, pt); k >>= 1\n    return out"
+ }
+}
