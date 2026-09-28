@@ -7,7 +7,7 @@
 
 <http://example.org/sen0401-slides-lineage> a owl:Ontology ;
     rdfs:label "Delivery lineage for renewing the SEN0401 lecture decks"@en ;
-    owl:versionInfo "0.19.1" ; dcterms:identifier "sen0401_slides_lineage" .
+    owl:versionInfo "0.20.0" ; dcterms:identifier "sen0401_slides_lineage" .
 
 ex:Lineage a backlog:Lineage ;
     rdfs:label "First lineage run for the SEN0401 decks"@en ;
@@ -715,8 +715,52 @@ ex:ST_Deck_Ch03 a backlog:Story ; rdfs:label "Deck: Mastering Bitcoin 3rd editio
     backlog:satisfiesDeliverable ex:Del_Deck_Ch03 ; backlog:pursuesObjective ex:Obj_DecksRenewed ; backlog:hasAcceptanceCriterion ex:AC_Chapter ;
     backlog:effectiveDefinitionOfDone ex:DoD ; backlog:hasApplicableConcern backlog:Concern_Data ;
     backlog:dependsOn ex:ST_Research_Ch03 ;
-    backlog:hasState backlog:Proposed ;
-    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Scored when its own iteration is planned." .
+    backlog:hasState backlog:Done ; backlog:startedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:finishedAt "2026-09-28T22:14:02"^^xsd:dateTime ; backlog:lastAuditedAt "2026-09-28T22:24:41"^^xsd:dateTime ;
+    backlog:hasEvidence ex:Ev_Deck_Ch03 ; backlog:hasExecutionModality backlog:Mode_Hybrid ; backlog:memberOfContainer ex:Iter_3 ;
+    backlog:hasPriorityScore ex:Score_Deck_Ch03 ;
+    backlog:decomposesInto ex:TK_Deck_Ch03_Build, ex:TK_Deck_Ch03_Verify .
+
+ex:Score_Deck_Ch03 a backlog:PriorityScore ; backlog:scoredByMethod backlog:Method_WSJF ;
+    backlog:hasScoreValue "9.60"^^xsd:decimal ; backlog:scoredAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
+    backlog:hasScoreRationale "WSJF = (business value 20 + time criticality 20 + risk reduction 8) / job size 5, Components reused from chapters 1 and 2, whose scores the owner approved - the same kind of story; they were not approved again for chapters 3 and 4, so they are a proposal to the owner (L-116), not an approval. Time criticality is set by the class at 09:00 Istanbul on 2026-10-09, itself a proposal (see Iter_3)." .
+ex:Plan_Deck_Ch03 a backlog:PlanningEvent ; rdfs:label "Planning of Deck for Ch03 into the third iteration"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:plannedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_3 ;
+    backlog:plansItem ex:ST_Deck_Ch03 ; backlog:producesTask ex:TK_Deck_Ch03_Build, ex:TK_Deck_Ch03_Verify .
+ex:Refine_Deck_Ch03 a backlog:RefinementEvent ; rdfs:label "Refinement that made Deck for Ch03 ready"@en ;
+    backlog:refines ex:ST_Deck_Ch03 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-28T19:47:00"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_3 ; backlog:hasRefinementOutcome "Settled: rewritten from the 3rd edition's chapter and the research record, restyled with PowerPoint's own capabilities, every code example run under current Python before it is shown, and the deck described as a teaching material aligned to the outcomes it serves." .
+ex:TK_Deck_Ch03_Build a backlog:ExecutionTask ; rdfs:label "Deck for Ch03: build"@en ; backlog:hasIdentifier "TK_Deck_Ch03_Build" ; backlog:hasTitle "Build Deck Ch03" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Done ; backlog:startedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:finishedAt "2026-09-28T22:14:02"^^xsd:dateTime ; backlog:hasEvidence ex:Ev_Deck_Ch03 ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch03 ;
+    backlog:hasAuditNote "Build it." .
+ex:TK_Deck_Ch03_Verify a backlog:ExecutionTask ; rdfs:label "Deck for Ch03: verify"@en ; backlog:hasIdentifier "TK_Deck_Ch03_Verify" ; backlog:hasTitle "Verify Deck Ch03" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Done ; backlog:startedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:finishedAt "2026-09-28T22:14:02"^^xsd:dateTime ; backlog:hasEvidence ex:Ev_Deck_Ch03 ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch03 ;
+    backlog:hasAuditNote "Run the chapter check and require the stale fixture refused." .
+
+ex:Ev_Deck_Ch03 a backlog:TestEvidence ; rdfs:label "Checks for Deck Ch03"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:attestsCriterion ex:AC_Chapter ; backlog:evidenceVerified true ; backlog:hasTestId "Deck/Ch03" ;
+    backlog:hasTestSpec "08-tooling/ch03-deck/deck_check_v1_0_0.py re-ran the 19 examples shown on the deck under Python 3.14.4 with 0 mismatches, and required the Merkle function shown to equal the one run; the fixture with the difficulty result edited was refused naming slide 18. Rendered to images and each slide inspected for overflow; four layout defects found that way were fixed before the deck was built." ; backlog:hasVerificationMethod "Gates run over the artefacts as published in the release carrying 03-materials/ch03/SEN0401_Ch03_BitcoinCore_3e_v1_0_0.pptx." ;
+    backlog:verifiedByTool "08-tooling/ch03-deck/deck_check_v1_0_0.py under Python 3.14.4" ; backlog:verifiedAt "2026-09-28T22:14:02"^^xsd:dateTime .
+ex:Harness_Deck_Ch03 a backlog:TestHarness ; rdfs:label "Checks for Deck Ch03"@en ;
+    backlog:harnessFor ex:ST_Deck_Ch03 ; backlog:harnessComplete true ; backlog:hasHarnessEvidence ex:Ev_Deck_Ch03 .
+ex:Obs1_Deck_Ch03 a backlog:MetricObservation ; rdfs:label "Deck count read after Ch03 closed"@en ;
+    backlog:observesMetric ex:Met_DecksRenewed ; backlog:observationFor ex:Obj_DecksRenewed ;
+    backlog:hasObservedValue "3"^^xsd:decimal ; backlog:observedAt "2026-09-28T22:24:41"^^xsd:dateTime ;
+    backlog:hasObservationMethod "Counted renewed decks passing the chapter check: chapter 1, chapter 2, chapter 3." .
+ex:Complete_Deck_Ch03 a backlog:TransitionEvent ; rdfs:label "Deck Ch03 completed"@en ;
+    backlog:transitionedItem ex:ST_Deck_Ch03 ; backlog:viaTransition backlog:T_Complete ;
+    backlog:transitionedAt "2026-09-28T22:24:41"^^xsd:dateTime ; backlog:transitionedBy backlog:Owner ;
+    backlog:hasTransitionNote "Closed on the deck check and its refused fixture. Times read from the clock and the files." .
+
+
+ex:Start_Deck_Ch03 a backlog:TransitionEvent ; rdfs:label "Deck Ch03 started"@en ; backlog:transitionedItem ex:ST_Deck_Ch03 ;
+    backlog:viaTransition backlog:T_Start ; backlog:transitionedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:transitionedBy backlog:Owner ;
+    backlog:hasTransitionNote "The start was not recorded when the work began. This is its provable lower bound - the earliest time it could begin: the owner's request (19:47:00, the message's own timestamp) for research, and for a deck or a page the moment its research record was last written, 22:08:15, read from the file - bounded, not composed." .
 
 ex:ST_Deck_Ch04 a backlog:Story ; rdfs:label "Deck: Mastering Bitcoin 3rd edition, chapter 4: Keys and Addresses"@en ; backlog:hasIdentifier "ST_Deck_Ch04" ; backlog:hasTitle "Deck for Mastering Bitcoin 3rd edition, chapter 4" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ;
@@ -725,8 +769,31 @@ ex:ST_Deck_Ch04 a backlog:Story ; rdfs:label "Deck: Mastering Bitcoin 3rd editio
     backlog:satisfiesDeliverable ex:Del_Deck_Ch04 ; backlog:pursuesObjective ex:Obj_DecksRenewed ; backlog:hasAcceptanceCriterion ex:AC_Chapter ;
     backlog:effectiveDefinitionOfDone ex:DoD ; backlog:hasApplicableConcern backlog:Concern_Data ;
     backlog:dependsOn ex:ST_Research_Ch04 ;
-    backlog:hasState backlog:Proposed ;
-    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Scored when its own iteration is planned." .
+    backlog:hasState backlog:Ready ; backlog:memberOfContainer ex:Iter_3 ;
+    backlog:hasPriorityScore ex:Score_Deck_Ch04 ;
+    backlog:decomposesInto ex:TK_Deck_Ch04_Build, ex:TK_Deck_Ch04_Verify .
+
+ex:Score_Deck_Ch04 a backlog:PriorityScore ; backlog:scoredByMethod backlog:Method_WSJF ;
+    backlog:hasScoreValue "9.60"^^xsd:decimal ; backlog:scoredAt "2026-09-28T22:30:05"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
+    backlog:hasScoreRationale "WSJF = (business value 20 + time criticality 20 + risk reduction 8) / job size 5, Components reused from chapters 1 and 2, whose scores the owner approved - the same kind of story; they were not approved again for chapters 3 and 4, so they are a proposal to the owner (L-116), not an approval. Time criticality is set by the class at 09:00 Istanbul on 2026-10-09, itself a proposal (see Iter_3)." .
+ex:Plan_Deck_Ch04 a backlog:PlanningEvent ; rdfs:label "Planning of Deck for Ch04 into the third iteration"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:plannedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_3 ;
+    backlog:plansItem ex:ST_Deck_Ch04 ; backlog:producesTask ex:TK_Deck_Ch04_Build, ex:TK_Deck_Ch04_Verify .
+ex:Refine_Deck_Ch04 a backlog:RefinementEvent ; rdfs:label "Refinement that made Deck for Ch04 ready"@en ;
+    backlog:refines ex:ST_Deck_Ch04 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-28T19:47:00"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_3 ; backlog:hasRefinementOutcome "Settled: rewritten from the 3rd edition's chapter and the research record, restyled with PowerPoint's own capabilities, every code example run under current Python before it is shown, and the deck described as a teaching material aligned to the outcomes it serves." .
+ex:TK_Deck_Ch04_Build a backlog:ExecutionTask ; rdfs:label "Deck for Ch04: build"@en ; backlog:hasIdentifier "TK_Deck_Ch04_Build" ; backlog:hasTitle "Build Deck Ch04" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch04 ;
+    backlog:hasAuditNote "Build it." .
+ex:TK_Deck_Ch04_Verify a backlog:ExecutionTask ; rdfs:label "Deck for Ch04: verify"@en ; backlog:hasIdentifier "TK_Deck_Ch04_Verify" ; backlog:hasTitle "Verify Deck Ch04" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch04 ;
+    backlog:hasAuditNote "Run the chapter check and require the stale fixture refused." .
 
 ex:ST_Deck_Ch05 a backlog:Story ; rdfs:label "Deck: Mastering Bitcoin 3rd edition, chapter 5: Wallets"@en ; backlog:hasIdentifier "ST_Deck_Ch05" ; backlog:hasTitle "Deck for Mastering Bitcoin 3rd edition, chapter 5" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ;
@@ -945,8 +1012,50 @@ ex:ST_Research_Ch03 a backlog:Story ; rdfs:label "Research: Mastering Bitcoin 3r
     backlog:asRole "SEN0401 instructor" ; backlog:wantsCapability "an RDODI four-stage research run on the chapter's subject, with its pedagogy stage and Courseware profile" ; backlog:soThat "students are taught from the edition they read, on researched ground" ;
     backlog:satisfiesDeliverable ex:Del_Research_Ch03 ; backlog:pursuesObjective ex:Obj_ResearchRecorded ; backlog:hasAcceptanceCriterion ex:AC_Chapter ;
     backlog:effectiveDefinitionOfDone ex:DoD ; backlog:hasApplicableConcern backlog:Concern_Data ;
-    backlog:hasState backlog:Proposed ;
-    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Scored when its own iteration is planned." .
+    backlog:hasState backlog:Done ; backlog:startedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:finishedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:lastAuditedAt "2026-09-28T22:24:41"^^xsd:dateTime ;
+    backlog:hasEvidence ex:Ev_Research_Ch03 ; backlog:hasExecutionModality backlog:Mode_Hybrid ; backlog:memberOfContainer ex:Iter_3 ;
+    backlog:hasPriorityScore ex:Score_Research_Ch03 ;
+    backlog:decomposesInto ex:TK_Research_Ch03_Build, ex:TK_Research_Ch03_Verify .
+
+ex:Score_Research_Ch03 a backlog:PriorityScore ; backlog:scoredByMethod backlog:Method_WSJF ;
+    backlog:hasScoreValue "15.33"^^xsd:decimal ; backlog:scoredAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
+    backlog:hasScoreRationale "WSJF = (business value 13 + time criticality 20 + risk reduction 13) / job size 3, Components reused from chapters 1 and 2, whose scores the owner approved - the same kind of story; they were not approved again for chapters 3 and 4, so they are a proposal to the owner (L-116), not an approval. Time criticality is set by the class at 09:00 Istanbul on 2026-10-09, itself a proposal (see Iter_3)." .
+ex:Plan_Research_Ch03 a backlog:PlanningEvent ; rdfs:label "Planning of Research for Ch03 into the third iteration"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:plannedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_3 ;
+    backlog:plansItem ex:ST_Research_Ch03 ; backlog:producesTask ex:TK_Research_Ch03_Build, ex:TK_Research_Ch03_Verify .
+ex:Refine_Research_Ch03 a backlog:RefinementEvent ; rdfs:label "Refinement that made Research for Ch03 ready"@en ;
+    backlog:refines ex:ST_Research_Ch03 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-28T19:47:00"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_3 ; backlog:hasRefinementOutcome "Settled: RDODI's four-stage procedure v1.6.0 on the chapter's subject, with its Pedagogy and Professional Standards stage and the Courseware profile; the research record lists every source a later claim rests on." .
+ex:TK_Research_Ch03_Build a backlog:ExecutionTask ; rdfs:label "Research for Ch03: build"@en ; backlog:hasIdentifier "TK_Research_Ch03_Build" ; backlog:hasTitle "Build Research Ch03" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Done ; backlog:startedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:finishedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:hasEvidence ex:Ev_Research_Ch03 ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:hasAuditNote "Build it." .
+ex:TK_Research_Ch03_Verify a backlog:ExecutionTask ; rdfs:label "Research for Ch03: verify"@en ; backlog:hasIdentifier "TK_Research_Ch03_Verify" ; backlog:hasTitle "Verify Research Ch03" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Done ; backlog:startedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:finishedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:hasEvidence ex:Ev_Research_Ch03 ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:hasAuditNote "Run the chapter check and require the stale fixture refused." .
+
+ex:Ev_Research_Ch03 a backlog:TestEvidence ; rdfs:label "Checks for Research Ch03"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:attestsCriterion ex:AC_Chapter ; backlog:evidenceVerified true ; backlog:hasTestId "Research/Ch03" ;
+    backlog:hasTestSpec "RDODI procedure v1.6.0, Stages 1-3 for Mastering Bitcoin's chapter 3 by 08-tooling/sen0401_rdodi_build_v1_1_0.py from sen0401_ch03_rdodi_data_v1_0_0.py: gates Stage1.A to Stage3.src all PASS with RDODI's own validator (17 citations, 49 sections), and 41 executed checks with 0 mismatches under Python 3.14.4 - every input-output example, the transaction's txid and wtxid from its hex, Merkle root and header hash of block 123456, the block 775072 totals, and the facts read from the real Bitcoin Core 31.1 release (downloaded, SHA-256 equal to its SHA256SUMS, 11 good signatures, run as an offline node; outputs in 08-tooling/ch03-evidence); HermiT consistent; a wrong expected value was refused by the checker. One printed result in the book was found not to match its script and is recorded as a finding." ; backlog:hasVerificationMethod "Gates run over the artefacts as published in the release carrying the chapter 3 research record." ;
+    backlog:verifiedByTool "08-tooling/sen0401_rdodi_gates_v1_0_0.py (rdodi-ecosystem/02-gates/rdodi_pipeline_validator_v1_6_0.py, Stages 1-3), sen0401_rdodi_checks_v1_0_0.py (every example and claim executed under Python 3.14.4, against the evidence of the Bitcoin Core 31.1 run; HermiT)" ; backlog:verifiedAt "2026-09-28T22:08:15"^^xsd:dateTime .
+ex:Harness_Research_Ch03 a backlog:TestHarness ; rdfs:label "Checks for Research Ch03"@en ;
+    backlog:harnessFor ex:ST_Research_Ch03 ; backlog:harnessComplete true ; backlog:hasHarnessEvidence ex:Ev_Research_Ch03 .
+ex:Obs1_Research_Ch03 a backlog:MetricObservation ; rdfs:label "Research count read after Ch03 closed"@en ;
+    backlog:observesMetric ex:Met_ResearchRecorded ; backlog:observationFor ex:Obj_ResearchRecorded ;
+    backlog:hasObservedValue "3"^^xsd:decimal ; backlog:observedAt "2026-09-28T22:24:41"^^xsd:dateTime ;
+    backlog:hasObservationMethod "Counted chapters whose Stages 1-3 artefacts are published and pass their gates: chapter 1, chapter 2, chapter 3." .
+ex:Complete_Research_Ch03 a backlog:TransitionEvent ; rdfs:label "Research Ch03 completed"@en ;
+    backlog:transitionedItem ex:ST_Research_Ch03 ; backlog:viaTransition backlog:T_Complete ;
+    backlog:transitionedAt "2026-09-28T22:24:41"^^xsd:dateTime ; backlog:transitionedBy backlog:Owner ;
+    backlog:hasTransitionNote "Closed on Stages 1-3 of the RDODI procedure with every example and claim executed, and the release run and verified. Times read from the clock and the files." .
+
+
+ex:Start_Research_Ch03 a backlog:TransitionEvent ; rdfs:label "Research Ch03 started"@en ; backlog:transitionedItem ex:ST_Research_Ch03 ;
+    backlog:viaTransition backlog:T_Start ; backlog:transitionedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:transitionedBy backlog:Owner ;
+    backlog:hasTransitionNote "The start was not recorded when the work began. This is its provable lower bound - the earliest time it could begin: the owner's request (19:47:00, the message's own timestamp) for research, and for a deck or a page the moment its research record was last written, 22:08:15, read from the file - bounded, not composed." .
 
 ex:ST_Research_Ch04 a backlog:Story ; rdfs:label "Research: Mastering Bitcoin 3rd edition, chapter 4: Keys and Addresses"@en ; backlog:hasIdentifier "ST_Research_Ch04" ; backlog:hasTitle "Research for Mastering Bitcoin 3rd edition, chapter 4" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ;
@@ -954,8 +1063,29 @@ ex:ST_Research_Ch04 a backlog:Story ; rdfs:label "Research: Mastering Bitcoin 3r
     backlog:asRole "SEN0401 instructor" ; backlog:wantsCapability "an RDODI four-stage research run on the chapter's subject, with its pedagogy stage and Courseware profile" ; backlog:soThat "students are taught from the edition they read, on researched ground" ;
     backlog:satisfiesDeliverable ex:Del_Research_Ch04 ; backlog:pursuesObjective ex:Obj_ResearchRecorded ; backlog:hasAcceptanceCriterion ex:AC_Chapter ;
     backlog:effectiveDefinitionOfDone ex:DoD ; backlog:hasApplicableConcern backlog:Concern_Data ;
-    backlog:hasState backlog:Proposed ;
-    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Scored when its own iteration is planned." .
+    backlog:hasState backlog:Ready ; backlog:memberOfContainer ex:Iter_3 ;
+    backlog:hasPriorityScore ex:Score_Research_Ch04 ;
+    backlog:decomposesInto ex:TK_Research_Ch04_Build, ex:TK_Research_Ch04_Verify .
+
+ex:Score_Research_Ch04 a backlog:PriorityScore ; backlog:scoredByMethod backlog:Method_WSJF ;
+    backlog:hasScoreValue "15.33"^^xsd:decimal ; backlog:scoredAt "2026-09-28T22:30:05"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
+    backlog:hasScoreRationale "WSJF = (business value 13 + time criticality 20 + risk reduction 13) / job size 3, Components reused from chapters 1 and 2, whose scores the owner approved - the same kind of story; they were not approved again for chapters 3 and 4, so they are a proposal to the owner (L-116), not an approval. Time criticality is set by the class at 09:00 Istanbul on 2026-10-09, itself a proposal (see Iter_3)." .
+ex:Plan_Research_Ch04 a backlog:PlanningEvent ; rdfs:label "Planning of Research for Ch04 into the third iteration"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:plannedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_3 ;
+    backlog:plansItem ex:ST_Research_Ch04 ; backlog:producesTask ex:TK_Research_Ch04_Build, ex:TK_Research_Ch04_Verify .
+ex:Refine_Research_Ch04 a backlog:RefinementEvent ; rdfs:label "Refinement that made Research for Ch04 ready"@en ;
+    backlog:refines ex:ST_Research_Ch04 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-28T19:47:00"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_3 ; backlog:hasRefinementOutcome "Settled: RDODI's four-stage procedure v1.6.0 on the chapter's subject, with its Pedagogy and Professional Standards stage and the Courseware profile; the research record lists every source a later claim rests on." .
+ex:TK_Research_Ch04_Build a backlog:ExecutionTask ; rdfs:label "Research for Ch04: build"@en ; backlog:hasIdentifier "TK_Research_Ch04_Build" ; backlog:hasTitle "Build Research Ch04" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:hasAuditNote "Build it." .
+ex:TK_Research_Ch04_Verify a backlog:ExecutionTask ; rdfs:label "Research for Ch04: verify"@en ; backlog:hasIdentifier "TK_Research_Ch04_Verify" ; backlog:hasTitle "Verify Research Ch04" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:hasAuditNote "Run the chapter check and require the stale fixture refused." .
 
 ex:ST_Research_Ch05 a backlog:Story ; rdfs:label "Research: Mastering Bitcoin 3rd edition, chapter 5: Wallets"@en ; backlog:hasIdentifier "ST_Research_Ch05" ; backlog:hasTitle "Research for Mastering Bitcoin 3rd edition, chapter 5" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ;
@@ -1169,8 +1299,52 @@ ex:ST_Page_Ch03 a backlog:Story ; rdfs:label "Page: Mastering Bitcoin 3rd editio
     backlog:satisfiesDeliverable ex:Del_Page_Ch03 ; backlog:pursuesObjective ex:Obj_PagesBuilt ; backlog:hasAcceptanceCriterion ex:AC_Chapter ;
     backlog:effectiveDefinitionOfDone ex:DoD ; backlog:hasApplicableConcern backlog:Concern_Data ;
     backlog:dependsOn ex:ST_Research_Ch03 ;
-    backlog:hasState backlog:Proposed ;
-    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Scored when its own iteration is planned." .
+    backlog:hasState backlog:Done ; backlog:startedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:finishedAt "2026-09-28T22:23:05"^^xsd:dateTime ; backlog:lastAuditedAt "2026-09-28T22:24:41"^^xsd:dateTime ;
+    backlog:hasEvidence ex:Ev_Page_Ch03 ; backlog:hasExecutionModality backlog:Mode_Hybrid ; backlog:memberOfContainer ex:Iter_3 ;
+    backlog:hasPriorityScore ex:Score_Page_Ch03 ;
+    backlog:decomposesInto ex:TK_Page_Ch03_Build, ex:TK_Page_Ch03_Verify .
+
+ex:Score_Page_Ch03 a backlog:PriorityScore ; backlog:scoredByMethod backlog:Method_WSJF ;
+    backlog:hasScoreValue "12.67"^^xsd:decimal ; backlog:scoredAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
+    backlog:hasScoreRationale "WSJF = (business value 13 + time criticality 20 + risk reduction 5) / job size 3, Components reused from chapters 1 and 2, whose scores the owner approved - the same kind of story; they were not approved again for chapters 3 and 4, so they are a proposal to the owner (L-116), not an approval. Time criticality is set by the class at 09:00 Istanbul on 2026-10-09, itself a proposal (see Iter_3)." .
+ex:Plan_Page_Ch03 a backlog:PlanningEvent ; rdfs:label "Planning of Page for Ch03 into the third iteration"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:plannedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_3 ;
+    backlog:plansItem ex:ST_Page_Ch03 ; backlog:producesTask ex:TK_Page_Ch03_Build, ex:TK_Page_Ch03_Verify .
+ex:Refine_Page_Ch03 a backlog:RefinementEvent ; rdfs:label "Refinement that made Page for Ch03 ready"@en ;
+    backlog:refines ex:ST_Page_Ch03 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-28T19:47:00"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_3 ; backlog:hasRefinementOutcome "Settled: one interactive page for the chapter, carrying the research results; published as a page students can open, and described as a teaching material." .
+ex:TK_Page_Ch03_Build a backlog:ExecutionTask ; rdfs:label "Page for Ch03: build"@en ; backlog:hasIdentifier "TK_Page_Ch03_Build" ; backlog:hasTitle "Build Page Ch03" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Done ; backlog:startedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:finishedAt "2026-09-28T22:23:05"^^xsd:dateTime ; backlog:hasEvidence ex:Ev_Page_Ch03 ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch03 ;
+    backlog:hasAuditNote "Build it." .
+ex:TK_Page_Ch03_Verify a backlog:ExecutionTask ; rdfs:label "Page for Ch03: verify"@en ; backlog:hasIdentifier "TK_Page_Ch03_Verify" ; backlog:hasTitle "Verify Page Ch03" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Done ; backlog:startedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:finishedAt "2026-09-28T22:23:05"^^xsd:dateTime ; backlog:hasEvidence ex:Ev_Page_Ch03 ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch03 ;
+    backlog:hasAuditNote "Run the chapter check and require the stale fixture refused." .
+
+ex:Ev_Page_Ch03 a backlog:TestEvidence ; rdfs:label "Checks for Page Ch03"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:attestsCriterion ex:AC_Chapter ; backlog:evidenceVerified true ; backlog:hasTestId "Page/Ch03" ;
+    backlog:hasTestSpec "08-tooling/sen0401_page_test_v9_4_3.py exercised every widget and feature of the chapter 3 page in headless Chromium at 2026-09-28T22:23:05 - 50 checks passed, 0 failed, every executable example printed via Pyodide what the build interpreter printed, 0 console errors, 0 WCAG 2 AA violations - and a fixture with one stored value altered was refused (4 failed checks). RDODI Stage 4 parse, shapes and source validity pass; the pedagogy stage's Courseware profile passes its WCAG, model-provenance, assessment-rigor and Bloom-coverage gates and refuses only for the owner's pending pedagogical-soundness attestation, not claimed." ; backlog:hasVerificationMethod "Gates run over the artefacts as published in the release carrying the chapter 3 page." ;
+    backlog:verifiedByTool "08-tooling/sen0401_page_test_v9_4_3.py in headless Chromium, RDODI Stage 4 and the Courseware pedagogy gates" ; backlog:verifiedAt "2026-09-28T22:23:05"^^xsd:dateTime .
+ex:Harness_Page_Ch03 a backlog:TestHarness ; rdfs:label "Checks for Page Ch03"@en ;
+    backlog:harnessFor ex:ST_Page_Ch03 ; backlog:harnessComplete true ; backlog:hasHarnessEvidence ex:Ev_Page_Ch03 .
+ex:Obs1_Page_Ch03 a backlog:MetricObservation ; rdfs:label "Page count read after Ch03 closed"@en ;
+    backlog:observesMetric ex:Met_PagesBuilt ; backlog:observationFor ex:Obj_PagesBuilt ;
+    backlog:hasObservedValue "3"^^xsd:decimal ; backlog:observedAt "2026-09-28T22:24:41"^^xsd:dateTime ;
+    backlog:hasObservationMethod "Counted interactive pages passing their browser tests and Stage 4 gates: chapter 1, chapter 2, chapter 3." .
+ex:Complete_Page_Ch03 a backlog:TransitionEvent ; rdfs:label "Page Ch03 completed"@en ;
+    backlog:transitionedItem ex:ST_Page_Ch03 ; backlog:viaTransition backlog:T_Complete ;
+    backlog:transitionedAt "2026-09-28T22:24:41"^^xsd:dateTime ; backlog:transitionedBy backlog:Owner ;
+    backlog:hasTransitionNote "Closed on the page's browser tests, its refused fixture and its Stage 4 gates. The Courseware attestation, the owner's, is pending and not claimed. Times read from the clock and the files." .
+
+
+ex:Start_Page_Ch03 a backlog:TransitionEvent ; rdfs:label "Page Ch03 started"@en ; backlog:transitionedItem ex:ST_Page_Ch03 ;
+    backlog:viaTransition backlog:T_Start ; backlog:transitionedAt "2026-09-28T22:08:15"^^xsd:dateTime ; backlog:transitionedBy backlog:Owner ;
+    backlog:hasTransitionNote "The start was not recorded when the work began. This is its provable lower bound - the earliest time it could begin: the owner's request (19:47:00, the message's own timestamp) for research, and for a deck or a page the moment its research record was last written, 22:08:15, read from the file - bounded, not composed." .
 
 ex:ST_Page_Ch04 a backlog:Story ; rdfs:label "Page: Mastering Bitcoin 3rd edition, chapter 4: Keys and Addresses"@en ; backlog:hasIdentifier "ST_Page_Ch04" ; backlog:hasTitle "Page for Mastering Bitcoin 3rd edition, chapter 4" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ;
@@ -1179,8 +1353,31 @@ ex:ST_Page_Ch04 a backlog:Story ; rdfs:label "Page: Mastering Bitcoin 3rd editio
     backlog:satisfiesDeliverable ex:Del_Page_Ch04 ; backlog:pursuesObjective ex:Obj_PagesBuilt ; backlog:hasAcceptanceCriterion ex:AC_Chapter ;
     backlog:effectiveDefinitionOfDone ex:DoD ; backlog:hasApplicableConcern backlog:Concern_Data ;
     backlog:dependsOn ex:ST_Research_Ch04 ;
-    backlog:hasState backlog:Proposed ;
-    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Scored when its own iteration is planned." .
+    backlog:hasState backlog:Ready ; backlog:memberOfContainer ex:Iter_3 ;
+    backlog:hasPriorityScore ex:Score_Page_Ch04 ;
+    backlog:decomposesInto ex:TK_Page_Ch04_Build, ex:TK_Page_Ch04_Verify .
+
+ex:Score_Page_Ch04 a backlog:PriorityScore ; backlog:scoredByMethod backlog:Method_WSJF ;
+    backlog:hasScoreValue "12.67"^^xsd:decimal ; backlog:scoredAt "2026-09-28T22:30:05"^^xsd:dateTime ; backlog:isAveragedFromMembers false ;
+    backlog:hasScoreRationale "WSJF = (business value 13 + time criticality 20 + risk reduction 5) / job size 3, Components reused from chapters 1 and 2, whose scores the owner approved - the same kind of story; they were not approved again for chapters 3 and 4, so they are a proposal to the owner (L-116), not an approval. Time criticality is set by the class at 09:00 Istanbul on 2026-10-09, itself a proposal (see Iter_3)." .
+ex:Plan_Page_Ch04 a backlog:PlanningEvent ; rdfs:label "Planning of Page for Ch04 into the third iteration"@en ; backlog:belongsToLineage ex:Lineage ;
+    backlog:plannedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:plannedBy backlog:Owner ; backlog:plannedInto ex:Iter_3 ;
+    backlog:plansItem ex:ST_Page_Ch04 ; backlog:producesTask ex:TK_Page_Ch04_Build, ex:TK_Page_Ch04_Verify .
+ex:Refine_Page_Ch04 a backlog:RefinementEvent ; rdfs:label "Refinement that made Page for Ch04 ready"@en ;
+    backlog:refines ex:ST_Page_Ch04 ; backlog:addressesConcern backlog:Concern_Data ; backlog:refinedAt "2026-09-28T19:47:00"^^xsd:dateTime ;
+    backlog:refinedBy backlog:Owner ; backlog:groomsForIteration ex:Iter_3 ; backlog:hasRefinementOutcome "Settled: one interactive page for the chapter, carrying the research results; published as a page students can open, and described as a teaching material." .
+ex:TK_Page_Ch04_Build a backlog:ExecutionTask ; rdfs:label "Page for Ch04: build"@en ; backlog:hasIdentifier "TK_Page_Ch04_Build" ; backlog:hasTitle "Build Page Ch04" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Build ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch04 ;
+    backlog:hasAuditNote "Build it." .
+ex:TK_Page_Ch04_Verify a backlog:ExecutionTask ; rdfs:label "Page for Ch04: verify"@en ; backlog:hasIdentifier "TK_Page_Ch04_Verify" ; backlog:hasTitle "Verify Page Ch04" ;
+    backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ; backlog:hasState backlog:Proposed ;
+    backlog:hasInvestmentCategory backlog:Cat_NewCapability ; backlog:hasTaskType backlog:TaskType_Verify ; backlog:effectiveDefinitionOfDone ex:DoD ;
+    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story's score; scoring both would double-count." ;
+    backlog:dependsOn ex:ST_Research_Ch04 ;
+    backlog:hasAuditNote "Run the chapter check and require the stale fixture refused." .
 
 ex:ST_Page_Ch05 a backlog:Story ; rdfs:label "Page: Mastering Bitcoin 3rd edition, chapter 5: Wallets"@en ; backlog:hasIdentifier "ST_Page_Ch05" ; backlog:hasTitle "Page for Mastering Bitcoin 3rd edition, chapter 5" ;
     backlog:belongsToLineage ex:Lineage ; backlog:memberOfContainer ex:Backlog ; backlog:admittedByOutput ex:Out_Backlog ;
@@ -1444,6 +1641,56 @@ ex:Iter_2 a backlog:Iteration ; rdfs:label "Second iteration: chapter 2, before 
     backlog:hasSprintGoal "Chapter 2 researched, its deck built and its interactive page built." ;
     backlog:hasMember ex:ST_Deck_Ch02, ex:ST_Research_Ch02, ex:ST_Page_Ch02 .
 
+ex:Session_Iter3 a backlog:RegisterSession ; rdfs:label "The session that planned chapters 3 and 4 and closed chapter 3"@en ;
+    backlog:sessionFor ex:Backlog ; backlog:sessionConductedBy "claude-code-course-materials-session" ;
+    backlog:sessionStartedAt "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:sessionEndedAt "2026-09-28T22:24:41"^^xsd:dateTime ;
+    backlog:stateVerifiedAtStart true ;
+    backlog:hasSessionScopeNote "Ran the discipline ceremony first (governance at Ontologies c9e0d4d, knowledge base 2.32.0, OE discipline 2.12.1, lineage discipline 70.0.0), then planned chapters 3 and 4 into the third iteration on the owner's request and closed chapter 3's research, deck and page. Chapter 4's items were planned and left Ready; nothing of them was started here." ;
+    backlog:changedItem ex:ST_Research_Ch03, ex:ST_Deck_Ch03, ex:ST_Page_Ch03, ex:ST_Research_Ch04, ex:ST_Deck_Ch04, ex:ST_Page_Ch04 .
+
+ex:Iter_3 a backlog:Iteration ; rdfs:label "Third iteration: chapters 3 and 4, before the class of 9 October"@en ;
+    backlog:hasIdentifier "Iter_3" ; backlog:belongsToLineage ex:Lineage ;
+    backlog:iterationStart "2026-09-28T19:47:00"^^xsd:dateTime ; backlog:iterationEnd "2026-10-09T06:00:00"^^xsd:dateTime ;
+    backlog:hasDurationSource "Owner, 2026-09-28 (the message's own timestamp, 22:47 Istanbul): two more chapters of each course. The owner named no date; the end proposed here is SEN0401's class after the one iteration 2 ends at - Friday 9 October at 09:00 Istanbul, from the weekly schedule in the course outline - for the owner to move." ;
+    backlog:hasSprintGoal "Chapters 3 and 4 researched, their decks renewed and their interactive pages built, ready to present." ;
+    backlog:hasMember ex:ST_Deck_Ch03, ex:ST_Deck_Ch04, ex:ST_Research_Ch03, ex:ST_Research_Ch04, ex:ST_Page_Ch03, ex:ST_Page_Ch04 .
+
+ex:Ruling_Ch03Planned a backlog:RetrospectiveFinding ;
+    rdfs:label "Chapters 3 and 4 planned on the owner's request, with proposed scores and a proposed end date"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Research_Ch03, ex:ST_Deck_Ch03, ex:ST_Page_Ch03, ex:ST_Research_Ch04, ex:ST_Deck_Ch04, ex:ST_Page_Ch04 ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "On 2026-09-28 (22:47 Istanbul) the owner asked for two more chapters of each course, with the full research run, a deck and a page. The chapters were already admitted as Proposed stories. Their planning time is the request's own timestamp; their WSJF components are the ones the owner approved for chapters 1 and 2, a stipulation for chapters 3 and 4 that the owner has not confirmed; and the owner named no end date." ;
+    backlog:hasRemedy "Planned into a third iteration, Iter_3, ending at the class of 9 October, proposed from the weekly schedule; the score rationale says the components are proposed for the owner's confirmation, per L-116. Started items carry the earliest time they could have begun, named as a bound." .
+
+ex:Finding_BookPrintedResultMismatch a backlog:RetrospectiveFinding ;
+    rdfs:label "A result the book prints for chapter 3 does not belong to the script above it"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Research_Ch03, ex:ST_Deck_Ch03, ex:ST_Page_Ch03 ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "Running the chapter's examples on Bitcoin Core 31.1 and its data reproduced everything except one printed result: the text under rpc_block.py reports a block total of 10,322.07722534 BTC including a 25 BTC reward, while the script reads block 775072, whose subsidy under Bitcoin Core's own schedule is 6.25 BTC; the block's outputs sum to 5,863.00566521 BTC in a block explorer's data, and its coinbase is the 6.25 subsidy plus the fees. The printed figure belongs to another block. Found by executing, not by reading." ;
+    backlog:hasRemedy "Chapter 3's deck, page and research record state the discrepancy and show the computation; the book's text is not altered. Reporting it to the book's authors, whose repository is open to issues, is left to the owner." .
+
+ex:Finding_RealSoftwareRunAndVerified a backlog:RetrospectiveFinding ;
+    rdfs:label "The chapter about running Bitcoin Core was checked by running Bitcoin Core"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Research_Ch03 ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "The book's build steps, defaults and printed outputs are for Bitcoin Core 24.0.1; the current release is 31.1, which moved the build to CMake, removed BerkeleyDB wallets, raised the database-cache default and changed fields of the status answers. Reading release notes alone would have left those as claims." ;
+    backlog:hasRemedy "The 31.1 Linux release was downloaded, its SHA-256 compared with SHA256SUMS and its 11 good signatures counted with builder keys from the guix.sigs repository (the keys' own trust is not established, and the record says so), and run as an offline node in a throw-away home directory; 08-tooling/ch03-evidence holds the script, the outputs and the block data, and the research checks execute against them. The source build itself was not run: the CMake steps rest on the release notes and doc/build-unix.md." .
+
+ex:Finding_PageAndCheckToolingForkedAgain a backlog:RetrospectiveFinding ;
+    rdfs:label "SEN0401's page, gate and check tooling had drifted from SEN0414's and was forked again"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Research_Ch03, ex:ST_Page_Ch03 ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "For chapter 3 SEN0401 needed the RDODI gate runner, the execution checks and the Word-file writer that only SEN0414 had, and its page test could not run behind a proxy (it replaced the whole environment, dropping HTTPS_PROXY) and its template lacked icons for chapter 3's agents, which the page test refuses. The two courses' pipelines had already diverged: SEN0401's test is ahead of SEN0414's on some checks and behind on others." ;
+    backlog:hasRemedy "Forked again, named as forks: sen0401_rdodi_build_v1_1_0.py (chapter 2 rebuilds byte-identical), sen0401_rdodi_gates_v1_0_0.py, sen0401_rdodi_checks_v1_0_0.py, sen0401_rdodi_docx_v1_0_0.py, page test 9.4.3 (proxy kept) and template 9.4.3 (icons added; earlier entries keep their order). Consolidating the two courses' tooling into one is CME's work and is named here, not done." .
+
+ex:Finding_Stage4ProposedGatesOnChapter3 a backlog:RetrospectiveFinding ;
+    rdfs:label "Stage 4's proposed coverage and substance gates fail on chapter 3's page, as on every published page"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Page_Ch03 ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "Run over chapter 3's page ABox, RDODI's pipeline validator passes Stage 4's parse, shapes (0 violations, 3 advisory warnings) and source-validity gates and fails two it labels PROPOSED - coverage (10 typed individuals lack a label and content) and substance (108 individuals not substantive); the pedagogy stage passes all its automated gates and refuses only for the owner's pending attestation." ;
+    backlog:hasRemedy "Not remedied and not claimed as passed: the record says which gates pass and which fail. Changing what every page declares is a change to shared tooling and a ruling for the owner." .
+
+ex:Finding_WebReaderRefusals a backlog:RetrospectiveFinding ;
+    rdfs:label "The web reader refused two pages that the shell could read"@en ;
+    backlog:belongsToLineage ex:Lineage ; backlog:relatesToWorkItem ex:ST_Research_Ch03 ; backlog:hasFindingScope backlog:Scope_Methodology ;
+    backlog:hasRootCause "For the JSON-LD specification and Bitcoin Core's BIP list the web reader answered that permission had not been given in time." ;
+    backlog:hasRemedy "The BIP list was read from the Bitcoin Core repository checkout at the pinned commit, and the JSON-LD specification through the environment's proxy from the shell, its title, publication date and abstract read from the page. Both are named as read that way in the research record." .
+
 ex:Out_Mission a backlog:StageOutput ;
     rdfs:label "Closure of the Mission stage"@en ;
     backlog:belongsToLineage ex:Lineage ;
@@ -1472,7 +1719,7 @@ ex:Out_Objective a backlog:StageOutput ;
     backlog:belongsToLineage ex:Lineage ;
     backlog:outputOfStage backlog:Stage_Objective ;
     backlog:consumesOutput ex:Out_Goal ;
-    backlog:hasStateDigest "8786f9b9de815596b0472003461500c6dec72b91053706dfb82edebb513fa5db" ;
+    backlog:hasStateDigest "66cfd51b201939c7e25daef6212a2609a55bb64ec472d2117aee1f98c19b7459" ;
     backlog:closedAtCommit "76e4b99" .
 
 ex:Out_Backlog a backlog:StageOutput ;
@@ -1480,5 +1727,5 @@ ex:Out_Backlog a backlog:StageOutput ;
     backlog:belongsToLineage ex:Lineage ;
     backlog:outputOfStage backlog:Stage_Backlog ;
     backlog:consumesOutput ex:Out_Objective ;
-    backlog:hasStateDigest "0bf769177e01041a69b90da49b3e2e7e5ccf2b8a0707c50ce5864f0c8923e8a8" ;
+    backlog:hasStateDigest "b9a0fa8f9175885fe8c99f49e0bda143f21a34678ce96cb98670344723a783a9" ;
     backlog:closedAtCommit "035c8c1" .

@@ -1,0 +1,1448 @@
+{
+ "_version": "9.4.3",
+ "visuals": {},
+ "course": {
+  "_version": "2.0.0",
+  "name": "SEN0401 Block Chain",
+  "line": "SEN0401 Block Chain",
+  "chapter_sub": "chapter {n} of Mastering Bitcoin, 3rd edition",
+  "chapter_intro": "Chapter {n} of <i>Mastering Bitcoin</i>, 3rd edition (Antonopoulos and Harding, 2023), free under CC BY-SA 4.0, renewed for SEN0401.",
+  "playground": {
+   "label": "Toy proof-of-work miner (uses input)",
+   "code": "import hashlib\nprefix = input('Block data: ')\nzeros = int(input('Leading zeros required: '))\nnonce = 0\nwhile not hashlib.sha256(f'{prefix}-{nonce}'.encode()).hexdigest().startswith('0' * zeros):\n    nonce += 1\nprint(f'nonce {nonce} gives', hashlib.sha256(f'{prefix}-{nonce}'.encode()).hexdigest())",
+   "inputs": "SEN0401|4"
+  },
+  "corpus": {
+   "book": [],
+   "course": [],
+   "note": "SEN0401 has no textbook ontology for Mastering Bitcoin and no course ontology yet; the agents search the chapter's ontology, document and research record and the page itself."
+  }
+ },
+ "discussion": [
+  [
+   "Noticeable issues",
+   "What stood out in this chapter, and what surprised you?"
+  ],
+  [
+   "Interesting details",
+   "What is the most interesting point? Do you find Bitcoin inspiring, and why?"
+  ],
+  [
+   "Unclarified issues",
+   "Which points need further explanation? Select one critical issue from the chapter and explain it."
+  ]
+ ],
+ "research_file": "sen0401_ch03_research_v1_0_0.ttl",
+ "chapter": 3,
+ "unit": null,
+ "title": "Bitcoin Core: the reference implementation, run and checked against the book",
+ "python": "Python 3.14.4",
+ "nodes": [
+  {
+   "id": "Node",
+   "label": "Node",
+   "level": 1,
+   "parent": null,
+   "body": "Bitcoin Core: The Reference Implementation begins from the idea that software on your own computer can verify Bitcoin itself, without a third party (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Node",
+   "class_iri": "http://example.org/sen0401/ch03#Node"
+  },
+  {
+   "id": "Verification",
+   "label": "Verification",
+   "level": 2,
+   "parent": "Node",
+   "body": "From Bitcoin to Bitcoin Core explains what a verifying node is and why Bitcoin Core is the reference for it (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Verification",
+   "class_iri": "http://example.org/sen0401/ch03#Verification"
+  },
+  {
+   "id": "FullNode",
+   "label": "Full node",
+   "level": 3,
+   "parent": "Verification",
+   "body": "A full verification node verifies every confirmed transaction against every rule, so the data it gives you is authoritative not because a powerful entity designated it so but because your node independently verified it (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_FullNode",
+   "class_iri": "http://example.org/sen0401/ch03#FullNode",
+   "example": "a node that verifies every rule",
+   "definition": "A full verification node checks every confirmed transaction against every rule of the system, so that what it reports is authoritative because it was independently verified."
+  },
+  {
+   "id": "ReferenceImplementation",
+   "label": "Reference implementation",
+   "level": 3,
+   "parent": "Verification",
+   "body": "Bitcoin Core grew out of the first Bitcoin software and is the reference implementation: it provides a reference for how each part of the technology should be implemented, and it implements wallets, validation, block construction and the peer-to-peer protocol (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_ReferenceImplementation",
+   "class_iri": "http://example.org/sen0401/ch03#ReferenceImplementation",
+   "example": "Bitcoin Core",
+   "definition": "Bitcoin Core is the reference implementation: it provides a reference for how each part of the technology should be implemented."
+  },
+  {
+   "id": "ImprovementProposal",
+   "label": "Bitcoin Improvement Proposal",
+   "level": 3,
+   "parent": "Verification",
+   "body": "The chapter refers to Bitcoin Improvement Proposals by number, for example BIP9 for the mechanism used for several major upgrades, and Bitcoin Core's documentation lists which BIPs it implements and since which version (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_ImprovementProposal",
+   "class_iri": "http://example.org/sen0401/ch03#ImprovementProposal",
+   "example": "BIP9",
+   "definition": "Most major parts of the system since 2011 are documented in Bitcoin Improvement Proposals, referred to by number."
+  },
+  {
+   "id": "NodeResources",
+   "label": "Node resources",
+   "level": 2,
+   "parent": "Node",
+   "body": "Running a Bitcoin Core Node states what a node costs in disk, bandwidth and time (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_NodeResources",
+   "class_iri": "http://example.org/sen0401/ch03#NodeResources"
+  },
+  {
+   "id": "InitialDownload",
+   "label": "Initial download",
+   "level": 3,
+   "parent": "NodeResources",
+   "body": "The book puts the first download at over 500 GB and the growth at about 400 MB a day, so ten days offline means about 4 GB to catch up; the download page now says about 600 GB plus 5 to 10 GB a month (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_InitialDownload",
+   "class_iri": "http://example.org/sen0401/ch03#InitialDownload",
+   "example": "the first synchronization",
+   "definition": "A new node downloads and validates the whole chain before it can process transactions, and a node that was off for ten days downloads about four gigabytes at 400 megabytes a day.",
+   "io": {
+    "code": "400 * 10 / 1000",
+    "out": "4.0",
+    "tree": {
+     "label": "/",
+     "kind": "BinOp",
+     "children": [
+      {
+       "label": "*",
+       "kind": "BinOp",
+       "children": [
+        {
+         "label": "400",
+         "kind": "Constant",
+         "children": []
+        },
+        {
+         "label": "10",
+         "kind": "Constant",
+         "children": []
+        }
+       ]
+      },
+      {
+       "label": "1000",
+       "kind": "Constant",
+       "children": []
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "400 * 10 / 1000",
+      "focus": "400 * 10",
+      "value": "4000"
+     },
+     {
+      "expr": "4000 / 1000",
+      "focus": "4000 / 1000",
+      "value": "4.0"
+     }
+    ]
+   }
+  },
+  {
+   "id": "PrunedNode",
+   "label": "Pruned node",
+   "level": 3,
+   "parent": "NodeResources",
+   "body": "Pruning keeps a node within a disk budget by deleting old blocks, and the current help says automatic pruning needs a target of at least 550 MiB and is incompatible with txindex, where the book's constrained example uses 5000 (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_PrunedNode",
+   "class_iri": "http://example.org/sen0401/ch03#PrunedNode",
+   "example": "a node that deletes old blocks",
+   "definition": "A pruned node deletes old blocks to reduce disk use while still downloading and verifying the whole chain; automatic pruning needs a target of at least 550 MiB."
+  },
+  {
+   "id": "Build",
+   "label": "Build",
+   "level": 1,
+   "parent": null,
+   "body": "Compiling Bitcoin Core from the Source Code takes a reader from the repository to installed executables (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Build",
+   "class_iri": "http://example.org/sen0401/ch03#Build"
+  },
+  {
+   "id": "Source",
+   "label": "Source",
+   "level": 2,
+   "parent": "Build",
+   "body": "The reader clones the repository and then selects a release rather than building the newest, possibly unstable, code (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Source",
+   "class_iri": "http://example.org/sen0401/ch03#Source"
+  },
+  {
+   "id": "ReleaseTag",
+   "label": "Release tag",
+   "level": 3,
+   "parent": "Source",
+   "body": "The book checks out the tag v24.0.1, then the highest release; the releases page now lists 31.1 as the newest (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_ReleaseTag",
+   "class_iri": "http://example.org/sen0401/ch03#ReleaseTag",
+   "example": "git checkout v24.0.1",
+   "definition": "A release tag marks a snapshot of the source by version number; release candidates carry the suffix rc and stable releases none."
+  },
+  {
+   "id": "Toolchain",
+   "label": "Toolchain",
+   "level": 2,
+   "parent": "Build",
+   "body": "Configuring the Bitcoin Core Build and Building the Bitcoin Core Executables give the commands that turn the source into bitcoind (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Toolchain",
+   "class_iri": "http://example.org/sen0401/ch03#Toolchain"
+  },
+  {
+   "id": "AutotoolsBuild",
+   "label": "Autotools build",
+   "level": 3,
+   "parent": "Toolchain",
+   "body": "The book generates the build scripts with autogen.sh, runs configure with options such as --disable-wallet, --with-gui=no and --with-incompatible-bdb, and then make, make check and make install (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_AutotoolsBuild",
+   "class_iri": "http://example.org/sen0401/ch03#AutotoolsBuild",
+   "example": "autogen.sh, configure and make",
+   "definition": "The book builds bitcoind with autogen.sh, configure and make, options such as --disable-wallet and --with-gui=no shaping the build; Bitcoin Core replaced this with CMake."
+  },
+  {
+   "id": "CMakeBuild",
+   "label": "CMake build",
+   "level": 3,
+   "parent": "Toolchain",
+   "body": "Bitcoin Core 29.0 migrated its build system from Autotools to CMake, so the build is cmake -B build, cmake --build build and cmake --install build, with -DENABLE_WALLET=OFF for no wallet and -DBUILD_GUI=ON for the graphical client (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_CMakeBuild",
+   "class_iri": "http://example.org/sen0401/ch03#CMakeBuild",
+   "example": "cmake -B build",
+   "definition": "A current build is cmake -B build, cmake --build build and cmake --install build, with options such as -DENABLE_WALLET=OFF and -DBUILD_GUI=ON."
+  },
+  {
+   "id": "BitcoinCommand",
+   "label": "The bitcoin command",
+   "level": 3,
+   "parent": "Toolchain",
+   "body": "Since 30.0 a bitcoin command starts the node with bitcoin node, calls RPC with bitcoin rpc and, with -m, runs the multiprocess binaries bitcoin-node and bitcoin-gui instead of bitcoind and bitcoin-qt (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_BitcoinCommand",
+   "class_iri": "http://example.org/sen0401/ch03#BitcoinCommand",
+   "example": "bitcoin -m node",
+   "definition": "The bitcoin command is a front door to the node and tools, and its -m option runs the multiprocess binaries instead of the monolithic ones."
+  },
+  {
+   "id": "Operation",
+   "label": "Operation",
+   "level": 1,
+   "parent": null,
+   "body": "Configuring the Bitcoin Core Node covers the settings that decide how a node behaves and what it stores (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Operation",
+   "class_iri": "http://example.org/sen0401/ch03#Operation"
+  },
+  {
+   "id": "Configuration",
+   "label": "Configuration",
+   "level": 2,
+   "parent": "Operation",
+   "body": "The configuration file and its options, of which the book says there are more than 100, shape the node; the 31.1 help lists 139 in its default listing (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Configuration",
+   "class_iri": "http://example.org/sen0401/ch03#Configuration"
+  },
+  {
+   "id": "ConfigurationFile",
+   "label": "Configuration file",
+   "level": 3,
+   "parent": "Configuration",
+   "body": "Bitcoin Core looks for bitcoin.conf in its data directory on every start, and running bitcoind -printtoconsole shows the path on its first lines, as the 31.1 startup log does (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_ConfigurationFile",
+   "class_iri": "http://example.org/sen0401/ch03#ConfigurationFile",
+   "example": "bitcoin.conf in the data directory",
+   "definition": "Bitcoin Core reads bitcoin.conf from its data directory at every start; options can also be given on the command line, and bitcoind -printtoconsole shows where the file is."
+  },
+  {
+   "id": "DatabaseCache",
+   "label": "Database cache (dbcache)",
+   "level": 3,
+   "parent": "Configuration",
+   "body": "The book gives the dbcache default as 450 MiB; Bitcoin Core 31.0 raised it to 1024 MiB on systems where at least 4096 MiB of memory is detected, and dbcache=450 restores the old behaviour (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_DatabaseCache",
+   "class_iri": "http://example.org/sen0401/ch03#DatabaseCache",
+   "example": "dbcache",
+   "definition": "The dbcache option sizes the cache of the unspent-output set: 450 MiB by default in the book, 1024 MiB by default from Bitcoin Core 31.0 on machines with enough memory."
+  },
+  {
+   "id": "TransactionIndex",
+   "label": "Transaction index (txindex)",
+   "level": 3,
+   "parent": "Configuration",
+   "body": "By default a node indexes only the transactions of its own wallet; setting txindex=1 builds a complete index so that getrawtransaction can find any transaction (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_TransactionIndex",
+   "class_iri": "http://example.org/sen0401/ch03#TransactionIndex",
+   "example": "txindex=1",
+   "definition": "The txindex option builds an index of every transaction so that getrawtransaction can find any of them; it cannot be combined with pruning."
+  },
+  {
+   "id": "Wallet",
+   "label": "Wallet",
+   "level": 2,
+   "parent": "Operation",
+   "body": "The chapter's startup log shows the wallet database in use, which is where the current release differs (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Wallet",
+   "class_iri": "http://example.org/sen0401/ch03#Wallet"
+  },
+  {
+   "id": "DescriptorWallet",
+   "label": "Descriptor wallet",
+   "level": 3,
+   "parent": "Wallet",
+   "body": "Legacy BerkeleyDB wallets can no longer be created or loaded since Bitcoin Core 30.0 and can be migrated with the migratewallet RPC, and the 31.1 release creates a descriptor wallet whose format is sqlite (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_DescriptorWallet",
+   "class_iri": "http://example.org/sen0401/ch03#DescriptorWallet",
+   "example": "the SQLite wallet",
+   "definition": "The current default wallet is a descriptor wallet stored in SQLite; legacy BerkeleyDB wallets can no longer be created or loaded and can only be migrated."
+  },
+  {
+   "id": "Interface",
+   "label": "Interface",
+   "level": 1,
+   "parent": null,
+   "body": "Bitcoin Core API introduces the programmatic interface that the rest of the book uses (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Interface",
+   "class_iri": "http://example.org/sen0401/ch03#Interface"
+  },
+  {
+   "id": "RpcInterface",
+   "label": "RPC interface",
+   "level": 2,
+   "parent": "Interface",
+   "body": "Using Bitcoin Core's Programmatic Interface explains what the API is and how a program reaches it (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_RpcInterface",
+   "class_iri": "http://example.org/sen0401/ch03#RpcInterface"
+  },
+  {
+   "id": "JsonRpc",
+   "label": "JSON-RPC interface",
+   "level": 3,
+   "parent": "RpcInterface",
+   "body": "The API is JSON-RPC over HTTP: curl posts a jsonrpc request for a method such as getblockchaininfo to 127.0.0.1 on the default port 8332 (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_JsonRpc",
+   "class_iri": "http://example.org/sen0401/ch03#JsonRpc",
+   "example": "a getblockchaininfo call over HTTP",
+   "definition": "Bitcoin Core's API is JSON-RPC over HTTP, by default to 127.0.0.1 on port 8332, so any program that can make an HTTP request can call it."
+  },
+  {
+   "id": "CookieAuthentication",
+   "label": "Cookie authentication",
+   "level": 3,
+   "parent": "RpcInterface",
+   "body": "Bitcoin Core creates a random credential at each start and stores it as .cookie in the data directory, deleted on shutdown, and the rpcauth.py script in the source's share directory makes a static credential (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_CookieAuthentication",
+   "class_iri": "http://example.org/sen0401/ch03#CookieAuthentication",
+   "example": "the .cookie file",
+   "definition": "By default Bitcoin Core creates a random credential on each start and stores it in the data directory as .cookie, which bitcoin-cli reads; rpcauth.py makes a static credential instead."
+  },
+  {
+   "id": "Client",
+   "label": "Client",
+   "level": 2,
+   "parent": "Interface",
+   "body": "The bitcoin-cli helper and a wrapper library are the two ways the chapter calls the API (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Client",
+   "class_iri": "http://example.org/sen0401/ch03#Client"
+  },
+  {
+   "id": "CommandLineClient",
+   "label": "Command-line client (bitcoin-cli)",
+   "level": 3,
+   "parent": "Client",
+   "body": "The bitcoin-cli help command lists the RPC commands, and getblockchaininfo, getmempoolinfo, getnetworkinfo and getwalletinfo report the node's status (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_CommandLineClient",
+   "class_iri": "http://example.org/sen0401/ch03#CommandLineClient",
+   "example": "bitcoin-cli getblockchaininfo",
+   "definition": "The bitcoin-cli helper sends the same calls the API offers, which makes it the way to experiment interactively; its help command lists the available RPC commands."
+  },
+  {
+   "id": "WrapperLibrary",
+   "label": "Wrapper library",
+   "level": 3,
+   "parent": "Client",
+   "body": "The book uses python-bitcoinlib, which is not part of Bitcoin Core, to call the API from Python, and its documentation says the RPC interface should work with Bitcoin Core 24.0 or later (Todd, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_WrapperLibrary",
+   "class_iri": "http://example.org/sen0401/ch03#WrapperLibrary",
+   "example": "python-bitcoinlib's RawProxy",
+   "definition": "A wrapper library hides the HTTP call: python-bitcoinlib's RawProxy turns p.getblockchaininfo() into the JSON-RPC request and returns the decoded answer."
+  },
+  {
+   "id": "Data",
+   "label": "Data",
+   "level": 1,
+   "parent": null,
+   "body": "Exploring and Decoding Transactions and Exploring Blocks read the chain through the API (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Data",
+   "class_iri": "http://example.org/sen0401/ch03#Data"
+  },
+  {
+   "id": "Transaction",
+   "label": "Transaction",
+   "level": 2,
+   "parent": "Data",
+   "body": "The chapter retrieves Alice's payment from chapter 2 by its transaction ID and decodes it (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Transaction",
+   "class_iri": "http://example.org/sen0401/ch03#Transaction"
+  },
+  {
+   "id": "DecodedTransaction",
+   "label": "Decoded transaction",
+   "level": 3,
+   "parent": "Transaction",
+   "body": "The getrawtransaction command returns the serialized transaction in hexadecimal and decoderawtransaction shows its parts: one input and two outputs, the payment to Bob and the change back to Alice (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_DecodedTransaction",
+   "class_iri": "http://example.org/sen0401/ch03#DecodedTransaction",
+   "example": "decoderawtransaction on Alice's transaction",
+   "definition": "Decoding the serialized hexadecimal of Alice's payment shows its one input, two outputs, addresses and script types, exactly as the chain holds them."
+  },
+  {
+   "id": "TransactionWeight",
+   "label": "Transaction weight",
+   "level": 3,
+   "parent": "Transaction",
+   "body": "The decoded transaction reports size 194, vsize 143 and weight 569, and 143 is 569 divided by four rounded up (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_TransactionWeight",
+   "class_iri": "http://example.org/sen0401/ch03#TransactionWeight",
+   "example": "569 weight units, 143 virtual bytes",
+   "definition": "A transaction's weight counts its non-witness bytes four times and its witness bytes once, and its virtual size is the weight divided by four, rounded up.",
+   "io": {
+    "code": "-(-(4 * 125 + 194 - 125) // 4)",
+    "out": "143",
+    "tree": {
+     "label": "UnaryOp",
+     "kind": "UnaryOp",
+     "children": [
+      {
+       "label": "//",
+       "kind": "BinOp",
+       "children": [
+        {
+         "label": "UnaryOp",
+         "kind": "UnaryOp",
+         "children": [
+          {
+           "label": "-",
+           "kind": "BinOp",
+           "children": [
+            {
+             "label": "+",
+             "kind": "BinOp",
+             "children": [
+              {
+               "label": "*",
+               "kind": "BinOp",
+               "children": [
+                {
+                 "label": "4",
+                 "kind": "Constant",
+                 "children": []
+                },
+                {
+                 "label": "125",
+                 "kind": "Constant",
+                 "children": []
+                }
+               ]
+              },
+              {
+               "label": "194",
+               "kind": "Constant",
+               "children": []
+              }
+             ]
+            },
+            {
+             "label": "125",
+             "kind": "Constant",
+             "children": []
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "label": "4",
+         "kind": "Constant",
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "-(-(4 * 125 + 194 - 125) // 4)",
+      "focus": "4 * 125",
+      "value": "500"
+     },
+     {
+      "expr": "-(-(500 + 194 - 125) // 4)",
+      "focus": "500 + 194",
+      "value": "694"
+     },
+     {
+      "expr": "-(-(694 - 125) // 4)",
+      "focus": "694 - 125",
+      "value": "569"
+     },
+     {
+      "expr": "-(-569 // 4)",
+      "focus": "-569",
+      "value": "-569"
+     },
+     {
+      "expr": "-(-569 // 4)",
+      "focus": "-569 // 4",
+      "value": "-143"
+     },
+     {
+      "expr": "--143",
+      "focus": "--143",
+      "value": "143"
+     }
+    ]
+   }
+  },
+  {
+   "id": "TransactionIdentifier",
+   "label": "Transaction identifier",
+   "level": 3,
+   "parent": "Transaction",
+   "body": "A tip in the chapter warns that a txid is not authoritative because a transaction can be modified before confirmation, and the decoded result gives both the txid and the hash that includes the witness (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_TransactionIdentifier",
+   "class_iri": "http://example.org/sen0401/ch03#TransactionIdentifier",
+   "example": "txid and hash",
+   "definition": "The txid hashes the transaction without its witness and the hash includes it; a txid is not authoritative before confirmation because a transaction can be modified."
+  },
+  {
+   "id": "Block",
+   "label": "Block",
+   "level": 2,
+   "parent": "Data",
+   "body": "Exploring Blocks finds a block by its height or its hash and reads its fields (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Block",
+   "class_iri": "http://example.org/sen0401/ch03#Block"
+  },
+  {
+   "id": "BlockHeight",
+   "label": "Block height",
+   "level": 3,
+   "parent": "Block",
+   "body": "getblockhash 123456 returns the header hash of block 123456, and getblock reports 651742 confirmations, the depth of the block and so the difficulty of changing anything in it (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_BlockHeight",
+   "class_iri": "http://example.org/sen0401/ch03#BlockHeight",
+   "example": "getblockhash 123456",
+   "definition": "A block is found by its height, how many blocks precede it, or by its header hash; its confirmations count the blocks built on top, itself included.",
+   "io": {
+    "code": "123456 + 651742 - 1",
+    "out": "775197",
+    "tree": {
+     "label": "-",
+     "kind": "BinOp",
+     "children": [
+      {
+       "label": "+",
+       "kind": "BinOp",
+       "children": [
+        {
+         "label": "123456",
+         "kind": "Constant",
+         "children": []
+        },
+        {
+         "label": "651742",
+         "kind": "Constant",
+         "children": []
+        }
+       ]
+      },
+      {
+       "label": "1",
+       "kind": "Constant",
+       "children": []
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "123456 + 651742 - 1",
+      "focus": "123456 + 651742",
+      "value": "775198"
+     },
+     {
+      "expr": "775198 - 1",
+      "focus": "775198 - 1",
+      "value": "775197"
+     }
+    ]
+   }
+  },
+  {
+   "id": "BlockWeight",
+   "label": "Block weight",
+   "level": 3,
+   "parent": "Block",
+   "body": "The getblock result gives a block's stripped size, its size and its weight, which for block 123456 is 4179, 4179 and 16716 (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_BlockWeight",
+   "class_iri": "http://example.org/sen0401/ch03#BlockWeight",
+   "example": "weight 16716 for size 4179",
+   "definition": "A block without witness data weighs four times its size in weight units, which the getblock result shows as size, strippedsize and weight.",
+   "io": {
+    "code": "4 * 4179",
+    "out": "16716",
+    "tree": {
+     "label": "*",
+     "kind": "BinOp",
+     "children": [
+      {
+       "label": "4",
+       "kind": "Constant",
+       "children": []
+      },
+      {
+       "label": "4179",
+       "kind": "Constant",
+       "children": []
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "4 * 4179",
+      "focus": "4 * 4179",
+      "value": "16716"
+     }
+    ]
+   }
+  },
+  {
+   "id": "MerkleRoot",
+   "label": "Merkle root",
+   "level": 3,
+   "parent": "Block",
+   "body": "The getblock result shows the block's merkle root beside nonce, bits, difficulty and chainwork as the fields used for security and proof of work (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_MerkleRoot",
+   "class_iri": "http://example.org/sen0401/ch03#MerkleRoot",
+   "example": "the Merkle root of the block's transactions",
+   "definition": "The Merkle root in a block header commits to every transaction of the block, and hashing the block's transaction identifiers pairwise up to one value reproduces it."
+  },
+  {
+   "id": "BlockSubsidy",
+   "label": "Block subsidy",
+   "level": 3,
+   "parent": "Block",
+   "body": "The chapter says its block total includes a 25 BTC reward, while its script reads block 775072, where Bitcoin Core's own schedule gives 6.25 bitcoins (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_BlockSubsidy",
+   "class_iri": "http://example.org/sen0401/ch03#BlockSubsidy",
+   "example": "6.25 bitcoins at height 775072",
+   "definition": "The subsidy starts at 50 bitcoins and is shifted right once for every 210,000 blocks, so it is 6.25 bitcoins at height 775072.",
+   "io": {
+    "code": "50 * 10**8 >> (775072 // 210000)",
+    "out": "625000000",
+    "tree": {
+     "label": "RShift",
+     "kind": "BinOp",
+     "children": [
+      {
+       "label": "*",
+       "kind": "BinOp",
+       "children": [
+        {
+         "label": "50",
+         "kind": "Constant",
+         "children": []
+        },
+        {
+         "label": "**",
+         "kind": "BinOp",
+         "children": [
+          {
+           "label": "10",
+           "kind": "Constant",
+           "children": []
+          },
+          {
+           "label": "8",
+           "kind": "Constant",
+           "children": []
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "label": "//",
+       "kind": "BinOp",
+       "children": [
+        {
+         "label": "775072",
+         "kind": "Constant",
+         "children": []
+        },
+        {
+         "label": "210000",
+         "kind": "Constant",
+         "children": []
+        }
+       ]
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "50 * 10 ** 8 >> 775072 // 210000",
+      "focus": "10 ** 8",
+      "value": "100000000"
+     },
+     {
+      "expr": "50 * 100000000 >> 775072 // 210000",
+      "focus": "50 * 100000000",
+      "value": "5000000000"
+     },
+     {
+      "expr": "5000000000 >> 775072 // 210000",
+      "focus": "775072 // 210000",
+      "value": "3"
+     },
+     {
+      "expr": "5000000000 >> 3",
+      "focus": "5000000000 >> 3",
+      "value": "625000000"
+     }
+    ]
+   }
+  },
+  {
+   "id": "Difficulty",
+   "label": "Difficulty",
+   "level": 3,
+   "parent": "Block",
+   "body": "The difficulty of block 123456 is 157416.4018436489, which follows from its bits value 1a6a93b3 (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Difficulty",
+   "class_iri": "http://example.org/sen0401/ch03#Difficulty",
+   "example": "difficulty from bits 1a6a93b3",
+   "definition": "A block's difficulty follows from its bits, the compact form of its target, as the ratio of the easiest target to this block's target.",
+   "io": {
+    "code": "round(0xffff * 256**(0x1d - 3) / (0x6a93b3 * 256**(0x1a - 3)), 10)",
+    "out": "157416.4018436489",
+    "tree": {
+     "label": "call",
+     "kind": "Call",
+     "children": [
+      {
+       "label": "round",
+       "kind": "Name",
+       "children": []
+      },
+      {
+       "label": "/",
+       "kind": "BinOp",
+       "children": [
+        {
+         "label": "*",
+         "kind": "BinOp",
+         "children": [
+          {
+           "label": "65535",
+           "kind": "Constant",
+           "children": []
+          },
+          {
+           "label": "**",
+           "kind": "BinOp",
+           "children": [
+            {
+             "label": "256",
+             "kind": "Constant",
+             "children": []
+            },
+            {
+             "label": "-",
+             "kind": "BinOp",
+             "children": [
+              {
+               "label": "29",
+               "kind": "Constant",
+               "children": []
+              },
+              {
+               "label": "3",
+               "kind": "Constant",
+               "children": []
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "label": "*",
+         "kind": "BinOp",
+         "children": [
+          {
+           "label": "6984627",
+           "kind": "Constant",
+           "children": []
+          },
+          {
+           "label": "**",
+           "kind": "BinOp",
+           "children": [
+            {
+             "label": "256",
+             "kind": "Constant",
+             "children": []
+            },
+            {
+             "label": "-",
+             "kind": "BinOp",
+             "children": [
+              {
+               "label": "26",
+               "kind": "Constant",
+               "children": []
+              },
+              {
+               "label": "3",
+               "kind": "Constant",
+               "children": []
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "label": "10",
+       "kind": "Constant",
+       "children": []
+      }
+     ]
+    },
+    "steps": [
+     {
+      "expr": "round(65535 * 256 ** (29 - 3) / (6984627 * 256 ** (26 - 3)), 10)",
+      "focus": "29 - 3",
+      "value": "26"
+     },
+     {
+      "expr": "round(65535 * 256 ** 26 / (6984627 * 256 ** (26 - 3)), 10)",
+      "focus": "256 ** 26",
+      "value": "411376139330301510538742295639337626245683966408394965837152256"
+     },
+     {
+      "expr": "round(65535 * 411376139330301510538742295639337626245683966408394965837152256 / (6984627 * 256 ** (26 - 3)), 10)",
+      "focus": "65535 * 411376139330301510538742295639337626245683966408394965837152256",
+      "value": "26959535291011309493156476344723991336010898738574164086137773096960"
+     },
+     {
+      "expr": "round(26959535291011309493156476344723991336010898738574164086137773096960 / (6984627 * 256 ** (26 - 3)), 10)",
+      "focus": "26 - 3",
+      "value": "23"
+     },
+     {
+      "expr": "round(26959535291011309493156476344723991336010898738574164086137773096960 / (6984627 * 256 ** 23), 10)",
+      "focus": "256 ** 23",
+      "value": "24519928653854221733733552434404946937899825954937634816"
+     },
+     {
+      "expr": "round(26959535291011309493156476344723991336010898738574164086137773096960 / (6984627 * 24519928653854221733733552434404946937899825954937634816), 10)",
+      "focus": "6984627 * 24519928653854221733733552434404946937899825954937634816",
+      "value": "171262555713783851185422181139260521316022447660158187451973632"
+     },
+     {
+      "expr": "round(26959535291011309493156476344723991336010898738574164086137773096960 / 171262555713783851185422181139260521316022447660158187451973632, 10)",
+      "focus": "26959535291011309493156476344723991336010898738574164086137773096960 / 171262555713783851185422181139260521316022447660158187451973632",
+      "value": "157416.40184364893"
+     },
+     {
+      "expr": "round(157416.40184364893, 10)",
+      "focus": "round(157416.40184364893, 10)",
+      "value": "157416.4018436489"
+     }
+    ]
+   }
+  },
+  {
+   "id": "Ecosystem",
+   "label": "Ecosystem",
+   "level": 1,
+   "parent": null,
+   "body": "Alternative Clients, Libraries, and Toolkits lists other ways to reach Bitcoin, and running the real release shows what has been checked (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Ecosystem",
+   "class_iri": "http://example.org/sen0401/ch03#Ecosystem"
+  },
+  {
+   "id": "Assurance",
+   "label": "Assurance",
+   "level": 2,
+   "parent": "Ecosystem",
+   "body": "Trust in a download can be tested before the software is run (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Assurance",
+   "class_iri": "http://example.org/sen0401/ch03#Assurance"
+  },
+  {
+   "id": "ReleaseVerification",
+   "label": "Release verification",
+   "level": 3,
+   "parent": "Assurance",
+   "body": "The 31.1 Linux tarball's SHA-256 equals the value in the release's SHA256SUMS, and that file carries 11 good signatures from builder keys held in the guix.sigs repository, which does not itself establish trust in those keys (Bitcoin Core, 2026).",
+   "section_iri": "http://example.org/sen0401/ch03#S_ReleaseVerification",
+   "class_iri": "http://example.org/sen0401/ch03#ReleaseVerification",
+   "example": "SHA256SUMS and its signatures",
+   "definition": "A downloaded release can be checked against the SHA-256 checksums the project publishes and the signatures on them, which shows the file matches the published record."
+  },
+  {
+   "id": "AlternativeToolkit",
+   "label": "Alternative toolkit",
+   "level": 3,
+   "parent": "Assurance",
+   "body": "The book lists toolkits by language, from bcoin, Bitcore and BitcoinJS to btcd, rust-bitcoin, bitcoin-s and NBitcoin, and registry data show that their upkeep varies, with the bcoin package's latest npm release dating from 2018 (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_AlternativeToolkit",
+   "class_iri": "http://example.org/sen0401/ch03#AlternativeToolkit",
+   "example": "python-bitcoinlib, btcd, bitcoinj",
+   "definition": "Libraries, toolkits and full nodes in many languages give native access to Bitcoin, and their upkeep varies, so a listed toolkit's latest release is worth checking."
+  },
+  {
+   "id": "Semantics",
+   "label": "Semantics",
+   "level": 1,
+   "parent": null,
+   "body": "The course theme of semantic technologies meets the chapter in the authority of a node's own data and in the format it returns (World Wide Web Consortium, 2020).",
+   "section_iri": "http://example.org/sen0401/ch03#S_Semantics",
+   "class_iri": "http://example.org/sen0401/ch03#Semantics"
+  },
+  {
+   "id": "LinkedData",
+   "label": "Linked data",
+   "level": 2,
+   "parent": "Semantics",
+   "body": "A node's answers are JSON, and the W3C's JSON-LD 1.1 turns JSON into Linked Data (World Wide Web Consortium, 2020).",
+   "section_iri": "http://example.org/sen0401/ch03#S_LinkedData",
+   "class_iri": "http://example.org/sen0401/ch03#LinkedData"
+  },
+  {
+   "id": "VerifiedData",
+   "label": "Verified data",
+   "level": 3,
+   "parent": "LinkedData",
+   "body": "Data that your own node verified is authoritative for a reason that can be stated, which is what a provenance record does for any dataset (Antonopoulos and Harding, 2023).",
+   "section_iri": "http://example.org/sen0401/ch03#S_VerifiedData",
+   "class_iri": "http://example.org/sen0401/ch03#VerifiedData",
+   "example": "a node's own verified answer",
+   "definition": "Data from your own node is authoritative because the node verified it, the property a provenance record is meant to describe."
+  },
+  {
+   "id": "JsonLdContext",
+   "label": "JSON-LD context",
+   "level": 3,
+   "parent": "LinkedData",
+   "body": "JSON-LD 1.1 is a JSON-based format to serialize Linked Data whose syntax is designed to integrate into systems that already use JSON, such as the answers of getblock (World Wide Web Consortium, 2020).",
+   "section_iri": "http://example.org/sen0401/ch03#S_JsonLdContext",
+   "class_iri": "http://example.org/sen0401/ch03#JsonLdContext",
+   "example": "a context that maps JSON keys to IRIs",
+   "definition": "JSON-LD is a JSON-based format to serialize Linked Data, so the JSON a node returns can be given a meaning as linked data."
+  }
+ ],
+ "relations": [
+  {
+   "source": "Verification",
+   "target": "Node",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "FullNode",
+   "target": "Verification",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "ReferenceImplementation",
+   "target": "Verification",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "ImprovementProposal",
+   "target": "Verification",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "NodeResources",
+   "target": "Node",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "InitialDownload",
+   "target": "NodeResources",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "PrunedNode",
+   "target": "NodeResources",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Source",
+   "target": "Build",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "ReleaseTag",
+   "target": "Source",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Toolchain",
+   "target": "Build",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "AutotoolsBuild",
+   "target": "Toolchain",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "CMakeBuild",
+   "target": "Toolchain",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "BitcoinCommand",
+   "target": "Toolchain",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Configuration",
+   "target": "Operation",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "ConfigurationFile",
+   "target": "Configuration",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "DatabaseCache",
+   "target": "Configuration",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "TransactionIndex",
+   "target": "Configuration",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Wallet",
+   "target": "Operation",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "DescriptorWallet",
+   "target": "Wallet",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "RpcInterface",
+   "target": "Interface",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "JsonRpc",
+   "target": "RpcInterface",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "CookieAuthentication",
+   "target": "RpcInterface",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Client",
+   "target": "Interface",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "CommandLineClient",
+   "target": "Client",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "WrapperLibrary",
+   "target": "Client",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Transaction",
+   "target": "Data",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "DecodedTransaction",
+   "target": "Transaction",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "TransactionWeight",
+   "target": "Transaction",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "TransactionIdentifier",
+   "target": "Transaction",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Block",
+   "target": "Data",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "BlockHeight",
+   "target": "Block",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "BlockWeight",
+   "target": "Block",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "MerkleRoot",
+   "target": "Block",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "BlockSubsidy",
+   "target": "Block",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Difficulty",
+   "target": "Block",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "Assurance",
+   "target": "Ecosystem",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "ReleaseVerification",
+   "target": "Assurance",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "AlternativeToolkit",
+   "target": "Assurance",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "LinkedData",
+   "target": "Semantics",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "VerifiedData",
+   "target": "LinkedData",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  },
+  {
+   "source": "JsonLdContext",
+   "target": "LinkedData",
+   "type": "is a kind of",
+   "evidence": "rdfs:subClassOf in the chapter's domain TBox"
+  }
+ ],
+ "agents": [
+  {
+   "id": "agent-Verification",
+   "name": "Verification agent",
+   "subject": "Verification",
+   "covers": [
+    "FullNode",
+    "ReferenceImplementation",
+    "ImprovementProposal",
+    "Verification"
+   ]
+  },
+  {
+   "id": "agent-NodeResources",
+   "name": "Node resources agent",
+   "subject": "NodeResources",
+   "covers": [
+    "InitialDownload",
+    "PrunedNode",
+    "NodeResources"
+   ]
+  },
+  {
+   "id": "agent-Source",
+   "name": "Source agent",
+   "subject": "Source",
+   "covers": [
+    "ReleaseTag",
+    "Source"
+   ]
+  },
+  {
+   "id": "agent-Toolchain",
+   "name": "Toolchain agent",
+   "subject": "Toolchain",
+   "covers": [
+    "AutotoolsBuild",
+    "CMakeBuild",
+    "BitcoinCommand",
+    "Toolchain"
+   ]
+  },
+  {
+   "id": "agent-Configuration",
+   "name": "Configuration agent",
+   "subject": "Configuration",
+   "covers": [
+    "ConfigurationFile",
+    "DatabaseCache",
+    "TransactionIndex",
+    "Configuration"
+   ]
+  },
+  {
+   "id": "agent-Wallet",
+   "name": "Wallet agent",
+   "subject": "Wallet",
+   "covers": [
+    "DescriptorWallet",
+    "Wallet"
+   ]
+  },
+  {
+   "id": "agent-RpcInterface",
+   "name": "RPC interface agent",
+   "subject": "RpcInterface",
+   "covers": [
+    "JsonRpc",
+    "CookieAuthentication",
+    "RpcInterface"
+   ]
+  },
+  {
+   "id": "agent-Client",
+   "name": "Client agent",
+   "subject": "Client",
+   "covers": [
+    "CommandLineClient",
+    "WrapperLibrary",
+    "Client"
+   ]
+  },
+  {
+   "id": "agent-Transaction",
+   "name": "Transaction agent",
+   "subject": "Transaction",
+   "covers": [
+    "DecodedTransaction",
+    "TransactionWeight",
+    "TransactionIdentifier",
+    "Transaction"
+   ]
+  },
+  {
+   "id": "agent-Block",
+   "name": "Block agent",
+   "subject": "Block",
+   "covers": [
+    "BlockHeight",
+    "BlockWeight",
+    "MerkleRoot",
+    "BlockSubsidy",
+    "Difficulty",
+    "Block"
+   ]
+  },
+  {
+   "id": "agent-Assurance",
+   "name": "Assurance agent",
+   "subject": "Assurance",
+   "covers": [
+    "ReleaseVerification",
+    "AlternativeToolkit",
+    "Assurance"
+   ]
+  },
+  {
+   "id": "agent-LinkedData",
+   "name": "Linked data agent",
+   "subject": "LinkedData",
+   "covers": [
+    "VerifiedData",
+    "JsonLdContext",
+    "LinkedData"
+   ]
+  }
+ ],
+ "findings": [
+  [
+   "Background",
+   "Chapter 3 presents Bitcoin Core as the reference implementation and leads a reader from its source to a running full node: selecting a release tag, building bitcoind with autogen.sh, configure and make, running and configuring the node, exploring status, transactions and blocks with bitcoin-cli, and calling the JSON-RPC interface from Python with python-bitcoinlib, before listing alternative libraries."
+  ],
+  [
+   "Comparative analysis",
+   "The chapter's examples reproduce on the real 31.1 release: decoding Alice's serialized transaction gives the book's txid, hash, size 194, vsize 143 and weight 569, both outputs and, on a mainnet node, the same two addresses and descriptor checksums; Python over the same hex gives the same txid and wtxid; block 123456's 13 transaction identifiers hash to the Merkle root the book shows, its header hashes to the block hash the book prints and its difficulty follows from its bits; and python-bitcoinlib 0.12.2 on Python 3.14.4 runs the book's rpc_example.py against 31.1 unchanged."
+  ],
+  [
+   "Comparative analysis",
+   "One printed result does not match its script: rpc_block.py reads block 775072, where Core's schedule gives a subsidy of 6.25 bitcoins, yet the text reports 10,322.07722534 BTC including a 25 BTC reward and 0.0909 BTC of fees; the explorer's data for that block's 1,966 transactions sum to 5,863.00566521 BTC, with a coinbase of 6.33799108 that is the 6.25 subsidy plus 0.08799108 in fees, so the printed figure belongs to another block. The chapter's own suggestion to compare with a block explorer would expose it."
+  ],
+  [
+   "Comparative analysis",
+   "Resource figures differ by source and year: the chapter says over 500 GB at first and about 400 MB a day in 2023, which is about 12 GB a month; the download page now says about 600 GB plus 5 to 10 GB a month and pruning to as little as 10 GB; the bitcoin.org page the owner's notes link lists about 740 GB for the first start and about 20 GB a month, so the figures are orders of magnitude to be re-read where the software is downloaded."
+  ],
+  [
+   "Comparative analysis",
+   "The chapter's toolkit list has aged unevenly: registries show releases in 2026 for bitcoinjs-lib, btcd, the Rust bitcoin crate, pycoin and bitcoinj; python-bitcoinlib's latest release 0.12.2 dates from June 2023 and its documentation says its RPC interface should work with Bitcoin Core 24.0 or later, which the run above confirms for 31.1; the bcoin package's latest release on npm is from July 2018."
+  ],
+  [
+   "Comparative analysis",
+   "A download of the current release can be checked before it is run: the Linux tarball's SHA-256 equals the value in the release's SHA256SUMS, and that file carries 11 good PGP signatures from builder keys held in the guix.sigs repository; this shows the download matches the published record, and it does not establish trust in the keys, which the check took from the same repository."
+  ],
+  [
+   "Conclusion",
+   "For the course theme, a full node's answers are authoritative because the node verified them, the property that provenance records try to describe, and the JSON that Bitcoin Core returns can be given a meaning as linked data: JSON-LD 1.1 is the W3C's JSON-based format to serialize Linked Data, designed to integrate with systems that already use JSON."
+  ],
+  [
+   "Contemporary developments",
+   "The build steps the chapter prints have been replaced: Bitcoin Core 29.0 migrated the build from Autotools to CMake, so a current build is cmake -B build, cmake --build build and cmake --install build; the book's --disable-wallet corresponds to -DENABLE_WALLET=OFF, and the graphical client is now opt-in for a source build with -DBUILD_GUI=ON; since 30.0 a bitcoin command starts the node and tools and with -m runs the multiprocess binaries bitcoin-node and bitcoin-gui; the newest release is 31.1."
+  ],
+  [
+   "Contemporary developments",
+   "Several defaults and outputs the chapter prints have moved: the database cache default rose from 450 to 1024 MiB in 31.0 on machines with at least 4096 MiB of memory; legacy BerkeleyDB wallets can no longer be created or loaded since 30.0, and starting the 31.1 release logs SQLite where the book's log shows Berkeley DB 4.8.30; the 31.1 help gives 300 megabytes as the default mempool limit where the chapter's constrained example sets 150; automatic pruning needs a target of at least 550 MiB and cannot be combined with txindex; the warnings field is an array, not the string the book prints."
+  ],
+  [
+   "Course notes",
+   "The owner's course notes for this chapter (2021, after the 2nd edition; mostly slide titles over screenshots of the book) add three topics beyond the book's flow, each checked here: the wallet in Bitcoin Core, which the 3rd edition defers to chapter 5 and which the current release keeps in SQLite as a descriptor wallet; the graphical client and the Windows instructions, which the 31.1 release still ships as bitcoin-qt and a win64 installer; and the minimum-requirements page, whose figures now differ from the book's (see the resource finding)."
+  ]
+ ],
+ "refs": [
+  [
+   "Bitcoin Core 28.0 release notes: the warnings field returned as an array (Bitcoin Core, 2026)",
+   "https://raw.githubusercontent.com/bitcoin/bitcoin/05bc2f53ce0cb239c17dbdd6b261bd2db7d2a940/doc/release-notes/release-notes-28.0.md"
+  ],
+  [
+   "Bitcoin Core 29.0 release notes: the build system migrated from Autotools to CMake (Bitcoin Core, 2026)",
+   "https://raw.githubusercontent.com/bitcoin/bitcoin/05bc2f53ce0cb239c17dbdd6b261bd2db7d2a940/doc/release-notes/release-notes-29.0.md"
+  ],
+  [
+   "Bitcoin Core 30.0 release notes: legacy BerkeleyDB wallets removed, the bitcoin command, install layout (Bitcoin Core, 2026)",
+   "https://raw.githubusercontent.com/bitcoin/bitcoin/05bc2f53ce0cb239c17dbdd6b261bd2db7d2a940/doc/release-notes/release-notes-30.0.md"
+  ],
+  [
+   "Bitcoin Core 31.0 release notes: the -dbcache default raised to 1024 MiB (Bitcoin Core, 2026)",
+   "https://raw.githubusercontent.com/bitcoin/bitcoin/05bc2f53ce0cb239c17dbdd6b261bd2db7d2a940/doc/release-notes/release-notes-31.0.md"
+  ],
+  [
+   "Bitcoin Core 31.1 release files, checksums and signatures (Bitcoin Core, 2026), downloaded, verified and run; evidence in 08-tooling/ch03-evidence",
+   "https://bitcoincore.org/bin/bitcoin-core-31.1/"
+  ],
+  [
+   "Bitcoin Core builder signing keys and release signatures, bitcoin-core/guix.sigs (Bitcoin Core, 2026)",
+   "https://github.com/bitcoin-core/guix.sigs"
+  ],
+  [
+   "Bitcoin Core documentation: doc/build-unix.md at commit 05bc2f5 (Bitcoin Core, 2026)",
+   "https://raw.githubusercontent.com/bitcoin/bitcoin/05bc2f53ce0cb239c17dbdd6b261bd2db7d2a940/doc/build-unix.md"
+  ],
+  [
+   "Bitcoin Core documentation: doc/files.md, doc/init.md and doc/multiprocess.md at commit 05bc2f5 (Bitcoin Core, 2026)",
+   "https://raw.githubusercontent.com/bitcoin/bitcoin/05bc2f53ce0cb239c17dbdd6b261bd2db7d2a940/doc/files.md"
+  ],
+  [
+   "Bitcoin Core download page and releases page (Bitcoin Core, 2026)",
+   "https://bitcoincore.org/en/download/"
+  ],
+  [
+   "Bitcoin Core source: GetBlockSubsidy in src/validation.cpp at commit 05bc2f5 (Bitcoin Core, 2026)",
+   "https://raw.githubusercontent.com/bitcoin/bitcoin/05bc2f53ce0cb239c17dbdd6b261bd2db7d2a940/src/validation.cpp"
+  ],
+  [
+   "Blockstream Esplora API: blocks 123456 and 775072 and Alice's transaction (Blockstream, 2026), a third party's index of the chain",
+   "https://blockstream.info/api/block/000000000000000000027d39da52dd790d98f85895b02e764611cb7acf552e90"
+  ],
+  [
+   "Course notes: Chapter_3_BitcoinCore_TheReferenceImplementation.pptx, SEN0401 (then CSE0469) Blockchain, Yusuf Altunel, 2021 - based on Mastering Bitcoin 2nd edition; the owner's file in 03-materials/owner-legacy-2025 (sha256 2264cacbb0c8252c)",
+   "urn:sen0401:course-notes:Chapter_3_BitcoinCore_TheReferenceImplementation.pptx:2264cacbb0c8252c"
+  ],
+  [
+   "JSON-LD 1.1, W3C Recommendation, 16 July 2020 (World Wide Web Consortium, 2020)",
+   "https://www.w3.org/TR/json-ld11/"
+  ],
+  [
+   "Mastering Bitcoin, 3rd edition - Chapter 3, Bitcoin Core: The Reference Implementation (Antonopoulos and Harding, O'Reilly, 2023; CC BY-SA 4.0; tag third_edition_print1)",
+   "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/third_edition_print1/ch03_bitcoin-core.adoc"
+  ],
+  [
+   "Package-registry release data for the toolkits the book lists: npm, PyPI, Go module proxy, crates.io, Maven Central (queried 2026-09-29)",
+   "https://registry.npmjs.org/bcoin"
+  ],
+  [
+   "Running a full node, minimum requirements (Bitcoin.org, 2026), the page the owner's notes link",
+   "https://bitcoin.org/en/full-node"
+  ],
+  [
+   "python-bitcoinlib 0.12.2 on PyPI, released 2023-06-03 (Todd, 2023)",
+   "https://pypi.org/project/python-bitcoinlib/0.12.2/"
+  ]
+ ]
+}
