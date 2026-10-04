@@ -1,4 +1,4 @@
-# SEN0401 chapter pages on template 9.24.0 (port notes)
+# SEN0401 chapter pages on template 9.26.0 (port notes)
 
 The SEN0401 chapter page is now built from SEN0414's newer template (paragraph text, multi-answer exam type, input rows, exam layer,
 practice builder, agents, Playground / Code Lab). Nothing in SEN0414's repository was edited; every SEN0401 file below is new and the
@@ -9,13 +9,14 @@ old files (template 9.4.x, page 9.4.2, build 4.0.0, data 2.1.0, test 9.4.x) stay
 | step | file (in `08-tooling`) | note |
 |---|---|---|
 | base template | `course_page_template_v9_23_0.html` | byte-identical copy of SEN0414's 9.23.0 |
-| template | `template_patch_v9_24_0.py` -> `course_page_template_v9_24_0.html` | the patch lists exactly what it changes (docstring) |
-| configuration | `course_page_config_build_v2_1_0.py` -> `course_page_config_v2_1_0.json` | edit the builder, not the JSON; it runs every program in it |
+| template | `template_patch_v9_24_0.py` -> `_v9_25_0.py` -> `_v9_26_0.py` -> `course_page_template_v9_26_0.html` | each patch lists exactly what it changes (docstring) |
+| configuration | `course_page_config_build_v2_2_0.py` -> `course_page_config_v2_2_0.json` | edit the builder, not the JSON; it runs every program in it, resolves the book pin and lists the course parts that exist |
 | ontology (Stage 2+3) | `sen0401_chapter_build_v1_0_0.py` | corpus -> TBox, ABox, document |
-| page data | `sen0401_page_data_v2_2_0.py` | ontology -> `chNN-page/page_data_v9_24_0.json` |
-| page | `sen0401_page_build_v4_1_0.py` | -> `03-materials/chNN/page/sen0401_chNN_page_v9_24_0.html` |
+| page data | `sen0401_page_data_v2_3_0.py` | ontology -> `chNN-page/page_data_v9_26_0.json` |
+| page | `sen0401_page_build_v4_2_0.py` | -> `03-materials/chNN/page/sen0401_chNN_page_v9_26_0.html` |
 | full test | `sen0401_page_test_v9_24_0.py` | SEN0414's 9.23.0 test, switches in `chNN-page/test_config_v*.json` |
 | smoke test | `sen0401_page_smoke_v1_0_0.py` | 12 deterministic checks, a few minutes |
+| book corpus check | `sen0401_book_corpus_check_v1_1_0.py` | the book block against the pinned bytes, the graph's triple counts, and a book-only question answered from a book passage |
 | bank checker | `question_bank_check_v1_2_0.py` | one script for every chapter |
 | exam release | `sen0401_exam_release_v1_0_0.py` | release codes with the SEN0401 instructor key |
 
@@ -32,15 +33,18 @@ the pair when the owner wants their own: new key file, new `exam.public_key` in 
 
 ```
 cd /home/claude/sen0401/08-tooling
-export PAGE_VER=9_24_0
+export PAGE_VER=9_26_0
+# 0 (only when the book pin, the course-level ontologies or a page program changed) the configuration
+python3 course_page_config_build_v2_2_0.py
 # 1 (only when the chapter's text changed) ontology from the corpus sen0401_chNN_corpus_vX_Y_Z.py  ->  03-materials/chNN/rdodi
 python3 sen0401_chapter_build_v1_0_0.py NN NEWVER PRIORVER          # e.g. 02 1.2.0 1.1.1
 # 2 page data, 3 page
-python3 sen0401_page_data_v2_2_0.py NN /root/.local/bin/python3.14
-python3 sen0401_page_build_v4_1_0.py NN
-# 4 tests (the full one takes about 15 minutes: run it in the background and poll)
+python3 sen0401_page_data_v2_3_0.py NN /root/.local/bin/python3.14
+python3 sen0401_page_build_v4_2_0.py NN
+# 4 tests (run them one at a time: concurrent browsers make the page's 200 ms main-thread gate fail spuriously)
+python3 sen0401_book_corpus_check_v1_1_0.py NN
 python3 sen0401_page_smoke_v1_0_0.py NN
-nohup python3 sen0401_page_test_v9_24_0.py NN > /tmp/t_chNN.log 2>&1 &
+nohup python3 sen0401_page_test_v9_24_0.py NN > /tmp/t_chNN.log 2>&1 &   # about 15 minutes: poll it
 ```
 The page needs, in `chNN-page/`: `quiz_v*.json`, `objectives_v*.json` (both exist for chapters 1-4), optionally `discussion_v*.json`,
 `question_bank_v*.json`, `test_config_v*.json`, `playground_v*.json` (replaces the course Playground program), `visuals_v*.json`, `resources_v*.json`,
@@ -93,13 +97,34 @@ Same shape as SEN0414's `ch01-page/question_bank_v1_1_0.json`: a JSON **list** o
 Keys: `guide_q`, `agent`, `root` (a question for the guide that should hand over to `agent`; `root` is the agent's first question; choose an
 agent that has an executed example and is not the largest) and the switches `corpus_kinds`, `course_outcomes`, `code_layers`, `bank_complete`
 (see the comment above `CFG` in the test). A switch set to the "does not have" value turns the check that needs it into a listed SKIP
-instead of a FAIL: SEN0401 has no textbook/course ontology yet (`corpus_kinds` = chapter, page, research; no LO-n outcomes), and its examples
-are not Python programs (no syntax/behaviour layer in the ontology graph).
+instead of a FAIL. As of the 9.26.0 rebuild `corpus_kinds` = **book, chapter, page, research**: the page now embeds the ontology of its own
+chapter of Mastering Bitcoin, so the agents really do rank over book passages. `course_outcomes` is still false and `corpus_kinds` still has
+no `course` entry - SEN0401's own course-level ontologies arrived after this rebuild and are not in the pages yet (see "Known gaps"). The
+chapters' examples are not Python programs, so `code_layers` stays false.
+
+## The book corpus (what the 9.26.0 rebuild fixed)
+
+Configuration 2.1.0 declared an **empty** page corpus and said in its own note that "SEN0401 has no textbook ontology for Mastering Bitcoin".
+That was false: the ontology of the 3rd edition, one file per chapter, is published in the Ontologies monorepo as `mastering-bitcoin-3e`. The
+page template has carried a `book` corpus kind all along, so the only reason the agents, the taxonomy and the SPARQL console never saw a book
+triple was the configuration saying there was nothing to embed. Fixed in configuration 2.2.0 (`corpus.book`, one entry per chapter with the
+book's own chapter label, plus `book_pin_commit`) and page build 4.2.0, which reads the file with `git show <pin>:<path>` and embeds it as
+`data-kind="book"`; a pin that does not resolve stops the build. Template 9.26.0 widened one query (`bookQ`) so the taxonomy's book layer
+accepts this book's way of carrying a concept's own sentence.
+
+**Course chapter N is book chapter N.** Verified mechanically for all 14 at the pin by the configuration builder (each file's own chapter
+individual must carry inventory key `chNN` and part number N) and independently by concept-label overlap: every one of chapters 1-5 overlaps
+its same-numbered book chapter two to four times more than any other.
 
 ## Known gaps
 
-* Chapters 2-4 and the numbers unit have no page of 9.24.0 yet; they have `chNN-page/` inputs from the old chain and need steps 2-4 above
-  (plus a `test_config`). The data step still reads `unit_v*.json` and `extra_v*.html` for named units as before (untested on 9.24.0).
+* **SEN0401's own course-level ontologies are not in the pages yet.** `00-course-profile/`, `01-outcomes/`, `02-textbook/` and
+  `03-materials/sen0401_materials_v1_0_0.ttl` were written by a parallel worker while the 9.26.0 rebuild was running, so `corpus.course` in
+  `course_page_config_v2_2_0.json` is still `[]`. The configuration builder globs those four folders, so re-running it picks them up with no
+  edit; then rebuild the data and page steps, add a `course` entry to each chapter's `corpus_kinds` and set `course_outcomes` to true in a new
+  `test_config`. Their textbook part pins the same commit this rebuild used, so the book block will not move.
+* The numbers unit has no page of 9.26.0; it has `numbers-page/` inputs from the old chain. A named unit gets **no** book block by design
+  (`corpus.book` is keyed by chapter number), and page build 4.2.0 says so in its manifest rather than failing.
 * The page ABox / build record steps (`sen0401_page_record_v2_1_0.py`, `sen0401_page_abox_build_v1_2_0.py`) belong to the old chain; not rerun.
 * `index.html` ("All chapters" link on the page) does not exist for SEN0401.
 * `bonus_points` (10) in the configuration is SEN0414's value, kept until the owner sets SEN0401's.
