@@ -1,0 +1,125 @@
+{
+ "_version": "1.0.0",
+ "items": [
+  {
+   "q": "What does a Bitcoin wallet database contain?",
+   "options": [
+    "The bitcoins the user owns, stored as amounts",
+    "Only keys, which are associated with bitcoins recorded on the blockchain",
+    "A copy of the blockchain and the user's balance"
+   ],
+   "answer": 1,
+   "level": "Understand",
+   "objective": "CO2",
+   "rationales": [
+    "Nothing in a wallet holds coins; outputs live on the blockchain and keys prove control of them.",
+    "A wallet database is not a chain copy; a full node keeps the chain, and a wallet may use one."
+   ]
+  },
+  {
+   "q": "A wallet shows 12 words. How much entropy does that stand for, and how many of the bits are checksum?",
+   "options": [
+    "132 bits of entropy and no checksum",
+    "128 bits of entropy and 4 checksum bits in the last word",
+    "128 bits of entropy and 11 checksum bits in the last word"
+   ],
+   "answer": 1,
+   "level": "Apply",
+   "objective": "CO1",
+   "rationales": [
+    "Twelve words carry 132 bits in all, of which 4 are the checksum of the other 128.",
+    "A word is 11 bits, but only 4 of the last word's bits are checksum for a 128-bit code."
+   ]
+  },
+  {
+   "q": "In BIP39, what happens if a restoring user types a passphrase that is not the one they used?",
+   "options": [
+    "The wallet reports an error, because the checksum covers the passphrase",
+    "The same keys are produced, since the passphrase only encrypts the code",
+    "A different, valid tree of keys is produced, and the wallet simply shows an empty balance"
+   ],
+   "answer": 2,
+   "level": "Understand",
+   "objective": "CO1",
+   "rationales": [
+    "Three of the four schemes, BIP39 among them, leave the passphrase out of the checksum; only Aezeed authenticates it.",
+    "The passphrase is part of the salt of the key derivation, so it changes the seed itself."
+   ]
+  },
+  {
+   "q": "Why is hardened derivation used for the first levels of a standard path?",
+   "options": [
+    "Because a leaked child private key together with the parent chain code would otherwise reveal the parent private key",
+    "Because hardened keys are longer and therefore harder to guess",
+    "Because public derivation is slower above the account level"
+   ],
+   "answer": 0,
+   "level": "Understand",
+   "objective": "CO3",
+   "rationales": [
+    "Hardened and normal child keys are the same size; only the input to the hash differs.",
+    "Speed is not the reason; the hardened step is a firewall against a leak."
+   ]
+  },
+  {
+   "q": "A web server holds only an account's extended public key. What is the worst an attacker who takes over that server can do with the key itself?",
+   "options": [
+    "Spend the funds already received to the shop's addresses",
+    "Derive the account's private keys by brute force",
+    "See every address of the branch and so every payment it ever received"
+   ],
+   "answer": 2,
+   "level": "Analyze",
+   "objective": "CO3",
+   "rationales": [
+    "No private key is reachable from an extended public key, so past funds are safe.",
+    "Brute force against a 256-bit key is not a practical attack; the real loss is privacy."
+   ]
+  },
+  {
+   "q": "A user restores a BIP39 code into a wallet that supports only legacy addresses. The funds were received to native segwit addresses. What do they see?",
+   "options": [
+    "The full balance, because the keys are the same",
+    "An empty wallet, because that software never derives the m/84h path",
+    "An error, because the code is not valid for that wallet"
+   ],
+   "answer": 1,
+   "level": "Apply",
+   "objective": "CO4",
+   "rationales": [
+    "The seed is the same but the path and the script type are not, so the addresses differ.",
+    "The code's checksum is independent of the paths, so it validates and the wallet reports no error."
+   ]
+  },
+  {
+   "q": "Which of these cannot be recovered from a recovery code alone?",
+   "options": [
+    "The labels the user gave to their addresses and transactions",
+    "The public keys of the user's own branch",
+    "The private keys for the standard paths"
+   ],
+   "answer": 0,
+   "level": "Understand",
+   "objective": "CO2",
+   "rationales": [
+    "Every key of a standard path is derived from the seed, so public keys come back.",
+    "Private keys are derived from the seed as well; it is the user's own notes that are lost."
+   ]
+  },
+  {
+   "q": "The chapter says each parent key can have 2,147,483,647 children and gives 2 to the 31 as that value. What does BIP32 actually say?",
+   "options": [
+    "2 to the 31 normal children with indices 0 to 2 to the 31 minus 1, so 2,147,483,648 of them",
+    "2,147,483,647 children in total, of which half are hardened",
+    "Four billion children, all of them normal"
+   ],
+   "answer": 0,
+   "level": "Analyze",
+   "objective": "CO5",
+   "rationales": [
+    "The figure printed is the largest normal index, not the count; the count is one more.",
+    "Four billion is the total of normal and hardened children together, 2 to the 32."
+   ]
+  }
+ ]
+}

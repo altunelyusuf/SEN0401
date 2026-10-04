@@ -1,0 +1,268 @@
+{{short description|Hash function that is suitable for use in cryptography}}
+[[Image:Cryptographic Hash Function.svg|thumb|375px|right|A cryptographic hash function (specifically [[SHA-1]]) at work. A small change in the input (in the word "over") drastically changes the output (digest). This is called the [[avalanche effect]].]]
+{{SHA-box}}
+
+A '''cryptographic hash function''' ('''CHF''') is a [[hash algorithm]] (a [[Map (mathematics)|map]] of an arbitrary binary string to a binary string with a fixed size of <math>n</math> bits) that has special properties desirable for [[Cryptography|cryptographic]] applications.{{sfn|Menezes|van Oorschot|Vanstone|2018|p=33}}
+
+Hashing is a one-directional mathematical operation which is quick to calculate, yet hard to reverse.<ref name="intel">{{cite web|url=https://www.intel.com/content/www/us/en/developer/articles/technical/software-security-guidance/resources/key-usage-in-integrated-firmware-images.html|title=Introduction to key usage in integrated firmware images|website=Intel.com|access-date=July 18, 2026}}</ref>
+Common uses include [[password]] storage and [[digital signatures]].<ref name="codeacad">{{Cite web|url=https://www.codecademy.com/resources/blog/what-is-hashing|title=What is Hashing?|website=Codeacademy.com|date=Mar 27, 2025|access-date=July 18, 2026}}</ref> 
+Even a small change in the input results in a very different hash, meaning that it functions as an efficient and consistent way to  check if two copies of data or software match.<ref name="ny">{{Cite web|url=https://elections.ny.gov/testing-and-review-process|title=Testing and Review Process|website=New York State Board of Elections|access-date=July 18, 2026}}</ref> 
+Typically, the operation works on a block of input data; the hash output is then hashed with the next block, creating a new hash reflecting everything to that point; this action is repeated until the hash reflects everything through the final block.<ref name="codeacad" />
+
+More technically:{{sfn|Menezes|van Oorschot|Vanstone|2018|p=33}}
+* the probability of a particular <math>n</math>-bit output result ([[hash value]]) for a random input string ("message") is <math>2^{-n}</math> (as for any good hash), so the hash value can be used as a representative of the message; 
+* finding an input string that matches a given hash value (a ''pre-image'') is infeasible, ''assuming all input strings are equally likely.''  The ''resistance'' to such search is quantified as [[security strength]]: a cryptographic hash with <math>n</math> bits of hash value is expected to have a ''preimage resistance'' strength of <math>n</math> bits, unless the space of possible input values is significantly smaller than <math>2^{n}</math> (a practical example can be found in {{section link||Attacks on hashed passwords}}); 
+* a ''second preimage'' resistance strength, with the same expectations, refers to a similar problem of finding a second message that matches the given hash value when one message is already known;
+* finding any pair of different messages that yield the same hash value (a ''collision'') is also infeasible: a cryptographic hash is expected to have a ''collision resistance'' strength of <math>n/2</math> bits (lower because of the [[birthday paradox]]).
+
+Cryptographic hash functions have many [[information security|information-security]] applications, notably in [[digital signature]]s, [[message authentication code]]s (MACs), and other forms of [[authentication]]. They can also be used as ordinary [[hash function]]s, to index data in [[hash table]]s, for [[fingerprint (computing)|fingerprinting]], to detect duplicate data or uniquely identify files, and as [[checksum]]s to detect accidental data corruption. Indeed, in information-security contexts, cryptographic hash values are sometimes called (''digital'') ''fingerprints'', ''checksums'', (''message'') ''digests'',<ref>{{cite web |url=https://csrc.nist.gov/glossary/term/message_digest |title=message digest |publisher=[[NIST]] |website=Computer Security Resource Center - Glossary}}</ref> or just ''hash values'', even though all these terms stand for more general functions with rather different properties and purposes.<ref name="wjryW">{{cite web|last1=Schneier|first1=Bruce|author-link1=Bruce Schneier|title=Cryptanalysis of MD5 and SHA: Time for a New Standard|url=https://www.schneier.com/essays/archives/2004/08/cryptanalysis_of_md5.html|url-status=dead|archive-url=https://web.archive.org/web/20160316114109/https://www.schneier.com/essays/archives/2004/08/cryptanalysis_of_md5.html|archive-date=2016-03-16|access-date=2016-04-20|website=Computerworld|quote=Much more than encryption algorithms, one-way hash functions are the workhorses of modern cryptography.}}</ref>
+
+[[Non-cryptographic hash function]]s are used in [[hash table]]s and to detect accidental errors; their constructions frequently provide no resistance to a deliberate attack. For example, a [[denial-of-service attack]] on hash tables is possible if the collisions are easy to find, as in the case of linear [[cyclic redundancy check]] (CRC) functions.{{sfn|Aumasson|2017|p=106}}
+
+== Properties ==
+Most cryptographic hash functions are designed to take a [[string (computer science)|string]] of any length as input and produce a fixed-length hash value.
+
+A cryptographic hash function must be able to withstand all known [[Cryptanalysis#Types of cryptanalytic attack|types of cryptanalytic attack]]. In theoretical cryptography, the security level of a cryptographic hash function has been defined using the following properties:
+
+; Pre-image resistance : Given a hash value {{math|''h''}}, it should be difficult to find any message {{math|''m''}} such that {{math|1=''h'' = hash(''m'')}}. This concept is related to that of a [[one-way function]]. Functions that lack this property are vulnerable to [[preimage attack]]s.
+; Second pre-image resistance : Given an input {{math|''m''{{sub|1}}}}, it should be difficult to find a different input {{math|''m''{{sub|2}}}} such that {{math|1=hash(''m''{{sub|1}}) = hash(''m''{{sub|2}})}}. This property is sometimes referred to as ''weak collision resistance''. Functions that lack this property are vulnerable to [[second-preimage attack]]s.
+; [[Collision resistance]] : It should be difficult to find two different messages {{math|''m''{{sub|1}}}} and {{math|''m''{{sub|2}}}} such that {{math|1=hash(''m''{{sub|1}}) = hash(''m''{{sub|2}})}}. Such a pair is called a cryptographic [[hash collision]]. This property is sometimes referred to as ''strong collision resistance''. It requires a hash value at least twice as long as that required for pre-image resistance; otherwise, collisions may be found by a [[birthday attack]].{{sfn|Katz|Lindell|2014|pp=155–157, 190, 232}}
+
+Collision resistance implies second pre-image resistance but does not imply pre-image resistance.{{sfn|Rogaway|Shrimpton|2004|loc=in Sec. 5. Implications}} The weaker assumption is always preferred in theoretical cryptography, but in practice, a hash-function that is only second pre-image resistant is considered insecure and is therefore not recommended for real applications.
+
+Informally, these properties mean that a [[adversary (cryptography)|malicious adversary]] cannot replace or modify the input data without changing its digest. Thus, if two strings have the same digest, one can be very confident that they are identical. Second pre-image resistance prevents an attacker from crafting a document with the same hash as a document the attacker cannot control. Collision resistance prevents an attacker from creating two distinct documents with the same hash.
+
+A function meeting these criteria may still have undesirable properties. Currently, popular cryptographic hash functions are vulnerable to [[Length extension attack|''length-extension'' attacks]]: given {{math|hash(''m'')}} and {{math|len(''m'')}} but not {{math|''m''}}, by choosing a suitable {{math|{{′|''m''}}}} an attacker can calculate {{math|hash(''m'' ∥ {{′|''m''}})}}, where {{math|∥}} denotes [[concatenation]].<ref name="Y0rF6">{{cite web|url=http://vnhacker.blogspot.com/2009/09/flickrs-api-signature-forgery.html|title=Flickr's API Signature Forgery Vulnerability|first1=Thai|last1=Duong|first2=Juliano|last2=Rizzo|access-date=2012-12-07|archive-date=2013-08-15|archive-url=https://web.archive.org/web/20130815164303/http://vnhacker.blogspot.com/2009/09/flickrs-api-signature-forgery.html|url-status=live}}</ref> This property can be used to break naive authentication schemes based on hash functions. The [[HMAC]] construction works around these problems.
+
+In practice, collision resistance is insufficient for many practical uses. In addition to collision resistance, it should be impossible for an adversary to find two messages with substantially similar digests; or to infer any useful information about the data, given only its digest. In particular, a hash function should behave as much as possible like a [[random function]] (often called a [[random oracle]] in proofs of security) while still being deterministic and efficiently computable. This rules out functions like the [[SWIFFT]] function, which can be rigorously proven to be collision-resistant assuming that certain problems on ideal lattices are computationally difficult, but, as a linear function, does not satisfy these additional properties.{{sfn|Lyubashevsky|Micciancio|Peikert|Rosen|2008| pp=54–72}}
+
+Checksum algorithms, such as [[CRC-32]] and other [[cyclic redundancy check]]s, are designed to meet much weaker requirements and are generally unsuitable as cryptographic hash functions. For example, a CRC was used for message integrity in the [[Wired Equivalent Privacy|WEP]] encryption standard, but an attack was readily discovered, which exploited the linearity of the checksum.
+
+=== Degree of difficulty ===
+In cryptographic practice, "difficult" generally means "almost certainly beyond the reach of any adversary who must be prevented from breaking the system for as long as the security of the system is deemed important". The meaning of the term is therefore somewhat dependent on the application since the effort that a malicious agent may put into the task is usually proportional to their expected gain. However, since the needed effort usually multiplies with the digest length, even a thousand-fold advantage in processing power can be neutralized by adding a dozen bits to the latter.
+
+For messages selected from a limited set of messages, for example [[password]]s or other short messages, it can be feasible to invert a hash by trying all possible messages in the set. Because cryptographic hash functions are typically designed to be computed quickly, special [[key derivation function]]s that require greater computing resources have been developed that make such [[brute-force attack]]s more difficult.
+
+In some [[Computational complexity theory|theoretical analyses]] "difficult" has a specific mathematical meaning, such as "not solvable in [[asymptotic computational complexity|asymptotic]] [[polynomial time]]". Such interpretations of ''difficulty'' are important in the study of [[provably secure cryptographic hash function]]s but do not usually have a strong connection to practical security. For example, an [[exponential time|exponential-time]] algorithm can sometimes still be fast enough to make a feasible attack. Conversely, a polynomial-time algorithm (e.g., one that requires {{math|''n''<sup>20</sup>}} steps for {{math|''n''}}-digit keys) may be too slow for any practical use.
+
+== Illustration ==
+An illustration of the potential use of a cryptographic hash is as follows: [[Alice and Bob|Alice]] poses a tough math problem to [[Alice and Bob|Bob]] and claims that she has solved it. Bob would like to try it himself, but would yet like to be sure that Alice is not bluffing. Therefore, Alice writes down her solution, computes its hash, and tells Bob the hash value (whilst keeping the solution secret). Then, when Bob comes up with the solution himself a few days later, Alice can prove that she had the solution earlier by revealing it and having Bob hash it and then check that it matches the hash value given to him before. (This is an example of a simple [[commitment scheme]]; in actual practice, Alice and Bob will often be computer programs, and the secret would be something less easily spoofed than a claimed puzzle solution.)
+
+== Applications ==
+
+=== Verifying the integrity of messages and files ===
+{{ main | File verification }}
+
+An important application of secure hashes is the verification of [[message integrity]]. Comparing message digests (hash digests over the message) calculated before, and after, transmission can determine whether any changes have been made to the message or [[computer file|file]].
+
+[[MD5]], [[SHA-1]], or [[SHA-2]] hash digests are sometimes published on websites or forums to allow verification of integrity for downloaded files,<ref name="e87Bo">{{cite magazine | url=http://www.techrepublic.com/blog/security/use-md5-hashes-to-verify-software-downloads/374 | title=Use MD5 hashes to verify software downloads | magazine=TechRepublic | date=December 5, 2007 | access-date=March 2, 2013 | last=Perrin | first=Chad | archive-date=October 18, 2012 | archive-url=https://web.archive.org/web/20121018075308/http://www.techrepublic.com/blog/security/use-md5-hashes-to-verify-software-downloads/374 | url-status=live }}</ref> including files retrieved using [[file sharing]] such as [[Mirror website|mirroring]]. This practice establishes a [[chain of trust]] as long as the hashes are posted on a trusted site – usually the originating site – authenticated by [[HTTPS]]. Using a cryptographic hash and a chain of trust detects malicious changes to the file. Non-cryptographic [[error-detecting code]]s such as [[cyclic redundancy check]]s only prevent against ''non-malicious'' alterations of the file, since an intentional [[Spoofing attack|spoof]] can readily be crafted to have the [[Collision attack|colliding code]] value.
+
+=== Signature generation and verification ===
+{{ main | Digital signature }}
+
+Almost all [[digital signature]] schemes require a cryptographic hash to be calculated over the message. This allows the signature calculation to be performed on the relatively small, statically sized hash digest. The message is considered authentic if the signature verification succeeds given the signature and recalculated hash digest over the message. So the message integrity property of the cryptographic hash is used to create secure and efficient digital signature schemes.
+
+=== Password verification ===
+{{main | Password hashing }}
+
+Password verification commonly relies on cryptographic hashes. Storing all user passwords as [[cleartext]] can result in a massive security breach if the password file is compromised. One way to reduce this danger is to only store the hash digest of each password. To authenticate a user, the password presented by the user is hashed and compared with the stored hash. A password reset method is required when password hashing is performed; original passwords cannot be recalculated from the stored hash value.
+
+However, use of standard cryptographic hash functions, such as the SHA series, is no longer considered safe for password storage.<ref name="sp800-63B" />{{rp|5.1.1.2}} These algorithms are designed to be computed quickly, so if the hashed values are compromised, it is possible to try guessed passwords at high rates. Common [[graphics processing unit]]s can try billions of possible passwords each second. Password hash functions that perform [[key stretching]] – such as [[PBKDF2]], [[scrypt]] or [[Argon2]] – commonly use repeated invocations of a cryptographic hash to increase the time (and in some cases computer memory) required to perform [[brute-force attack]]s on stored password hash digests. For details, see {{section link||Attacks on hashed passwords}}.
+
+A password hash also requires the use of a large random, non-secret [[Salt (cryptography)|salt]] value that can be stored with the password hash. The salt is hashed with the password, altering the password hash mapping for each password, thereby making it infeasible for an adversary to store tables of [[precomputation|precomputed]] hash values to which the password hash digest can be compared or to test a large number of purloined hash values in parallel.
+
+=== Proof-of-work ===
+{{ main | Proof of work }}
+
+A proof-of-work system (or protocol, or function) is an economic measure to deter [[denial-of-service attack]]s and other service abuses such as spam on a network by requiring some work from the service requester, usually meaning processing time by a computer. A key feature of these schemes is their asymmetry: the work must be moderately hard (but feasible) on the requester side but easy to check for the service provider. One popular system – used in [[Bitcoin mining]] and [[Hashcash]] – uses partial hash inversions to prove that work was done, to unlock a mining reward in Bitcoin, and as a good-will token to send an e-mail in Hashcash.  The sender is required to find a message whose hash value begins with a number of zero bits. The average work that the sender needs to perform in order to find a valid message is exponential in the number of zero bits required in the hash value, while the recipient can verify the validity of the message by executing a single hash function. For instance, in Hashcash, a sender is asked to generate a header whose 160-bit SHA-1 hash value has the first 20 bits as zeros. The sender will, on average, have to try {{math|2<sup>19</sup>}} times to find a valid header.
+
+=== File or data identifier ===
+
+A message digest can also serve as a means of reliably identifying a file; several [[Source Code Management|source code management]] systems, including [[Git (software)|Git]], [[Mercurial (software)|Mercurial]] and [[Monotone (software)|Monotone]], use the [[sha1sum]] of various types of content (file content, directory trees, ancestry information, etc.) to uniquely identify them. Hashes are used to identify files on [[peer-to-peer]] [[filesharing]] networks. For example, in an [[ed2k link]], an [[MD4]]-variant hash is combined with the file size, providing sufficient information for locating file sources, downloading the file, and verifying its contents. [[Magnet URI scheme|Magnet links]] are another example. Such file hashes are often the top hash of a [[hash list]] or a [[Merkle tree|hash tree]], which allows for additional benefits.
+
+One of the main applications of a [[hash function]] is to allow the fast look-up of data in a [[hash table]]. Being hash functions of a particular kind, cryptographic hash functions lend themselves well to this application too.
+
+However, compared with standard hash functions, cryptographic hash functions tend to be much more expensive computationally. For this reason, they tend to be used in contexts where it is necessary for users to protect themselves against the possibility of forgery (the creation of data with the same digest as the expected data) by potentially malicious participants, such as open source applications with multiple sources of download, where malicious files could be substituted in with the same appearance to the user, or an authentic file is modified to contain malicious data.<ref>{{Cite web |title=File Hashing |url=https://www.cisa.gov/sites/default/files/FactSheets/NCCIC%20ICS_Factsheet_File_Hashing_S508C.pdf |url-status=live |archive-url=https://web.archive.org/web/20250202100840/https://www.cisa.gov/sites/default/files/FactSheets/NCCIC%20ICS_Factsheet_File_Hashing_S508C.pdf |archive-date=February 2, 2025 |access-date=March 10, 2025 |website=CYBERSECURITY & INFRASTRUCTURE SECURITY AGENCY |format=PDF}}</ref>
+
+==== Content-addressable storage ====
+{{excerpt|Content-addressable storage}}
+
+== Hash functions based on block ciphers ==
+There are several methods to use a [[block cipher]] to build a cryptographic hash function, specifically a [[one-way compression function]].
+
+The methods resemble the [[block cipher modes of operation]] usually used for encryption. Many well-known hash functions, including [[MD4]], [[MD5]], [[SHA-1]] and [[SHA-2]], are built from block-cipher-like components designed for the purpose, with feedback to ensure that the resulting function is not invertible. [[NIST hash function competition|SHA-3]] finalists included functions with block-cipher-like components (e.g., [[Skein hash function|Skein]], [[BLAKE (hash function)|BLAKE]]) though the function finally selected, [[Keccak]], was built on a [[sponge function|cryptographic sponge]] instead.
+
+A standard block cipher such as [[Advanced Encryption Standard|AES]] can be used in place of these custom block ciphers; that might be useful when an [[embedded system]] needs to implement both encryption and hashing with minimal code size or hardware area. However, that approach can have costs in efficiency and security. The ciphers in hash functions are built for hashing: they use large keys and blocks, can efficiently change keys every block, and have been designed and vetted for resistance to [[related-key attack]]s. General-purpose ciphers tend to have different design goals. In particular, AES has key and block sizes that make it nontrivial to use to generate long hash values; AES encryption becomes less efficient when the key changes each block; and related-key attacks make it potentially less secure for use in a hash function than for encryption.
+
+== Hash function design ==
+
+=== Merkle–Damgård construction ===
+{{Main|Merkle–Damgård construction}}
+[[Image:Merkle-Damgard hash big.svg|thumb|450px|right|The Merkle–Damgård hash construction]]
+<!--This section is largely duplicated in [[one-way compression function]]. Both should be moved to [[Merkle–Damgård construction]]-->
+A hash function must be able to process an arbitrary-length message into a fixed-length output. This can be achieved by breaking the input up into a series of equally sized blocks, and operating on them in sequence using a [[one-way compression function]]. The compression function can either be specially designed for hashing or be built from a block cipher. A hash function built with the Merkle–Damgård construction is as resistant to collisions as is its compression function; any collision for the full hash function can be traced back to a collision in the compression function.
+
+The last block processed should also be unambiguously [[Padding (cryptography)|length padded]]; this is crucial to the security of this construction. This construction is called the [[Merkle–Damgård construction]]. Most common classical hash functions, including [[SHA-1]] and [[MD5]], take this form.
+
+=== Wide pipe versus narrow pipe <span class="anchor" id="wide pipe"></span><span class="anchor" id="narrow pipe"></span> ===
+A straightforward application of the Merkle–Damgård construction, where the size of hash output is equal to the internal state size (between each compression step), results in a '''narrow-pipe''' hash design. This design causes many inherent flaws, including [[Length extension attack|length-extension]], multicollisions,<ref name="LkIref">{{Cite journal|last=Lucks|first=Stefan|date=2004|title=Design Principles for Iterated Hash Functions|url=https://eprint.iacr.org/2004/253|journal=Cryptology ePrint Archive|id=Report 2004/253|access-date=2017-07-18|archive-date=2017-05-21|archive-url=https://web.archive.org/web/20170521181207/http://eprint.iacr.org/2004/253|url-status=live}}</ref> long message attacks,{{sfn|Kelsey|Schneier|2005|pp=474–490}} generate-and-paste attacks,{{Citation needed|date=July 2017}} and also cannot be parallelized. As a result, modern hash functions are built on '''wide-pipe''' constructions that have a larger internal state size – which range from tweaks of the Merkle–Damgård construction<ref name="LkIref" /> to new constructions such as the [[sponge construction]] and [[HAIFA construction]].<ref name="EjaBK">{{Cite conference|last1=Biham|first1=Eli|last2=Dunkelman|first2=Orr|date=24 August 2006|title=A Framework for Iterative Hash Functions – HAIFA|url=https://eprint.iacr.org/2007/278|conference=Second NIST Cryptographic Hash Workshop|work=Cryptology ePrint Archive|id=Report 2007/278|access-date=18 July 2017|archive-date=28 April 2017|archive-url=https://web.archive.org/web/20170428160757/http://eprint.iacr.org/2007/278|url-status=live}}</ref> None of the entrants in the [[NIST hash function competition]] use a classical Merkle–Damgård construction.{{sfn|Nandi|Paul|2010}}
+
+Meanwhile, truncating the output of a longer hash, such as used in SHA-512/256, also defeats many of these attacks.<ref name="ZY8I9">{{Cite report|last1=Dobraunig|first1=Christoph|last2=Eichlseder|first2=Maria|last3=Mendel|first3=Florian|date=February 2015|title=Security Evaluation of SHA-224, SHA-512/224, and SHA-512/256|url=http://www.cryptrec.go.jp/estimation/techrep_id2401.pdf|access-date=2017-07-18|archive-date=2016-12-27|archive-url=https://web.archive.org/web/20161227161240/http://cryptrec.go.jp/estimation/techrep_id2401.pdf|url-status=live}}</ref>
+
+== Use in building other cryptographic primitives ==
+Hash functions can be used to build other [[cryptographic primitive]]s. For these other primitives to be cryptographically secure, care must be taken to build them correctly.
+
+[[Message authentication code]]s (MACs) (also called keyed hash functions) are often built from hash functions. [[HMAC]] is such a MAC.
+
+Just as [[block cipher]]s can be used to build hash functions, hash functions can be used to build block ciphers.  [[Luby-Rackoff]] constructions using hash functions can be provably secure if the underlying hash function is secure.  Also, many hash functions (including [[SHA-1]] and [[SHA-2]]) are built by using a special-purpose block cipher in a [[One-way compression function#Davies–Meyer|Davies–Meyer]] or other construction.  That cipher can also be used in a conventional mode of operation, without the same security guarantees; for example, [[SHACAL]], [[BEAR (cipher)|BEAR]] and [[LION (cipher)|LION]].
+
+[[Pseudorandom number generator]]s (PRNGs) can be built using hash functions.  This is done by combining a (secret) random seed with a counter and hashing it.
+
+Some hash functions, such as [[Skein (hash function)|Skein]], [[Keccak]], and [[RadioGatún]], output an arbitrarily long stream and can be used as a [[stream cipher]], and stream ciphers can also be built from fixed-length digest hash functions. Often this is done by first building a [[cryptographically secure pseudorandom number generator]] and then using its stream of random bytes as [[keystream]]. [[SEAL (cipher)|SEAL]] is a stream cipher that uses [[SHA-1]] to generate internal tables, which are then used in a keystream generator more or less unrelated to the hash algorithm.  SEAL is not guaranteed to be as strong (or weak) as SHA-1. Similarly, the key expansion of the [[HC-256|HC-128 and HC-256]] stream ciphers makes heavy use of the [[SHA-256]] hash function.
+
+== Concatenation ==
+
+[[Concatenation|Concatenating]] outputs from multiple hash functions provide collision resistance as good as the strongest of the algorithms included in the concatenated result.{{Citation needed|date=May 2016}}  For example, older versions of [[Transport Layer Security|Transport Layer Security (TLS) and Secure Sockets Layer (SSL)]] used concatenated [[MD5]] and [[SHA-1]] sums.{{sfn|Mendel|Rechberger|Schläffer|2009|p=145|ps= :Concatenating ... is often used by implementors to "hedge bets" on hash functions. A combiner of the form MD5|SHA-1 as used in SSL3.0/TLS1.0 ... is an example of such a strategy.}}{{sfn|Harnik|Kilian|Naor|Reingold|2005|p=99|ps=: the concatenation of hash functions as suggested in the TLS... is guaranteed to be as secure as the candidate that remains secure.}} This ensures that a method to find collisions in one of the hash functions does not defeat data protected by both hash functions.{{Citation needed|date=May 2016}}
+
+For [[Merkle–Damgård construction]] hash functions, the concatenated function is as collision-resistant as its strongest component, but not more collision-resistant.{{Citation needed|date=May 2016}} [[Antoine Joux]] observed that 2-collisions lead to {{math|''n''}}-collisions: if it is feasible for an attacker to find two messages with the same MD5 hash, then they can find as many additional messages with that same MD5 hash as they desire, with no greater difficulty.{{sfn|Joux|2004}} Among those {{math|''n''}} messages with the same MD5 hash, there is likely to be a collision in SHA-1. The additional work needed to find the SHA-1 collision (beyond the exponential birthday search) requires only [[polynomial time]].<ref name="urlGmane">{{cite web |url=http://article.gmane.org/gmane.comp.encryption.general/5154 |title=More Problems with Hash Functions |first=Hal |last=Finney |author-link=Hal Finney (computer scientist) |date=August 20, 2004 |work=The Cryptography Mailing List |access-date=May 25, 2016 |archive-url=https://web.archive.org/web/20160409095104/http://article.gmane.org/gmane.comp.encryption.general/5154 |archive-date=April 9, 2016 |url-status=dead}}</ref>{{sfn|Hoch|Shamir|2008|pp=616–630}}
+
+== Cryptographic hash algorithms ==
+
+There are many cryptographic hash algorithms; this section lists a few algorithms that are referenced relatively often. A more extensive list can be found on the page containing a [[comparison of cryptographic hash functions]].
+
+=== MD5 ===
+{{ Main | MD5 }}
+
+MD5 was designed by [[Ronald Rivest]] in 1991 to replace an earlier hash function, MD4, and was specified in 1992 as RFC 1321. Collisions against MD5 can be calculated within seconds, which makes the algorithm unsuitable for most use cases where a cryptographic hash is required. MD5 produces a digest of 128 bits (16 bytes).
+
+=== SHA-1 ===
+{{ Main | SHA-1 }}
+
+SHA-1 was developed as part of the U.S. Government's [[Capstone (cryptography)|Capstone]] project. The original specification – now commonly called SHA-0 – of the algorithm was published in 1993 under the title Secure Hash Standard, FIPS PUB 180, by U.S. government standards agency NIST (National Institute of Standards and Technology). It was withdrawn by the NSA shortly after publication and was superseded by the revised version, published in 1995 in FIPS&nbsp; PUB&nbsp;180-1 and commonly designated SHA-1. Collisions against the full SHA-1 algorithm can be produced using the [[SHA-1#SHAttered – first public collision|shattered attack]] and the hash function should be considered broken. SHA-1 produces a hash digest of 160 bits (20 bytes).
+
+Documents may refer to SHA-1 as just "SHA", even though this may conflict with the other Secure Hash Algorithms such as SHA-0, SHA-2, and SHA-3.
+
+=== RIPEMD-160 ===
+{{ Main | RIPEMD-160 }}
+
+RIPEMD (RACE Integrity Primitives Evaluation Message Digest) is a family of cryptographic hash functions developed in Leuven, Belgium, by Hans Dobbertin, Antoon Bosselaers, and Bart Preneel at the COSIC research group at the Katholieke Universiteit Leuven, and first published in 1996. RIPEMD was based upon the design principles used in MD4 and is similar in performance to the more popular SHA-1. RIPEMD-160 has, however, not been broken.  As the name implies, RIPEMD-160 produces a hash digest of 160 bits (20 bytes).
+
+=== Whirlpool ===
+{{ Main | Whirlpool (hash function) }}
+
+Whirlpool is a cryptographic hash function designed by Vincent Rijmen and Paulo S. L. M. Barreto, who first described it in 2000. Whirlpool is based on a substantially modified version of the Advanced Encryption Standard (AES). Whirlpool produces a hash digest of 512 bits (64 bytes).
+
+=== SHA-2 ===
+{{ Main | SHA-2 }}
+
+SHA-2 (Secure Hash Algorithm 2) is a set of cryptographic hash functions designed by the United States National Security Agency (NSA), first published in 2001. They are built using the Merkle–Damgård structure, from a one-way compression function itself built using the Davies–Meyer structure from a (classified) specialized block cipher.
+
+SHA-2 basically consists of two hash algorithms: SHA-256 and SHA-512. SHA-224 is a variant of SHA-256 with different starting values and truncated output. SHA-384 and the lesser-known SHA-512/224 and SHA-512/256 are all variants of SHA-512. SHA-512 is more secure than SHA-256 and is commonly faster than SHA-256 on 64-bit machines such as [[X86-64|AMD64]].
+
+The output size in bits is given by the extension to the "SHA" name, so SHA-224 has an output size of 224 bits (28 bytes); SHA-256, 32 bytes; SHA-384, 48 bytes; and SHA-512, 64 bytes.
+
+=== SHA-3 ===
+{{ Main  | SHA-3 }}
+
+SHA-3 (Secure Hash Algorithm 3) was released by NIST on August 5, 2015. SHA-3 is a subset of the broader cryptographic primitive family Keccak. The Keccak algorithm is the work of Guido Bertoni, Joan Daemen, Michael Peeters, and Gilles Van Assche. Keccak is based on a sponge construction, which can also be used to build other cryptographic primitives such as a stream cipher. SHA-3 provides the same output sizes as SHA-2: 224, 256, 384, and 512 bits.
+
+Configurable output sizes can also be obtained using the SHAKE-128 and SHAKE-256 functions. Here the -128 and -256 extensions to the name imply the [[security strength]] of the function rather than the output size in bits.
+
+=== BLAKE2 ===
+{{ Main | BLAKE2 }}
+
+BLAKE2, an improved version of BLAKE, was announced on December 21, 2012. It was created by Jean-Philippe Aumasson, Samuel Neves, [[Zooko Wilcox-O'Hearn]], and Christian Winnerlein with the goal of replacing the widely used but broken MD5 and SHA-1 algorithms. When run on 64-bit x64 and ARM architectures, BLAKE2b is faster than SHA-3, SHA-2, SHA-1, and MD5. Although BLAKE and BLAKE2 have not been standardized as SHA-3 has, BLAKE2 has been used in many protocols including the [[Argon2]] password hash, for the high efficiency that it offers on modern CPUs. As BLAKE was a candidate for SHA-3, BLAKE and BLAKE2 both offer the same output sizes as SHA-3 – including a configurable output size.
+
+=== BLAKE3 ===
+{{ Main | BLAKE3 }}
+
+BLAKE3, an improved version of BLAKE2, was announced on January 9, 2020. It was created by Jack O'Connor, Jean-Philippe Aumasson, Samuel Neves, and Zooko Wilcox-O'Hearn. BLAKE3 is a single algorithm, in contrast to BLAKE and BLAKE2, which are algorithm families with multiple variants. The BLAKE3 compression function is closely based on that of BLAKE2s, with the biggest difference being that the number of rounds is reduced from 10 to 7. Internally, BLAKE3 is a [[Merkle tree]], and it supports higher degrees of parallelism than BLAKE2.
+
+=== Additional National Hashing Algorithms ===
+
+Several hashing algorithms exist that are generally only used in certain localities or jurisdictions, some of the more well known ones include:
+
+* [[SM3 (hash function)|SM3]] — China
+* [[Streebog]] (GOST R 34.11-2012) — Russia
+* [[GOST (hash function)|GOST R 34.11-94]] — Soviet Union / Russia (deprecated)
+* [[LSH (hash function)|LSH]] — South Korea
+* [[Kupyna]] — Ukraine
+
+== Attacks on cryptographic hash algorithms ==
+
+There is a long list of cryptographic hash functions but many have been found to be vulnerable and should not be used. For instance, NIST selected 51 hash functions<ref name="UNudB">Andrew Regenscheid, Ray Perlner, Shu-Jen Chang, John Kelsey, Mridul Nandi, Souradyuti Paul, [https://nvlpubs.nist.gov/nistpubs/Legacy/IR/nistir7620.pdf Status Report on the First Round of the SHA-3 Cryptographic Hash Algorithm Competition] {{Webarchive|url=https://web.archive.org/web/20180605095224/https://nvlpubs.nist.gov/nistpubs/Legacy/IR/nistir7620.pdf |date=2018-06-05 }}</ref> as candidates for round 1 of the SHA-3 hash competition, of which 10 were considered broken and 16 showed significant weaknesses and therefore did not make it to the next round; more information can be found on the main article about the [[NIST hash function competition]]s.
+
+Even if a hash function has never been broken, a [[Cryptographic attack#Amount of information available to the attacker|successful attack]] against a weakened variant may undermine the experts' confidence. For instance, in August 2004 collisions were found in several then-popular hash functions, including MD5.<ref name="Mpt5q">XiaoyunWang, Dengguo Feng, Xuejia Lai, Hongbo Yu, [https://eprint.iacr.org/2004/199.pdf Collisions for Hash Functions MD4, MD5, HAVAL-128, and RIPEMD] {{Webarchive|url=https://web.archive.org/web/20041220195626/https://eprint.iacr.org/2004/199.pdf |date=2004-12-20 }}</ref> These weaknesses called into question the security of stronger algorithms derived from the weak hash functions – in particular, SHA-1 (a strengthened version of SHA-0), RIPEMD-128, and RIPEMD-160 (both strengthened versions of RIPEMD).<ref name="R7ASX">{{Citation|last1=Alshaikhli|first1=Imad Fakhri|chapter=Cryptographic Hash Function|date=2015|title=Handbook of Research on Threat Detection and Countermeasures in Network Security|pages=80–94|publisher=IGI Global |isbn=978-1-4666-6583-5|last2=AlAhmad|first2=Mohammad Abdulateef|doi=10.4018/978-1-4666-6583-5.ch006}}</ref>
+
+On August 12, 2004, Joux, Carribault, Lemuel, and Jalby announced a collision for the full SHA-0 algorithm.{{sfn|Joux|2004}} Joux et al. accomplished this using a generalization of the Chabaud and Joux attack. They found that the collision had complexity 2<sup>51</sup> and took about 80,000 CPU hours on a [[supercomputer]] with 256 [[Itanium 2]] processors – equivalent to 13 days of full-time use of the supercomputer.{{Citation needed|date=May 2016}}
+
+In February 2005, an attack on SHA-1 was reported that would find collision in about 2<sup>69</sup> hashing operations, rather than the 2<sup>80</sup> expected for a 160-bit hash function. In August 2005, another attack on SHA-1 was reported that would find collisions in 2<sup>63</sup> operations. Other theoretical weaknesses of SHA-1 have been known,<ref name="NhaRr">Xiaoyun Wang, [[Yiqun Lisa Yin]], and Hongbo Yu, "[http://people.csail.mit.edu/yiqun/SHA1AttackProceedingVersion.pdf Finding Collisions in the Full SHA-1] {{Webarchive|url=https://web.archive.org/web/20170715064257/http://people.csail.mit.edu/yiqun/SHA1AttackProceedingVersion.pdf |date=2017-07-15 }}".</ref><ref name="CmkOx">{{cite web |first1=Bruce |last1=Schneier |url=http://www.schneier.com/blog/archives/2005/02/cryptanalysis_o.html |title=Cryptanalysis of SHA-1 |website=Schneier on Security |date=February 18, 2005 |access-date=March 30, 2009 |archive-date=January 16, 2013 |archive-url=https://web.archive.org/web/20130116090105/http://www.schneier.com/blog/archives/2005/02/cryptanalysis_o.html |url-status=live }} Summarizes Wang et al. results and their implications.</ref> and in February 2017 Google announced a collision in SHA-1.<ref name="xW1m9">{{Cite news |url=https://www.forbes.com/sites/thomasbrewster/2017/02/23/google-sha-1-hack-why-it-matters/#3f73df04c8cd |title=Google Just 'Shattered' An Old Crypto Algorithm – Here's Why That's Big For Web Security |last=Brewster |first=Thomas |date=Feb 23, 2017 |newspaper=Forbes |access-date=2017-02-24 |archive-date=2017-02-24 |archive-url=https://web.archive.org/web/20170224140451/https://www.forbes.com/sites/thomasbrewster/2017/02/23/google-sha-1-hack-why-it-matters/#3f73df04c8cd |url-status=live }}</ref> Security researchers recommend that new applications can avoid these problems by using later members of the SHA family, such as [[SHA-2]], or using techniques such as [[Universal hashing|randomized hashing]]<ref name="MrThfd">{{Cite web |last=Halevi |first=Shai |last2=Krawczyk |first2=Hugo |title=Randomized Hashing and Digital Signatures |url=http://webee.technion.ac.il/~hugo/rhash/ |url-status=dead |archive-url=https://web.archive.org/web/20220522134202/http://webee.technion.ac.il/~hugo/rhash/ |archive-date=May 22, 2022}}</ref> that do not require collision resistance.
+
+A successful, practical attack broke MD5 (used within certificates for [[Transport Layer Security]]) in 2008.<ref name="bVltK">{{Cite web |last=Sotirov |first=A |last2=Stevens |first2=M |last3=Appelbaum |first3=J |last4=Lenstra |first4=A |last5=Molnar |first5=D |last6=Osvik |first6=D A |last7=de Weger |first7=B |date=December 30, 2008 |title=MD5 considered harmful today: Creating a rogue CA certificate |url=http://www.win.tue.nl/hashclash/rogue-ca/ |access-date=March 29, 2009 |website=HashClash |publisher=Department of Mathematics and Computer Science of Eindhoven University of Technology |archive-date=March 25, 2017 |archive-url=https://web.archive.org/web/20170325033522/http://www.win.tue.nl/hashclash/rogue-ca/ |url-status=live }}</ref>
+
+Many cryptographic hashes are based on the [[Merkle–Damgård construction]]. All cryptographic hashes that directly use the full output of a Merkle–Damgård construction are vulnerable to [[length extension attack]]s. This makes the MD5, SHA-1, RIPEMD-160, Whirlpool, and the SHA-256 / SHA-512 hash algorithms all vulnerable to this specific attack. SHA-3, BLAKE2, BLAKE3, and the truncated SHA-2 variants are not vulnerable to this type of attack.{{citation needed|date=April 2020}}
+
+== Attacks on hashed passwords ==
+{{main|Password cracking}}
+Rather than store plain user passwords, controlled-access systems frequently store the hash of each user's password in a file or database. When someone requests access, the password they submit is hashed and compared with the stored value. If the database is stolen (an all-too-frequent occurrence<ref name="jjUS1">{{cite news|url=https://www.csoonline.com/article/2130877/the-biggest-data-breaches-of-the-21st-century.html|title=The 15 biggest data breaches of the 21st century|first=Dan|last=Swinhoe|first2=Michael|last2=Hill|publisher=CSO Magazine|date=April 17, 2020|access-date=November 25, 2020|archive-date=November 24, 2020|archive-url=https://web.archive.org/web/20201124152328/https://www.csoonline.com/article/2130877/the-biggest-data-breaches-of-the-21st-century.html|url-status=live}}</ref>), the thief will only have the hash values, not the passwords.
+
+Passwords may still be retrieved by an attacker from the hashes, because most people choose passwords in predictable ways. Lists of common passwords are widely circulated and many passwords are short enough that even all possible combinations may be tested if calculation of the hash does not take too much time.<ref name="2tECU">{{cite web | url=https://arstechnica.com/information-technology/2012/12/25-gpu-cluster-cracks-every-standard-windows-password-in-6-hours/ | title=25-GPU cluster cracks every standard Windows password in <6 hours | date=2012-12-10 | first=Dan | last=Goodin | publisher=[[Ars Technica]] | access-date=2020-11-23 | archive-date=2020-11-21 | archive-url=https://web.archive.org/web/20201121132005/https://arstechnica.com/information-technology/2012/12/25-gpu-cluster-cracks-every-standard-windows-password-in-6-hours/ | url-status=live }}</ref>
+
+The use of [[Salt (cryptography)|cryptographic salt]] prevents some attacks, such as building files of precomputing hash values, e.g. [[rainbow table]]s. But searches on the order of 100 billion tests per second are possible with high-end [[graphics processor]]s, making direct attacks possible even with salt.<ref name="28vy8">{{Cite web|url=https://www.theregister.co.uk/2019/02/14/password_length/|title=Use an 8-char Windows NTLM password? Don't. Every single one can be cracked in under 2.5hrs|last=Claburn|first=Thomas|date=February 14, 2019|website=The Register|language=en|access-date=2020-11-26|archive-date=2020-04-25|archive-url=https://web.archive.org/web/20200425091602/https://www.theregister.co.uk/2019/02/14/password_length/|url-status=live}}</ref><ref name="TbJcd">{{cite web|url=https://improsec.com/tech-blog/mind-blowing-gpu-performance|title=Mind-blowing development in GPU performance |publisher=Improsec|date=January 3, 2020 |url-status=live |archive-url=https://web.archive.org/web/20230409171025/https://improsec.com/tech-blog/mind-blowing-gpu-performance |archive-date= Apr 9, 2023 }}</ref>
+The United States [[National Institute of Standards and Technology]] recommends storing passwords using special hashes called [[key derivation function]]s (KDFs) that have been created to slow brute force searches.<ref name="sp800-63B">{{cite book | title = SP 800-63B-3 – Digital Identity Guidelines, Authentication and Lifecycle Management | publisher = NIST | date = June 2017 | doi=10.6028/NIST.SP.800-63b | author=Grassi Paul A.}}</ref>{{rp|5.1.1.2}}  Slow hashes include [[pbkdf2]], [[bcrypt]], [[scrypt]], [[argon2]], [[Balloon hashing|Balloon]] and some recent modes of [[crypt (C)|Unix crypt]]. For KDFs that perform multiple hashes to slow execution, NIST recommends an iteration count of 10,000 or more.<ref name="sp800-63B" />{{rp|5.1.1.2}}
+
+== See also ==
+
+{{div col|colwidth=23em}}
+* [[Avalanche effect]]
+* [[Comparison of cryptographic hash functions]]
+* [[Cryptographic agility]]
+* [[CRYPTREC]]
+* [[File fixity]]
+* [[HMAC]]
+* [[Hash chain]]
+* [[Length extension attack]]
+* [[MD5CRK]]
+* [[Message authentication code]]
+* [[NESSIE]]
+* [[PGP word list]]
+* [[Random oracle]]
+* [[Security of cryptographic hash functions]]
+* [[SHA-3]]
+* [[Universal one-way hash function]]
+* [[Optimizing performance of hash functions]]
+{{div col end}}
+
+== References ==
+=== Citations ===
+{{reflist}}
+
+=== Sources ===
+{{refbegin}}
+* {{cite book|last1=Harnik|first1=Danny|last2=Kilian|first2=Joe|last3=Naor|first3=Moni|last4=Reingold |first4=Omer|last5=Rosen|first5=Alon|title=Advances in Cryptology – EUROCRYPT 2005|chapter=On Robust Combiners for Oblivious Transfer and Other Primitives|series=Lecture Notes in Computer Science|volume=3494 |year=2005|pages=96–113|issn=0302-9743|doi=10.1007/11426639_6|isbn=978-3-540-25910-7}}
+* {{cite book|last1=Hoch|first1=Jonathan J.|last2=Shamir|first2=Adi|chapter=On the Strength of the Concatenated Hash Combiner when All the Hash Functions Are Weak |title=Automata, Languages and Programming |series=Lecture Notes in Computer Science|volume=5126|year=2008|pages=616–630|issn=0302-9743 |doi=10.1007/978-3-540-70583-3_50|isbn=978-3-540-70582-6}}
+* {{cite book|last1=Joux|first1=Antoine|author-link=Antoine Joux|year=2004|chapter=Multicollisions in Iterated Hash Functions. Application to Cascaded Constructions|title=Advances in Cryptology – CRYPTO 2004 |series=Lecture Notes in Computer Science|volume=3152|pages=306–316|place=Berlin, Heidelberg |publisher=Springer Berlin Heidelberg|issn=0302-9743|doi=10.1007/978-3-540-28628-8_19|isbn=978-3-540-22668-0|doi-access=free}}
+* {{cite book|last1=Kelsey|first1=John|last2=Schneier|first2=Bruce|title=Advances in Cryptology – EUROCRYPT 2005|chapter=Second Preimages on n-Bit Hash Functions for Much Less than 2 n Work|series=Lecture Notes in Computer Science|volume=3494|year=2005|pages=474–490|issn=0302-9743|doi=10.1007/11426639_28|isbn=978-3-540-25910-7|chapter-url=https://eprint.iacr.org/2004/304|doi-access=free|access-date=2017-07-18|archive-date=2017-03-16|archive-url=https://web.archive.org/web/20170316031946/http://eprint.iacr.org/2004/304|url-status=live}}
+* {{cite book|last1=Katz|first1=Jonathan|last2=Lindell|first2=Yehuda|title=Introduction to Modern Cryptography|url=https://books.google.com/books?id=OWZYBQAAQBAJ&pg=PA155|year=2014|publisher=CRC Press|edition=2nd|isbn=978-1-4665-7026-9}}
+* {{cite book|last1=Lyubashevsky|first1=Vadim|last2=Micciancio|first2=Daniele|last3=Peikert|first3=Chris |last4=Rosen|first4=Alon|title=Fast Software Encryption|chapter=SWIFFT: A Modest Proposal for FFT Hashing |series=Lecture Notes in Computer Science|volume=5086|year=2008|pages=54–72|issn=0302-9743|doi=10.1007/978-3-540-71039-4_4|isbn=978-3-540-71038-7|doi-access=free}}
+* {{cite book|last1=Mendel|first1=Florian|last2=Rechberger|first2=Christian|last3=Schläffer|first3=Martin |chapter=MD5 is Weaker Than Weak: Attacks on Concatenated Combiners |title=Advances in Cryptology – ASIACRYPT 2009|series=Lecture Notes in Computer Science|volume=5912|year=2009|pages=144–161|issn=0302-9743 |doi=10.1007/978-3-642-10366-7_9|isbn=978-3-642-10365-0|doi-access=free}}
+* {{cite book|last1=Nandi|first1=Mridul|last2=Paul|first2=Souradyuti|chapter=Speeding up the Wide-Pipe: Secure and Fast Hashing|title=Progress in Cryptology - INDOCRYPT 2010|series=Lecture Notes in Computer Science|volume=6498|year=2010|pages=144–162|issn=0302-9743|doi=10.1007/978-3-642-17401-8_12|isbn=978-3-642-17400-1|chapter-url=https://lirias.kuleuven.be/handle/123456789/318700}}
+* {{cite book |last1=Rogaway |first1=P. |last2=Shrimpton |first2=T. |chapter=Cryptographic Hash-Function Basics: Definitions, Implications, and Separations for Preimage Resistance, Second-Preimage Resistance, and Collision Resistance |chapter-url={{GBurl|c4P4OYcy99kC|p=371}} |editor1-last=Roy |editor1-first=B. |editor2-last=Mier |editor2-first=W. |title=Fast Software Encryption: 11th International Workshop, FSE 2004 |publisher=Springer |location=Lecture Notes in Computer Science |volume=3017 |date=2004 |isbn=3-540-22171-9 |pages=371–388 |url=https://books.google.com/books?id=c4P4OYcy99kC&pg=PA371 |access-date=2022-11-30 |archive-date=2022-11-30 |archive-url=https://web.archive.org/web/20221130071706/https://books.google.com/books?id=c4P4OYcy99kC&pg=PA371 |url-status=live |doi=10.1007/978-3-540-25937-4_24 |doi-access=free }}
+{{refend}}
+* {{cite book | first1 = Alfred J. | last1 = Menezes | first2 = Paul C. | last2 = van Oorschot | first3 = Scott A. | last3 = Vanstone | date = 7 December 2018 | title = Handbook of Applied Cryptography | publisher = CRC Press | pages = 33– | isbn = 978-0-429-88132-9 | chapter = Hash functions | chapter-url = https://books.google.com/books?id=YyCyDwAAQBAJ&pg=PA33}}
+* {{cite book | first1 = Jean-Philippe | last1 = Aumasson | date = 6 November 2017 | title = Serious Cryptography: A Practical Introduction to Modern Encryption | publisher = No Starch Press | pages = | isbn = 978-1-59327-826-7 | oclc = 1012843116 | url = https://books.google.com/books?id=W1v6DwAAQBAJ}}
+
+== External links ==
+* {{cite book | first1 = Christof | last1 = Paar | first2 = Jan | last2 = Pelzl | chapter-url = http://wiki.crypto.rub.de/Buch/movies.php | chapter = 11: Hash Functions | title = Understanding Cryptography, A Textbook for Students and Practitioners | publisher = [[Springer Science+Business Media|Springer]] | date = 2009 | url-status = dead | archive-url = https://archive.today/20121208212741/http://wiki.crypto.rub.de/Buch/movies.php | archive-date = 2012-12-08 }} (companion web site contains online cryptography course that covers hash functions)
+* {{cite web | url = http://ehash.iaik.tugraz.at/wiki/The_eHash_Main_Page | title = The ECRYPT Hash Function Website }}
+* {{cite web | url = http://www.guardtime.com/educational-series-on-hashes/ | title = Series of mini-lectures about cryptographic hash functions | first = A. | last = Buldas | date = 2011 | url-status = dead | archive-url = https://archive.today/20121206020054/http://www.guardtime.com/educational-series-on-hashes/ | archive-date = 2012-12-06 }}
+* [https://github.com/CRPrinzler/HASH-verify Open source python based application with GUI used to verify downloads.]
+
+{{Cryptography navbox|hash}}
+{{Cryptocurrencies}}
+{{Cryptographic software}}
+
+{{DEFAULTSORT:Cryptographic Hash Function}}
+[[Category:Cryptographic primitives]]
+[[Category:Cryptographic hash functions| ]]
+[[Category:Hashing]]

@@ -136,3 +136,7 @@ def is_probable_prime(n, rounds=24):
             if x == n - 1: break
         else: return False
     return True
+def is_valid_b58check(text):
+    """True if text is made of base58 characters and its last four bytes are the checksum of the rest"""
+    try: b58check_decode(text); return True
+    except (ValueError, AssertionError): return False

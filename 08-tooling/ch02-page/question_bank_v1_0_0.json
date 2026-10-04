@@ -1,0 +1,2463 @@
+[
+ {
+  "concept": "Transaction",
+  "level": "Remember",
+  "q": "What does a transaction tell the Bitcoin network?",
+  "options": [
+   "That the owner of certain bitcoins has authorized the transfer of that value to another owner",
+   "That a bank or a payment processor has cleared a payment between two account holders and will settle it with the other participants overnight",
+   "That a miner has agreed to include a payment in the next block",
+   "That a wallet has moved a coin file from one computer to another"
+  ],
+  "answer": 0,
+  "why": "The chapter opens its account of transactions with exactly this sentence."
+ },
+ {
+  "concept": "TransactionPart",
+  "level": "Understand",
+  "q": "Why does reading a transaction correctly depend on knowing which part does which job?",
+  "options": [
+   "Because the parts of a transaction are written in a different order by every wallet, so a reader has to work out from the amounts which part is which",
+   "Because an input says what is being spent, an output what is created, and the fee is whatever remains",
+   "Because only the fee is signed, so the other parts can be changed later",
+   "Because the inputs and outputs must always add up to exactly the same amount"
+  ],
+  "answer": 1,
+  "why": "Confusing the parts leads to the belief that a payment is one amount sent from one address to another."
+ },
+ {
+  "concept": "DoubleEntryLedger",
+  "level": "Analyze",
+  "q": "Where does the bookkeeping analogy stop describing a Bitcoin transaction?",
+  "options": [
+   "A ledger is written by hand, while a transaction is written by a computer",
+   "A ledger balances exactly, and so do a transaction's two sides once the fee is counted",
+   "A ledger names accounts and their owners, while a transaction names earlier outputs and spending conditions",
+   "A ledger records amounts, while a transaction records only addresses"
+  ],
+  "answer": 2,
+  "why": "The transaction data has no field for an owner or for a running balance; a wallet computes a balance itself."
+ },
+ {
+  "concept": "DoubleEntryLedger",
+  "level": "Apply",
+  "q": "Alice's inputs total 100,000 satoshis and her outputs 75,000 and 20,000, with a fee of 5,000. What does this program print?",
+  "code": "print(sum([75000, 20000, 5000]) == 100000)",
+  "options": [
+   "False",
+   "95000",
+   "100000",
+   "True"
+  ],
+  "answer": 3,
+  "why": "The two outputs and the fee add up to the input, so the comparison is true."
+ },
+ {
+  "concept": "Input",
+  "level": "Understand",
+  "q": "Why do inputs turn separate transactions into a connected history?",
+  "options": [
+   "Because every input names the earlier output it consumes, so a payment can be followed backward",
+   "Because every input carries the date on which the earlier transaction was confirmed",
+   "Because inputs are numbered consecutively across the whole blockchain",
+   "Because an input repeats the amount of the output it spends, so the chain can be summed"
+  ],
+  "answer": 0,
+  "why": "The reference also lets anyone see whether the same output is being spent twice."
+ },
+ {
+  "concept": "Input",
+  "level": "Apply",
+  "q": "The input of Alice's transaction stores the referenced identifier in reversed byte order. What does this program print?",
+  "code": "print(bytes.fromhex('eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a')[::-1].hex())",
+  "options": [
+   "eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a",
+   "4ac541802679866935a19d4f40728bb89204d0cac90d85f3a51a19278fe33aeb",
+   "4ac541802679866935a19d4f40728bb89204d0cac90d85f3a51a19278fe33ae",
+   "a45c1408672998563a91d9f404872bb829040dac09d058f3a15a19872ef33bea"
+  ],
+  "answer": 1,
+  "why": "Reversing the 32 stored bytes gives the identifier in the order that wallets and Bitcoin Core display."
+ },
+ {
+  "concept": "Output",
+  "level": "Analyze",
+  "q": "Why can outputs of very small value become a problem?",
+  "options": [
+   "They are deleted by the network after a fixed number of blocks",
+   "They cannot be spent at all, because the protocol forbids amounts below one satoshi",
+   "They can be uneconomical to spend and still burden every node that must track them",
+   "They are counted twice in the fee, so spending them costs double"
+  ],
+  "answer": 2,
+  "why": "An output never expires: it stays in every full node's database until a valid transaction spends it."
+ },
+ {
+  "concept": "Output",
+  "level": "Apply",
+  "q": "Alice's transaction creates outputs of 75,000 and 20,000 satoshis. What does this program print?",
+  "code": "print(sum([75000, 20000]))",
+  "options": [
+   "100000",
+   "5000",
+   "55000",
+   "95000"
+  ],
+  "answer": 3,
+  "why": "The outputs add up to 95,000 satoshis, which is 5,000 less than the input."
+ },
+ {
+  "concept": "TransactionFee",
+  "level": "Understand",
+  "q": "Why is a transaction fee more like a bid in an auction than a price?",
+  "options": [
+   "Because the good being bought is the limited space in a block, not a service with a fixed price",
+   "Because miners publish a price list and users accept or reject it",
+   "Because the fee is set by the protocol and rises with the amount being sent",
+   "Because the fee is returned to the sender if the transaction is not mined"
+  ],
+  "answer": 0,
+  "why": "The chapter on fees says it is not a fee in the usual sense but much more like a bid for block space."
+ },
+ {
+  "concept": "TransactionFee",
+  "level": "Apply",
+  "q": "The input is 100,000 satoshis and the outputs are 75,000 and 20,000. What does this program print?",
+  "code": "print(100000 - sum([75000, 20000]))",
+  "options": [
+   "95000",
+   "5000",
+   "20000",
+   "0"
+  ],
+  "answer": 1,
+  "why": "The fee is implied by the difference between the input and the outputs."
+ },
+ {
+  "concept": "TransactionSize",
+  "level": "Analyze",
+  "q": "Why do the three size figures of a transaction answer different questions?",
+  "options": [
+   "The byte size is the figure that wallets display, the weight is the figure that block explorers index, and the virtual byte is reserved for the fee estimates that miners publish",
+   "The three are the same number written in three notations, so any one of them can be used",
+   "The byte size is the serialized length, the weight is what the block limit counts, and the vbyte is the weight in a familiar unit",
+   "The byte size includes the witness, the weight excludes it and the vbyte averages the two"
+  ],
+  "answer": 2,
+  "why": "Mixing them up is a common reason for fee figures that do not match between two tools."
+ },
+ {
+  "concept": "TransactionSize",
+  "level": "Apply",
+  "q": "Alice's transaction weighs 569 weight units. What does this program print?",
+  "code": "print((569 + 3) // 4)",
+  "options": [
+   "142",
+   "142.25",
+   "2276",
+   "143"
+  ],
+  "answer": 3,
+  "why": "Dividing the weight by four and rounding up gives the virtual size in vbytes."
+ },
+ {
+  "concept": "FeeRate",
+  "level": "Understand",
+  "q": "Why does a miner compare transactions by fee rate rather than by total fee?",
+  "options": [
+   "Because a larger transaction leaves room for fewer others, so revenue depends on fee per unit of space",
+   "Because the consensus rules forbid a block from including two transactions whose total fees are equal, so miners have to rank them by a ratio instead",
+   "Because the fee rate is the only figure stated inside the transaction",
+   "Because the total fee is unknown until the block has been mined"
+  ],
+  "answer": 0,
+  "why": "The chapter says transactions are added to a block prioritized by the highest fee rate first."
+ },
+ {
+  "concept": "FeeRate",
+  "level": "Apply",
+  "q": "Alice paid 5,000 satoshis for 143 virtual bytes. What does this program print?",
+  "code": "print(round(5000 / 143, 2))",
+  "options": [
+   "34.96",
+   "34.97",
+   "35.0",
+   "0.03"
+  ],
+  "answer": 1,
+  "why": "The fee rate is the fee divided by the virtual size, here about 34.97 satoshis per vbyte."
+ },
+ {
+  "concept": "UnspentOutput",
+  "level": "Analyze",
+  "q": "Why is a wallet's balance not simply a number stored somewhere?",
+  "options": [
+   "Because balances are kept only by the block explorers and never by a wallet, so a wallet has to ask an explorer before it can show a figure",
+   "Because the balance is recomputed by the miners at every block",
+   "Because the balance is the sum of the separate unspent outputs the wallet's keys can spend",
+   "Because a balance exists only after six confirmations have passed"
+  ],
+  "answer": 2,
+  "why": "An unspent output is not an account balance, and each one is spent whole."
+ },
+ {
+  "concept": "UnspentOutput",
+  "level": "Apply",
+  "q": "Three outputs are marked as spent or unspent. What does this program print?",
+  "code": "print([o for o, spent in {'Tx1:0': True, 'Tx2:0': False, 'Tx2:1': False}.items() if not spent])",
+  "options": [
+   "['Tx1:0']",
+   "['Tx1:0', 'Tx2:0', 'Tx2:1']",
+   "[]",
+   "['Tx2:0', 'Tx2:1']"
+  ],
+  "answer": 3,
+  "why": "Only the two outputs of Alice's transaction are still unspent, because her payment consumed Tx1:0."
+ },
+ {
+  "concept": "TransactionIdentifier",
+  "level": "Analyze",
+  "q": "Why can pasting a transaction identifier from one tool into another find nothing?",
+  "options": [
+   "Because a hash is displayed in one byte order and stored in another, so the two printings differ",
+   "Because an identifier expires once its transaction has six confirmations, after which explorers index the payment by the address that received it",
+   "Because explorers index only transactions that paid above a minimum fee",
+   "Because the identifier changes every time the transaction is relayed"
+  ],
+  "answer": 0,
+  "why": "The book warns that hash digests are displayed to users in one byte order and used internally in another."
+ },
+ {
+  "concept": "TransactionIdentifier",
+  "level": "Apply",
+  "q": "A transaction identifier is displayed with its bytes in the opposite order to the stored form. What does this program print?",
+  "code": "print(bytes.fromhex('eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a')[::-1].hex())",
+  "options": [
+   "eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a",
+   "4ac541802679866935a19d4f40728bb89204d0cac90d85f3a51a19278fe33aeb",
+   "466200308696215bbc949d5141a49a4138ecdfdfaa2a8029c1f9bcecd1f96177",
+   "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"
+  ],
+  "answer": 1,
+  "why": "The stored bytes reversed give the identifier of the transaction in which Joe paid Alice."
+ },
+ {
+  "concept": "Script",
+  "level": "Remember",
+  "q": "What does an output script specify?",
+  "options": [
+   "The amount that the output carries, in satoshis",
+   "The address of the wallet that created the transaction",
+   "The conditions that must be met to spend the output in the future",
+   "The fee rate that the spender of the output must pay"
+  ],
+  "answer": 2,
+  "why": "An input script then satisfies those conditions and allows the output to be spent."
+ },
+ {
+  "concept": "Script",
+  "level": "Apply",
+  "q": "This tiny interpreter runs the script 2 3 OP_ADD 5 OP_EQUAL. What does it print?",
+  "code": "print((lambda s: [s.append(s.pop() + s.pop()) if t == 'OP_ADD' else s.append(s.pop() == s.pop()) if t == 'OP_EQUAL' else s.append(int(t)) for t in '2 3 OP_ADD 5 OP_EQUAL'.split()] and s)([]))",
+  "options": [
+   "[False]",
+   "[5, True]",
+   "[]",
+   "[True]"
+  ],
+  "answer": 3,
+  "why": "The sum of 2 and 3 equals the 5 that is pushed next, so the stack ends with a true value."
+ },
+ {
+  "concept": "Serialization",
+  "level": "Understand",
+  "q": "Why must the serialized form of a transaction be defined to the last detail?",
+  "options": [
+   "Because the identifier is a hash of those bytes and the signature commits to them",
+   "Because wallets display the serialized form to the user before signing",
+   "Because the serialized form is what a block explorer indexes by address",
+   "Because the fee is computed from the number of fields rather than from the amounts"
+  ],
+  "answer": 0,
+  "why": "Two programs that serialized the same transaction differently would compute different identifiers."
+ },
+ {
+  "concept": "Serialization",
+  "level": "Apply",
+  "q": "An output amount is stored as eight bytes with the least significant byte first. What does this program print?",
+  "code": "print(int.from_bytes(bytes.fromhex('204e000000000000'), 'little'))",
+  "options": [
+   "20480",
+   "20000",
+   "1310720",
+   "5000"
+  ],
+  "answer": 1,
+  "why": "Reading 204e000000000000 as a little-endian integer gives the change output's 20,000 satoshis."
+ },
+ {
+  "concept": "ByteOrder",
+  "level": "Understand",
+  "q": "What is the practical rule when a hash does not match between two tools?",
+  "options": [
+   "Reverse the hexadecimal characters of the string",
+   "Recompute the hash with a single pass of SHA-256",
+   "Try the other byte order before concluding that the data is wrong",
+   "Add the missing leading zeros until the length is 64"
+  ],
+  "answer": 2,
+  "why": "Reversal is on whole bytes, and Bitcoin displays hashes in one order and stores them in another."
+ },
+ {
+  "concept": "ByteOrder",
+  "level": "Apply",
+  "q": "What does this program print for the first eight bytes of the reversed identifier?",
+  "code": "print(bytes.fromhex('4ac541802679866935a19d4f40728bb89204d0cac90d85f3a51a19278fe33aeb')[::-1].hex()[:16])",
+  "options": [
+   "4ac5418026798669",
+   "eb3ae38f27191aa5f3850dc9cad00492b",
+   "a51a19278fe33aeb",
+   "eb3ae38f27191aa5"
+  ],
+  "answer": 3,
+  "why": "Reversing the whole 32 bytes and taking the first sixteen hexadecimal digits gives the start of the stored form."
+ },
+ {
+  "concept": "Outpoint",
+  "level": "Analyze",
+  "q": "Why does an outpoint not say who may spend the output it names?",
+  "options": [
+   "Because the spending condition lives in the script of the output, not in the reference to it",
+   "Because the owner's address is stored in the input script instead",
+   "Because the outpoint is hashed, so the owner cannot be read from it",
+   "Because ownership is recorded separately in each node's database of balances"
+  ],
+  "answer": 0,
+  "why": "A chain of outpoints can therefore be followed without learning anybody's identity."
+ },
+ {
+  "concept": "Outpoint",
+  "level": "Apply",
+  "q": "An outpoint joins a transaction identifier and an output index. What does this program print?",
+  "code": "print((lambda txid, vout: '%s:%d' % (txid[:8] + '...', vout))('4ac541802679866935a19d4f40728bb89204d0cac90d85f3a51a19278fe33aeb', 1))",
+  "options": [
+   "4ac54180...:0",
+   "4ac54180...:1",
+   "4ac541802679866935a19d4f40728bb89204d0cac90d85f3a51a19278fe33aeb:1",
+   "...:1"
+  ],
+  "answer": 1,
+  "why": "The outpoint stored in Alice's input names the earlier transaction and its output at index 1."
+ },
+ {
+  "concept": "Witness",
+  "level": "Understand",
+  "q": "Why does separating the witness from the rest of a transaction matter?",
+  "options": [
+   "Because the witness can then be kept secret from other nodes",
+   "Because an output that is paid to a witness program can be spent without any signature at all, which is what makes the separation worth the complexity",
+   "Because the identifier no longer changes when the proof changes, and witness bytes count less in the weight",
+   "Because it removes the need for an output script in the spending transaction"
+  ],
+  "answer": 2,
+  "why": "The book lists the problems that separation removes, among them third-party malleability."
+ },
+ {
+  "concept": "Witness",
+  "level": "Apply",
+  "q": "Alice's transaction is 194 bytes in all and 125 without its witness. What does this program print?",
+  "code": "print((lambda total, stripped: (total - stripped, stripped * 3 + total))(194, 125))",
+  "options": [
+   "(125, 569)",
+   "(69, 194)",
+   "(69, 503)",
+   "(69, 569)"
+  ],
+  "answer": 3,
+  "why": "The witness accounts for 69 bytes, and the weight is the stripped part counted four times plus the witness once."
+ },
+ {
+  "concept": "Cryptography",
+  "level": "Understand",
+  "q": "What question should a learner keep in mind while reading this group of concepts?",
+  "options": [
+   "What exactly does this tool guarantee, and what does it leave open",
+   "Which of these tools makes a transaction secret from other users",
+   "Which of these tools is fastest to compute on a telephone",
+   "Which of these tools the protocol allows a user to replace"
+  ],
+  "answer": 0,
+  "why": "The tools differ sharply in what they promise, and none of them is encryption."
+ },
+ {
+  "concept": "HashFunction",
+  "level": "Analyze",
+  "q": "Why is the promise about collisions a statement about effort rather than an impossibility?",
+  "options": [
+   "Because the function can be inverted whenever enough memory is available to store every digest it has ever produced for a short input",
+   "Because a fixed-length output must map many inputs to the same value, so pairs exist but are infeasible to find",
+   "Because collisions are prevented by the length of the input",
+   "Because two equal inputs sometimes give different outputs"
+  ],
+  "answer": 1,
+  "why": "The book calls such a pair a collision and says that finding one is computationally infeasible."
+ },
+ {
+  "concept": "HashFunction",
+  "level": "Apply",
+  "q": "What does this program print for the phrase Hello, world! followed by a line break?",
+  "code": "print(__import__('hashlib').sha256(b'Hello, world!\\n').hexdigest())",
+  "options": [
+   "09cb91f8250df04a3db8bd98f47c7cecb712c99835f4123e8ea51460ccbec314",
+   "d9014c4624844aa5bac314773d6b689ad467fa4e1d1a50a1b8a99d5a95f72ff6",
+   "d9014c4624844aa5bac314773d6b689ad467fa4e1d1a50a1b8a99d5a95f72ff5",
+   "f1ef1bf1d9014c4624844aa5bac314773d6b689ad467fa4e1d1a50a1b8a99d5a"
+  ],
+  "answer": 2,
+  "why": "SHA-256 of Hello, world! with its line break is the digest the book prints."
+ },
+ {
+  "concept": "KeyPair",
+  "level": "Remember",
+  "q": "What happens when a private key is revealed to a third party?",
+  "options": [
+   "It is safe for as long as the matching public key is kept secret, because a signature can only be checked by somebody who holds both halves",
+   "It only allows them to read the transactions, not to spend",
+   "It can be undone by generating a new public key from the same private key",
+   "It is equivalent to giving them control over the bitcoins that key secures"
+  ],
+  "answer": 3,
+  "why": "Control over the private key is the root of user control over all funds associated with the public key."
+ },
+ {
+  "concept": "KeyPair",
+  "level": "Apply",
+  "q": "A private key is written as 64 hexadecimal digits. What does this program print?",
+  "code": "print(len(bytes.fromhex('1E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD')) * 8)",
+  "options": [
+   "256",
+   "64",
+   "32",
+   "512"
+  ],
+  "answer": 0,
+  "why": "Sixty-four hexadecimal digits are 32 bytes, and 32 bytes are 256 bits."
+ },
+ {
+  "concept": "PublicKeyCryptography",
+  "level": "Understand",
+  "q": "What is public-key cryptography used for in Bitcoin?",
+  "options": [
+   "To encrypt each payment so that only the receiver can read it",
+   "To generate digital signatures, not to encrypt transactions",
+   "To compress the blockchain so that nodes need less disk space",
+   "To agree a shared secret between the payer's and the payee's wallets"
+  ],
+  "answer": 1,
+  "why": "The book says plainly that it is not used to make the transactions secret."
+ },
+ {
+  "concept": "PublicKeyCryptography",
+  "level": "Apply",
+  "q": "What does this program print when it searches for the exponent that gives remainder 11 modulo 17?",
+  "code": "print([k for k in range(1, 17) if pow(3, k, 17) == 11])",
+  "options": [
+   "[11]",
+   "[3, 7]",
+   "[7]",
+   "[]"
+  ],
+  "answer": 2,
+  "why": "Only the exponent 7 satisfies 3 to the power k modulo 17 equal to 11."
+ },
+ {
+  "concept": "EllipticCurve",
+  "level": "Analyze",
+  "q": "Why is the smooth curve drawn in textbooks misleading for Bitcoin?",
+  "options": [
+   "Because Bitcoin uses a different equation from the one in the pictures",
+   "Because the curve is only an analogy and no multiplication is actually performed",
+   "Because the picture shows the public key rather than the private one",
+   "Because the arithmetic is done modulo a large prime, so the curve is a cloud of points in a huge grid"
+  ],
+  "answer": 3,
+  "why": "The geometric rule of tangents and reflections is an analogy for the algebra that is really computed."
+ },
+ {
+  "concept": "EllipticCurve",
+  "level": "Apply",
+  "q": "This program checks the generator point of secp256k1 against the curve equation. What does it print?",
+  "code": "print((0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8 ** 2 - 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798 ** 3 - 7) % (2 ** 256 - 2 ** 32 - 977))",
+  "options": [
+   "0",
+   "7",
+   "1",
+   "True"
+  ],
+  "answer": 0,
+  "why": "The remainder of y squared minus x cubed minus 7 is zero, so the point lies on the curve."
+ },
+ {
+  "concept": "DigitalSignature",
+  "level": "Remember",
+  "q": "Which three purposes does a digital signature serve?",
+  "options": [
+   "It hides the amount being transferred, identifies the payer by name and fixes the fee that the miner of the block will be allowed to collect",
+   "It proves authorization, it cannot be denied afterwards, and the transaction cannot be changed by others",
+   "It compresses the transaction, proves its age and names the miner",
+   "It encrypts the output, authorizes the fee and fixes the exchange rate"
+  ],
+  "answer": 1,
+  "why": "The chapter on signatures lists authorization, nonrepudiation and integrity."
+ },
+ {
+  "concept": "DigitalSignature",
+  "level": "Apply",
+  "q": "What does this program print for the witness item of Alice's transaction?",
+  "code": "print(len(bytes.fromhex('cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e8171301')))",
+  "options": [
+   "64",
+   "32",
+   "65",
+   "130"
+  ],
+  "answer": 2,
+  "why": "The item is 65 bytes: a 64-byte signature followed by one byte naming the signature-hash type."
+ },
+ {
+  "concept": "Checksum",
+  "level": "Analyze",
+  "q": "Why does a checksum not protect an address against a malicious change?",
+  "options": [
+   "Because the checksum of an address is only four characters long, so an adversary can try every possible value until one of them matches the data",
+   "Because wallets ignore the checksum when an amount is given",
+   "Because the checksum is computed over the amount and not over the address",
+   "Because an adversary who changes the data can simply compute a new matching checksum"
+  ],
+  "answer": 3,
+  "why": "A checksum detects accidents; protecting against deliberate substitution needs a signature."
+ },
+ {
+  "concept": "Checksum",
+  "level": "Apply",
+  "q": "What does this program print for the first four bytes of the double hash of the word bitcoin?",
+  "code": "print(__import__('hashlib').sha256(__import__('hashlib').sha256(b'bitcoin').digest()).digest()[:4].hex())",
+  "options": [
+   "f1ef1bf1",
+   "14f647d5",
+   "f1ef1bf1d9014c46",
+   "b291ae1c"
+  ],
+  "answer": 0,
+  "why": "The old base58check checksum is the first four bytes of the double-SHA256 of the data."
+ },
+ {
+  "concept": "BitsAndBytes",
+  "level": "Analyze",
+  "q": "Why is the block limit quoted as a weight of 4,000,000 rather than in megabytes?",
+  "options": [
+   "Because weight units are eight times larger than bytes",
+   "Because the prefix mega is ambiguous, while a count of units is exact",
+   "Because megabytes are reserved for disk space and not for blocks",
+   "Because the limit changes with every difficulty retarget"
+  ],
+  "answer": 1,
+  "why": "A kilobyte may mean 1,000 or 1,024 bytes depending on the author, so an exact count avoids the question."
+ },
+ {
+  "concept": "BitsAndBytes",
+  "level": "Apply",
+  "q": "What does this program print for the length of the first block's transaction identifier?",
+  "code": "print(len(bytes.fromhex('4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b')) * 8)",
+  "options": [
+   "32",
+   "64",
+   "256",
+   "128"
+  ],
+  "answer": 2,
+  "why": "The identifier is 32 bytes, and multiplying by eight gives 256 bits."
+ },
+ {
+  "concept": "HexadecimalNotation",
+  "level": "Understand",
+  "q": "Why is hexadecimal the usual way to print binary data for human eyes?",
+  "options": [
+   "Because it uses fewer characters than any other notation",
+   "Because it can represent negative numbers without a sign",
+   "Because decimal cannot express values above 255",
+   "Because one digit stands for four bits, so two digits are exactly one byte"
+  ],
+  "answer": 3,
+  "why": "Hexadecimal lines up with byte boundaries, which decimal does not."
+ },
+ {
+  "concept": "HexadecimalNotation",
+  "level": "Apply",
+  "q": "What does this program print?",
+  "code": "print((int('ff', 16), int('1d00ffff', 16), len(hex(255)[2:])))",
+  "options": [
+   "(255, 486604799, 2)",
+   "(255, 1d00ffff, 2)",
+   "(255, 486604799, 8)",
+   "(15, 486604799, 2)"
+  ],
+  "answer": 0,
+  "why": "ff is 255, 1d00ffff read as one number is 486,604,799, and 255 needs two hexadecimal digits."
+ },
+ {
+  "concept": "Entropy",
+  "level": "Analyze",
+  "q": "Why can entropy not be judged by looking at a value?",
+  "options": [
+   "Because entropy is measured in bytes while values are printed in hexadecimal digits, so the figure has to be converted before it can be compared",
+   "Because a value produced by a predictable generator looks exactly as unguessable as a random one",
+   "Because entropy depends on the length of the value alone",
+   "Because only the wallet that made the value can measure it"
+  ],
+  "answer": 1,
+  "why": "Entropy is a property of the process that produced the value, not of the digits."
+ },
+ {
+  "concept": "Entropy",
+  "level": "Apply",
+  "q": "A key is drawn uniformly from two to the power 256 possibilities. What does this program print?",
+  "code": "print((2 ** 256).bit_length() - 1)",
+  "options": [
+   "255",
+   "257",
+   "256",
+   "128"
+  ],
+  "answer": 2,
+  "why": "The base-two logarithm of the number of equally likely possibilities is the entropy in bits."
+ },
+ {
+  "concept": "Nonce",
+  "level": "Analyze",
+  "q": "Why must the mining nonce and the signing nonce never be confused?",
+  "options": [
+   "Because the mining nonce is a four-byte field of the header while the signing nonce is eight bytes long and is stored beside the signature in the witness",
+   "Because the signing nonce is stored in the block header",
+   "Because the mining nonce must never be reused with the same key",
+   "Because the mining nonce is public and may be anything, while the signing nonce must be secret and used once"
+  ],
+  "answer": 3,
+  "why": "Reusing a signing nonce with the same key allows the private key to be recovered."
+ },
+ {
+  "concept": "Nonce",
+  "level": "Apply",
+  "q": "What does this program print when it searches for the first number whose digest begins with a zero?",
+  "code": "print(next(n for n in range(1000) if __import__('hashlib').sha256(('Hello, world! %d\\n' % n).encode()).hexdigest().startswith('0')))",
+  "options": [
+   "32",
+   "0",
+   "1",
+   "16"
+  ],
+  "answer": 0,
+  "why": "The book's own example finds the answer at 32, after thirty-two attempts."
+ },
+ {
+  "concept": "Encryption",
+  "level": "Understand",
+  "q": "Why are the amounts and conditions of a Bitcoin transaction readable by everyone?",
+  "options": [
+   "Because encrypting every transaction would be far too slow for the number of payments the network carries, so the designers left the data in the clear",
+   "Because nodes must read a transaction in order to verify it, so the data is deliberately public",
+   "Because only the signature is encrypted and the rest is left plain",
+   "Because wallets encrypt transactions only when a fee is paid for it"
+  ],
+  "answer": 1,
+  "why": "A user's privacy rests on other things, such as the fact that an address names no person."
+ },
+ {
+  "concept": "Encryption",
+  "level": "Apply",
+  "q": "This program combines bytes with a key twice using exclusive-or. What does it print?",
+  "code": "print((lambda k, m: (bytes(c ^ k for c in m).hex(), bytes(c ^ k for c in bytes(c ^ k for c in m)).decode()))(0x5a, b'pay Bob'))",
+  "options": [
+   "('2a3b237a183538', '2a3b237a183538')",
+   "('pay Bob', '2a3b237a183538')",
+   "('2a3b237a183538', 'pay Bob')",
+   "('2a3b237a183538', 'cmF5IEJvYg==')"
+  ],
+  "answer": 2,
+  "why": "One pass makes the text unreadable and a second pass with the same key restores it."
+ },
+ {
+  "concept": "Linkage",
+  "level": "Understand",
+  "q": "What do the links between transactions make possible for any node?",
+  "options": [
+   "Computing the exchange rate at the time of each payment",
+   "Finding the name of the person who created each transaction",
+   "Recovering a private key from a chain of earlier signatures",
+   "Deciding whether an output being spent exists and has not been spent before"
+  ],
+  "answer": 3,
+  "why": "The links turn individual transactions into a history that anyone can check."
+ },
+ {
+  "concept": "TransactionChain",
+  "level": "Analyze",
+  "q": "Where does the illustrated chain differ from the real transaction?",
+  "options": [
+   "The figure labels Alice's input Tx1:0 while the bytes store the output index 1",
+   "The figure shows two inputs for Alice's payment where the real transaction has one, and it gives the amounts in bitcoin where the protocol uses satoshis",
+   "The figure gives a fee of 8,000 where the real fee is 5,000",
+   "The figure shows the payment before the change, as the real transaction does"
+  ],
+  "answer": 0,
+  "why": "The order of Alice's outputs does agree with the figure: change at position 0 and the payment at position 1."
+ },
+ {
+  "concept": "TransactionChain",
+  "level": "Apply",
+  "q": "What does this program print for the fees of Alice's and Bob's transactions?",
+  "code": "print([100000 - 75000 - 20000, 75000 - 67000])",
+  "options": [
+   "[8000, 5000]",
+   "[5000, 8000]",
+   "[5000, 67000]",
+   "[20000, 75000]"
+  ],
+  "answer": 1,
+  "why": "Alice's fee is 100,000 minus 75,000 minus 20,000 and Bob's is 75,000 minus 67,000."
+ },
+ {
+  "concept": "MakingChange",
+  "level": "Remember",
+  "q": "Why does a transaction need a change output at all?",
+  "options": [
+   "Because the protocol requires every transaction to have two outputs",
+   "Because the miner refuses a transaction with a single output",
+   "Because a transaction input, like a currency note, cannot be partly spent",
+   "Because the fee must be paid from a separate output"
+  ],
+  "answer": 2,
+  "why": "The surplus must be sent back to the payer, exactly as a shop gives change for a larger note."
+ },
+ {
+  "concept": "MakingChange",
+  "level": "Apply",
+  "q": "A shopper pays for a five-dollar item with a twenty-dollar bill. What does this program print?",
+  "code": "print(20 - 5)",
+  "options": [
+   "5",
+   "20",
+   "25",
+   "15"
+  ],
+  "answer": 3,
+  "why": "The change is the difference between the note and the price."
+ },
+ {
+  "concept": "CoinSelection",
+  "level": "Analyze",
+  "q": "Why is coin selection a design decision with competing aims?",
+  "options": [
+   "Because many small inputs raise the fee while always spending large ones leaves many small outputs",
+   "Because the consensus rules limit a transaction to three inputs, so a wallet holding many small outputs must consolidate them before it can pay",
+   "Because only a full node is allowed to choose inputs",
+   "Because the fee rate depends on which addresses the inputs belong to"
+  ],
+  "answer": 0,
+  "why": "The book presents it as a balance, like a person choosing between big notes and loose change."
+ },
+ {
+  "concept": "CoinSelection",
+  "level": "Apply",
+  "q": "A wallet takes outputs from the largest down until the sum covers the need. What does this program print?",
+  "code": "print((lambda vals, need: next((vals[:i + 1], sum(vals[:i + 1]) - need) for i in range(len(vals)) if sum(vals[:i + 1]) >= need))([60000, 30000, 25000], 80000))",
+  "options": [
+   "([60000], 0)",
+   "([60000, 30000], 10000)",
+   "([60000, 30000, 25000], 35000)",
+   "([60000, 30000], 90000)"
+  ],
+  "answer": 1,
+  "why": "The first two outputs reach 90,000 against a need of 80,000, leaving 10,000 as change."
+ },
+ {
+  "concept": "Form",
+  "level": "Understand",
+  "q": "In what sense is a transaction form not a rule of the protocol?",
+  "options": [
+   "The forms are enforced by miners but not by full nodes",
+   "The forms apply only to transactions with a change output",
+   "The protocol sees only inputs and outputs; the forms are names for typical shapes",
+   "The forms were rules in the first version of Bitcoin and were later removed"
+  ],
+  "answer": 2,
+  "why": "A transaction can combine the features, for example consolidating many inputs while paying two recipients."
+ },
+ {
+  "concept": "SimplePayment",
+  "level": "Understand",
+  "q": "Why is the one-input, two-output shape so common?",
+  "options": [
+   "Because the consensus rules require every transaction that spends a single input to create exactly two outputs, one for the receiver and one for the change",
+   "Because two outputs are the cheapest possible transaction",
+   "Because a second output is needed to carry the fee",
+   "Because a payer usually holds an output larger than the price and an output cannot be partly spent"
+  ],
+  "answer": 3,
+  "why": "The wallet writes one output for the seller and one back for the buyer."
+ },
+ {
+  "concept": "SimplePayment",
+  "level": "Apply",
+  "q": "What does this program print for the shape and fee of Alice's payment?",
+  "code": "print((lambda ins, outs: (len(ins), len(outs), sum(ins) - sum(outs)))([100000], [20000, 75000]))",
+  "options": [
+   "(1, 2, 5000)",
+   "(2, 1, 5000)",
+   "(1, 2, 95000)",
+   "(1, 2, 0)"
+  ],
+  "answer": 0,
+  "why": "One input, two outputs, and the 5,000 satoshis that the outputs leave behind."
+ },
+ {
+  "concept": "Consolidation",
+  "level": "Analyze",
+  "q": "What does a consolidation cost its owner, beyond the fee?",
+  "options": [
+   "The ability to spend the single output for the next hundred blocks, because the rules treat a consolidation like a coinbase output until it matures",
+   "Privacy, because spending many inputs together suggests that one owner controls them all",
+   "The change output, which a consolidation cannot have",
+   "The right to use the same addresses again"
+  ],
+  "answer": 1,
+  "why": "It must also be paid for now, since a transaction with many inputs is large."
+ },
+ {
+  "concept": "Consolidation",
+  "level": "Apply",
+  "q": "Three outputs are consolidated with a fee of 1,500 satoshis. What does this program print?",
+  "code": "print(sum([30000, 25000, 20000]) - 1500)",
+  "options": [
+   "75000",
+   "73500.0",
+   "73500",
+   "76500"
+  ],
+  "answer": 2,
+  "why": "The single output is the sum of the inputs minus the fee."
+ },
+ {
+  "concept": "PaymentBatching",
+  "level": "Analyze",
+  "q": "What does a payroll batch disclose to anyone who looks?",
+  "options": [
+   "The names of the employees who were paid",
+   "The private key that authorized the payments",
+   "The balance remaining in the employer's wallet",
+   "The full list of amounts paid in that one transaction"
+  ],
+  "answer": 3,
+  "why": "The transaction is public, so every recipient can see the other outputs and their amounts."
+ },
+ {
+  "concept": "PaymentBatching",
+  "level": "Apply",
+  "q": "A batch pays four employees from one input of 200,000 satoshis with a fee of 3,000. What does this program print?",
+  "code": "print((lambda pay: (sum(pay), 200000 - sum(pay) - 3000))([60000, 55000, 50000, 32000]))",
+  "options": [
+   "(197000, 0)",
+   "(197000, 3000)",
+   "(200000, 0)",
+   "(197000, -3000)"
+  ],
+  "answer": 0,
+  "why": "The four payments total 197,000, which with the fee leaves no change at all."
+ },
+ {
+  "concept": "Unit",
+  "level": "Understand",
+  "q": "Why are transaction amounts usually given in satoshis rather than in bitcoin?",
+  "options": [
+   "Because whole satoshis are easier for a student to read than decimal fractions of a bitcoin, which is the only reason the chapter prefers them",
+   "Because that is the unit the protocol itself uses, so the amounts are whole numbers",
+   "Because wallets refuse amounts written in bitcoin",
+   "Because the exchange rate is quoted per satoshi"
+  ],
+  "answer": 1,
+  "why": "A mistake of the unit is a mistake of a factor of one hundred million."
+ },
+ {
+  "concept": "Satoshi",
+  "level": "Remember",
+  "q": "Where does the name satoshi come from?",
+  "options": [
+   "It was defined under that name in the whitepaper of 2008",
+   "It was the name of the first exchange that quoted the unit",
+   "Users began calling the smallest unit a satoshi in honour of Bitcoin's creator",
+   "It is an abbreviation of the phrase smallest atomic token"
+  ],
+  "answer": 2,
+  "why": "When Bitcoin was created the unit had no name and some developers simply called it the base unit."
+ },
+ {
+  "concept": "Satoshi",
+  "level": "Apply",
+  "q": "What does this program print for the number of satoshis in a millibitcoin?",
+  "code": "print(10**8 // 1000)",
+  "options": [
+   "1000",
+   "100000000",
+   "10000",
+   "100000"
+  ],
+  "answer": 3,
+  "why": "A bitcoin is 100,000,000 satoshis, so a thousandth of it is 100,000."
+ },
+ {
+  "concept": "PaymentRequest",
+  "level": "Analyze",
+  "q": "Why is a payment request not itself a payment?",
+  "options": [
+   "Nothing is sent to the network when a code is displayed or scanned, and the buyer can still decline",
+   "Because the request carries no destination address until the buyer's wallet adds one of its own, which is why the seller cannot be paid by mistake",
+   "Because a request is only valid once it has one confirmation",
+   "Because the request is signed by the seller rather than by the buyer"
+  ],
+  "answer": 0,
+  "why": "The standard also says that clients must not act on such a link without the user's authorization."
+ },
+ {
+  "concept": "Uri",
+  "level": "Analyze",
+  "q": "Why must a wallet ask the user to approve a payment read from a link?",
+  "options": [
+   "Because the link does not contain the amount to be paid",
+   "Because a link is text and a page can show one address while containing another",
+   "Because the scheme bitcoin is not registered with the operating system",
+   "Because the link expires a few seconds after it is created"
+  ],
+  "answer": 1,
+  "why": "The standard therefore forbids acting on such a link without the user's authorization."
+ },
+ {
+  "concept": "Uri",
+  "level": "Apply",
+  "q": "What does this program print when it splits the start of Bob's payment link?",
+  "code": "print((lambda u: (u.scheme, u.path, u.query))(__import__('urllib.parse').parse.urlsplit('bitcoin:bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4?amount=0.01577764')))",
+  "options": [
+   "('bitcoin:', 'bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4', 'amount=0.01577764')",
+   "('bitcoin', '', 'bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4?amount=0.01577764')",
+   "('bitcoin', 'bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4', 'amount=0.01577764')",
+   "('bitcoin', 'bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4', '?amount=0.01577764')"
+  ],
+  "answer": 2,
+  "why": "The scheme is bitcoin, the path is the address and the query carries the parameters."
+ },
+ {
+  "concept": "QrCode",
+  "level": "Understand",
+  "q": "Why can a bech32 address be packed more densely into a QR code?",
+  "options": [
+   "Because an address of the newer format is shorter than one of the older format, so fewer dots are needed whatever encoding mode the wallet chooses",
+   "Because its checksum can be left out inside a code",
+   "Because a code can store lower-case letters in half a byte",
+   "Because writing it in capitals makes it alphanumeric, which allows a more compact encoding mode"
+  ],
+  "answer": 3,
+  "why": "BIP 173 says the alphanumeric mode is forty-five per cent more compact than the normal byte mode."
+ },
+ {
+  "concept": "QrCode",
+  "level": "Apply",
+  "q": "What does this program print for Bob's address written in capitals?",
+  "code": "print((lambda a: (a == a.upper(), a.isalnum(), len(a)))('BC1QK2G6U8P4QM2S2LH3GTS5CPT2MRV5SKCUU7U3E4'))",
+  "options": [
+   "(True, True, 42)",
+   "(True, True, 62)",
+   "(False, True, 42)",
+   "(True, False, 42)"
+  ],
+  "answer": 0,
+  "why": "The uppercase form is alphanumeric and 42 characters long, which is why it packs densely in a code."
+ },
+ {
+  "concept": "Bip",
+  "level": "Analyze",
+  "q": "Why does a reference to BIP 21 need to be read together with its date?",
+  "options": [
+   "Because BIP numbers are reassigned every year",
+   "Because that document now has the status Closed and has been replaced by BIP 321",
+   "Because the document was never published in the BIPs repository",
+   "Because its status is still Draft and may never be adopted"
+  ],
+  "answer": 1,
+  "why": "A status such as Closed or Complete says what has happened to the document, so a citation is a snapshot."
+ },
+ {
+  "concept": "Bip",
+  "level": "Apply",
+  "q": "This program reads the status out of a BIP header. What does it print?",
+  "code": "print((lambda hdr: dict(l.strip().split(': ', 1) for l in hdr.splitlines() if ': ' in l)['Status'])('  BIP: 21\\n  Title: URI Scheme\\n  Status: Closed'))",
+  "options": [
+   "Draft",
+   "Complete",
+   "Closed",
+   "21"
+  ],
+  "answer": 2,
+  "why": "BIP 21 now carries the status Closed, because BIP 321 replaces it."
+ },
+ {
+  "concept": "Bip21Uri",
+  "level": "Analyze",
+  "q": "Why should a reader not conclude that the address in the printed invoice received the payment?",
+  "options": [
+   "Because the invoice was printed before the payment was made, so its address was replaced by the wallet when Alice scanned the code",
+   "Because the address in the invoice belongs to a test network",
+   "Because the real payment has no output script at all",
+   "The invoice asks for 1,577,764 satoshis while the real payment is 75,000, and the output encodes a different program"
+  ],
+  "answer": 3,
+  "why": "The invoice is an illustration, and the book's own tip is to scan it but not to send money."
+ },
+ {
+  "concept": "Bip21Uri",
+  "level": "Apply",
+  "q": "What does this program print when it decodes the label of Bob's invoice?",
+  "code": "print(__import__('urllib.parse').parse.parse_qs(__import__('urllib.parse').parse.urlsplit('bitcoin:bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4?amount=0.01577764&label=Bob%27s%20Store').query)['label'][0])",
+  "options": [
+   "Bob's Store",
+   "Bob%27s%20Store",
+   "Purchase at Bob's Store",
+   "bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4"
+  ],
+  "answer": 0,
+  "why": "Percent-decoding turns %27 into an apostrophe and %20 into a space."
+ },
+ {
+  "concept": "Address",
+  "level": "Analyze",
+  "q": "Why is a Bitcoin address not an account?",
+  "options": [
+   "Because an address may be used only once and then expires, so the network refuses any later payment that is sent to the same string of characters",
+   "It holds no balance of its own and names no person; a balance is a sum of unspent outputs",
+   "Because it is derived from the amount being paid",
+   "Because only a full node is allowed to create one"
+  ],
+  "answer": 1,
+  "why": "Addresses are also meant to be used once, which is why a change address is usually a new one."
+ },
+ {
+  "concept": "Address",
+  "level": "Apply",
+  "q": "What does this program print about Bob's address?",
+  "code": "print((lambda a: (a[:3], len(a), a.islower()))('bc1qk2g6u8p4qm2s2lh3gts5cpt2mrv5skcuu7u3e4'))",
+  "options": [
+   "('bc1', 42, False)",
+   "('bc1q', 42, True)",
+   "('bc1', 42, True)",
+   "('bc', 41, True)"
+  ],
+  "answer": 2,
+  "why": "The address begins with the prefix bc1, has 42 characters and is written entirely in lower case."
+ },
+ {
+  "concept": "ExchangeRate",
+  "level": "Understand",
+  "q": "Why is the amount in Bob's invoice not a round number?",
+  "options": [
+   "Because the fee has already been subtracted from it",
+   "Because the protocol rounds every amount to eight decimals at random",
+   "Because it includes the value of the change output",
+   "Because it is a dollar price converted at the exchange rate of that moment"
+  ],
+  "answer": 3,
+  "why": "The shop lists prices in dollars and converts them to bitcoin at checkout."
+ },
+ {
+  "concept": "ExchangeRate",
+  "level": "Apply",
+  "q": "A twenty-five dollar item is converted at 1,584 dollars to the bitcoin. What does this program print?",
+  "code": "print(round(25.0 / 1584.0, 8))",
+  "options": [
+   "0.01578283",
+   "63.36",
+   "0.01577764",
+   "0.0157828"
+  ],
+  "answer": 0,
+  "why": "Dividing the dollar price by the rate gives the price in bitcoin."
+ },
+ {
+  "concept": "Construction",
+  "level": "Understand",
+  "q": "Why can two wallets build different transactions for the same payment?",
+  "options": [
+   "Because each wallet writes the transaction in its own serialization format, so the same payment produces a different set of bytes in every program",
+   "Because the choice of inputs, the change and the fee are decisions of the software, not of the user",
+   "Because the payer's address is chosen by the wallet at random",
+   "Because only one of them can reach the network"
+  ],
+  "answer": 1,
+  "why": "A user sees only a destination, an amount and a fee; everything else is the wallet's decision."
+ },
+ {
+  "concept": "TransactionConstruction",
+  "level": "Analyze",
+  "q": "What can go wrong when a wallet builds a transaction while offline?",
+  "options": [
+   "It cannot sign the transaction at all, because the signature has to commit to the height of the newest block and that height is only known online",
+   "It must leave the fee out, because fee rates are unknown offline",
+   "Its inputs may already have been spent, because it does not know the current state of the network",
+   "It cannot compute the change, because the exchange rate is unavailable"
+  ],
+  "answer": 2,
+  "why": "A transaction built offline is only a candidate until the network accepts it."
+ },
+ {
+  "concept": "TransactionConstruction",
+  "level": "Apply",
+  "q": "A wallet spends one output of 100,000 satoshis, pays 75,000 and leaves a fee of 5,000. What does this program print?",
+  "code": "print((lambda utxo, pay, fee: [utxo - pay - fee, pay])(100000, 75000, 5000))",
+  "options": [
+   "[75000, 20000]",
+   "[25000, 75000]",
+   "[20000, 80000]",
+   "[20000, 75000]"
+  ],
+  "answer": 3,
+  "why": "The change is the input minus the payment minus the fee, and the two amounts are those of the real transaction."
+ },
+ {
+  "concept": "Wallet",
+  "level": "Remember",
+  "q": "What does a wallet actually contain?",
+  "options": [
+   "Keys and a view of the ledger, not bitcoins",
+   "A file of coins that can be copied to another computer",
+   "A share of the blockchain proportional to the balance",
+   "A signed receipt from the miner for every payment received"
+  ],
+  "answer": 0,
+  "why": "That is why a backup of the keys restores the funds and a copy of the balance does not."
+ },
+ {
+  "concept": "Wallet",
+  "level": "Apply",
+  "q": "What does this program print for the change a wallet must create?",
+  "code": "print((lambda utxos, pay, fee: sum(utxos) - pay - fee)([100000], 75000, 5000))",
+  "options": [
+   "25000",
+   "20000",
+   "95000",
+   "100000"
+  ],
+  "answer": 1,
+  "why": "The wallet subtracts the payment and the fee from the outputs it controls."
+ },
+ {
+  "concept": "Network",
+  "level": "Remember",
+  "q": "What is the purpose of the Bitcoin network?",
+  "options": [
+   "To store the private keys of every wallet that joins it",
+   "To decide which transactions pay an acceptable fee",
+   "To propagate transactions and blocks to all participants",
+   "To keep the exchange rate consistent between countries"
+  ],
+  "answer": 2,
+  "why": "The network is a peer-to-peer network in which each peer connects to several others."
+ },
+ {
+  "concept": "Participants",
+  "level": "Analyze",
+  "q": "Why is counting nodes not the same as measuring the network's security?",
+  "options": [
+   "Because the figures that are published count only the nodes that accept incoming connections, and those are counted once a day by the block explorers",
+   "Because every node counts for one vote on the next block",
+   "Because lightweight clients are counted twice in the usual figures",
+   "Because what matters is how many participants independently verify the rules, not how many are connected"
+  ],
+  "answer": 3,
+  "why": "The roles also overlap, since a full node may carry routing, mining and wallet functions as well."
+ },
+ {
+  "concept": "FullNode",
+  "level": "Understand",
+  "q": "Why does a user with a full node have to trust less than one who asks a server?",
+  "options": [
+   "Their own program checks every rule, so only the software and the public rules need trust",
+   "Their node is operated for them by the miner of the most recent block, who guarantees the result and is paid for it out of the transaction fees",
+   "Their node encrypts the payment so no outside party can read it",
+   "Their node receives the blocks earlier than other nodes do"
+  ],
+  "answer": 0,
+  "why": "The chapter's opening claim is that software on your own computer can verify every aspect of the system."
+ },
+ {
+  "concept": "FullNode",
+  "level": "Apply",
+  "q": "This program models a node's verification checklist. What does it print?",
+  "code": "print((lambda checks: all(checks.values()) and len(checks))({'syntax': True, 'inputs_nonempty': True, 'amounts_in_range': True, 'outputs_unspent': True, 'scripts_valid': True}))",
+  "options": [
+   "True",
+   "5",
+   "1",
+   "0"
+  ],
+  "answer": 1,
+  "why": "Every one of the five checks passes, so the program reports how many were applied."
+ },
+ {
+  "concept": "LightweightClient",
+  "level": "Analyze",
+  "q": "What does a lightweight client give up in exchange for running on a telephone?",
+  "options": [
+   "The ability to receive payments at all unless a full node is running nearby, since the client has to be told by that node which outputs are its own",
+   "The ability to hold private keys, which must be kept on a server",
+   "The ability to know all unspent outputs, so it relies on peers for partial views of the chain",
+   "The ability to see the amounts in its own transactions"
+  ],
+  "answer": 2,
+  "why": "The book compares a full node with a tourist holding a street map and a lightweight client with one asking strangers."
+ },
+ {
+  "concept": "LightweightClient",
+  "level": "Apply",
+  "q": "A block header is 80 bytes and a full block up to about 800,000. What does this program print?",
+  "code": "print((lambda headers, full: round(full / headers))(80, 800000))",
+  "options": [
+   "1000",
+   "80",
+   "100000",
+   "10000"
+  ],
+  "answer": 3,
+  "why": "The chain of headers alone is about ten thousand times smaller than the full chain."
+ },
+ {
+  "concept": "Peer",
+  "level": "Understand",
+  "q": "Why is it safe for a node to connect to peers it knows nothing about?",
+  "options": [
+   "Because everything a peer sends is checked against the rules by the receiving node",
+   "Because peers must register with the network before they may connect",
+   "Because each peer signs its messages with a certificate",
+   "Because a node accepts data only from peers it has used before"
+  ],
+  "answer": 0,
+  "why": "A peer is not a trusted party, which is the most important thing to remember about the word."
+ },
+ {
+  "concept": "Peer",
+  "level": "Apply",
+  "q": "What does this program print for a node with three peers?",
+  "code": "print((lambda peers: (len(peers), sorted(peers)[0]))({'peer-a', 'peer-b', 'peer-c'}))",
+  "options": [
+   "(3, 'peer-c')",
+   "(3, 'peer-a')",
+   "(3, 'peer-b')",
+   "('peer-a', 3)"
+  ],
+  "answer": 1,
+  "why": "There are three connections, and sorting the names puts peer-a first."
+ },
+ {
+  "concept": "PeerToPeerNetwork",
+  "level": "Analyze",
+  "q": "Which part of the Bitcoin world is centralized even though the protocol is not?",
+  "options": [
+   "The consensus rules, which are published by one committee of developers and then distributed to every node in the next release of the software",
+   "The list of peers, which a central directory distributes",
+   "The services built on top, such as exchanges, explorers and payment processors",
+   "The memory pool, which one node maintains for everybody"
+  ],
+  "answer": 2,
+  "why": "The book describes companies running nodes as edge routers on which such services are built."
+ },
+ {
+  "concept": "PeerToPeerNetwork",
+  "level": "Apply",
+  "q": "What does this program print for the number of links among five fully connected peers?",
+  "code": "print((lambda n: n * (n - 1) // 2)(5))",
+  "options": [
+   "20",
+   "25",
+   "5",
+   "10"
+  ],
+  "answer": 3,
+  "why": "Five nodes joined to each other have five times four divided by two links."
+ },
+ {
+  "concept": "Propagation",
+  "level": "Understand",
+  "q": "Why is propagation not merely the copying of data?",
+  "options": [
+   "Because every node that forwards the transaction has verified it first",
+   "Because the data is compressed differently at each hop",
+   "Because each node adds its own signature before relaying",
+   "Because only miners are allowed to forward a transaction"
+  ],
+  "answer": 0,
+  "why": "Propagation is therefore a wave of independent checks, and invalid data does not travel far."
+ },
+ {
+  "concept": "Transmission",
+  "level": "Remember",
+  "q": "Why does it not matter how or where a transaction is transmitted?",
+  "options": [
+   "Because every route passes through the same relay server",
+   "Because the transaction contains all the information necessary for it to be processed",
+   "Because the first node to receive it rewrites it in a standard form",
+   "Because the fee pays for a guaranteed delivery path"
+  ],
+  "answer": 1,
+  "why": "Alice's wallet can use any connection, or hand the transaction to a program such as a block explorer."
+ },
+ {
+  "concept": "Transmission",
+  "level": "Apply",
+  "q": "What does this program print for the routes by which a wallet can reach the network?",
+  "code": "print((lambda routes: sorted(routes))({'wired', 'wifi', 'mobile', 'block explorer'}))",
+  "options": [
+   "['wired', 'wifi', 'mobile', 'block explorer']",
+   "['block explorer', 'mobile', 'wired', 'wifi']",
+   "['block explorer', 'mobile', 'wifi', 'wired']",
+   "['wifi', 'wired', 'mobile', 'block explorer']"
+  ],
+  "answer": 2,
+  "why": "Sorting the four routes the chapter names puts block explorer first and wired last."
+ },
+ {
+  "concept": "Gossiping",
+  "level": "Analyze",
+  "q": "Which condition in the gossip rule stops bad data at the first node?",
+  "options": [
+   "A node forwards only to peers it has seen before",
+   "A node forwards only transactions that pay a minimum fee",
+   "A node forwards only after one confirmation",
+   "A node forwards only a transaction it finds valid"
+  ],
+  "answer": 3,
+  "why": "The rule also says not seen before, which stops the same transaction circulating forever."
+ },
+ {
+  "concept": "Gossiping",
+  "level": "Apply",
+  "q": "Each node forwards to eight peers. What does this program print for three rounds?",
+  "code": "print((lambda peers, rounds: peers ** rounds)(8, 3))",
+  "options": [
+   "512",
+   "24",
+   "64",
+   "4096"
+  ],
+  "answer": 0,
+  "why": "Eight to the third power is 512, which is why a few rounds reach a large network."
+ },
+ {
+  "concept": "TransactionPropagation",
+  "level": "Understand",
+  "q": "What does wide propagation of a transaction actually establish?",
+  "options": [
+   "That the transaction has at least one confirmation, since a node relays a payment onward only after it has seen it inside a block that it accepted",
+   "That many nodes have seen it and found it valid, which is not the same as its being recorded",
+   "That no competing transaction can ever be mined instead",
+   "That a miner has agreed to include it in the next block"
+  ],
+  "answer": 1,
+  "why": "A transaction does not become part of the blockchain until it is included in a block."
+ },
+ {
+  "concept": "TransactionPropagation",
+  "level": "Apply",
+  "q": "Ten thousand nodes are reached in about five seconds. What does this program print?",
+  "code": "print((lambda sec, nodes: round(nodes / sec))(5, 10000))",
+  "options": [
+   "50000",
+   "500",
+   "2000",
+   "10000"
+  ],
+  "answer": 2,
+  "why": "Dividing the nodes by the seconds gives the order of two thousand nodes a second."
+ },
+ {
+  "concept": "Mempool",
+  "level": "Analyze",
+  "q": "Why is there no such thing as the memory pool of the network?",
+  "options": [
+   "Because the pool is deleted every ten minutes",
+   "Because only mining nodes keep a pool at all",
+   "Because the pool is stored on disk by the explorers instead",
+   "Because each node keeps its own, and the contents vary from node to node"
+  ],
+  "answer": 3,
+  "why": "The book contrasts the pool, a local perspective, with the database of unspent outputs, which does not usually vary."
+ },
+ {
+  "concept": "Mempool",
+  "level": "Apply",
+  "q": "A block arrives containing one of the three transactions in the pool. What does this program print?",
+  "code": "print((lambda pool, mined: [t for t in pool if t not in mined])(['txA', 'txB', 'txC'], {'txB'}))",
+  "options": [
+   "['txA', 'txC']",
+   "['txB']",
+   "['txA', 'txB', 'txC']",
+   "[]"
+  ],
+  "answer": 0,
+  "why": "The transaction that the block confirmed is removed and the other two keep waiting."
+ },
+ {
+  "concept": "RecipientVerification",
+  "level": "Understand",
+  "q": "How does Bob's wallet recognise Alice's payment as his?",
+  "options": [
+   "It reads the label that Alice's wallet attached to the payment",
+   "It finds an output that is redeemable by Bob's keys",
+   "It receives a message from the miner naming the recipient",
+   "It compares the amount with the invoice it issued"
+  ],
+  "answer": 1,
+  "why": "His wallet can also verify that the transaction is well formed, and with a full node that the inputs are unspent."
+ },
+ {
+  "concept": "RecipientVerification",
+  "level": "Apply",
+  "q": "Bob's wallet looks through the outputs for one of his own. What does this program print?",
+  "code": "print((lambda outs, mine: [i for i, (amt, owner) in enumerate(outs) if owner == mine])([(20000, 'alice'), (75000, 'bob')], 'bob'))",
+  "options": [
+   "[0]",
+   "[0, 1]",
+   "[1]",
+   "[]"
+  ],
+  "answer": 2,
+  "why": "The output at index 1 is the payment to Bob, which is the one his keys can spend."
+ },
+ {
+  "concept": "BlockExplorer",
+  "level": "Analyze",
+  "q": "What may happen when you look up your own transactions in a block explorer?",
+  "options": [
+   "Your wallet may be locked until the search has been confirmed by the explorer, because the operator has to check that you control the address",
+   "The transaction may be relayed twice and counted as a double spend",
+   "The explorer may charge a fee taken from the transaction",
+   "The operator may be able to guess how many bitcoins you have received, spent and currently own"
+  ],
+  "answer": 3,
+  "why": "A search can be associated with your address on the internet, your browser details and your past searches."
+ },
+ {
+  "concept": "BlockExplorer",
+  "level": "Apply",
+  "q": "A query of 64 hexadecimal characters is typed into an explorer. What does this program print?",
+  "code": "print((lambda q: 'txid' if len(q) == 64 else 'address' if q.startswith('bc1') else 'height')('466200308696215bbc949d5141a49a4138ecdfdfaa2a8029c1f9bcecd1f96177'))",
+  "options": [
+   "txid",
+   "address",
+   "height",
+   "block"
+  ],
+  "answer": 0,
+  "why": "A string of that length is a transaction or block hash, so the explorer reads it as an identifier."
+ },
+ {
+  "concept": "Blockchain",
+  "level": "Remember",
+  "q": "How is the blockchain best described in one phrase?",
+  "options": [
+   "The shared memory pool of every full node",
+   "The authoritative journal of all transactions",
+   "The index of addresses maintained by the explorers",
+   "The list of miners entitled to create the next block"
+  ],
+  "answer": 1,
+  "why": "Its data structure is an ordered, back-linked list of blocks of transactions."
+ },
+ {
+  "concept": "Mining",
+  "level": "Remember",
+  "q": "Which two purposes does mining serve?",
+  "options": [
+   "Encrypting the blockchain so that only paying users can read it, and setting the exchange rate at which the next block's coins will be issued",
+   "Storing the chain for lightweight clients, and signing transactions for wallets",
+   "Rewarding only blocks that follow the consensus rules, and creating new bitcoins on a fixed schedule",
+   "Choosing the next miner, and collecting taxes on large payments"
+  ],
+  "answer": 2,
+  "why": "Because miners earn honest income only from valid blocks, users may assume that a transaction in a block is valid."
+ },
+ {
+  "concept": "Miner",
+  "level": "Analyze",
+  "q": "What stops a miner from writing itself a reward of a thousand bitcoins?",
+  "options": [
+   "The coinbase transaction carries a field in which the permitted reward is written by the previous block's miner, and a larger amount will not fit in it",
+   "The pool operator checks the amount before the block is sent",
+   "The reward is paid by the network after a vote of the nodes",
+   "Every other node would deem the block invalid, so the electricity spent on it would be wasted"
+  ],
+  "answer": 3,
+  "why": "A miner only gets to spend the reward if the block is accepted by everyone."
+ },
+ {
+  "concept": "Miner",
+  "level": "Apply",
+  "q": "A miner collects the 2023 subsidy of 625,000,000 satoshis and 183,000 satoshis of fees. What does this program print?",
+  "code": "print((lambda subsidy, fees: subsidy + fees)(625000000, 183000))",
+  "options": [
+   "625183000",
+   "625000000",
+   "183000",
+   "624817000"
+  ],
+  "answer": 0,
+  "why": "The reward of a block is the subsidy plus the fees of the transactions it includes."
+ },
+ {
+  "concept": "CandidateBlock",
+  "level": "Understand",
+  "q": "Why is a candidate block called a candidate?",
+  "options": [
+   "Because the miner has not yet chosen which transactions to include",
+   "Because it is not yet valid: it has no proof of work",
+   "Because the other miners have not yet voted on it",
+   "Because its transactions are still unconfirmed in the pool"
+  ],
+  "answer": 1,
+  "why": "It becomes valid only if the miner finds a solution to the proof-of-work algorithm."
+ },
+ {
+  "concept": "CandidateBlock",
+  "level": "Apply",
+  "q": "A miner fills a candidate block with the first three of five pending transactions. What does this program print?",
+  "code": "print((lambda pool, limit: (len(pool[:limit]), sum(pool[:limit])))([120, 150, 200, 90, 400], 3))",
+  "options": [
+   "(5, 960)",
+   "(3, 960)",
+   "(3, 470)",
+   "(3, 410)"
+  ],
+  "answer": 2,
+  "why": "Three transactions are taken and the fees they bring add up to 470 satoshis."
+ },
+ {
+  "concept": "ProofOfWork",
+  "level": "Analyze",
+  "q": "What does a valid proof of work prove, and what does it not?",
+  "options": [
+   "It proves that the block was produced by a miner that had registered its address with the network, which is why the reward can be paid to it",
+   "It proves that every transaction in the block paid a sufficient fee",
+   "It proves that no other miner was working on the same height",
+   "It proves that an enormous amount of computation was spent, not that the block obeys the other rules"
+  ],
+  "answer": 3,
+  "why": "A block with a perfect proof of work is still rejected if any of its transactions breaks a rule."
+ },
+ {
+  "concept": "ProofOfWork",
+  "level": "Apply",
+  "q": "This program searches for a nonce whose digest begins with four zeros. What does it print?",
+  "code": "print((lambda h: next(n for n in range(200000) if h(('1' + str(n) + 'Alice pays Bob 75000').encode()).hexdigest().startswith('0000')))(__import__('hashlib').sha256))",
+  "options": [
+   "6630",
+   "65536",
+   "0",
+   "4"
+  ],
+  "answer": 0,
+  "why": "The first nonce that satisfies the condition for this block and data is 6630."
+ },
+ {
+  "concept": "Block",
+  "level": "Understand",
+  "q": "Why is the ratio between a block header and a whole block so important?",
+  "options": [
+   "Because the header of a block has to be smaller than the total fee that the block collects, which is the rule that keeps blocks from growing",
+   "Because a program that keeps only headers keeps a chain thousands of times smaller than the full one",
+   "Because a block is valid only if its body is fifty thousand times its header",
+   "Because the ratio decides how many transactions the block may hold"
+  ],
+  "answer": 1,
+  "why": "That ratio is why lightweight clients are possible at all."
+ },
+ {
+  "concept": "Block",
+  "level": "Apply",
+  "q": "A header is 80 bytes and the transactions of a block up to 4,000,000. What does this program print?",
+  "code": "print((lambda header, body: (header, body // header))(80, 4000000))",
+  "options": [
+   "(80, 4000000)",
+   "(4000000, 80)",
+   "(80, 50000)",
+   "(80, 50)"
+  ],
+  "answer": 2,
+  "why": "A complete block can be almost fifty thousand times larger than its header."
+ },
+ {
+  "concept": "BlockHeader",
+  "level": "Analyze",
+  "q": "Why does changing an old block force the recalculation of every block after it?",
+  "options": [
+   "Because every node stores the blocks of the chain in one single file, so a change in the middle of that file moves everything that follows it",
+   "Because the merkle root of a block includes the next block's transactions",
+   "Because block heights would otherwise no longer be consecutive",
+   "Because each header commits to the hash of its parent, so a change ripples forward"
+  ],
+  "answer": 3,
+  "why": "The enormous cost of that recalculation is what makes deep history impractical to change."
+ },
+ {
+  "concept": "BlockHeader",
+  "level": "Apply",
+  "q": "This program assembles the eighty bytes of the first block's header and hashes them twice. What does it print?",
+  "code": "print((lambda d, s: d(s.pack('<I', 1) + bytes(32) + bytes.fromhex('4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b')[::-1] + s.pack('<III', 1231006505, 0x1d00ffff, 2083236893))[::-1].hex())(lambda b: __import__('hashlib').sha256(__import__('hashlib').sha256(b).digest()).digest(), __import__('struct')))",
+  "options": [
+   "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+   "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b",
+   "6fe28c0ab6f1b372c1a6a246ae63f74f931e8365e15a089c68d6190000000000",
+   "00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048"
+  ],
+  "answer": 0,
+  "why": "The header of the genesis block hashes to the block hash the book prints."
+ },
+ {
+  "concept": "MerkleTree",
+  "level": "Understand",
+  "q": "What does the merkle root in a block header achieve?",
+  "options": [
+   "It stores the fee rate of the highest-paying transaction",
+   "It commits to every transaction in the block in thirty-two bytes",
+   "It holds the identifier of the first transaction only",
+   "It records how many transactions the block contains"
+  ],
+  "answer": 1,
+  "why": "It also allows a short path of hashes to prove that one transaction is in the block."
+ },
+ {
+  "concept": "MerkleTree",
+  "level": "Apply",
+  "q": "Four pieces of data are hashed in pairs up to a single root. What does this program print?",
+  "code": "print((lambda d: (lambda L: d(d(L[0] + L[1]) + d(L[2] + L[3])).hex()[:16])([d(x) for x in (b'A', b'B', b'C', b'D')]))(lambda b: __import__('hashlib').sha256(__import__('hashlib').sha256(b).digest()).digest()))",
+  "options": [
+   "59e82c45a3662f56",
+   "d9014c4624844aa5",
+   "59e82c45a3662f55",
+   "4a5e1e4baab89f3a"
+  ],
+  "answer": 2,
+  "why": "Hashing the four leaves, then the two parents, then the root gives this value."
+ },
+ {
+  "concept": "Difficulty",
+  "level": "Analyze",
+  "q": "Why does a rising network hash rate not make payments faster?",
+  "options": [
+   "Because the fee rate rises in proportion to the hash rate",
+   "Because blocks are limited to one every ten minutes by a timer",
+   "Because faster miners are excluded until the next halving",
+   "Because the difficulty is retargeted to keep the pace at about ten minutes"
+  ],
+  "answer": 3,
+  "why": "The target is set so that the current mining power results in a ten-minute block interval."
+ },
+ {
+  "concept": "Difficulty",
+  "level": "Apply",
+  "q": "This program unpacks the compact target 1d00ffff. What does it print?",
+  "code": "print((lambda bits: (bits >> 24, bits & 0xffffff, (bits & 0xffffff) * 2 ** (8 * ((bits >> 24) - 3)) == 0xffff * 2 ** 208))(0x1d00ffff))",
+  "options": [
+   "(29, 65535, True)",
+   "(29, 65535, False)",
+   "(0x1d, 0xffff, True)",
+   "(3, 65535, True)"
+  ],
+  "answer": 0,
+  "why": "The exponent is 29, the coefficient 65,535, and the target equals 0xffff times two to the power 208."
+ },
+ {
+  "concept": "HashRate",
+  "level": "Analyze",
+  "q": "Why is a published network hash rate an estimate rather than a measurement?",
+  "options": [
+   "Because the large mining companies report their rates to the block explorers once a month, and the explorers publish whatever total they are given",
+   "Because nobody counts the hashes of the world's miners; the figure is inferred from difficulty and block times",
+   "Because the figure is fixed by the protocol at each retarget",
+   "Because hash rates are measured only inside mining pools"
+  ],
+  "answer": 1,
+  "why": "That is why published values differ between sources and fluctuate."
+ },
+ {
+  "concept": "HashRate",
+  "level": "Apply",
+  "q": "About 168 billion trillion attempts are spread over ten minutes. What does this program print?",
+  "code": "print((lambda attempts, seconds: attempts // seconds)(168 * 10 ** 9 * 10 ** 12, 600))",
+  "options": [
+   "280000000000000000",
+   "168000000000000000000000",
+   "280000000000000000000",
+   "2800000000000000000000"
+  ],
+  "answer": 2,
+  "why": "Dividing the attempts per block by 600 seconds gives about 2.8 times ten to the twentieth hashes a second."
+ },
+ {
+  "concept": "ConsensusRules",
+  "level": "Understand",
+  "q": "What is most easily confused with the consensus rules?",
+  "options": [
+   "The relay policy that each node applies to its own memory pool, which decides the lowest fee rate it will accept and differs from one node to another",
+   "The improvement proposals in which features are documented",
+   "The difficulty, which is recalculated every 2,016 blocks",
+   "Consensus itself, which is the agreement that results when nodes have the same best chain"
+  ],
+  "answer": 3,
+  "why": "The rules are what nodes check; consensus is the state that applying them produces."
+ },
+ {
+  "concept": "ConsensusRules",
+  "level": "Apply",
+  "q": "This program models the checks a node makes on a block. What does it print?",
+  "code": "print((lambda rules: (sum(rules.values()), all(rules.values())))({'pow_below_target': True, 'first_tx_is_coinbase': True, 'weight_within_limits': True, 'timestamp_in_range': True, 'all_txs_valid': True}))",
+  "options": [
+   "(5, True)",
+   "(5, False)",
+   "(True, 5)",
+   "(1, True)"
+  ],
+  "answer": 0,
+  "why": "All five rules hold, and the program reports how many were applied and the verdict."
+ },
+ {
+  "concept": "CoinbaseTransaction",
+  "level": "Analyze",
+  "q": "Why can the output of a coinbase transaction not be spent at once?",
+  "options": [
+   "Because the miner must first sign it with the pool's key",
+   "Because the rules require it to be at least a hundred blocks deep first",
+   "Because the reward is paid only after the next halving",
+   "Because its output script has no spending condition until the block matures"
+  ],
+  "answer": 1,
+  "why": "The book's blockchain chapter says that after a hundred blocks there is enough stability to spend it."
+ },
+ {
+  "concept": "CoinbaseTransaction",
+  "level": "Apply",
+  "q": "What does this program print for a coinbase transaction in 2023?",
+  "code": "print((lambda inputs_spent, subsidy, fees: (inputs_spent, subsidy + fees))(0, 625000000, 183000))",
+  "options": [
+   "(1, 625183000)",
+   "(0, 625000000)",
+   "(0, 625183000)",
+   "(0, 183000)"
+  ],
+  "answer": 2,
+  "why": "A coinbase transaction spends no earlier output and pays the subsidy plus the fees."
+ },
+ {
+  "concept": "BlockReward",
+  "level": "Analyze",
+  "q": "Why should a learner remember the subsidy rule rather than the current figure?",
+  "options": [
+   "Because the figure is different on each node",
+   "Because the subsidy is chosen by the miner within a range",
+   "Because the figure is quoted in dollars and so moves with the rate",
+   "Because the subsidy halves every 210,000 blocks, so any particular figure goes stale"
+  ],
+  "answer": 3,
+  "why": "The book's own glossary still gives a reward that was true two halvings earlier."
+ },
+ {
+  "concept": "BlockReward",
+  "level": "Apply",
+  "q": "Three halvings have occurred. What does this program print for the subsidy in satoshis?",
+  "code": "print((50 * 10 ** 8) >> 3)",
+  "options": [
+   "625000000",
+   "5000000000",
+   "312500000",
+   "1250000000"
+  ],
+  "answer": 0,
+  "why": "Fifty bitcoins shifted right three times is 6.25 bitcoins, that is 625,000,000 satoshis."
+ },
+ {
+  "concept": "MiningPool",
+  "level": "Understand",
+  "q": "How does a pool measure what each of its miners contributed?",
+  "options": [
+   "By asking each miner to declare the speed of its hardware",
+   "By setting an easier target and counting the shares each miner finds",
+   "By dividing the reward equally among everyone who was connected",
+   "By timing how long each miner stayed online during the round"
+  ],
+  "answer": 1,
+  "why": "Each time a miner finds a hash below the pool target it proves it did the hashing work."
+ },
+ {
+  "concept": "MiningPool",
+  "level": "Apply",
+  "q": "A pool splits a reward of 625,000,000 satoshis among shares of 50, 30 and 20. What does this program print?",
+  "code": "print((lambda shares, reward: {m: reward * s // sum(shares.values()) for m, s in shares.items()})({'a': 50, 'b': 30, 'c': 20}, 625000000))",
+  "options": [
+   "{'a': 50, 'b': 30, 'c': 20}",
+   "{'a': 208333333, 'b': 208333333, 'c': 208333333}",
+   "{'a': 312500000, 'b': 187500000, 'c': 125000000}",
+   "{'a': 312500000, 'b': 125000000, 'c': 187500000}"
+  ],
+  "answer": 2,
+  "why": "Each miner receives the reward in proportion to the shares it contributed."
+ },
+ {
+  "concept": "SudokuAnalogy",
+  "level": "Analyze",
+  "q": "Where does the sudoku analogy stop describing Bitcoin's mining?",
+  "options": [
+   "A sudoku cannot be checked quickly by anybody who did not solve it, while a finished block is verified by every node with a single hash computation",
+   "A sudoku cannot be made harder, while the difficulty can be raised",
+   "A sudoku is reset after every solution, while a block is not",
+   "A sudoku is solved by reasoning and has one answer, while a proof of work can only be found by trial"
+  ],
+  "answer": 3,
+  "why": "The analogy also has no reward, no competition and no chain of earlier puzzles."
+ },
+ {
+  "concept": "SudokuAnalogy",
+  "level": "Apply",
+  "q": "An ordinary sudoku has nine rows and nine columns. What does this program print?",
+  "code": "print((lambda cells, bitcoin_attempts: (cells, bitcoin_attempts > cells))(81, 168 * 10 ** 9 * 10 ** 12))",
+  "options": [
+   "(81, True)",
+   "(81, False)",
+   "(9, True)",
+   "(81, 168000000000000000000000)"
+  ],
+  "answer": 0,
+  "why": "A sudoku has eighty-one cells, which is vastly fewer than the attempts a Bitcoin block needs."
+ },
+ {
+  "concept": "RuleChange",
+  "level": "Understand",
+  "q": "Why can a soft fork only narrow what is valid?",
+  "options": [
+   "Because the serialization format of a transaction is fixed for ever, so no change may ever add a field and only the meaning of existing fields can be narrowed",
+   "Because blocks made under the new rules must still be valid under the old ones, or old nodes would reject them",
+   "Because miners refuse to signal for a change that adds a feature",
+   "Because narrowing is the only change that needs no coordination"
+  ],
+  "answer": 1,
+  "why": "A change that widens what is valid triggers a hard fork when an old node rejects a new block."
+ },
+ {
+  "concept": "RuleChange",
+  "level": "Apply",
+  "q": "The new rules accept a subset of what the old rules accept. What does this program print?",
+  "code": "print((lambda old_valid, new_valid: ('soft fork' if new_valid <= old_valid else 'hard fork'))({'a', 'b', 'c'}, {'a', 'b'}))",
+  "options": [
+   "hard fork",
+   "accidental fork",
+   "soft fork",
+   "no fork"
+  ],
+  "answer": 2,
+  "why": "A change that only narrows what is valid is a soft fork."
+ },
+ {
+  "concept": "Security",
+  "level": "Understand",
+  "q": "How is the security of a confirmed payment best described?",
+  "options": [
+   "As a certainty once the transaction has one confirmation",
+   "As a promise enforced by the miners who signed the block",
+   "As a guarantee that holds for payments below a fixed amount",
+   "As confidence that grows with each block, not as an absolute guarantee"
+  ],
+  "answer": 3,
+  "why": "As the blocks pile up it becomes harder to reverse the transaction, giving the receiver more confidence."
+ },
+ {
+  "concept": "Confirmation",
+  "level": "Analyze",
+  "q": "Why is six confirmations a convention rather than a law?",
+  "options": [
+   "Because an attacker with enough hash rate can invalidate six or more blocks in a row",
+   "Because the protocol itself counts only the first three confirmations and leaves any further ones to the judgement of the merchant who is paid",
+   "Because confirmations stop being counted an hour after the payment, so a merchant who waits longer learns nothing more about the risk",
+   "Because six blocks take exactly sixty minutes to arrive"
+  ],
+  "answer": 0,
+  "why": "The book advises waiting longer for high-value items, mentioning about 144 confirmations for a day."
+ },
+ {
+  "concept": "Confirmation",
+  "level": "Apply",
+  "q": "A transaction's block has two blocks built on top of it. What does this program print?",
+  "code": "print((lambda depth: depth + 1)(2))",
+  "options": [
+   "2",
+   "3",
+   "1",
+   "6"
+  ],
+  "answer": 1,
+  "why": "The containing block counts once and each block on top adds one more."
+ },
+ {
+  "concept": "Probability",
+  "level": "Analyze",
+  "q": "On what assumption do the paper's reversal probabilities rest?",
+  "options": [
+   "That no transaction pays more than the average fee",
+   "That every block arrives exactly ten minutes after the last",
+   "That the attacker controls a minority of the hash rate",
+   "That the receiver waits for at least six confirmations"
+  ],
+  "answer": 2,
+  "why": "With a majority of the hash rate the arithmetic changes qualitatively, as the section on hashrate attacks shows."
+ },
+ {
+  "concept": "Probability",
+  "level": "Apply",
+  "q": "An attacker holds a tenth of the hash rate and is six blocks behind. What does this program print?",
+  "code": "print(round((0.1 / 0.9) ** 6, 9))",
+  "options": [
+   "0.000243",
+   "0.111111111",
+   "1.0",
+   "1.882e-06"
+  ],
+  "answer": 3,
+  "why": "The ratio of the attacker's share to the honest share, raised to the sixth power, is about 1.882 in a million."
+ },
+ {
+  "concept": "BestBlockchain",
+  "level": "Understand",
+  "q": "Why is most work a more accurate description of the rule than longest chain?",
+  "options": [
+   "Because a chain of fewer blocks mined at a higher difficulty can carry more cumulative work",
+   "Because competing chains are compared by the number of bytes they occupy rather than by the number of blocks, so the heavier file always wins",
+   "Because the longest chain is chosen only when a fork lasts two blocks",
+   "Because the rule counts transactions rather than blocks"
+  ],
+  "answer": 0,
+  "why": "The book speaks of the valid chain with the most cumulative proof of work."
+ },
+ {
+  "concept": "BestBlockchain",
+  "level": "Apply",
+  "q": "Two chains of three blocks carry different amounts of work. What does this program print?",
+  "code": "print((lambda chains: max(chains, key=lambda c: sum(chains[c])))({'A': [100, 100, 100], 'B': [100, 100, 120]}))",
+  "options": [
+   "A",
+   "B",
+   "('B', 320)",
+   "320"
+  ],
+  "answer": 1,
+  "why": "The node chooses the chain whose cumulative work is larger."
+ },
+ {
+  "concept": "BlockHeight",
+  "level": "Analyze",
+  "q": "Why is a block height not a unique identifier?",
+  "options": [
+   "Because heights restart at zero after every halving",
+   "Because the height is stored only in the coinbase transaction",
+   "Because two or more blocks can compete for the same position in the chain",
+   "Because test networks reuse the heights of the main chain"
+  ],
+  "answer": 2,
+  "why": "Only the block hash always names exactly one block."
+ },
+ {
+  "concept": "BlockHeight",
+  "level": "Apply",
+  "q": "The genesis block is height zero and 800,000 blocks have been added. What does this program print?",
+  "code": "print((lambda genesis, added: genesis + added)(0, 800000))",
+  "options": [
+   "800001",
+   "0",
+   "799999",
+   "800000"
+  ],
+  "answer": 3,
+  "why": "The height of a block is the number of blocks below it, counted from zero."
+ },
+ {
+  "concept": "AlternativeBlock",
+  "level": "Understand",
+  "q": "Why do accidental forks happen without anybody attacking?",
+  "options": [
+   "Because the network takes time to carry a new block to everybody, so two miners can win at once",
+   "Because nodes that run different versions of the software disagree about the consensus rules, so each version builds a chain of its own for a while",
+   "Because miners deliberately withhold blocks to raise fees",
+   "Because the difficulty is recalculated on different schedules"
+  ],
+  "answer": 0,
+  "why": "The book says such forks are almost always resolved within one block."
+ },
+ {
+  "concept": "AlternativeBlock",
+  "level": "Apply",
+  "q": "Two blocks claim the same height. What does this program print?",
+  "code": "print((lambda a, b: ('fork' if a == b else 'extends', max(a, b) + 1))(5, 5))",
+  "options": [
+   "('extends', 6)",
+   "('fork', 6)",
+   "('fork', 5)",
+   "('fork', 10)"
+  ],
+  "answer": 1,
+  "why": "Equal heights mean a fork, and the next block will sit one height higher."
+ },
+ {
+  "concept": "DoubleSpend",
+  "level": "Understand",
+  "q": "What makes the rejection of a double spend unambiguous?",
+  "options": [
+   "The signature, which the protocol allows to be made only once for any given output, so a second spend of the same output cannot be signed at all",
+   "The fee, which is higher for the first of two competing spends",
+   "The order of transactions in one chain of blocks, which lets a node see which spend came first",
+   "The mempool, which is identical on every node"
+  ],
+  "answer": 2,
+  "why": "Within a single chain the enforcement of order ensures no two valid transactions spend the same output."
+ },
+ {
+  "concept": "DoubleSpend",
+  "level": "Apply",
+  "q": "A new transaction names an outpoint that is already in the spent set. What does this program print?",
+  "code": "print((lambda spent, tx: 'reject' if tx['input'] in spent else 'accept')({'4ac54180:1'}, {'input': '4ac54180:1'}))",
+  "options": [
+   "accept",
+   "4ac54180:1",
+   "True",
+   "reject"
+  ],
+  "answer": 3,
+  "why": "The input has already been spent, so the node refuses the transaction."
+ },
+ {
+  "concept": "GenesisBlock",
+  "level": "Analyze",
+  "q": "Why is the genesis block fixed in the software rather than verified like other blocks?",
+  "options": [
+   "Because it has nothing below it, so it cannot be trusted on the strength of work piled on top",
+   "Because the proof of work of the first block was lost when the network restarted in 2011, so no node is able to check its header any more",
+   "Because its only transaction has no output",
+   "Because its hash was chosen by the miners of the first week"
+  ],
+  "answer": 0,
+  "why": "Every node therefore knows its hash, structure, time and single transaction as a secure root."
+ },
+ {
+  "concept": "GenesisBlock",
+  "level": "Apply",
+  "q": "What does this program print for the timestamp of the first block?",
+  "code": "print(__import__('datetime').datetime.fromtimestamp(1231006505, __import__('datetime').timezone.utc).date().isoformat())",
+  "options": [
+   "2009-01-09",
+   "2009-01-03",
+   "1231006505",
+   "2008-10-31"
+  ],
+  "answer": 1,
+  "why": "The Unix time 1231006505 converts to the third of January 2009."
+ },
+ {
+  "concept": "UnconfirmedTransaction",
+  "level": "Analyze",
+  "q": "Why is ten minutes an average rather than a waiting time?",
+  "options": [
+   "Because every node rounds the arrival time of a block to the nearest ten minutes before storing it, so the recorded interval is never the real one",
+   "Because the difficulty fixes the interval exactly at ten minutes",
+   "Because nothing makes a particular block arrive on time; the interval is random with a known mean",
+   "Because the first confirmation always takes five minutes"
+  ],
+  "answer": 2,
+  "why": "The book's own example has a miner finding a solution almost eleven minutes after starting."
+ },
+ {
+  "concept": "UnconfirmedTransaction",
+  "level": "Apply",
+  "q": "Blocks arrive about every ten minutes. What does this program print for six confirmations?",
+  "code": "print((lambda avg, blocks: avg * blocks)(10, 6))",
+  "options": [
+   "10",
+   "6",
+   "600",
+   "60"
+  ],
+  "answer": 3,
+  "why": "Six blocks at ten minutes each is about an hour, which is the figure the course notes give."
+ },
+ {
+  "concept": "SmallPaymentAcceptance",
+  "level": "Understand",
+  "q": "Which everyday comparison explains accepting a small payment unconfirmed?",
+  "options": [
+   "Coffee shops that accept card payments without a signature for small amounts",
+   "Banks that clear cheques overnight without asking the payer",
+   "Shops that accept a banknote without checking it under a lamp",
+   "Airlines that allow a seat to be held for a day without payment"
+  ],
+  "answer": 0,
+  "why": "The risk of a reversal is low while the cost of delaying the sale is comparatively larger."
+ },
+ {
+  "concept": "SmallPaymentAcceptance",
+  "level": "Apply",
+  "q": "An item worth five is compared with a threshold of twenty-five. What does this program print?",
+  "code": "print((lambda value, threshold: 'accept now' if value < threshold else 'wait for confirmations')(5, 25))",
+  "options": [
+   "wait for confirmations",
+   "accept now",
+   "accept",
+   "5"
+  ],
+  "answer": 1,
+  "why": "The value is below the threshold, so the merchant accepts the payment without waiting."
+ },
+ {
+  "concept": "Spending",
+  "level": "Understand",
+  "q": "What does the spending group show about Bitcoin's mechanism?",
+  "options": [
+   "That a received payment must be re-signed before it can be spent",
+   "That only a full node may spend an output it received",
+   "That there is only one mechanism and each participant uses it in turn",
+   "That outputs received from a miner follow different rules"
+  ],
+  "answer": 2,
+  "why": "Alice spent an output Joe created, and Bob spends the output Alice created."
+ },
+ {
+  "concept": "SpendingOnward",
+  "level": "Analyze",
+  "q": "Why does spending onward need more than the public record?",
+  "options": [
+   "Because the output has to be registered again with a full node before it can be used, which is the step that makes it spendable by its new owner",
+   "Because the amount must be converted into satoshis by the explorer",
+   "Because the earlier transaction must be signed again by its payer",
+   "Because only the holder of the key that satisfies the output's script can spend it"
+  ],
+  "answer": 3,
+  "why": "The record is public, which is why losing a key loses the funds and nobody else gains them."
+ },
+ {
+  "concept": "SpendingOnward",
+  "level": "Apply",
+  "q": "Bob received 75,000 satoshis and pays 67,000 onward. What does this program print?",
+  "code": "print((lambda received, paid: (received - paid, received - paid == 8000))(75000, 67000))",
+  "options": [
+   "(8000, True)",
+   "(8000, False)",
+   "(67000, True)",
+   "(142000, True)"
+  ],
+  "answer": 0,
+  "why": "The difference of 8,000 satoshis is the fee of Bob's transaction, as the book's figure states."
+ },
+ {
+  "concept": "PaymentVerification",
+  "level": "Analyze",
+  "q": "What does simplified payment verification not establish?",
+  "options": [
+   "That the transaction appears in a particular block, which is why a lightweight client has to ask a full node whether the payment arrived at all",
+   "That the transaction's inputs existed and were unspent",
+   "That blocks were mined after the one containing it",
+   "That the block header belongs to the chain the client holds"
+  ],
+  "answer": 1,
+  "why": "The chapter's own word is partially: the client verifies part of what a full node verifies."
+ },
+ {
+  "concept": "PaymentVerification",
+  "level": "Apply",
+  "q": "A block holds about sixteen thousand transactions. What does this program print for the size of a merkle proof?",
+  "code": "print((lambda n: __import__('math').ceil(__import__('math').log2(n)) * 32)(16000))",
+  "options": [
+   "512",
+   "32",
+   "448",
+   "16000"
+  ],
+  "answer": 2,
+  "why": "About fourteen hashes of 32 bytes each are needed, which is 448 bytes."
+ },
+ {
+  "concept": "Semantics",
+  "level": "Understand",
+  "q": "Why does this branch describe the transaction chain as provenance?",
+  "options": [
+   "Because every full node stores its copy of the chain as a standard ontology, so the provenance vocabulary is already the format of the ledger",
+   "Because the W3C publishes the consensus rules of Bitcoin",
+   "Because provenance is the name the chapter gives to the fee",
+   "Because each output exists through a transaction that consumed earlier outputs, which is what provenance records"
+  ],
+  "answer": 3,
+  "why": "The W3C's PROV Ontology is a standard vocabulary for exactly such descriptions."
+ },
+ {
+  "concept": "ProvenanceModel",
+  "level": "Analyze",
+  "q": "Why must the model and the thing modelled be kept apart?",
+  "options": [
+   "Because the triples are written by this course, not by Bitcoin, and a different modeller could choose differently",
+   "Because the triples are written into the blockchain itself by the miner of each block, so a chain reorganization can silently rewrite part of the model",
+   "Because the standard forbids describing financial data",
+   "Because the model must be regenerated after every block"
+  ],
+  "answer": 0,
+  "why": "A model is judged by whether it answers the questions it was built for."
+ },
+ {
+  "concept": "Ontology",
+  "level": "Understand",
+  "q": "Why is the material of a course recorded as an ontology?",
+  "options": [
+   "So that the page can be translated automatically into other languages, since a machine-readable vocabulary carries the wording of every definition with it",
+   "So that terms are defined once, questions can be stated in advance, and the result can be queried and reused",
+   "So that the text can be stored in fewer bytes than prose",
+   "So that students can edit the definitions during a lecture"
+  ],
+  "answer": 1,
+  "why": "That is also why the chapter insists that every technical word it uses is itself a concept."
+ },
+ {
+  "concept": "Ontology",
+  "level": "Apply",
+  "q": "Four classes are listed with their parents. What does this program print?",
+  "code": "print((lambda classes, parents: (len(classes), sum(1 for c in classes if parents.get(c) is None)))(['Transaction', 'Input', 'Output', 'Network'], {'Transaction': None, 'Input': 'Transaction', 'Output': 'Transaction', 'Network': None}))",
+  "options": [
+   "(4, 4)",
+   "(2, 4)",
+   "(4, 2)",
+   "(4, 0)"
+  ],
+  "answer": 2,
+  "why": "There are four classes, two of which have no parent and are therefore roots."
+ },
+ {
+  "concept": "Triple",
+  "level": "Understand",
+  "q": "Why are triples a convenient form for a growing description?",
+  "options": [
+   "Because a triple can hold three values in a single field, which makes a description of a transaction chain three times smaller than a table of rows",
+   "Because triples are smaller than rows in a table",
+   "Because a triple is signed by the person who wrote it",
+   "Because two descriptions can simply be put together and anything they share joins up"
+  ],
+  "answer": 3,
+  "why": "Adding Bob's onward transaction extends the same graph without altering what is already there."
+ },
+ {
+  "concept": "Triple",
+  "level": "Apply",
+  "q": "Three triples are counted together with the things they mention. What does this program print?",
+  "code": "print((lambda triples: (len(triples), len({s for s, p, o in triples} | {o for s, p, o in triples})))([('Tx2', 'used', 'Tx1:0'), ('Tx2:1', 'wasGeneratedBy', 'Tx2'), ('Tx2', 'wasAttributedTo', 'Alice')]))",
+  "options": [
+   "(3, 4)",
+   "(3, 6)",
+   "(3, 3)",
+   "(4, 3)"
+  ],
+  "answer": 0,
+  "why": "The three statements mention four distinct things, because one of them is the subject of two triples."
+ },
+ {
+  "concept": "ProvenanceGraph",
+  "level": "Analyze",
+  "q": "What does a provenance graph of a transaction chain not tell you?",
+  "options": [
+   "Which of the two outputs of Alice's transaction is the change and which is the payment, and which satoshi of the input ended up in each of them",
+   "Who the parties are, because attribution is to a key holder and not to a named person",
+   "Which transaction generated a given output",
+   "How many outputs a transaction created"
+  ],
+  "answer": 1,
+  "why": "Derivation is also between whole outputs, not between individual amounts."
+ },
+ {
+  "concept": "ProvenanceGraph",
+  "level": "Apply",
+  "q": "A chain of three outputs is turned into derivation triples. What does this program print?",
+  "code": "print((lambda chain: [(b, 'wasDerivedFrom', a) for a, b in zip(chain, chain[1:])])(['Tx1:0', 'Tx2:1', 'Tx3:0']))",
+  "options": [
+   "[('Tx1:0', 'wasDerivedFrom', 'Tx2:1'), ('Tx2:1', 'wasDerivedFrom', 'Tx3:0')]",
+   "[('Tx2:1', 'wasDerivedFrom', 'Tx1:0')]",
+   "[('Tx2:1', 'wasDerivedFrom', 'Tx1:0'), ('Tx3:0', 'wasDerivedFrom', 'Tx2:1')]",
+   "[('Tx1:0', 'used', 'Tx2:1'), ('Tx2:1', 'used', 'Tx3:0')]"
+  ],
+  "answer": 2,
+  "why": "Each output is derived from the one before it, so a chain of three gives two statements."
+ },
+ {
+  "concept": "Practice",
+  "level": "Understand",
+  "q": "Why is an interactive demonstration page worth including in the material?",
+  "options": [
+   "Because the pages run the real Bitcoin consensus rules",
+   "Because the pages are the only place the book's figures appear",
+   "Because a student cannot otherwise compute a hash",
+   "Because the central claims about hashing and chaining can be seen rather than believed"
+  ],
+  "answer": 3,
+  "why": "A student who can say what a page leaves out has understood the chapter."
+ },
+ {
+  "concept": "InteractiveDemo",
+  "level": "Remember",
+  "q": "In what order do the five pages of the demonstration build on one another?",
+  "options": [
+   "Hash, Block, Blockchain, Distributed, Coinbase",
+   "Block, Hash, Coinbase, Distributed, Blockchain",
+   "Hash, Blockchain, Block, Coinbase, Distributed",
+   "Coinbase, Distributed, Blockchain, Block, Hash"
+  ],
+  "answer": 0,
+  "why": "Each page adds one field or one dimension to the page before it."
+ },
+ {
+  "concept": "HashDemo",
+  "level": "Analyze",
+  "q": "Why can a reader not reproduce a real transaction identifier on the hash page?",
+  "options": [
+   "Because the page truncates every digest to sixteen hexadecimal digits, so the value it shows is only the first quarter of the real identifier",
+   "Because the page hashes text once, while an identifier is a double hash of exact binary data",
+   "Because the page uses a different hash function from Bitcoin's",
+   "Because identifiers are not hashes but random numbers"
+  ],
+  "answer": 1,
+  "why": "Pasting a hexadecimal form into the data box hashes the characters, not the bytes."
+ },
+ {
+  "concept": "HashDemo",
+  "level": "Apply",
+  "q": "What does the demonstration's hash page show for the first sixteen digits of that digest?",
+  "code": "print(__import__('hashlib').sha256(b'Alice pays Bob 75000').hexdigest()[:16])",
+  "options": [
+   "d9014c4624844aa5",
+   "f1ef1bf1d9014c46",
+   "320a22eeeb9c0391",
+   "320a22eeeb9c0392"
+  ],
+  "answer": 2,
+  "why": "The page computes the same SHA-256 digest that the standard library computes for the same text."
+ },
+ {
+  "concept": "BlockDemo",
+  "level": "Understand",
+  "q": "What does pressing Mine on the block page let a reader feel?",
+  "options": [
+   "The effect that a rising exchange rate has on the fee a payment must pay, and the way the difficulty is retargeted to answer it",
+   "The delay caused by sending the block to other peers",
+   "The cost of storing the block on disk",
+   "The asymmetry between a search of thousands of attempts and an instant check"
+  ],
+  "answer": 3,
+  "why": "The box recolours the moment a satisfying nonce is found, after a perceptible pause."
+ },
+ {
+  "concept": "BlockDemo",
+  "level": "Apply",
+  "q": "The demonstration page requires four leading zeros. What does this program print for the winning nonce?",
+  "code": "print((lambda h: next(n for n in range(500000) if h(('1' + str(n) + 'Alice pays Bob 75000').encode()).hexdigest().startswith('0000')))(__import__('hashlib').sha256))",
+  "options": [
+   "6630",
+   "500000",
+   "4",
+   "65536"
+  ],
+  "answer": 0,
+  "why": "Searching the nonces in order, the first that satisfies the condition is 6630."
+ },
+ {
+  "concept": "BlockchainDemo",
+  "level": "Analyze",
+  "q": "What can the blockchain page not show about Bitcoin's security?",
+  "options": [
+   "That an attacker needs a majority of the hash rate before any change to an early block can be made to stick in the chain that other peers hold",
+   "That an attacker would have to outpace the whole network while it keeps extending the honest chain",
+   "That each block commits to the hash of the block before it",
+   "That a changed block can be made valid again by mining it"
+  ],
+  "answer": 1,
+  "why": "The page has one chain and one editor, so a patient reader can simply remine every block."
+ },
+ {
+  "concept": "BlockchainDemo",
+  "level": "Apply",
+  "q": "A five-block chain is edited at position one. What does this program print?",
+  "code": "print((lambda chain, edited: [i for i in range(len(chain)) if i >= edited])(['b1', 'b2', 'b3', 'b4', 'b5'], 1))",
+  "options": [
+   "[0, 1, 2, 3, 4]",
+   "[1]",
+   "[1, 2, 3, 4]",
+   "[2, 3, 4]"
+  ],
+  "answer": 2,
+  "why": "The edited block and every block after it become invalid until each is mined again."
+ },
+ {
+  "concept": "DistributedDemo",
+  "level": "Analyze",
+  "q": "What must a reader supply from the other branches when using the distributed page?",
+  "options": [
+   "How a hash is computed from the fields of a block",
+   "How a nonce is found for a given difficulty",
+   "How a coinbase amount is divided among transactions",
+   "How peers learn from one another and how a node chooses between chains"
+  ],
+  "answer": 3,
+  "why": "The page has no messages, no propagation and no rule for comparing cumulative work."
+ },
+ {
+  "concept": "DistributedDemo",
+  "level": "Apply",
+  "q": "Three peers report their latest hash and one differs. What does this program print?",
+  "code": "print((lambda peers: (len(peers), len(set(peers.values())) == 1))({'A': 'h5', 'B': 'h5', 'C': 'h5x'}))",
+  "options": [
+   "(3, False)",
+   "(3, True)",
+   "(2, False)",
+   "(3, 2)"
+  ],
+  "answer": 0,
+  "why": "There are three peers and their hashes are not all equal, so they are not in consensus."
+ },
+ {
+  "concept": "CoinbaseDemo",
+  "level": "Analyze",
+  "q": "Which experiment on the coinbase page shows what Bitcoin adds that the page lacks?",
+  "options": [
+   "Changing the coinbase amount, which the page recomputes",
+   "Spending the same amount twice, which the page allows and Bitcoin rejects",
+   "Mining two blocks in a row, which the page allows",
+   "Adding a fourth peer, which the page does not support"
+  ],
+  "answer": 1,
+  "why": "The page has no keys, no signatures and no check that a sender holds what it sends."
+ },
+ {
+  "concept": "CoinbaseDemo",
+  "level": "Apply",
+  "q": "A block pays a coinbase of 100 and then sends 30 and 20 away. What does this program print?",
+  "code": "print((lambda coinbase, txs: coinbase - sum(amount for _, _, amount in txs))(100, [('A', 'B', 30), ('A', 'C', 20)]))",
+  "options": [
+   "30",
+   "150",
+   "50",
+   "100"
+  ],
+  "answer": 2,
+  "why": "What remains with the first party is the coinbase amount minus the two transfers."
+ }
+]

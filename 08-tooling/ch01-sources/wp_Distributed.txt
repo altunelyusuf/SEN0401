@@ -1,0 +1,470 @@
+{{Short description|System with multiple networked computers}}
+{{Distinguish|Decentralized computing}}
+
+'''Distributed computing''' is a field of [[computer science]] that studies '''distributed systems''', defined as [[computer system]]s whose inter-communicating components are located on different [[computer network|networked computers]].<ref name="tanenbaum">{{cite book |author1=Tanenbaum, Andrew S. |author2=Steen, Maarten van |title=Distributed systems: principles and paradigms |publisher=Pearson Prentice Hall |location=Upper Saddle River, NJ |year=2002 |isbn=0-13-088893-1 |url=https://www.distributed-systems.net/index.php/books/ds3/ |access-date=2020-08-28 |archive-date=2020-08-12 |archive-url=https://web.archive.org/web/20200812174339/https://www.distributed-systems.net/index.php/books/ds3/ |url-status=live }}</ref><ref name="Distributed Programs 2010 pp. 373–406">{{cite book | title=Texts in Computer Science | chapter=Distributed Programs | publisher=Springer London | publication-place=London | year=2010 | isbn=978-1-84882-744-8 | issn=1868-0941 | doi=10.1007/978-1-84882-745-5_11 | pages=373–406 | quote=Systems consist of a number of physically distributed components that work independently using their private storage, but also communicate from time to time by explicit message passing. Such systems are called distributed systems.}}</ref> 
+
+The components of a distributed system communicate and coordinate their actions by [[message passing|passing messages]] to one another in order to achieve a common goal. Three challenges of distributed systems are: maintaining [[Concurrency (computer science)|concurrency]] of components, overcoming the [[clock synchronization|lack of a global clock]], and managing the independent failure of components.<ref name="tanenbaum" /> When a component of one system fails, the entire system does not fail.{{sfn|Dusseau|Dusseau|2016|p=1–2}} Examples of distributed systems vary from [[service-oriented architecture|SOA-based systems]] to [[microservices]] to [[massively multiplayer online game]]s to [[peer-to-peer|peer-to-peer applications]]. Distributed systems cost more than monolithic architectures, primarily due to increased needs for additional hardware, servers, gateways, firewalls, new subnets, proxies, and so on.<ref>{{Cite book |last=Ford |first=Neal |title=Fundamentals of Software Architecture: An Engineering Approach |date=March 3, 2020 |publisher=O'Reilly Media |isbn=978-1-4920-4345-4 |edition=1st |pages=146–147}}</ref> Distributed systems can also suffer from [[fallacies of distributed computing]]. Conversely, a well-designed distributed system is more scalable, more durable, more changeable, and more fine-tuned than a [[monolithic application]] deployed on a single machine.<ref>{{Cite book |title=Monolith to Microservices Evolutionary Patterns to Transform Your Monolith |publisher=O'Reilly Media |isbn=978-1-4920-4781-0}}</ref> According to Marc Brooker: "a system is scalable in the range where [[marginal cost]] of additional workload is nearly constant." [[Serverless computing|Serverless]] technologies fit this definition but the total cost of ownership, and not just the infrastructure cost must be considered.<ref>{{Cite book |title=Building Serverless Applications on Knative |publisher=O'Reilly Media |isbn=978-1-0981-4204-9}}</ref>
+
+A [[computer program]] that runs within a distributed system is called a '''distributed program''',<ref name="Distributed Programs 2010 pp. 373–406 II">{{cite book | title=Texts in Computer Science | chapter=Distributed Programs | publisher=Springer London | publication-place=London | year=2010 | isbn=978-1-84882-744-8 | issn=1868-0941 | doi=10.1007/978-1-84882-745-5_11 | pages=373–406 | quote=Distributed programs are abstract descriptions of distributed systems. A distributed program consists of a collection of processes that work concurrently and communicate by explicit message passing. Each process can access a set of variables which are disjoint from the variables that can be changed by any other process.}}</ref> and ''distributed programming'' is the process of writing such programs.<ref>{{harvtxt|Andrews|2000}}. {{harvtxt|Dolev|2000}}. {{harvtxt|Ghosh|2007}}, p. 10.</ref> There are many types of implementations for the message-passing mechanism, including pure HTTP, [[remote procedure call|RPC-like]] connectors, and [[message-oriented middleware|message queues]].<ref>{{Cite journal|last=Magnoni|first=L.|date=2015|title=Modern Messaging for Distributed Sytems (sic)|journal=Journal of Physics: Conference Series|language=en|volume=608|issue=1|article-number=012038|doi=10.1088/1742-6596/608/1/012038|issn=1742-6596|doi-access=free|bibcode=2015JPhCS.608a2038M }}</ref>
+
+''Distributed computing'' also refers to the use of distributed systems to solve computational problems. In ''distributed computing'', a problem is divided into many tasks, each of which is solved by one or more computers,<ref>{{harvtxt|Godfrey|2002}}.</ref> which communicate with each other via message passing.<ref name="Andrews 2000">{{harvtxt|Andrews|2000}}, p. 291–292. {{harvtxt|Dolev|2000}}, p. 5.</ref>
+
+==Introduction==
+The word ''distributed'' in terms such as "distributed system", "distributed programming", and "[[distributed algorithm]]" originally referred to computer networks where individual computers were physically distributed within some geographical area.<ref>{{harvtxt|Lynch|1996}}, p. 1.</ref> The terms are nowadays used in a much wider sense, even referring to autonomous [[Process (computing)|processes]] that run on the same physical computer and interact with each other by [[message passing]].<ref name="Andrews 2000"/>
+
+There is no single definition of a distributed system,<ref name="harvtxt|Ghosh|2007">{{harvtxt|Ghosh|2007}}, p. 10.</ref> but two common properties are generally cited:
+* There are several autonomous computational entities (''computers'' or ''[[Node (networking)|nodes]]''), each of which has its own local [[Memory (computers)|memory]].<ref>{{harvtxt|Andrews|2000}}, pp. 8–9, 291. {{harvtxt|Dolev|2000}}, p. 5. {{harvtxt|Ghosh|2007}}, p. 3. {{harvtxt|Lynch|1996}}, p. xix, 1. {{harvtxt|Peleg|2000}}, p. xv.</ref>
+* The entities communicate with each other by message passing.<ref>{{harvtxt|Andrews|2000}}, p. 291. {{harvtxt|Ghosh|2007}}, p. 3. {{harvtxt|Peleg|2000}}, p. 4.</ref>
+
+A distributed system may have a common goal, such as solving a large computational problem;<ref>{{harvtxt|Ghosh|2007}}, p. 3–4. {{harvtxt|Peleg|2000}}, p. 1.</ref> the user then perceives the collection of autonomous processors as a unit. Alternatively, each computer may have its own user with individual needs, and the purpose of the distributed system is to coordinate the use of shared resources or provide communication services to the users.<ref>{{harvtxt|Ghosh|2007}}, p. 4. {{harvtxt|Peleg|2000}}, p. 2.</ref>
+
+Other typical properties of distributed systems are:
+* The system must [[Fault tolerance|tolerate failures]] in individual computers.<ref>{{harvtxt|Ghosh|2007}}, p. 4, 8. {{harvtxt|Lynch|1996}}, p. 2–3. {{harvtxt|Peleg|2000}}, p. 4.</ref>
+* The structure of the system (network topology, network latency, number of computers) is not known in advance.
+* The system may consist of different kinds of computers and network links.
+* The system may change during the execution of a distributed program.<ref>{{harvtxt|Lynch|1996}}, p. 2. {{harvtxt|Peleg|2000}}, p. 1.</ref>
+* Each computer has a limited, incomplete view of the system. 
+* Each computer may know only one part of the input.<ref>{{harvtxt|Ghosh|2007}}, p. 7. {{harvtxt|Lynch|1996}}, p. xix, 2. {{harvtxt|Peleg|2000}}, p. 4.</ref>
+
+== Patterns ==
+Here are common [[architectural patterns]] used for distributed computing:<ref>{{Cite book |title=Fundamentals of Software Architecture: An Engineering Approach |publisher=O'Reilly Media |year=2020 |isbn=978-1-4920-4345-4}}</ref>
+
+* [[Saga interaction pattern]]
+* [[Microservices]]
+* [[Event driven architecture]]
+* [[Client–server model|Client–server architecture]]
+* [[Service-oriented architecture|Service-oriented architecture (SOA)]]
+* [[Publish–subscribe pattern]]
+* [[Peer-to-peer|Peer-to-peer (P2P)]]
+
+== Events vs. Messages ==
+In distributed systems, [[Event (computing)|events]] represent a fact or state change (e.g., ''OrderPlaced'') and are typically broadcast asynchronously to multiple consumers, promoting loose coupling and scalability. While events generally don't expect an immediate response, acknowledgment mechanisms are often implemented at the infrastructure level (e.g., Kafka commit offsets, SNS delivery statuses) rather than being an inherent part of the event pattern itself.<ref name=":1">{{Cite book |last=Kleppmann |first=Martin |title=Designing Data-Intensive Applications: The Big Ideas Behind Reliable, Scalable, and Maintainable Systems |date=2017 |publisher=O'Reilly Media |isbn=978-1-4493-7332-0}}</ref><ref name=":2">{{Cite book |title=Building Event-Driven Microservices: Leveraging Organizational Data at Scale |isbn=978-1-4920-5789-5}}</ref>
+
+In contrast, [[Message|messages]] serve a broader role, encompassing commands (e.g., ''ProcessPayment''), events (e.g., ''PaymentProcessed''), and documents (e.g., ''DataPayload''). Both events and messages can support various delivery guarantees, including at-least-once, at-most-once, and exactly-once, depending on the technology stack and implementation. However, exactly-once delivery is often achieved through idempotency mechanisms rather than true, infrastructure-level exactly-once semantics.<ref name=":1" /><ref name=":2" />
+
+Delivery patterns for both events and messages include publish/subscribe (one-to-many) and point-to-point (one-to-one). While request/reply is technically possible, it is more commonly associated with messaging patterns rather than pure event-driven systems. Events excel at state propagation and decoupled notifications, while messages are better suited for command execution, workflow orchestration, and explicit coordination.<ref name=":1" /><ref name=":2" />
+
+Modern architectures commonly combine both approaches, leveraging events for distributed state change notifications and messages for targeted command execution and structured workflows based on specific timing, ordering, and delivery requirements.<ref name=":1" /><ref name=":2" />
+
+==Parallel and distributed computing==
+[[File:Distributed-parallel.svg|thumb|right|300px|(a), (b): a distributed system.<br/>(c): a parallel system.]]
+Distributed systems are groups of networked computers which share a common goal for their work.
+The terms "[[concurrent computing]]", "[[parallel computing]]", and "distributed computing" have much overlap, and no clear distinction exists between them.<ref>{{harvtxt|Ghosh|2007}}, p. 10. {{harvtxt|Keidar|2008}}.</ref> The same system may be characterized both as "parallel" and "distributed"; the processors in a typical distributed system run concurrently in parallel.<ref>{{harvtxt|Lynch|1996}}, p. xix, 1–2. {{harvtxt|Peleg|2000}}, p. 1.</ref> Parallel computing may be seen as a particularly tightly coupled form of distributed computing,<ref>{{harvtxt|Peleg|2000}}, p. 1.</ref> and distributed computing may be seen as a loosely coupled form of parallel computing.<ref name="harvtxt|Ghosh|2007"/> Nevertheless, it is possible to roughly classify concurrent systems as "parallel" or "distributed" using the following criteria:
+* In parallel computing, all processors may have access to a [[shared memory]] to exchange information between processors.<ref>{{harvtxt|Papadimitriou|1994}}, Chapter 15. {{harvtxt|Keidar|2008}}.</ref>
+* In distributed computing, each processor has its own private memory ([[distributed memory]]). Information is exchanged by passing messages between the processors.<ref>See references in [[#Introduction|Introduction]].</ref>
+The figure on the right illustrates the difference between distributed and parallel systems. Figure (a) is a schematic view of a typical distributed system; the system is represented as a network topology in which each node is a computer and each line connecting the nodes is a communication link. Figure (b) shows the same distributed system in more detail: each computer has its own local memory, and information can be exchanged only by passing messages from one node to another by using the available communication links. Figure (c) shows a parallel system in which each processor has a direct access to a shared memory.
+
+The situation is further complicated by the traditional uses of the terms parallel and distributed ''algorithm'' that do not quite match the above definitions of parallel and distributed ''systems'' (see [[#Theoretical foundations|below]] for more detailed discussion). Nevertheless, as a rule of thumb, high-performance parallel computation in a shared-memory multiprocessor uses parallel algorithms while the coordination of a large-scale distributed system uses distributed algorithms.<ref name="BetalebParallel16">{{cite web |url=http://www.comp.nus.edu.sg/~rahul/allfiles/cs6234-16-pds.pdf |archive-url=https://web.archive.org/web/20170326210614/http://www.comp.nus.edu.sg/~rahul/allfiles/cs6234-16-pds.pdf |archive-date=2017-03-26 |url-status=live |title=Parallel and Distributed Algorithms |author=Bentaleb, A. |author2=Yifan, L. |author3=Xin, J.|display-authors=et al |publisher=National University of Singapore |year=2016 |access-date=20 July 2018}}</ref>
+
+==History==
+The use of concurrent processes which communicate through message-passing has its roots in [[operating system]] architectures studied in the 1960s.<ref>{{harvtxt|Andrews|2000}}, p. 348.</ref> The first widespread distributed systems were [[local-area networks]] such as [[Ethernet]], which was invented in the 1970s.<ref>{{harvtxt|Andrews|2000}}, p. 32.</ref>
+
+[[ARPANET]], one of the predecessors of the [[Internet]], was introduced in the late 1960s, and ARPANET [[e-mail]] was invented in the early 1970s. E-mail became the most successful application of ARPANET,<ref>{{harvtxt|Peter|2004}}, [http://www.nethistory.info/History%20of%20the%20Internet/email.html The history of email] {{Webarchive|url=https://web.archive.org/web/20090415220152/http://www.nethistory.info/History%20of%20the%20Internet/email.html |date=2009-04-15 }}.</ref> and it is probably the earliest example of a large-scale [[distributed application]]. In addition to ARPANET (and its successor, the global Internet), other early worldwide computer networks included [[Usenet]] and [[FidoNet]] from the 1980s, both of which were used to support distributed discussion systems.<ref name="BanksOnThe12">{{cite book |url=https://books.google.com/books?id=1J78hiHKaPoC&pg=PT67 |title=On the Way to the Web: The Secret History of the Internet and its Founders |author=Banks, M. |publisher=Apress |pages=44–5 |year=2012 |isbn=978-1-4302-5074-6 |access-date=2018-07-20 |archive-date=2023-01-20 |archive-url=https://web.archive.org/web/20230120182450/https://books.google.com/books?id=1J78hiHKaPoC&pg=PT67 |url-status=live }}</ref>
+
+The study of distributed computing became its own branch of computer science in the late 1970s and early 1980s. The first conference in the field, [[Symposium on Principles of Distributed Computing]] (PODC), dates back to 1982, and its counterpart [[International Symposium on Distributed Computing]] (DISC) was first held in Ottawa in 1985 as the International Workshop on Distributed Algorithms on Graphs.<ref name="TelIntro00">{{cite book |url=https://books.google.com/books?id=vlpnS25qAJQC&pg=PA35 |title=Introduction to Distributed Algorithms |author=Tel, G. |publisher=Cambridge University Press |pages=35–36 |year=2000 |isbn=978-0-521-79483-1 |access-date=2018-07-20 |archive-date=2023-01-20 |archive-url=https://web.archive.org/web/20230120182450/https://books.google.com/books?id=vlpnS25qAJQC&pg=PA35 |url-status=live }}</ref>
+
+==Distributed Computing Architectures==
+Various hardware and software architectures are used for distributed computing. At a lower level, it is necessary to interconnect multiple CPUs with some sort of network, regardless of whether that network is printed onto a [[Printed circuit board|circuit board]] or made up of loosely coupled devices and cables. At a higher level, it is necessary to interconnect [[Process (computing)|processes]] running on those CPUs with some sort of [[communication system]].<ref name="OhlídalEvo06">{{cite book |chapter=Evolutionary Design of OAB and AAB Communication Schedules for Interconnection Networks |title=Applications of Evolutionary Computing |author=Ohlídal, M. |author2=Jaroš, J. |author3=Schwarz, J.|editor=Rothlauf, F. |editor2=Branke, J. |editor3=Cagnoni, S.|display-authors=et al |publisher=Springer Science & Business Media |pages=267–78 |year=2006 |isbn=978-3-540-33237-4}}</ref>
+
+Whether these CPUs share resources or not determines a first distinction between three types of architecture:
+
+* [[Shared-memory architecture|Shared memory]]
+* [[Shared-disk architecture|Shared disk]]
+* [[Shared-nothing architecture|Shared nothing]].
+
+Distributed programming typically falls into one of several basic architectures: [[client–server]], [[Three-tier (computing)|three-tier]], [[Multitier architecture|''n''-tier]], or [[peer-to-peer]]; or categories: [[loose coupling]], or [[Computer cluster|tight coupling]].<ref>{{Cite journal|title=Real Time And Distributed Computing Systems|url=https://pdfs.semanticscholar.org/2950/37ee46ac281590f67435380cebc385ac9749.pdf|archive-url=https://web.archive.org/web/20170110015222/https://pdfs.semanticscholar.org/2950/37ee46ac281590f67435380cebc385ac9749.pdf|archive-date=2017-01-10|issn=2278-0661|access-date=2017-01-09}}</ref>
+
+* [[Client–server]]: architectures where smart clients contact the server for data then format and display it to the users. Input at the client is committed back to the server when it represents a permanent change.
+* [[Three-tier (computing)|Three-tier]]: architectures that move the client intelligence to a middle tier so that [[Stateless protocol|stateless]] clients can be used. This simplifies application deployment. Most web applications are three-tier.
+* [[Multitier architecture|''n''-tier]]: architectures that refer typically to web applications which further forward their requests to other enterprise services. This type of application is the one most responsible for the success of [[application server]]s.
+* [[Peer-to-peer]]: architectures where there are no special machines that provide a service or manage the network resources.<ref name=Vigna20150127>Vigna P, Casey MJ. ''The Age of Cryptocurrency: How Bitcoin and the Blockchain Are Challenging the Global Economic Order'' St. Martin's Press January 27, 2015 {{ISBN|9781250065636}}</ref>{{rp|227}} Instead all responsibilities are uniformly divided among all machines, known as peers. Peers can serve both as clients and as servers.<ref>{{Cite book|title=Peer-to-peer computing: principles and applications |date=2010|publisher=Springer |author1=Quang Hieu Vu |author2=Mihai Lupu |author3=Beng Chin Ooi |isbn=978-3-642-03513-5|location=Heidelberg|page=16|oclc=663093862}}</ref> Examples of this architecture include [[BitTorrent]] and the [[bitcoin network]].
+
+Another basic aspect of distributed computing architecture is the method of communicating and coordinating work among concurrent processes. Through various message passing protocols, processes may communicate directly with one another, typically in a [[main/sub (technology)|main/sub]] relationship. Alternatively, a [[Database-centric architecture|"database-centric" architecture]] can enable distributed computing to be done without any form of direct [[inter-process communication]], by utilizing a shared [[database]].<ref>{{Citation |vauthors=Lind P, Alm M |title=A database-centric virtual chemistry system |journal=J Chem Inf Model |volume=46 |issue=3 |pages=1034–9 |year=2006 |pmid=16711722 |doi=10.1021/ci050360b |postscript=. }}</ref> Database-centric architecture in particular provides relational processing analytics in a schematic architecture allowing for live environment relay. This enables distributed computing functions both within and beyond the parameters of a networked database.<ref>{{cite journal |last1=Chiu |first1=G |title=A model for optimal database allocation in distributed computing systems |journal=Proceedings. IEEE INFOCOM'90: Ninth Annual Joint Conference of the IEEE Computer and Communications Societies |date=1990}}</ref>
+
+=== Cell-Based Architecture ===
+Cell-based architecture is a distributed computing approach in which computational resources are organized into self-contained units called cells. Each cell operates independently, processing requests while maintaining scalability, fault isolation, and availability.<ref name=":22">{{cite book |last=Newman |first=Sam |title=Building Microservices |date=2015-02-20 |publisher=O'Reilly Media |isbn=978-1-4919-5035-7}}</ref><ref name=":3">{{Cite book |last=Richardson |first=Chris |title=Microservices patterns: with examples in Java |date=2019 |publisher=Manning Publications |isbn=978-1-61729-454-9 |location=Shelter Island, NY}}</ref><ref name=":4">{{Cite book |last=Christudas |first=Binildas |title=Practical Microservices Architectural Patterns: Event-Based Java Microservices with Spring Boot and Spring Cloud |date=2019 |publisher=Apress L. P |isbn=978-1-4842-4501-9 |location=Berkeley, CA}}</ref>
+
+A cell typically consists of multiple services or application components and functions as an autonomous unit. Some implementations replicate entire sets of [[Microservices|services]] across multiple cells, while others partition workloads between cells. In replicated models, requests may be rerouted to an operational cell if another experiences a failure. This design is intended to enhance system resilience by reducing the impact of localized failures.<ref name=":23">{{cite book |last=Newman |first=Sam |title=Building Microservices |date=2015-02-20 |publisher=O'Reilly Media |isbn=978-1-4919-5035-7}}</ref><ref name=":32">{{Cite book |last=Richardson |first=Chris |title=Microservices patterns: with examples in Java |date=2019 |publisher=Manning Publications |isbn=978-1-61729-454-9 |location=Shelter Island, NY}}</ref><ref name=":42">{{Cite book |last=Christudas |first=Binildas |title=Practical Microservices Architectural Patterns: Event-Based Java Microservices with Spring Boot and Spring Cloud |date=2019 |publisher=Apress L. P |isbn=978-1-4842-4501-9 |location=Berkeley, CA}}</ref>
+
+Some implementations employ [[Circuit breaker design pattern|circuit breakers]] within and between cells. Within a cell, circuit breakers may be used to prevent cascading failures among services, while inter-cell circuit breakers can isolate failing cells and redirect traffic to those that remain operational.<ref name=":24">{{cite book |last=Newman |first=Sam |title=Building Microservices |date=2015-02-20 |publisher=O'Reilly Media |isbn=978-1-4919-5035-7}}</ref><ref name=":33">{{Cite book |last=Richardson |first=Chris |title=Microservices patterns: with examples in Java |date=2019 |publisher=Manning Publications |isbn=978-1-61729-454-9 |location=Shelter Island, NY}}</ref><ref name=":43">{{Cite book |last=Christudas |first=Binildas |title=Practical Microservices Architectural Patterns: Event-Based Java Microservices with Spring Boot and Spring Cloud |date=2019 |publisher=Apress L. P |isbn=978-1-4842-4501-9 |location=Berkeley, CA}}</ref>
+
+Cell-based architecture has been adopted in some large-scale distributed systems, particularly in cloud-native and high-availability environments, where fault isolation and redundancy are key design considerations. Its implementation varies depending on system requirements, infrastructure constraints, and operational objectives.<ref name=":25">{{cite book |last=Newman |first=Sam |title=Building Microservices |date=2015-02-20 |publisher=O'Reilly Media |isbn=978-1-4919-5035-7}}</ref><ref name=":34">{{Cite book |last=Richardson |first=Chris |title=Microservices patterns: with examples in Java |date=2019 |publisher=Manning Publications |isbn=978-1-61729-454-9 |location=Shelter Island, NY}}</ref><ref name=":44">{{Cite book |last=Christudas |first=Binildas |title=Practical Microservices Architectural Patterns: Event-Based Java Microservices with Spring Boot and Spring Cloud |date=2019 |publisher=Apress L. P |isbn=978-1-4842-4501-9 |location=Berkeley, CA}}</ref>
+
+==Applications==
+Reasons for using distributed systems and distributed computing may include:
+* The very nature of an application may ''require'' the use of a communication network that connects several computers: for example, data produced in one physical location and required in another location.
+* There are many cases in which the use of a single computer would be possible in principle, but the use of a distributed system is ''beneficial'' for practical reasons. For example:
+** It can allow for much larger storage and memory, faster compute, and higher bandwidth than a single machine.
+** It can provide more reliability than a non-distributed system, as there is no [[single point of failure]]. Moreover, a distributed system may be easier to expand and manage than a monolithic uniprocessor system.<ref>{{harvtxt|Elmasri|Navathe|2000}}, Section 24.1.2.</ref>
+** It may be more cost-efficient to obtain the desired level of performance by using a [[Cluster (computing)|cluster]] of several low-end computers, in comparison with a single high-end computer.
+
+==Examples==
+Examples of distributed systems and applications of distributed computing include the following:<ref>{{harvtxt|Andrews|2000}}, p. 10–11. {{harvtxt|Ghosh|2007}}, p. 4–6. {{harvtxt|Lynch|1996}}, p. xix, 1. {{harvtxt|Peleg|2000}}, p. xv. {{harvtxt|Elmasri|Navathe|2000}}, Section 24.</ref>
+* [[telecommunications]] networks:
+** [[telephone network]]s and [[cellular network]]s,
+** [[computer network]]s such as the [[Internet]],
+** [[wireless sensor network]]s,
+** [[routing algorithm]]s;
+* network applications:
+** [[World Wide Web]] and [[peer-to-peer network]]s,
+** [[massively multiplayer online game]]s and [[virtual reality]] communities,
+** [[distributed database]]s and [[distributed database management system]]s,
+** [[Distributed file system|network file system]]s,
+** distributed cache such as [[burst buffer]]s,
+** distributed information processing systems such as banking systems and airline reservation systems;
+* real-time process control:
+** [[aircraft]] control systems,
+** [[industrial control system]]s;
+* [[parallel computation]]:
+** [[scientific computing]], including [[cluster computing]], [[grid computing]], [[cloud computing]],<ref>{{cite journal |last1=Haussmann |first1=J. |title=Cost-efficient parallel processing of irregularly structured problems in cloud computing environments |journal=Journal of Cluster Computing |date=2019 |volume=22 |issue=3 |pages=887–909 |doi=10.1007/s10586-018-2879-3 |s2cid=54447518 }}</ref> and various [[List_of_volunteer_computing_projects|volunteer computing projects]],
+** [[distributed rendering]] in computer graphics.
+* [[peer-to-peer]] 
+
+==Reactive distributed systems==
+According to Reactive Manifesto, reactive distributed systems are responsive, resilient, elastic and message-driven. Subsequently, Reactive systems are more flexible, loosely-coupled and scalable.  To make your systems reactive, you are advised to implement Reactive Principles. Reactive Principles are a set of principles and patterns which help to make your cloud native application as well as edge native applications more reactive.<ref>{{Cite book |title=Reactive Application Development |publisher=Manning |year=2018 |isbn=978-1-63835-581-6}}</ref>
+
+==Theoretical foundations==
+{{Main|Distributed algorithm}}
+<!-- Many citations are still missing, will add later -->
+
+===Models===
+Many tasks that we would like to automate by using a computer are of question–answer type: we would like to ask a question and the computer should produce an answer. In [[theoretical computer science]], such tasks are called [[computational problem]]s. Formally, a computational problem consists of ''instances'' together with a ''solution'' for each instance. Instances are questions that we can ask, and solutions are desired answers to these questions.
+
+Theoretical computer science seeks to understand which computational problems can be solved by using a computer ([[computability theory]]) and how efficiently ([[computational complexity theory]]). Traditionally, it is said that a problem can be solved by using a computer if we can design an [[algorithm]] that produces a correct solution for any given instance. Such an algorithm can be implemented as a [[computer program]] that runs on a general-purpose computer: the program reads a problem instance from [[Information|input]], performs some computation, and produces the solution as [[output (computing)|output]]. Formalisms such as [[random-access machine]]s or [[universal Turing machine]]s can be used as abstract models of a sequential general-purpose computer executing such an algorithm.<ref name="ToomarianNeural92">{{cite book |chapter-url=https://books.google.com/books?id=CKTsCgAAQBAJ&pg=PA214 |chapter=Neural Networks for Real-Time Robotic Applications |title=Parallel Computation Systems For Robotics: Algorithms And Architectures |author=Toomarian, N.B. |author2=Barhen, J. |author3=Gulati, S. |editor=Fijany, A. |editor2=Bejczy, A. |publisher=World Scientific |page=214 |year=1992 |isbn=978-981-4506-17-5 |access-date=2018-07-20 |archive-date=2020-08-01 |archive-url=https://web.archive.org/web/20200801024715/https://books.google.com/books?id=CKTsCgAAQBAJ&pg=PA214 |url-status=live }}</ref><ref name="SavageModels98">{{cite book |title=Models of Computation: Exploring the Power of Computing |author=Savage, J.E. |publisher=Addison Wesley |page=209 |year=1998 |isbn=978-0-201-89539-1}}</ref>
+
+The field of concurrent and distributed computing studies similar questions in the case of either multiple computers, or a computer that executes a network of interacting processes: which computational problems can be solved in such a network and how efficiently? However, it is not at all obvious what is meant by "solving a problem" in the case of a concurrent or distributed system: for example, what is the task of the algorithm designer, and what is the concurrent or distributed equivalent of a sequential general-purpose computer?{{citation needed|date=October 2016}}
+
+The discussion below focuses on the case of multiple computers, although many of the issues are the same for concurrent processes running on a single computer.
+
+Three viewpoints are commonly used:
+; Parallel algorithms in shared-memory model
+* All processors have access to a shared memory. The algorithm designer chooses the program executed by each processor.
+* One theoretical model is the [[parallel random-access machine]]s (PRAM) that are used.<ref>{{harvtxt|Cormen|Leiserson|Rivest|1990}}, Section 30.</ref> However, the classical PRAM model assumes synchronous access to the shared memory.
+* Shared-memory programs can be extended to distributed systems if the underlying operating system encapsulates the communication between nodes and virtually unifies the memory across all individual systems.
+* A model that is closer to the behavior of real-world multiprocessor machines and takes into account the use of machine instructions, such as [[Compare-and-swap]] (CAS), is that of ''asynchronous shared memory''. There is a wide body of work on this model, a summary of which can be found in the literature.<ref>{{harvtxt|Herlihy|Shavit|2008}}, Chapters 2–6.</ref><ref>{{harvtxt|Lynch|1996}}</ref>
+
+; Parallel algorithms in message-passing model
+* The algorithm designer chooses the structure of the network, as well as the program executed by each computer.
+* Models such as [[Boolean circuits]] and [[sorting network]]s are used.<ref>{{harvtxt|Cormen|Leiserson|Rivest|1990}}, Sections 28 and 29.</ref> A Boolean circuit can be seen as a computer network: each gate is a computer that runs an extremely simple computer program. Similarly, a sorting network can be seen as a computer network: each comparator is a computer.
+; Distributed algorithms in message-passing model
+* The algorithm designer only chooses the computer program. All computers run the same program. The system must work correctly regardless of the structure of the network.
+* A commonly used model is a [[Graph (discrete mathematics)|graph]] with one [[finite-state machine]] per node.
+
+In the case of distributed algorithms, computational problems are typically related to graphs. Often the graph that describes the structure of the computer network ''is'' the problem instance. This is illustrated in the following example.<ref name=":0">TULSIRAMJI GAIKWAD-PATIL College of Engineering & Technology,
+
+Nagpur
+
+Department of Information Technology
+
+Introduction to Distributed Systems[http://www.tgpcet.com/assets/img/IT/Notes/8/Distributed-System.pdf]</ref>
+
+===An example===
+Consider the computational problem of finding a coloring of a given graph ''G''. Different fields might take the following approaches:
+; Centralized algorithms<ref name=":0" />
+* The graph ''G'' is encoded as a string, and the string is given as input to a computer. The computer program finds a coloring of the graph, encodes the coloring as a string, and outputs the result.
+; Parallel algorithms
+* Again, the graph ''G'' is encoded as a string. However, multiple computers can access the same string in parallel. Each computer might focus on one part of the graph and produce a coloring for that part.
+* The main focus is on high-performance computation that exploits the processing power of multiple computers in parallel.
+; Distributed algorithms
+* The graph ''G'' is the structure of the computer network. There is one computer for each node of ''G'' and one communication link for each edge of ''G''. Initially, each computer only knows about its immediate neighbors in the graph ''G''; the computers must exchange messages with each other to discover more about the structure of ''G''. Each computer must produce its own color as output.
+* The main focus is on coordinating the operation of an arbitrary distributed system.<ref name=":0" />
+
+While the field of parallel algorithms has a different focus than the field of distributed algorithms, there is much interaction between the two fields. For example, the [[Cole–Vishkin algorithm]] for graph coloring<ref>{{harvtxt|Cole|Vishkin|1986}}. {{harvtxt|Cormen|Leiserson|Rivest|1990}}, Section 30.5.</ref> was originally presented as a parallel algorithm, but the same technique can also be used directly as a distributed algorithm.
+
+Moreover, a parallel algorithm can be implemented either in a parallel system (using shared memory) or in a distributed system (using message passing).<ref>{{harvtxt|Andrews|2000}}, p. ix.</ref> The traditional boundary between parallel and distributed algorithms (choose a suitable network vs. run in any given network) does not lie in the same place as the boundary between parallel and distributed systems (shared memory vs. message passing).
+
+===Complexity measures===
+In parallel algorithms, yet another resource in addition to time and space is the number of computers. Indeed, often there is a trade-off between the running time and the number of computers: the problem can be solved faster if there are more computers running in parallel (see [[speedup]]). If a decision problem can be solved in [[polylogarithmic time]] by using a polynomial number of processors, then the problem is said to be in the class [[NC (complexity)|NC]].<ref>{{harvtxt|Arora|Barak|2009}}, Section 6.7. {{harvtxt|Papadimitriou|1994}}, Section 15.3.</ref> The class NC can be defined equally well by using the PRAM formalism or Boolean circuits—PRAM machines can simulate Boolean circuits efficiently and vice versa.<ref>{{harvtxt|Papadimitriou|1994}}, Section 15.2.</ref>
+
+In the analysis of distributed algorithms, more attention is usually paid on communication operations than computational steps. Perhaps the simplest model of distributed computing is a synchronous system where all nodes operate in a lockstep fashion. This model is commonly known as the LOCAL model. During each ''communication round'', all nodes in parallel (1)&nbsp;receive the latest messages from their neighbours, (2)&nbsp;perform arbitrary local computation, and (3)&nbsp;send new messages to their neighbors. In such systems, a central complexity measure is the number of synchronous communication rounds required to complete the task.<ref>{{harvtxt|Lynch|1996}}, p. 17–23.</ref>
+
+This complexity measure is closely related to the [[Diameter (graph theory)|diameter]] of the network. Let ''D'' be the diameter of the network. On the one hand, any computable problem can be solved trivially in a synchronous distributed system in approximately 2''D'' communication rounds: simply gather all information in one location (''D'' rounds), solve the problem, and inform each node about the solution (''D'' rounds).
+
+On the other hand, if the running time of the algorithm is much smaller than ''D'' communication rounds, then the nodes in the network must produce their output without having the possibility to obtain information about distant parts of the network. In other words, the nodes must make globally consistent decisions based on information that is available in their ''local D-neighbourhood''. Many distributed algorithms are known with the running time much smaller than ''D'' rounds, and understanding which problems can be solved by such algorithms is one of the central research questions of the field.<ref>{{harvtxt|Peleg|2000}}, Sections 2.3 and 7. {{harvtxt|Linial|1992}}. {{harvtxt|Naor|Stockmeyer|1995}}.</ref> Typically an algorithm which solves a problem in polylogarithmic time in the network size is considered efficient in this model.
+
+Another commonly used measure is the total number of bits transmitted in the network (cf. [[communication complexity]]).<ref name="SchneiderTrading11">{{cite book |chapter-url=https://books.google.com/books?id=dT6nwpXvES4C&pg=PA51 |chapter=Trading Bit, Message, and Time Complexity of Distributed Algorithms |title=Distributed Computing |author=Schneider, J. |author2=Wattenhofer, R. |editor=Peleg, D. |publisher=Springer Science & Business Media |pages=51–65 |year=2011 |isbn=978-3-642-24099-7 |access-date=2018-07-20 |archive-date=2020-08-01 |archive-url=https://web.archive.org/web/20200801023020/https://books.google.com/books?id=dT6nwpXvES4C&pg=PA51 |url-status=live }}</ref> The features of this concept are typically captured with the CONGEST(B) model, which is similarly defined as the LOCAL model, but where single messages can only contain B bits.
+
+===Other problems===
+Traditional computational problems take the perspective that the user asks a question, a computer (or a distributed system) processes the question, then produces an answer and stops. However, there are also problems where the system is required not to stop, including the [[dining philosophers problem]] and other similar [[mutual exclusion]] problems. In these problems, the distributed system is supposed to continuously coordinate the use of shared resources so that no conflicts or [[deadlock (computer science)|deadlock]]s occur.
+
+There are also fundamental challenges that are unique to distributed computing, for example those related to ''fault-tolerance''. Examples of related problems include [[Consensus (computer science)|consensus problems]],<ref>{{harvtxt|Lynch|1996}}, Sections 5–7. {{harvtxt|Ghosh|2007}}, Chapter 13.</ref> [[Byzantine fault tolerance]],<ref>{{harvtxt|Lynch|1996}}, p. 99–102. {{harvtxt|Ghosh|2007}}, p. 192–193.</ref> and [[self-stabilisation]].<ref>{{harvtxt|Dolev|2000}}. {{harvtxt|Ghosh|2007}}, Chapter 17.</ref>
+
+Much research is also focused on understanding the ''asynchronous'' nature of distributed systems:
+* [[Synchronizer (algorithm)|Synchronizers]] can be used to run synchronous algorithms in asynchronous systems.<ref>{{harvtxt|Lynch|1996}}, Section 16. {{harvtxt|Peleg|2000}}, Section 6.</ref>
+* [[Logical clock]]s provide a causal [[happened-before]] ordering of events.<ref>{{harvtxt|Lynch|1996}}, Section 18. {{harvtxt|Ghosh|2007}}, Sections 6.2–6.3.</ref>
+* [[Clock synchronization]] algorithms provide globally consistent physical time stamps.<ref>{{harvtxt|Ghosh|2007}}, Section 6.4.</ref>
+
+Note that in distributed systems, [[Latency (engineering)|latency]] should be measured through "99th percentile" because "median" and "average" can be misleading.<ref>{{Cite book |title=Foundations of Data Intensive Applications Large Scale Data Analytics Under the Hood |year=2021 |isbn=978-1-119-71301-2 |last1=Kamburugamuve |first1=Supun |last2=Ekanayake |first2=Saliya |publisher=John Wiley & Sons }}</ref>
+
+===[[Leader election|Election]]===
+''Coordinator election'' (or ''leader election'') is the process of designating a single [[Process (computing)|process]] as the organizer of some task distributed among several computers (nodes). Before the task is begun, all network nodes are either unaware which node will serve as the "coordinator" (or leader) of the task, or unable to communicate with the current coordinator. After a coordinator election algorithm has been run, however, each node throughout the network recognizes a particular, unique node as the task coordinator.<ref name="HaloiApache15">{{cite book |url=https://books.google.com/books?id=Ym9uBgAAQBAJ&pg=PA100 |title=Apache ZooKeeper Essentials |author=Haloi, S. |publisher=Packt Publishing Ltd |pages=100–101 |year=2015 |isbn=978-1-78439-832-3 |access-date=2018-07-20 |archive-date=2023-01-20 |archive-url=https://web.archive.org/web/20230120182456/https://books.google.com/books?id=Ym9uBgAAQBAJ&pg=PA100 |url-status=live }}</ref>
+
+The network nodes communicate among themselves in order to decide which of them will get into the "coordinator" state. For that, they need some method in order to break the symmetry among them. For example, if each node has unique and comparable identities, then the nodes can compare their identities, and decide that the node with the highest identity is the coordinator.<ref name="HaloiApache15" />
+
+The definition of this problem is often attributed to [[Gérard Le Lann|LeLann]], who formalized it as a method to create a new token in a token [[ring network]] in which the token has been lost.<ref>{{Cite journal|last=LeLann|first=G.|year=1977|title=Distributed systems - toward a formal approach|journal=Information Processing|volume=77|pages=155·160|via=Elsevier}}</ref>
+
+Coordinator election algorithms are designed to be economical in terms of total [[byte]]s transmitted, and time. The algorithm suggested by Gallager, Humblet, and Spira<ref>{{cite journal|date=January 1983|title=A Distributed Algorithm for Minimum-Weight Spanning Trees|url=http://www.apposite-tech.com/blog/wp-content/uploads/2017/09/p66-gallager.pdf |archive-url=https://web.archive.org/web/20170926040957/http://www.apposite-tech.com/blog/wp-content/uploads/2017/09/p66-gallager.pdf |archive-date=2017-09-26 |url-status=live|journal=ACM Transactions on Programming Languages and Systems|volume=5|issue=1|pages=66–77|doi=10.1145/357195.357200|author=[[Robert G. Gallager|R. G. Gallager]], P. A. Humblet, and P. M. Spira|s2cid=2758285}}</ref> for general undirected graphs has had a strong impact on the design of distributed algorithms in general, and won the [[Dijkstra Prize]] for an influential paper in distributed computing.
+
+Many other algorithms were suggested for different kinds of network [[Graph (discrete mathematics)|graph]]s, such as undirected rings, unidirectional rings, complete graphs, grids, directed Euler graphs, and others. A general method that decouples the issue of the graph family from the design of the coordinator election algorithm was suggested by Korach, Kutten, and Moran.<ref>{{cite journal|year=1990|title=A Modular Technique for the Design of Efficient Distributed Leader Finding Algorithms|journal=ACM Transactions on Programming Languages and Systems|volume=12|issue=1|pages=84–101|doi=10.1145/77606.77610|first1=Ephraim|last1=Korach|first2=Shay|last2=Kutten|first3=Shlomo|last3=Moran|author-link2=Shay Kutten|author-link3=Shlomo Moran|url=https://www.cs.technion.ac.il/~moran/r/PS/kkm.pdf |archive-url=https://web.archive.org/web/20070418150944/http://www.cs.technion.ac.il/~moran/r/PS/kkm.pdf |archive-date=2007-04-18 |url-status=live|s2cid=9175968}}</ref>
+
+In order to perform coordination, distributed systems employ the concept of coordinators. The coordinator election problem is to choose a process from among a group of processes on different processors in a distributed system to act as the central coordinator. Several central coordinator election algorithms exist.<ref>{{cite web|url=http://www2.cs.uregina.ca/~hamilton/courses/330/notes/distributed/distributed.html|title=Distributed Algorithms|last=Hamilton|first=Howard|access-date=2013-03-03|archive-date=2012-11-24|archive-url=https://web.archive.org/web/20121124002402/http://www2.cs.uregina.ca/~hamilton/courses/330/notes/distributed/distributed.html|url-status=live}}</ref>
+
+===Properties of distributed systems===
+So far the focus has been on ''designing'' a distributed system that solves a given problem. A complementary research problem is ''studying'' the properties of a given distributed system.<ref>{{cite web|url=https://cstheory.stackexchange.com/q/10045|title=Major unsolved problems in distributed systems?|website=cstheory.stackexchange.com|access-date=16 March 2018|archive-date=20 January 2023|archive-url=https://web.archive.org/web/20230120182442/https://cstheory.stackexchange.com/questions/10045/major-unsolved-problems-in-distributed-systems|url-status=live}}</ref><ref>{{cite web|url=http://www.theserverside.com/feature/How-big-data-and-distributed-systems-solve-traditional-scalability-problems|title=How big data and distributed systems solve traditional scalability problems|website=theserverside.com|access-date=16 March 2018|archive-date=17 March 2018|archive-url=https://web.archive.org/web/20180317232027/http://www.theserverside.com/feature/How-big-data-and-distributed-systems-solve-traditional-scalability-problems|url-status=live}}</ref>
+
+The [[halting problem]] is an analogous example from the field of centralised computation: we are given a computer program and the task is to decide whether it halts or runs forever. The halting problem is [[Undecidable problem|undecidable]] in the general case, and naturally understanding the behaviour of a computer network is at least as hard as understanding the behaviour of one computer.<ref name="SvozilIndet11">{{cite book |chapter-url=https://books.google.com/books?id=ep_FCgAAQBAJ&pg=PA112 |chapter=Indeterminism and Randomness Through Physics |title=Randomness Through Computation: Some Answers, More Questions |author=Svozil, K. |editor=Hector, Z. |publisher=World Scientific |pages=112–3 |year=2011 |isbn=978-981-4462-63-1 |access-date=2018-07-20 |archive-date=2020-08-01 |archive-url=https://web.archive.org/web/20200801024745/https://books.google.com/books?id=ep_FCgAAQBAJ&pg=PA112 |url-status=live }}</ref>
+
+However, there are many interesting special cases that are decidable. In particular, it is possible to reason about the behaviour of a network of finite-state machines. One example is telling whether a given network of interacting (asynchronous and non-deterministic) finite-state machines can reach a deadlock. This problem is [[PSPACE-complete]],<ref>{{harvtxt|Papadimitriou|1994}}, Section 19.3.</ref> i.e., it is decidable, but not likely that there is an efficient (centralised, parallel or distributed) algorithm that solves the problem in the case of large networks.
+
+===Other Topics===
+[[Linearizability]]
+
+==See also==
+{{Div col|colwidth=20em}}
+* {{annotated link|Actor model}}
+* {{annotated link|Code mobility}}
+* {{annotated link|Dataflow programming}}
+* {{annotated link|Decentralized computing}}
+* {{annotated link|Distributed algorithm}}
+* {{annotated link|Distributed algorithmic mechanism design}}
+* {{annotated link|Distributed cache}}
+* {{annotated link|Distributed networking}}
+* {{annotated link|Distributed operating system}}
+* {{annotated link|Eventual consistency}}
+* {{annotated link|Edsger W. Dijkstra Prize in Distributed Computing}}
+* {{annotated link|Federation (information technology)}}
+* {{annotated link|Flat neighborhood network}}
+* {{annotated link|Fog computing}}
+* {{annotated link|Grid computing}}
+* {{annotated link|Internet GIS}}
+* {{annotated link|Jungle computing}}
+* {{annotated link|Layered queueing network}}
+* {{annotated link|Library Oriented Architecture}} (LOA)
+* {{annotated link|List of distributed computing conferences}}
+* {{annotated link|List of volunteer computing projects}}
+* {{annotated link|Model checking}}
+* {{annotated link|Parallel distributed processing}}
+* {{annotated link|Parallel programming model}}
+* {{annotated link|Shared-nothing architecture}}
+{{div col end}}
+
+==Notes==
+{{Reflist|30em}}
+
+==References==
+{{Refbegin|2}}
+; Books
+* {{citation
+| last=Andrews
+| first=Gregory R.
+| title=Foundations of Multithreaded, Parallel, and Distributed Programming
+| publisher=[[Addison–Wesley]]
+| year=2000
+| isbn=978-0-201-35752-3
+| url-access=registration
+| url=https://archive.org/details/foundationsofmul0000andr
+}}. <!--{{harvtxt|Andrews|2000}}-->
+* {{citation
+| last1=Arora | first1=Sanjeev | author-link1=Sanjeev Arora (computer scientist)
+| last2=Barak | first2=Boaz
+| title=Computational Complexity – A Modern Approach
+| publisher=[[Cambridge University Press|Cambridge]]
+| year=2009
+| isbn=978-0-521-42426-4
+}}. <!--{{harvtxt|Arora|Barak|2009}}-->
+* {{citation
+| last1=Cormen | first1=Thomas H. | author-link1=Thomas H. Cormen
+| last2=Leiserson | first2=Charles E. | author-link2=Charles E. Leiserson
+| last3=Rivest | first3=Ronald L. | author-link3=Ron Rivest
+| title=Introduction to Algorithms
+| publisher=[[MIT Press]]
+| year=1990
+| edition=1st
+| isbn=978-0-262-03141-7
+| title-link=Introduction to Algorithms | bibcode=1990ita..book.....C }}. <!--{{harvtxt|Cormen|Leiserson|Rivest|1990}}-->
+* {{citation
+| last=Dolev | first=Shlomi | author-link=Shlomi Dolev
+| title=Self-Stabilization
+| publisher=[[MIT Press]]
+| year=2000
+| isbn=978-0-262-04178-2
+}}. <!--{{harvtxt|Dolev|2000}}-->
+* {{citation
+| last1=Elmasri | first1=Ramez
+| last2=Navathe | first2=Shamkant B. | author-link2=Shamkant Navathe
+| title=Fundamentals of Database Systems
+| publisher=[[Addison–Wesley]]
+| edition=3rd
+| year=2000
+| isbn=978-0-201-54263-9
+}}. <!--{{harvtxt|Elmasri|Navathe|2000}}-->
+* {{citation
+| last=Ghosh | first=Sukumar
+| title=Distributed Systems – An Algorithmic Approach
+| publisher=Chapman & Hall/CRC
+| year=2007
+| isbn=978-1-58488-564-1
+}}. <!--{{harvtxt|Ghosh|2007}}-->
+* {{citation
+| last=Lynch
+| first=Nancy A.
+| author-link=Nancy Lynch
+| title=Distributed Algorithms
+| publisher=[[Morgan Kaufmann]]
+| year=1996
+| isbn=978-1-55860-348-6
+| url-access=registration
+| url=https://archive.org/details/distributedalgor0000lync
+}}. <!--{{harvtxt|Lynch|1996}}-->
+* {{citation
+| last1=Herlihy| first1=Maurice P. | author-link1=Maurice Herlihy
+| last2=Shavit | first2=Nir N. | author-link2=Nir Shavit
+| title=The Art of Multiprocessor Programming
+| publisher=[[Morgan Kaufmann]]
+| year=2008
+| isbn=978-0-12-370591-4
+}}. <!--{{harvtxt|Herlihy|Shavit|2008}}-->
+* {{citation
+| last=Papadimitriou | first=Christos H. | author-link=Christos Papadimitriou
+| title=Computational Complexity
+| publisher=[[Addison–Wesley]]
+| year=1994
+| isbn=978-0-201-53082-7
+}}. <!--{{harvtxt|Papadimitriou|1994}}-->
+* {{citation
+| last=Peleg
+| first=David
+| author-link=David Peleg (scientist)
+| title=Distributed Computing: A Locality-Sensitive Approach
+| publisher=[[SIAM]]
+| year=2000
+| isbn=978-0-89871-464-7
+| url=http://www.ec-securehost.com/SIAM/DT05.html
+| access-date=2009-07-16
+| archive-url=https://web.archive.org/web/20090806070332/http://www.ec-securehost.com/SIAM/DT05.html
+| archive-date=2009-08-06
+}}. <!--{{harvtxt|Peleg|2000}}-->
+; Articles
+* {{citation
+| last1 = Cole | first1 = Richard
+| last2 = Vishkin | first2 = Uzi | author-link2=Uzi Vishkin
+| year = 1986
+| title = Deterministic coin tossing with applications to optimal parallel list ranking
+| journal = Information and Control
+| volume = 70
+| issue = 1
+| pages = 32–53
+| doi = 10.1016/S0019-9958(86)80023-7
+| doi-access = free
+}}.
+* {{citation
+| doi=10.1145/1466390.1466402
+| last1=Keidar
+| first1=Idit|author1-link=Idit Keidar
+| title=Distributed computing column 32 – The year in review
+| journal=[[ACM SIGACT News]]
+| volume=39
+| issue=4
+| year=2008
+| pages=53–54
+| url=http://webee.technion.ac.il/~idish/sigactNews/#column%2032
+| s2cid=7607391
+| access-date=2009-08-20
+| archive-date=2014-01-16
+| archive-url=https://web.archive.org/web/20140116123634/http://webee.technion.ac.il/~idish/sigactNews/#column%2032
+}}. <!--{{harvtxt|Keidar|2008}}-->
+* {{citation
+| last=Linial | first=Nathan | author-link = Nati Linial
+| doi=10.1137/0221015
+| title=Locality in distributed graph algorithms
+| journal=SIAM Journal on Computing
+| volume=21
+| year=1992
+| pages=193–201
+| issue=1
+}}.
+* {{citation
+| last1=Naor
+| first1=Moni
+| author-link1=Moni Naor
+| last2=Stockmeyer
+| first2=Larry
+| author-link2=Larry Stockmeyer
+| doi=10.1137/S0097539793254571
+| title=What can be computed locally?
+| journal=SIAM Journal on Computing
+| volume=24
+| year=1995
+| pages=1259–1277
+| issue=6
+| url=http://www.wisdom.weizmann.ac.il/~naor/PAPERS/lcl.pdf
+| archive-url=https://web.archive.org/web/20130108030723/http://www.wisdom.weizmann.ac.il/~naor/PAPERS/lcl.pdf
+| archive-date=2013-01-08
+| url-status=live
+}}.
+; Web sites
+* {{cite web
+| last=Godfrey
+| first=Bill
+| url=https://billpg.com/bacchae-co-uk/docs/dist.html
+| title=A primer on distributed computing
+| year=2002
+| access-date=2021-05-13
+| archive-date=2021-05-13
+| archive-url=https://web.archive.org/web/20210513163858/https://billpg.com/bacchae-co-uk/docs/dist.html
+| url-status=live
+}}
+* {{cite web
+| last=Peter
+| first=Ian
+| url=http://www.nethistory.info/History%20of%20the%20Internet/
+| title=Ian Peter's History of the Internet
+| year=2004
+| access-date=2009-08-04
+| archive-date=2010-01-20
+| archive-url=https://web.archive.org/web/20100120220410/http://www.nethistory.info/History%20of%20the%20Internet/
+| url-status=live
+}}
+{{Refend}} 
+==Further reading==
+{{Refbegin|2}}
+; Books
+* {{citation|author=[[Hagit Attiya|Attiya, Hagit]] and Jennifer Welch|title=Distributed Computing: Fundamentals, Simulations, and Advanced Topics| publisher=Wiley-Interscience| year=2004}} {{ISBN|0-471-45324-2}}.
+* {{citation|author1=Christian Cachin |author2=Rachid Guerraoui |author3=Luís Rodrigues |title=Introduction to Reliable and Secure Distributed Programming| publisher=Springer| year=2011| isbn=978-3-642-15259-7| edition=2.|bibcode=2011itra.book.....C }}
+* {{Citation|author=Coulouris, George | title=Distributed Systems: Concepts and Design (5th Edition)|publisher = Addison-Wesley|year=2011|display-authors=etal}} {{ISBN|0-132-14301-1}}.
+* {{citation|first=Jim|last=Faber|title=Java Distributed Computing|publisher=O'Reilly|year=1998|url=http://docstore.mik.ua/orelly/java-ent/dist/index.htm|access-date=2010-09-29|archive-date=2010-08-24|archive-url=https://web.archive.org/web/20100824170917/http://docstore.mik.ua/orelly/java-ent/dist/index.htm|url-status=live}}: [http://docstore.mik.ua/orelly/java-ent/dist/index.htm Java Distributed Computing by Jim Faber, 1998] {{Webarchive|url=https://web.archive.org/web/20100824170917/http://docstore.mik.ua/orelly/java-ent/dist/index.htm |date=2010-08-24 }}
+* {{citation|author=Garg, Vijay K.|title=Elements of Distributed Computing| publisher=Wiley-IEEE Press| year=2002}} {{ISBN|0-471-03600-5}}.
+* {{citation|first=Gerard|last=Tel |title=Introduction to Distributed Algorithms| publisher=Cambridge University Press| year=1994}}
+* {{citation|author=Chandy, Mani|title=Parallel Program Design|display-authors=etal|author-link=K. Mani Chandy|publisher = Addison-Wesley|year=1988}} {{ISBN|0201058669}}
+* {{cite book|last1=Dusseau|first1=Remzi H.|last2=Dusseau|first2=Andrea|title=Operating Systems: Three Easy Pieces, Chapter 48 Distributed Systems|url=https://pages.cs.wisc.edu/~remzi/OSTEP/dist-intro.pdf|archive-url=https://web.archive.org/web/20210831013525/https://pages.cs.wisc.edu/~remzi/OSTEP/dist-intro.pdf|archive-date=31 August 2021|access-date=8 October 2021|year=2016}}
+; Articles
+* {{citation
+| editor1-last=Keidar
+| editor1-first=Idit
+| editor2-last=Rajsbaum
+| editor2-first=Sergio
+| contribution-url=http://webee.technion.ac.il/~idish/sigactNews/
+| contribution=Distributed computing column
+| title=ACM SIGACT News
+| year=2000–2009
+| title-link=ACM SIGACT News
+| access-date=2009-08-16
+| archive-date=2014-01-16
+| archive-url=https://web.archive.org/web/20140116123634/http://webee.technion.ac.il/~idish/sigactNews/
+}}.
+* {{cite journal | last1 = Birrell | first1 = A. D. | last2 = Levin | first2 = R. | last3 = Schroeder | first3 = M. D. | last4 = Needham | first4 = R. M. | author-link4 = Roger M. Needham | title = Grapevine: An exercise in distributed computing | doi = 10.1145/358468.358487 | journal = [[Communications of the ACM]] | volume = 25 | issue = 4 | pages = 260–274 | date = April 1982 | s2cid = 16066616 | url = http://web.cs.wpi.edu/~cs4513/d07/Papers/Birrell,%20Levin,%20et.%20al.,%20Grapevine.pdf | archive-url = https://web.archive.org/web/20160730064812/http://web.cs.wpi.edu/~cs4513/d07/Papers/Birrell,%20Levin,%20et.%20al.,%20Grapevine.pdf | archive-date = 2016-07-30 | url-status = live }}
+
+; Conference Papers
+* {{cite book |doi=10.1109/BIMNICS.2007.4610083|chapter=Asynchronous team algorithms for Boolean Satisfiability|title=2007 2nd Bio-Inspired Models of Network, Information and Computing Systems|year=2007|last1=Rodriguez|first1=Carlos|last2=Villagra|first2=Marcos|last3=Baran|first3=Benjamin|pages=66–69|s2cid=15185219}}
+{{Refend}}
+
+==External links==
+{{Wikiquote}}
+*{{Commonscatinline}}
+
+{{Parallel computing}}
+{{Programming paradigms navbox}}
+{{Authority control}}
+
+{{DEFAULTSORT:Distributed Computing}}
+[[Category:Distributed computing| ]]
