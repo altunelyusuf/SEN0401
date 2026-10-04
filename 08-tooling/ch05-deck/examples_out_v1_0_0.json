@@ -1,0 +1,1094 @@
+{
+ "_version": "1.0.0",
+ "_python": "3.14.4",
+ "WalletDatabase": [
+  [
+   "len(CORE_WALLET['descriptors'])",
+   "8"
+  ],
+  [
+   "sorted({d['desc'][:d['desc'].index('(')] for d in CORE_WALLET['descriptors']})",
+   "['pkh', 'sh', 'tr', 'wpkh']"
+  ],
+  [
+   "sum(d['range'][1] - d['range'][0] + 1 for d in CORE_WALLET['descriptors'])",
+   "8000"
+  ]
+ ],
+ "PublicKeyOnlyWallet": [
+  [
+   "acct = parse_extended(BOOK_XPUB)",
+   ""
+  ],
+  [
+   "K0, c0 = ckd_pub(decompress(acct['key']), acct['chain'], 0)",
+   ""
+  ],
+  [
+   "p2wpkh_address(ser_p(K0))",
+   "'bc1qv32edz2zpvhmmjkd7vq2wcnhacys0pku9vh5jw'"
+  ],
+  [
+   "acct['key'][0]",
+   "2"
+  ]
+ ],
+ "ExternalSigning": [
+  [
+   "z = int.from_bytes(hashlib.sha256(b'an unsigned transaction').digest(), 'big')",
+   ""
+  ],
+  [
+   "device_key, _ = keys_at(B84, 'm/84h/0h/0h/0/0')",
+   ""
+  ],
+  [
+   "sig = ecdsa_sign(device_key, z, 0x27182818284590452353602874713526)",
+   ""
+  ],
+  [
+   "ecdsa_verify(ec_mul(device_key), z, sig)",
+   "True"
+  ]
+ ],
+ "IndependentKeyGeneration": [
+  [
+   "32 * 1000",
+   "32000"
+  ],
+  [
+   "32 * 1001 - 32 * 1000",
+   "32"
+  ]
+ ],
+ "Seed": [
+  [
+   "len(bytes.fromhex(BOOK_SEED)) * 8",
+   "256"
+  ],
+  [
+   "len(mnemonic_to_seed(WORDS)) * 8",
+   "512"
+  ]
+ ],
+ "DeterministicKeyGeneration": [
+  [
+   "line = lambda i: (BOOK_SEED + ' + %d\\n' % i).encode()",
+   ""
+  ],
+  [
+   "[hashlib.sha256(line(i)).hexdigest()[:8] for i in range(3)]",
+   "['50b18e0b', 'a965dbcd', '19580c97']"
+  ],
+  [
+   "hashlib.sha256((BOOK_SEED + ' + 0\\n').encode()).hexdigest()[:8]",
+   "'50b18e0b'"
+  ]
+ ],
+ "KeyTweak": [
+  [
+   "ec_mul(5 + 123) == ec_add(ec_mul(5), ec_mul(123))",
+   "True"
+  ],
+  [
+   "ser_p(ec_add(ec_mul(5), ec_mul(123))) == ser_p(ec_mul(128))",
+   "True"
+  ]
+ ],
+ "HdKeyGeneration": [
+  [
+   "2 ** 31 + 2 ** 31",
+   "4294967296"
+  ],
+  [
+   "len(path_indices('m/84h/0h/0h/0/0'))",
+   "5"
+  ]
+ ],
+ "Bip39Code": [
+  [
+   "entropy_to_mnemonic(bytes.fromhex(ENT))",
+   "'army van defense carry jealous true garbage claim echo media make crunch'"
+  ],
+  [
+   "mnemonic_to_entropy(WORDS)[0].hex()",
+   "'0c1e24e5917779d297e14d45f14e1a1a'"
+  ],
+  [
+   "mnemonic_to_entropy(WORDS)[1]",
+   "True"
+  ]
+ ],
+ "ElectrumV2Code": [
+  [
+   "132 // 11",
+   "12"
+  ],
+  [
+   "electrum_hash(WORDS)[:8]",
+   "'c7d284c2'"
+  ],
+  [
+   "electrum_has_version(WORDS, '01'), electrum_has_version(WORDS, '100')",
+   "(False, False)"
+  ]
+ ],
+ "AezeedCode": [
+  [
+   "1 + 2 + 16",
+   "19"
+  ],
+  [
+   "(19 + 8 + 1 + 5) * 8 // 11",
+   "24"
+  ],
+  [
+   "'wallet birthday' in flat(AEZEED).lower()",
+   "True"
+  ]
+ ],
+ "MuunCode": [
+  [
+   "'This process requires no collaboration from Muun to work' in flat(MUUN)",
+   "True"
+  ],
+  [
+   "'transfer all funds out of your Muun account' in flat(MUUN)",
+   "True"
+  ]
+ ],
+ "Slip39Code": [
+  [
+   "SHARES = shamir_split(0x1337c0de, 3, 5, [11, 22])",
+   ""
+  ],
+  [
+   "[x for x, y in SHARES]",
+   "[1, 2, 3, 4, 5]"
+  ],
+  [
+   "shamir_combine(SHARES[:3]) == 0x1337c0de",
+   "True"
+  ],
+  [
+   "shamir_combine(SHARES[:2]) == 0x1337c0de",
+   "False"
+  ]
+ ],
+ "Codex32Code": [
+  [
+   "len(C32)",
+   "48"
+  ],
+  [
+   "codex32_check(C32)",
+   "True"
+  ],
+  [
+   "codex32_payload(C32).hex()",
+   "'318c6318c6318c6318c6318c6318c631'"
+  ]
+ ],
+ "RecoveryPassphrase": [
+  [
+   "mnemonic_to_seed(WORDS).hex()[:16]",
+   "'5b56c417303faa3f'"
+  ],
+  [
+   "mnemonic_to_seed(WORDS, PASSPHRASE).hex()[:16]",
+   "'3b5df16df2157104'"
+  ]
+ ],
+ "PlausibleDeniability": [
+  [
+   "[mnemonic_to_seed(WORDS, p).hex()[:12] for p in ('', 'wrong', 'also wrong')]",
+   "['5b56c417303f', '55a27bf97551', '935491e57f81']"
+  ],
+  [
+   "{len(mnemonic_to_seed(WORDS, p)) for p in ('', 'wrong', 'also wrong')}",
+   "{64}"
+  ]
+ ],
+ "Brainwallet": [
+  [
+   "(2048 ** 12).bit_length() - 1",
+   "132"
+  ],
+  [
+   "128 + 128 // 32",
+   "132"
+  ]
+ ],
+ "Memorization": [
+  [
+   "(len(ENT), len(WORDS.split()))",
+   "(32, 12)"
+  ],
+  [
+   "max(len(w) for w in WORDS.split())",
+   "7"
+  ]
+ ],
+ "PhysicalCoercion": [
+  [
+   "'this list is not comprehensive' in flat(LOPP).lower()",
+   "True"
+  ],
+  [
+   "'many attacks are not publicly reported' in flat(LOPP)",
+   "True"
+  ]
+ ],
+ "WalletBirthday": [
+  [
+   "2009 + 2 ** 16 // 365",
+   "2188"
+  ],
+  [
+   "'Bitcoin Days Genesis' in flat(AEZEED)",
+   "True"
+  ]
+ ],
+ "Entropy": [
+  [
+   "len(bytes.fromhex(ENT)) * 8",
+   "128"
+  ],
+  [
+   "round(math.log10(2 ** 128), 1)",
+   "38.5"
+  ]
+ ],
+ "Bip39Checksum": [
+  [
+   "digest = hashlib.sha256(bytes.fromhex(ENT)).digest()",
+   ""
+  ],
+  [
+   "bin(digest[0])[2:].zfill(8)[:4]",
+   "'0111'"
+  ],
+  [
+   "128 // 32",
+   "4"
+  ]
+ ],
+ "WordList": [
+  [
+   "2 ** 11, len(wordlist())",
+   "(2048, 2048)"
+  ],
+  [
+   "[wordlist()[i] for i in (96, 1929, 459)]",
+   "['army', 'van', 'defense']"
+  ],
+  [
+   "sorted(wordlist()) == wordlist()",
+   "True"
+  ]
+ ],
+ "BitSegment": [
+  [
+   "bits = bin(int.from_bytes(bytes.fromhex(ENT), 'big'))[2:].zfill(128)",
+   ""
+  ],
+  [
+   "[int(bits[i:i + 11], 2) for i in range(0, 33, 11)]",
+   "[96, 1929, 459]"
+  ],
+  [
+   "WORDS.split()[:3]",
+   "['army', 'van', 'defense']"
+  ]
+ ],
+ "CodeLength": [
+  [
+   "[(e, e // 32, (e + e // 32) // 11) for e in (128, 160, 192, 224, 256)]",
+   "[(128, 4, 12), (160, 5, 15), (192, 6, 18), (224, 7, 21), (256, 8, 24)]"
+  ]
+ ],
+ "TextNormalization": [
+  [
+   "(len('\\u00e9'), len(unicodedata.normalize('NFKD', '\\u00e9')))",
+   "(1, 2)"
+  ],
+  [
+   "unicodedata.normalize('NFKD', '\\u00e9').encode().hex()",
+   "'65cc81'"
+  ]
+ ],
+ "KeyStretchingFunction": [
+  [
+   "32768 // 2048",
+   "16"
+  ],
+  [
+   "round(math.log2(2048), 1)",
+   "11.0"
+  ]
+ ],
+ "Pbkdf2": [
+  [
+   "mnemonic_to_seed(WORDS).hex()[:16]",
+   "'5b56c417303faa3f'"
+  ],
+  [
+   "len(mnemonic_to_seed(WORDS))",
+   "64"
+  ],
+  [
+   "hashlib.pbkdf2_hmac('sha512', 'words', b'mnemonic', 2048)",
+   "TypeError: a bytes-like object is required, not 'str'"
+  ]
+ ],
+ "Salt": [
+  [
+   "hashlib.pbkdf2_hmac('sha512', WORDS.encode(), b'mnemonic', 2048).hex()[:16]",
+   "'5b56c417303faa3f'"
+  ],
+  [
+   "salted = b'mnemonic' + PASSPHRASE.encode()",
+   ""
+  ],
+  [
+   "hashlib.pbkdf2_hmac('sha512', WORDS.encode(), salted, 2048).hex()[:16]",
+   "'3b5df16df2157104'"
+  ]
+ ],
+ "RootSeed": [
+  [
+   "512 // 8",
+   "64"
+  ],
+  [
+   "len(mnemonic_to_seed(WORDS))",
+   "64"
+  ]
+ ],
+ "Bip39Passphrase": [
+  [
+   "mnemonic_to_seed(WORDS, PASSPHRASE).hex()[:16]",
+   "'3b5df16df2157104'"
+  ],
+  [
+   "mnemonic_to_seed(WORDS, 'SuperDuperSecre').hex()[:16]",
+   "'6d776dc105fa436c'"
+  ]
+ ],
+ "SecurityStrength": [
+  [
+   "[(2 ** b - 1).bit_length() for b in (512, 256, 128)]",
+   "[512, 256, 128]"
+  ],
+  [
+   "round(math.log10(2 ** 128), 1)",
+   "38.5"
+  ]
+ ],
+ "HmacSha512": [
+  [
+   "I = hmac.new(b'Bitcoin seed', TV, hashlib.sha512).digest()",
+   ""
+  ],
+  [
+   "(len(I), I.hex()[:16])",
+   "(64, 'e8f32e723decf405')"
+  ],
+  [
+   "hmac.new('Bitcoin seed', TV, hashlib.sha512)",
+   "TypeError: key: expected bytes or bytearray, but got 'str'"
+  ]
+ ],
+ "MasterPrivateKey": [
+  [
+   "k, c = master(TV)",
+   ""
+  ],
+  [
+   "'%064x' % k",
+   "'e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35'"
+  ],
+  [
+   "0 < k < N",
+   "True"
+  ]
+ ],
+ "MasterChainCode": [
+  [
+   "k, c = master(TV)",
+   ""
+  ],
+  [
+   "c.hex()",
+   "'873dff81c02f525623fd1fe5167eac3a55a049de3d314bb42ee227ffed37d508'"
+  ],
+  [
+   "len(c) * 8",
+   "256"
+  ]
+ ],
+ "ChildKeyDerivation": [
+  [
+   "(512 // 2, 512 // 2 // 8)",
+   "(256, 32)"
+  ],
+  [
+   "k, c = master(TV)",
+   ""
+  ],
+  [
+   "k1, c1 = ckd_priv(k, c, 0)",
+   ""
+  ],
+  [
+   "(len(c1), k1 < N)",
+   "(32, True)"
+  ]
+ ],
+ "ChainCode": [
+  [
+   "k, c = master(TV)",
+   ""
+  ],
+  [
+   "len(c) * 8",
+   "256"
+  ],
+  [
+   "ckd_priv(k, c, 0)[1] != c",
+   "True"
+  ]
+ ],
+ "IndexNumber": [
+  [
+   "(2 ** 31 - 1, 2 ** 31, 2 ** 32 - 1)",
+   "(2147483647, 2147483648, 4294967295)"
+  ],
+  [
+   "path_indices(\"m/0'/1\")",
+   "[2147483648, 1]"
+  ]
+ ],
+ "PrivateChildDerivation": [
+  [
+   "k, c = master(TV)",
+   ""
+  ],
+  [
+   "k1, c1 = ckd_priv(k, c, 0)",
+   ""
+  ],
+  [
+   "'%064x' % k1",
+   "'4e2cdcf2f14e802810e878cf9e6411fc4e712edf19a06bcfcc5d5572e489a3b7'"
+  ]
+ ],
+ "HardenedDerivation": [
+  [
+   "k, c = master(TV)",
+   ""
+  ],
+  [
+   "kh, ch = ckd_priv(k, c, 2 ** 31)",
+   ""
+  ],
+  [
+   "'%064x' % kh",
+   "'edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea'"
+  ],
+  [
+   "ckd_priv(k, c, 0)[0] == kh",
+   "False"
+  ]
+ ],
+ "PublicChildDerivation": [
+  [
+   "k, c = master(TV)",
+   ""
+  ],
+  [
+   "k1, c1 = ckd_priv(k, c, 0)",
+   ""
+  ],
+  [
+   "ckd_pub(ec_mul(k), c, 0) == (ec_mul(k1), c1)",
+   "True"
+  ],
+  [
+   "ckd_pub(ec_mul(k), c, 2 ** 31)",
+   "AssertionError: no public derivation of a hardened child"
+  ]
+ ],
+ "ChildKeyIndependence": [
+  [
+   "2 ** 31 - 1",
+   "2147483647"
+  ],
+  [
+   "k, c = master(TV)",
+   ""
+  ],
+  [
+   "k1, c1 = ckd_priv(k, c, 0)",
+   ""
+  ],
+  [
+   "leak_parent_private_key(ec_mul(k), c, 0, k1) == k",
+   "True"
+  ]
+ ],
+ "ExtendedKey": [
+  [
+   "4 + 1 + 4 + 4 + 32 + 33",
+   "78"
+  ],
+  [
+   "len(b58check_decode(BOOK_XPUB))",
+   "78"
+  ]
+ ],
+ "ExtendedPrivateKey": [
+  [
+   "d = parse_extended(BOOK_XPRV)",
+   ""
+  ],
+  [
+   "(d['version'].hex(), d['depth'], d['index'])",
+   "('0488ade4', 1, 0)"
+  ],
+  [
+   "(d['key'][0], len(d['key']))",
+   "(0, 33)"
+  ]
+ ],
+ "ExtendedPublicKey": [
+  [
+   "len(BOOK_XPUB)",
+   "111"
+  ],
+  [
+   "d = parse_extended(BOOK_XPUB)",
+   ""
+  ],
+  [
+   "(d['version'].hex(), d['key'][0])",
+   "('0488b21e', 2)"
+  ]
+ ],
+ "ExtendedKeyEncoding": [
+  [
+   "xprv, xpub = derive_serialized(TV, 'm')",
+   ""
+  ],
+  [
+   "(xprv[:4], xpub[:4])",
+   "('xprv', 'xpub')"
+  ],
+  [
+   "(len(xprv), len(xpub))",
+   "(111, 111)"
+  ],
+  [
+   "parse_extended('xprv9tyUQV64JT5qs')",
+   "AssertionError: checksum does not match"
+  ]
+ ],
+ "KeyFingerprint": [
+  [
+   "k, c = master(TV)",
+   ""
+  ],
+  [
+   "fingerprint(ec_mul(k)).hex()",
+   "'3442193e'"
+  ],
+  [
+   "len('3442193e') * 4",
+   "32"
+  ]
+ ],
+ "KeyPath": [
+  [
+   "path_indices('m/84h/0h/0h/0/2')",
+   "[2147483732, 2147483648, 2147483648, 0, 2]"
+  ],
+  [
+   "[i - 2 ** 31 for i in path_indices('m/84h/0h/0h')]",
+   "[84, 0, 0]"
+  ]
+ ],
+ "Bip43Purpose": [
+  [
+   "hex(2 ** 31 + 44)",
+   "'0x8000002c'"
+  ],
+  [
+   "[hex(2 ** 31 + p) for p in (44, 49, 84, 86)]",
+   "['0x8000002c', '0x80000031', '0x80000054', '0x80000056']"
+  ]
+ ],
+ "Bip44Structure": [
+  [
+   "LEVELS = 'purpose / coin_type / account / change / address_index'.split(' / ')",
+   ""
+  ],
+  [
+   "len(LEVELS)",
+   "5"
+  ],
+  [
+   "[i >= 2 ** 31 for i in path_indices('m/44h/0h/0h/0/2')]",
+   "[True, True, True, False, False]"
+  ]
+ ],
+ "AccountBranch": [
+  [
+   "['m/44h/0h/%dh' % a for a in (0, 1)]",
+   "['m/44h/0h/0h', 'm/44h/0h/1h']"
+  ],
+  [
+   "path_indices('m/44h/0h/1h')[2] - 2 ** 31",
+   "1"
+  ]
+ ],
+ "ChangeBranch": [
+  [
+   "'M/44h/0h/%dh/%d/%d' % (3, 1, 14)",
+   "'M/44h/0h/3h/1/14'"
+  ],
+  [
+   "path_indices('m/44h/0h/3h/1/14')[3:]",
+   "[1, 14]"
+  ]
+ ],
+ "AddressIndex": [
+  [
+   "'M/44h/0h/0h/0/%d' % (3 - 1)",
+   "'M/44h/0h/0h/0/2'"
+  ],
+  [
+   "'(default: 1000)' in flat(CORE_KEYPOOL)",
+   "True"
+  ]
+ ],
+ "ImplicitPath": [
+  [
+   "PATHS = {44: 'P2PKH', 49: 'nested P2WPKH', 84: 'P2WPKH', 86: 'P2TR'}",
+   ""
+  ],
+  [
+   "[path_indices('m/%dh/0h/0h' % p)[0] - 2 ** 31 for p in PATHS]",
+   "[44, 49, 84, 86]"
+  ],
+  [
+   "list(PATHS.values())",
+   "['P2PKH', 'nested P2WPKH', 'P2WPKH', 'P2TR']"
+  ]
+ ],
+ "ExplicitPath": [
+  [
+   "DESC[:DESC.index('(')]",
+   "'wpkh'"
+  ],
+  [
+   "parse_origin(DESC)[0]",
+   "'73c5da0a'"
+  ],
+  [
+   "DESC[-5:]",
+   "'/0/*)'"
+  ]
+ ],
+ "StandardPath44": [
+  [
+   "'m/%dh/0h/0h' % 44",
+   "'m/44h/0h/0h'"
+  ],
+  [
+   "CORE_WALLET['descriptors'][0]['desc'][:40]",
+   "'pkh([6d8c4b8f/44h/0h/0h]xpub6Czv2cgm8XLY'"
+  ]
+ ],
+ "StandardPath49": [
+  [
+   "hex(2 ** 31 + 49)",
+   "'0x80000031'"
+  ],
+  [
+   "[d['desc'][:12] for d in CORE_WALLET['descriptors'] if '49h' in d['desc']][0]",
+   "'sh(wpkh([6d8'"
+  ]
+ ],
+ "StandardPath84": [
+  [
+   "k0, c0 = keys_at(B84, 'm/84h/0h/0h/0/0')",
+   ""
+  ],
+  [
+   "p2wpkh_address(ser_p(ec_mul(k0)))",
+   "'bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu'"
+  ],
+  [
+   "CORE_BIP84['addresses'][0]",
+   "'bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu'"
+  ],
+  [
+   "p2wpkh_address(ser_p(ec_mul(k0))) == CORE_BIP84['addresses'][0]",
+   "True"
+  ]
+ ],
+ "StandardPath86": [
+  [
+   "k0, c0 = keys_at(B84, 'm/86h/0h/0h/0/0')",
+   ""
+  ],
+  [
+   "p2tr_address(taproot_output_key(ser_p(ec_mul(k0))))",
+   "'bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr'"
+  ]
+ ],
+ "Multisignature": [
+  [
+   "math.comb(3, 2)",
+   "3"
+  ],
+  [
+   "[sorted(s) for s in ((1, 2), (1, 3), (2, 3))]",
+   "[[1, 2], [1, 3], [2, 3]]"
+  ]
+ ],
+ "OutputScript": [
+  [
+   "k0, c0 = keys_at(B84, 'm/84h/0h/0h/0/0')",
+   ""
+  ],
+  [
+   "script = bytes.fromhex('0014') + hash160(ser_p(ec_mul(k0)))",
+   ""
+  ],
+  [
+   "(script.hex()[:4], len(script))",
+   "('0014', 22)"
+  ]
+ ],
+ "OutputScriptDescriptor": [
+  [
+   "DESC[:DESC.index('(')]",
+   "'wpkh'"
+  ],
+  [
+   "DESC[DESC.index('['):DESC.index(']') + 1]",
+   "'[73c5da0a/84h/0h/0h]'"
+  ],
+  [
+   "DESC[-5:]",
+   "'/0/*)'"
+  ]
+ ],
+ "DescriptorChecksum": [
+  [
+   "descsum_create('raw(deadbeef)')",
+   "'raw(deadbeef)#89f8spxm'"
+  ],
+  [
+   "len(descsum_create(DESC).split('#')[1])",
+   "8"
+  ],
+  [
+   "descsum_create(DESC)[-9:] == '#afwvtk2s'",
+   "True"
+  ]
+ ],
+ "KeyOrigin": [
+  [
+   "parse_origin(DESC)",
+   "('73c5da0a', [2147483732, 2147483648, 2147483648])"
+  ],
+  [
+   "[i - 2 ** 31 for i in parse_origin(DESC)[1]]",
+   "[84, 0, 0]"
+  ]
+ ],
+ "MultipathDescriptor": [
+  [
+   "m = 'wpkh([73c5da0a/84h/0h/0h]xpub.../<0;1>/*)'",
+   ""
+  ],
+  [
+   "head, rest = m.split('<'); choices, tail = rest.split('>')",
+   ""
+  ],
+  [
+   "[head + ch + tail for ch in choices.split(';')]",
+   "['wpkh([73c5da0a/84h/0h/0h]xpub.../0/*)', 'wpkh([73c5da0a/84h/0h/0h]xpub.../1/*)']"
+  ]
+ ],
+ "Miniscript": [
+  [
+   "[4 - i for i in range(4)]",
+   "[4, 3, 2, 1]"
+  ],
+  [
+   "'thresh(' in CORE_DESCDOC",
+   "True"
+  ],
+  [
+   "'Miniscript' in BIP379_DOC",
+   "True"
+  ]
+ ],
+ "AddressLabel": [
+  [
+   "record = {'type': 'addr', 'ref': CORE_BIP84['addresses'][0], 'label': 'order 1041'}",
+   ""
+  ],
+  [
+   "(record['type'], record['label'])",
+   "('addr', 'order 1041')"
+  ],
+  [
+   "'privacy sensitive nature of the data' in flat(BIP329_DOC)",
+   "True"
+  ]
+ ],
+ "TransactionLabel": [
+  [
+   "round(0.00100 - 0.00075, 5)",
+   "0.00025"
+  ],
+  [
+   "round(0.00100 - 0.00075, 5) == 0.00025",
+   "True"
+  ]
+ ],
+ "LabelExportFormat": [
+  [
+   "record = {'type': 'addr', 'ref': 'bc1qcr8te4k...', 'label': 'order 1041'}",
+   ""
+  ],
+  [
+   "json.dumps(record, sort_keys=True)",
+   "'{\"label\": \"order 1041\", \"ref\": \"bc1qcr8te4k...\", \"type\": \"addr\"}'"
+  ],
+  [
+   "'JSON Lines' in BIP329_DOC or 'JSONL' in BIP329_DOC",
+   "True"
+  ]
+ ],
+ "LightningNetwork": [
+  [
+   "'On-Chain Recovery' in LND and 'Off-Chain Recovery' in LND",
+   "True"
+  ],
+  [
+   "'payment channel' in flat(LND).lower()",
+   "True"
+  ]
+ ],
+ "StaticChannelBackup": [
+  [
+   "'channel.backup' in LND",
+   "True"
+  ],
+  [
+   "'static channel backup' in flat(LND).lower()",
+   "True"
+  ]
+ ],
+ "Encryption": [
+  [
+   "key = hashlib.sha256(bytes.fromhex('5b56c417303faa3f') + b'backup').digest()",
+   ""
+  ],
+  [
+   "note = b'Paid Bob for podcast'",
+   ""
+  ],
+  [
+   "hidden = bytes(a ^ b for a, b in zip(note, key))",
+   ""
+  ],
+  [
+   "hidden.hex()[:16]",
+   "'ddfb63036eb21eb9'"
+  ],
+  [
+   "bytes(a ^ b for a, b in zip(hidden, key)).decode()",
+   "'Paid Bob for podcast'"
+  ]
+ ],
+ "EncryptedWalletBackup": [
+  [
+   "seed = mnemonic_to_seed(WORDS)",
+   ""
+  ],
+  [
+   "hashlib.sha256(seed[:8] + b'backup').hexdigest()[:8]",
+   "'8d9a0a67'"
+  ],
+  [
+   "hashlib.sha256(bytes.fromhex('5b56c417303faa3f') + b'backup').hexdigest()[:8]",
+   "'8d9a0a67'"
+  ]
+ ],
+ "XpubDeployment": [
+  [
+   "['M/84h/0h/0h/0/%d' % i for i in range(3)]",
+   "['M/84h/0h/0h/0/0', 'M/84h/0h/0h/0/1', 'M/84h/0h/0h/0/2']"
+  ],
+  [
+   "acct = parse_extended(BOOK_XPUB)",
+   ""
+  ],
+  [
+   "K, ch = decompress(acct['key']), acct['chain']",
+   ""
+  ],
+  [
+   "[p2wpkh_address(ser_p(pub_at(K, ch, '0/%d' % i)[0])) for i in range(2)]",
+   "['bc1qrx4d48k7etw6cvq8czlmd8j0c5rwswccl3vk06', 'bc1qt4qgamxv55gm0lksl0aay3pkjvt02zy4h8j3lv']"
+  ]
+ ],
+ "GapLimit": [
+  [
+   "scan_with_gap({0, 3, 25}, 20)",
+   "[0, 3]"
+  ],
+  [
+   "scan_with_gap({0, 3, 25}, 30)",
+   "[0, 3, 25]"
+  ]
+ ],
+ "PaymentProcessor": [
+  [
+   "'free and open-source, self-hosted Bitcoin payment processor' in flat(BTCPAY)",
+   "True"
+  ],
+  [
+   "'without fees or intermediaries' in flat(BTCPAY)",
+   "True"
+  ]
+ ],
+ "ColdStorage": [
+  [
+   "(parse_extended(BOOK_XPUB)['key'][0], parse_extended(BOOK_XPRV)['key'][0])",
+   "(2, 0)"
+  ],
+  [
+   "parse_extended(BOOK_XPUB)['chain'] == parse_extended(BOOK_XPRV)['chain']",
+   "True"
+  ]
+ ],
+ "HardwareSigningDevice": [
+  [
+   "k0, c0 = keys_at(B84, 'm/84h/0h/0h/0/0')",
+   ""
+  ],
+  [
+   "z = int.from_bytes(hashlib.sha256(b'pay 0.01 BTC to bc1q...').digest(), 'big')",
+   ""
+  ],
+  [
+   "sig = ecdsa_sign(k0, z, 0x14142135623730950488016887242097)",
+   ""
+  ],
+  [
+   "(ecdsa_verify(ec_mul(k0), z, sig), ecdsa_verify(ec_mul(k0), z + 1, sig))",
+   "(True, False)"
+  ]
+ ],
+ "WrittenBackup": [
+  [
+   "(len(ENT), len(WORDS.split()))",
+   "(32, 12)"
+  ],
+  [
+   "(len(ENT) * 4, len(mnemonic_to_entropy(WORDS)[0]) * 8)",
+   "(128, 128)"
+  ]
+ ],
+ "HashFunction": [
+  [
+   "hashlib.sha256(b'abc').hexdigest()[:8]",
+   "'ba7816bf'"
+  ],
+  [
+   "hashlib.sha256(b'abd').hexdigest()[:8]",
+   "'a52d159f'"
+  ],
+  [
+   "hashlib.sha256(b'abc').hexdigest()[:8]",
+   "'ba7816bf'"
+  ]
+ ],
+ "ShaAlgorithm": [
+  [
+   "(len(hashlib.sha256(b'').digest()), len(hashlib.sha512(b'').digest()))",
+   "(32, 64)"
+  ],
+  [
+   "len(hmac.new(b'Bitcoin seed', TV, hashlib.sha512).digest())",
+   "64"
+  ]
+ ],
+ "DigitalSignature": [
+  [
+   "k0, c0 = keys_at(B84, 'm/84h/0h/0h/0/0')",
+   ""
+  ],
+  [
+   "z = int.from_bytes(hashlib.sha256(b'a transaction').digest(), 'big')",
+   ""
+  ],
+  [
+   "r, s = ecdsa_sign(k0, z, 0x16180339887498948482045868343656)",
+   ""
+  ],
+  [
+   "ecdsa_verify(ec_mul(k0), z, (r, s))",
+   "True"
+  ]
+ ],
+ "SecretSharing": [
+  [
+   "SHARES = shamir_split(0x1337c0de, 3, 5, [11, 22])",
+   ""
+  ],
+  [
+   "len(SHARES)",
+   "5"
+  ],
+  [
+   "shamir_combine([SHARES[0], SHARES[2], SHARES[4]]) == 0x1337c0de",
+   "True"
+  ],
+  [
+   "shamir_combine([SHARES[0], SHARES[2]]) == 0x1337c0de",
+   "False"
+  ]
+ ],
+ "DataLoss": [
+  [
+   "'Safely copies the current wallet file' in flat(CORE_BACKUP)",
+   "True"
+  ],
+  [
+   "'(default: 1000)' in flat(CORE_KEYPOOL)",
+   "True"
+  ]
+ ],
+ "BackupTesting": [
+  [
+   "mnemonic_to_seed(WORDS) == mnemonic_to_seed(WORDS)",
+   "True"
+  ],
+  [
+   "mnemonic_to_entropy(WORDS)[1]",
+   "True"
+  ],
+  [
+   "mnemonic_to_entropy(WORDS.replace('crunch', 'cruise'))[1]",
+   "False"
+  ]
+ ]
+}

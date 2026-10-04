@@ -1,0 +1,913 @@
+{
+ "_version": "2.0.0",
+ "_python": "3.14.4",
+ "PublicKeyCryptography": [
+  [
+   "K == ec_mul(k)",
+   "True"
+  ],
+  [
+   "ec_mul(k + 1) == ec_add(K, G)",
+   "True"
+  ],
+  [
+   "pub_bytes(K).hex()[:16]",
+   "'03f028892bad7ed5'"
+  ]
+ ],
+ "DigitalSignature": [
+  [
+   "z = int.from_bytes(hashlib.sha256(b'pay Bob 0.1 BTC').digest(), 'big')",
+   ""
+  ],
+  [
+   "sig = ecdsa_sign(k, z, 0x5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A)",
+   ""
+  ],
+  [
+   "ecdsa_verify(K, z, sig)",
+   "True"
+  ],
+  [
+   "ecdsa_verify(K, z + 1, sig)",
+   "False"
+  ]
+ ],
+ "PrivateKey": [
+  [
+   "2**256 - N",
+   "432420386565659656852420866394968145599"
+  ],
+  [
+   "0 < k < N",
+   "True"
+  ],
+  [
+   "(2 ** 256).to_bytes(32, 'big')",
+   "OverflowError: int too big to convert"
+  ]
+ ],
+ "PublicKey": [
+  [
+   "hex(K[0])",
+   "'0xf028892bad7ed57d2fb57bf33081d5cfcf6f9ed3d3d7f159c2e2fff579dc341a'"
+  ],
+  [
+   "hex(K[1])",
+   "'0x7cf33da18bd734c600b96a72bbc4749d5141c90ec8ac328ae52ddfe2e505bdb'"
+  ],
+  [
+   "ec_mul(N) is None",
+   "True"
+  ]
+ ],
+ "Entropy": [
+  [
+   "round(math.log10(2 ** 256), 2)",
+   "77.06"
+  ],
+  [
+   "(2 ** 256 - 1).bit_length()",
+   "256"
+  ]
+ ],
+ "SecureRandomness": [
+  [
+   "key = secrets.randbelow(N - 1) + 1",
+   ""
+  ],
+  [
+   "0 < key < N",
+   "True"
+  ],
+  [
+   "key.bit_length() > 200",
+   "True"
+  ]
+ ],
+ "FiniteField": [
+  [
+   "pow(5, -1, 17)",
+   "7"
+  ],
+  [
+   "5 * 7 % 17",
+   "1"
+  ],
+  [
+   "pow(0, -1, 17)",
+   "ValueError: base is not invertible for the given modulus"
+  ]
+ ],
+ "EllipticCurve": [
+  [
+   "sum(1 for x in range(17) for y in range(17) if (y * y - x ** 3 - 7) % 17 == 0)",
+   "17"
+  ],
+  [
+   "(G[0] ** 3 + 7 - G[1] ** 2) % P",
+   "0"
+  ]
+ ],
+ "PointAddition": [
+  [
+   "small_add((1, 5), (2, 7), 17)",
+   "(1, 12)"
+  ],
+  [
+   "small_add((1, 5), (1, 12), 17) is None",
+   "True"
+  ],
+  [
+   "small_order((1, 5), 17)",
+   "9"
+  ]
+ ],
+ "Secp256k1": [
+  [
+   "P == 2**256 - 2**32 - 977",
+   "True"
+  ],
+  [
+   "P == 2**256 - 2**32 - 2**9 - 2**8 - 2**7 - 2**6 - 2**4 - 1",
+   "True"
+  ],
+  [
+   "is_probable_prime(P), is_probable_prime(N)",
+   "(True, True)"
+  ]
+ ],
+ "CurveStandard": [
+  [
+   "[(l.split()[0], l.split()[7]) for l in SEC2.splitlines() if l.startswith('secp256')]",
+   "[('secp256k1', '-'), ('secp256r1', 'r')]"
+  ]
+ ],
+ "GeneratorPoint": [
+  [
+   "pub_bytes(G).hex()",
+   "'0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798'"
+  ],
+  [
+   "ec_add(ec_mul(N - 1), G) is None",
+   "True"
+  ]
+ ],
+ "PointMultiplication": [
+  [
+   "(k.bit_length() - 1, bin(k).count('1') - 1)",
+   "(252, 123)"
+  ],
+  [
+   "ec_mul(3) == ec_add(ec_add(G, G), G)",
+   "True"
+  ]
+ ],
+ "DiscreteLogarithm": [
+  [
+   "next(i for i in range(1, 101) if pow(2, i, 101) == 7)",
+   "9"
+  ],
+  [
+   "round(math.log2(N))",
+   "256"
+  ]
+ ],
+ "CryptoLibrary": [
+  [
+   "len(EC_SRC.splitlines())",
+   "13"
+  ],
+  [
+   "ec_mul(k) == K",
+   "True"
+  ]
+ ],
+ "HashFunction": [
+  [
+   "hashlib.sha256(b'a').hexdigest()[:16]",
+   "'ca978112ca1bbdca'"
+  ],
+  [
+   "hashlib.sha256(b'`').hexdigest()[:16]",
+   "'8d33f520a3c4cef8'"
+  ],
+  [
+   "a, b = hashlib.sha256(b'a').digest(), hashlib.sha256(b'`').digest()",
+   ""
+  ],
+  [
+   "bin(int.from_bytes(a, 'big') ^ int.from_bytes(b, 'big')).count('1')",
+   "139"
+  ]
+ ],
+ "Sha256": [
+  [
+   "hashlib.sha256(b'abc').hexdigest()",
+   "'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'"
+  ],
+  [
+   "len(hashlib.sha256(b'abc').digest())",
+   "32"
+  ],
+  [
+   "hashlib.sha256('abc')",
+   "TypeError: Strings must be encoded before hashing"
+  ]
+ ],
+ "Ripemd160": [
+  [
+   "hashlib.new('ripemd160', hashlib.sha256(PUB).digest()).hexdigest()",
+   "'bbc1e42a39d05a4cc61752d6963b7f69d09bb27b'"
+  ],
+  [
+   "len(hashlib.new('ripemd160', b'').digest())",
+   "20"
+  ]
+ ],
+ "Hash160": [
+  [
+   "hash160(PUB).hex()",
+   "'bbc1e42a39d05a4cc61752d6963b7f69d09bb27b'"
+  ],
+  [
+   "hash160(PUBU).hex()",
+   "'211b74ca4686f81efda5641767fc84ef16dafe0b'"
+  ],
+  [
+   "hash160(PUB) == hash160(PUBU)",
+   "False"
+  ]
+ ],
+ "BitsAndBytes": [
+  [
+   "(len(PUBU), len(PUBU) * 8)",
+   "(65, 520)"
+  ],
+  [
+   "(len(PUB), len(PUB) * 8)",
+   "(33, 264)"
+  ],
+  [
+   "bytes.fromhex('abc')",
+   "ValueError: fromhex() arg must contain an even number of hexadecimal digits"
+  ]
+ ],
+ "NumberBase": [
+  [
+   "(int('ff', 16), int('11111111', 2))",
+   "(255, 255)"
+  ],
+  [
+   "(len(hex(k)) - 2, k.bit_length())",
+   "(64, 253)"
+  ],
+  [
+   "B58[0], B58[57]",
+   "('1', 'z')"
+  ]
+ ],
+ "QrCode": [
+  [
+   "ADDR = segwit_address('bc', 0, bytes.fromhex(PROG_WPKH))",
+   ""
+  ],
+  [
+   "ADDR.upper()",
+   "'BC1Q9D3XA5GG45Q2J39M9Y32XZVYGCGAY4RGC6AAEE'"
+  ],
+  [
+   "ADDR.upper().lower() == ADDR",
+   "True"
+  ]
+ ],
+ "CompressedPublicKey": [
+  [
+   "PUB.hex()",
+   "'03f028892bad7ed57d2fb57bf33081d5cfcf6f9ed3d3d7f159c2e2fff579dc341a'"
+  ],
+  [
+   "round(1 - 33 / 65, 3)",
+   "0.492"
+  ],
+  [
+   "decompress(PUB) == K",
+   "True"
+  ]
+ ],
+ "UncompressedPublicKey": [
+  [
+   "PUBU.hex()[:66]",
+   "'04f028892bad7ed57d2fb57bf33081d5cfcf6f9ed3d3d7f159c2e2fff579dc341a'"
+  ],
+  [
+   "PUBU.hex()[66:]",
+   "'07cf33da18bd734c600b96a72bbc4749d5141c90ec8ac328ae52ddfe2e505bdb'"
+  ],
+  [
+   "(PUBU[0], len(PUBU))",
+   "(4, 65)"
+  ]
+ ],
+ "WalletImportFormat": [
+  [
+   "wif(k, False)",
+   "'5J3mBbAH58CpQ3Y5RNJpUKPE62SQ5tfcvU2JpbnkeyhfsYB1Jcn'"
+  ],
+  [
+   "wif(k)",
+   "'KxFC1jmwwCoACiCAWZ3eXa96mBM6tb3TYzGmf6YwgdGWZgawvrtJ'"
+  ],
+  [
+   "b58check_decode(wif(k)).hex()",
+   "'801e99423a4ed27608a15a2616a2b0e9e52ced330ac530edcc32c8ffc6a526aedd01'"
+  ]
+ ],
+ "CompressedPrivateKey": [
+  [
+   "len(wif(k)) - len(wif(k, False))",
+   "1"
+  ],
+  [
+   "b58check_decode(wif(k))[-1]",
+   "1"
+  ],
+  [
+   "len(b58check_decode(wif(k))) - len(b58check_decode(wif(k, False)))",
+   "1"
+  ]
+ ],
+ "Checksum": [
+  [
+   "dsha(b'\\x00' + H160)[:4].hex()",
+   "'37fefcd0'"
+  ],
+  [
+   "b58check_decode('1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZy').hex()",
+   "'00bbc1e42a39d05a4cc61752d6963b7f69d09bb27b'"
+  ],
+  [
+   "b58check_decode('1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZz')",
+   "AssertionError: checksum does not match"
+  ]
+ ],
+ "Base58Check": [
+  [
+   "len(B58), '0' in B58, 'O' in B58, 'l' in B58, 'I' in B58",
+   "(58, False, False, False, False)"
+  ],
+  [
+   "b58check(b'\\x00' + H160)",
+   "'1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZy'"
+  ]
+ ],
+ "VersionPrefix": [
+  [
+   "[b58check(bytes([v]) + bytes(20))[0] for v in (0x00, 0x05, 0x6f, 0xc4)]",
+   "['1', '3', 'm', '2']"
+  ],
+  [
+   "b58check(b'\\x80' + bytes(32))[0], b58check(b'\\x80' + bytes(32) + b'\\x01')[0]",
+   "('5', 'K')"
+  ]
+ ],
+ "NetworkSelector": [
+  [
+   "ADDR = segwit_address('bc', 0, bytes.fromhex(PROG_WPKH))",
+   ""
+  ],
+  [
+   "(ADDR[:2], TB_WPKH[:2])",
+   "('bc', 'tb')"
+  ],
+  [
+   "segwit_decode('tb', ADDR) is None",
+   "True"
+  ]
+ ],
+ "OutputScript": [
+  [
+   "script = bytes.fromhex('76a914') + H160 + bytes.fromhex('88ac')",
+   ""
+  ],
+  [
+   "script.hex()",
+   "'76a914bbc1e42a39d05a4cc61752d6963b7f69d09bb27b88ac'"
+  ],
+  [
+   "len(script)",
+   "25"
+  ]
+ ],
+ "InputScript": [
+  [
+   "stack = ['<signature>', '<public key>']",
+   ""
+  ],
+  [
+   "stack[-1], len(stack)",
+   "('<public key>', 2)"
+  ]
+ ],
+ "StackExecution": [
+  [
+   "stack = ['<signature>', '<public key>']",
+   ""
+  ],
+  [
+   "stack + [stack[-1]]",
+   "['<signature>', '<public key>', '<public key>']"
+  ],
+  [
+   "run_p2pkh('<signature>', PUB, H160) == ['<signature>', PUB]",
+   "True"
+  ],
+  [
+   "run_p2pkh('<signature>', PUB, hash160(PUBU))",
+   "False"
+  ]
+ ],
+ "IpAddressPayment": [
+  [
+   "(4 * 8, 2 ** 32)",
+   "(32, 4294967296)"
+  ]
+ ],
+ "P2pk": [
+  [
+   "script = bytes([len(PUBU)]) + PUBU + bytes([0xac])",
+   ""
+  ],
+  [
+   "(len(script), hex(script[-1]))",
+   "(67, '0xac')"
+  ],
+  [
+   "len(bytes([len(PUB)]) + PUB + bytes([0xac]))",
+   "35"
+  ]
+ ],
+ "Commitment": [
+  [
+   "SENTENCE = b'2007.  He said about a year and a half before Oct 2008\\n'",
+   ""
+  ],
+  [
+   "hashlib.sha256(SENTENCE).hexdigest()",
+   "'94d7a772612c8f2f2ec609d41f5bd3d04a5aa1dfe3582f04af517d396a302e4e'"
+  ],
+  [
+   "(len(PUBU), len(H160))",
+   "(65, 20)"
+  ]
+ ],
+ "P2pkhAddress": [
+  [
+   "p2pkh(PUB)",
+   "'1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZy'"
+  ],
+  [
+   "p2pkh(PUBU)",
+   "'1424C2F4bC9JidNjjTUZCbUxv6Sa1Mt62x'"
+  ],
+  [
+   "CORE_VALIDATE[p2pkh(PUB)]['scriptPubKey']",
+   "'76a914bbc1e42a39d05a4cc61752d6963b7f69d09bb27b88ac'"
+  ]
+ ],
+ "RedeemScript": [
+  [
+   "redeem = bytes.fromhex('0014') + H160",
+   ""
+  ],
+  [
+   "redeem.hex()",
+   "'0014bbc1e42a39d05a4cc61752d6963b7f69d09bb27b'"
+  ],
+  [
+   "hash160(redeem).hex()",
+   "'9ca0e746160117cc342531ab7e44d0e12961c544'"
+  ]
+ ],
+ "MultisigScript": [
+  [
+   "(3 + 15 * 34, 3 + 16 * 34)",
+   "(513, 547)"
+  ],
+  [
+   "3 + 16 * 34 > 520",
+   "True"
+  ]
+ ],
+ "P2shAddress": [
+  [
+   "p2sh(bytes.fromhex('0014') + H160)",
+   "'3FyC6EYuxW22uj4CaEGjNCjxeg7gHyFeVv'"
+  ],
+  [
+   "b58check_decode('3F6i6kwkevjR7AsAd4te2YB2zZyASEm1HM')[0]",
+   "5"
+  ],
+  [
+   "CORE_VALIDATE['3F6i6kwkevjR7AsAd4te2YB2zZyASEm1HM']['isscript']",
+   "True"
+  ]
+ ],
+ "PreimageAttack": [
+  [
+   "2 ** 160",
+   "1461501637330902918203684832716283019655932542976"
+  ],
+  [
+   "len(str(2 ** 160))",
+   "49"
+  ]
+ ],
+ "SecondPreimageAttack": [
+  [
+   "1 / 2 ** 160",
+   "6.842277657836021e-49"
+  ],
+  [
+   "round(math.log2(2 ** 160))",
+   "160"
+  ]
+ ],
+ "CollisionAttack": [
+  [
+   "(2 ** 160) ** 0.5 == 2 ** 80",
+   "True"
+  ],
+  [
+   "round(HASHRATE * 3600 / 2 ** 80, 1)",
+   "2.8"
+  ],
+  [
+   "round(2 ** 128 / (2 ** 80 / 3600) / 31_557_600 / 1e9)",
+   "32"
+  ],
+  [
+   "round(2 ** 128 / HASHRATE / 31_557_600 / 1e9)",
+   "11"
+  ]
+ ],
+ "SegwitUpgrade": [
+  [
+   "body, witness = b'transaction without its witness', b' and the witness bytes'",
+   ""
+  ],
+  [
+   "dsha(body).hex()[:16]",
+   "'1bbba9e8d2ce607d'"
+  ],
+  [
+   "dsha(body + witness).hex()[:16]",
+   "'bf5cec85a6365a79'"
+  ]
+ ],
+ "NestedSegwit": [
+  [
+   "redeem = bytes.fromhex('0014') + H160",
+   ""
+  ],
+  [
+   "p2sh(redeem)",
+   "'3FyC6EYuxW22uj4CaEGjNCjxeg7gHyFeVv'"
+  ],
+  [
+   "CORE_DERIVE.count('3FyC6EYuxW22uj4CaEGjNCjxeg7gHyFeVv')",
+   "1"
+  ]
+ ],
+ "Bech32Address": [
+  [
+   "segwit_address('bc', 0, bytes.fromhex(PROG_WPKH))",
+   "'bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee'"
+  ],
+  [
+   "len(segwit_address('bc', 0, bytes.fromhex(PROG_WPKH)))",
+   "42"
+  ],
+  [
+   "segwit_decode('bc', segwit_address('bc', 0, bytes.fromhex(PROG_WPKH)))[0]",
+   "0"
+  ]
+ ],
+ "WitnessVersion": [
+  [
+   "(CHARSET.index('q'), CHARSET.index('p'), CHARSET.index('s'))",
+   "(0, 1, 16)"
+  ],
+  [
+   "segwit_address('bc', 16, bytes.fromhex('0000'))",
+   "'bc1sqqqqkfw08p'"
+  ],
+  [
+   "hex(0x50 + 1), hex(0x50 + 16)",
+   "('0x51', '0x60')"
+  ]
+ ],
+ "WitnessProgram": [
+  [
+   "[len(bytes.fromhex(p)) for p in (PROG_WPKH, PROG_WSH, PROG_TR)]",
+   "[20, 32, 32]"
+  ],
+  [
+   "len(segwit_address('bc', 0, bytes.fromhex(PROG_WSH)))",
+   "62"
+  ],
+  [
+   "ADDR = segwit_address('bc', 0, bytes.fromhex(PROG_WPKH))",
+   ""
+  ],
+  [
+   "segwit_decode('bc', ADDR[:-1] + 'f') is None",
+   "True"
+  ]
+ ],
+ "HumanReadablePart": [
+  [
+   "ADDR = segwit_address('bc', 0, bytes.fromhex(PROG_WPKH))",
+   ""
+  ],
+  [
+   "ADDR.rsplit('1', 1)[0]",
+   "'bc'"
+  ],
+  [
+   "hrp_expand('bc')",
+   "[3, 3, 0, 2, 3]"
+  ]
+ ],
+ "BchCode": [
+  [
+   "(6 * 5, 2 ** 30)",
+   "(30, 1073741824)"
+  ],
+  [
+   "1 / 2 ** 30 < 1e-9",
+   "True"
+  ],
+  [
+   "BECH32, hex(BECH32M)",
+   "(1, '0x2bc830a3')"
+  ]
+ ],
+ "ErrorDetection": [
+  [
+   "[i for i, (a, b) in enumerate(zip(TYPED_OK, TYPED_BAD)) if a != b]",
+   "[25, 40]"
+  ],
+  [
+   "segwit_decode('bc', TYPED_BAD) is None",
+   "True"
+  ],
+  [
+   "UNDETECTED = VERIFY['substitution_errors_undetected']",
+   ""
+  ],
+  [
+   "UNDETECTED['one'], UNDETECTED['two'], UNDETECTED['three_or_four_random_of_200000']",
+   "(0, 0, 0)"
+  ]
+ ],
+ "LengthExtension": [
+  [
+   "[len(a) for a in EXT]",
+   "[15, 18, 20, 22, 23, 25]"
+  ],
+  [
+   "[bech_check(a) == BECH32 for a in EXT]",
+   "[True, True, True, True, True, True]"
+  ],
+  [
+   "[bech_check(a) == BECH32M for a in EXT]",
+   "[False, False, False, False, False, False]"
+  ]
+ ],
+ "Bech32mAddress": [
+  [
+   "segwit_address('bc', 1, bytes.fromhex(PROG_TR))",
+   "'bc1p9nh05ha8wrljf7ru236awm4t2x0d5ctkkywmu9sclnm4t0av2vgs4k3au7'"
+  ],
+  [
+   "bech_check(segwit_address('bc', 1, bytes.fromhex(PROG_TR))) == BECH32M",
+   "True"
+  ],
+  [
+   "bech_check(segwit_address('bc', 0, bytes.fromhex(PROG_WPKH))) == BECH32",
+   "True"
+  ]
+ ],
+ "P2wpkh": [
+  [
+   "script = bytes.fromhex('0014') + H160",
+   ""
+  ],
+  [
+   "(script.hex()[:4], len(script))",
+   "('0014', 22)"
+  ],
+  [
+   "segwit_address('bc', 0, H160)",
+   "'bc1qh0q7g23e6pdye3sh2ttfvwmld8gfhvnmmfxuck'"
+  ]
+ ],
+ "P2wsh": [
+  [
+   "script = bytes.fromhex('0020') + bytes.fromhex(PROG_WSH)",
+   ""
+  ],
+  [
+   "len(script)",
+   "34"
+  ],
+  [
+   "segwit_address('bc', 0, bytes.fromhex(PROG_WSH))",
+   "'bc1qvj9r9egtd7mu2gemy28kpf4zefq4ssqzdzzycj7zjhk4arpavfhsct5a3p'"
+  ]
+ ],
+ "P2tr": [
+  [
+   "len(bytes.fromhex(PROG_TR))",
+   "32"
+  ],
+  [
+   "segwit_address('bc', 1, bytes.fromhex(PROG_TR))",
+   "'bc1p9nh05ha8wrljf7ru236awm4t2x0d5ctkkywmu9sclnm4t0av2vgs4k3au7'"
+  ]
+ ],
+ "DefaultAddressType": [
+  [
+   "[t for t in ('legacy', 'p2sh-segwit', 'bech32', 'bech32m') if t in CORE_ADDRESSTYPE]",
+   "['legacy', 'p2sh-segwit', 'bech32', 'bech32m']"
+  ],
+  [
+   "'default: \"bech32\"' in ' '.join(CORE_ADDRESSTYPE.split())",
+   "True"
+  ],
+  [
+   "{n: a['desc_kind'] for n, a in CORE_WALLET.items()}",
+   "{'default': 'wpkh', 'legacy': 'pkh', 'p2sh-segwit': 'sh', 'bech32': 'wpkh', 'bech32m': 'tr'}"
+  ]
+ ],
+ "KeyExport": [
+  [
+   "[l.split(':')[0] for l in CORE_REMOVED.splitlines()]",
+   "['dumpprivkey', 'importprivkey']"
+  ],
+  [
+   "'unknown command: dumpprivkey' in CORE_REMOVED",
+   "True"
+  ],
+  [
+   "CORE_DERIVE.count('pkh(<WIF>)')",
+   "3"
+  ]
+ ],
+ "PassphraseProtection": [
+  [
+   "(len(BIP38), BIP38[:2])",
+   "(58, '6P')"
+  ],
+  [
+   "is_valid_b58check(BIP38)",
+   "True"
+  ]
+ ],
+ "DeterministicWallet": [
+  [
+   "[hashlib.sha256((SEED + ' + %d\\n' % i).encode()).hexdigest()[:8] for i in range(3)]",
+   "['50b18e0b', 'a965dbcd', '19580c97']"
+  ],
+  [
+   "hashlib.sha256((SEED + ' + 0\\n').encode()).hexdigest()[:8]",
+   "'50b18e0b'"
+  ]
+ ],
+ "AddressReuse": [
+  [
+   "reused = [p2pkh(PUB)] * 3",
+   ""
+  ],
+  [
+   "fresh = [p2pkh(pub_bytes(ec_mul(k + i))) for i in range(3)]",
+   ""
+  ],
+  [
+   "(len(set(reused)), len(set(fresh)))",
+   "(1, 3)"
+  ]
+ ],
+ "VanityAddress": [
+  [
+   "[58 ** n for n in (1, 2, 3, 4)]",
+   "[58, 3364, 195112, 11316496]"
+  ],
+  [
+   "round(58 ** 8 / 2 / 100_000 / 31_557_600, 1)",
+   "20.3"
+  ],
+  [
+   "58 ** 11",
+   "24986644000165537792"
+  ]
+ ],
+ "PaperWallet": [
+  [
+   "(len('%064x' % k), len(k.to_bytes(32, 'big')))",
+   "(64, 32)"
+  ],
+  [
+   "CORE_VALIDATE['1LoveBPzzD72PUXLzCkYAtGFYmK5vYNR33']['isvalid']",
+   "True"
+  ]
+ ],
+ "HardwareSigningDevice": [
+  [
+   "steps = ['prepare', 'sign', 'broadcast']",
+   ""
+  ],
+  [
+   "(steps.index('sign'), 'private key' in steps)",
+   "(1, False)"
+  ]
+ ],
+ "TestVectors": [
+  [
+   "V = VECTORS",
+   ""
+  ],
+  [
+   "(len(V['valid_bech32m']), len(V['valid_segwit']), len(V['invalid_segwit']))",
+   "(7, 8, 15)"
+  ],
+  [
+   "VERIFY['bip350_valid_vectors'], VERIFY['bip350_invalid_vectors']",
+   "([8, 8], [15, 15])"
+  ]
+ ],
+ "IndependentCheck": [
+  [
+   "V = VERIFY",
+   ""
+  ],
+  [
+   "(V['book_addresses_toolkit'], V['book_addresses_sipa_library'], V['book_addresses_agree'])",
+   "(True, True, True)"
+  ],
+  [
+   "p2pkh(PUB) in CORE_DERIVE and CORE_VALIDATE[p2pkh(PUB)]['isvalid']",
+   "True"
+  ],
+  [
+   "VERIFY['core_validate_agrees_on_segwit_examples']",
+   "True"
+  ]
+ ],
+ "KeyControlProof": [
+  [
+   "challenge = int.from_bytes(hashlib.sha256(b'a fresh challenge').digest(), 'big')",
+   ""
+  ],
+  [
+   "sig = ecdsa_sign(k, challenge, 0x27182818284590452353602874713526)",
+   ""
+  ],
+  [
+   "ecdsa_verify(K, challenge, sig)",
+   "True"
+  ],
+  [
+   "ecdsa_verify(ec_mul(k + 1), challenge, sig)",
+   "False"
+  ]
+ ],
+ "Uri": [
+  [
+   "'did:example:123456789abcdefghi'.split(':')",
+   "['did', 'example', '123456789abcdefghi']"
+  ],
+  [
+   "len('did:example:123456789abcdefghi'.split(':'))",
+   "3"
+  ]
+ ],
+ "DecentralizedIdentifier": [
+  [
+   "ABSTRACT = ' '.join(DID_ABSTRACT.split())",
+   ""
+  ],
+  [
+   "'prove control over it without requiring permission' in ABSTRACT",
+   "True"
+  ],
+  [
+   "'verifiable, decentralized digital identity' in ABSTRACT",
+   "True"
+  ]
+ ],
+ "_snippets": {
+  "ec": "def ec_add(a, b):\n    if a is None: return b\n    if b is None: return a\n    if a[0] == b[0] and (a[1] + b[1]) % P == 0: return None\n    m = (3 * a[0] * a[0] * pow(2 * a[1], -1, P) if a == b else (b[1] - a[1]) * pow(b[0] - a[0], -1, P)) % P\n    x = (m * m - a[0] - b[0]) % P\n    return (x, (m * (a[0] - x) - a[1]) % P)\ndef ec_mul(k, pt=G):\n    out = None\n    while k:\n        if k & 1: out = ec_add(out, pt)\n        pt = ec_add(pt, pt); k >>= 1\n    return out"
+ }
+}
