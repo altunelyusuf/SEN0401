@@ -1,0 +1,179 @@
+{
+ "_version": "1.0.0",
+ "_note": "Built by 08-tooling/sen0401_visuals_gen_v1_0_0.py. Every result in a `facts` table and every count in a `hist` bar was produced by executing the expression beside it under the interpreter named on that run's command line; the generator refuses to write a result it did not execute, and a histogram whose counts do not add up to the stated number of draws stops it. The draws are seeded, so the bars are identical on every build.",
+ "Hash160": {
+  "kind": "facts",
+  "caption": "The chain of functions between a key and an address, each step executed. The two hash functions are applied one after the other, which is what shortens a thirty-three byte key to a twenty byte commitment; the four-byte checksum is itself a hash of what precedes it.",
+  "facts": [
+   {
+    "label": "The first eight hexadecimal digits of the SHA-256 of the three letters abc",
+    "expr": "__import__('hashlib').sha256(b'abc').hexdigest()[:8]",
+    "result": "'ba7816bf'"
+   },
+   {
+    "label": "Length of a SHA-256 result, in bytes and in bits",
+    "expr": "(__import__('hashlib').sha256(b'abc').digest_size, __import__('hashlib').sha256(b'abc').digest_size * 8)",
+    "result": "(32, 256)"
+   },
+   {
+    "label": "Length of the twenty-byte commitment, in bytes and in bits",
+    "expr": "(lambda d: (len(bytes.fromhex(d)), len(bytes.fromhex(d)) * 8))('bbc1e42a39d05a4cc61752d6963b7f69d09bb27b')",
+    "result": "(20, 160)"
+   },
+   {
+    "label": "Do the compressed and the uncompressed key give the same commitment?",
+    "expr": "'bbc1e42a39d05a4cc61752d6963b7f69d09bb27b' == '211b74ca4686f81efda5641767fc84ef16dafe0b'",
+    "result": "False"
+   },
+   {
+    "label": "The four checksum bytes of a wallet-format private key",
+    "expr": "__import__('hashlib').sha256(__import__('hashlib').sha256(bytes.fromhex('801E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD')).digest()).digest()[:4].hex()",
+    "result": "'c47e83ff'"
+   },
+   {
+    "label": "How much shorter a compressed public key is",
+    "expr": "round(1 - 33 / 65, 3)",
+    "result": "0.492"
+   },
+   {
+    "label": "Characters in the native-segwit address of the chapter",
+    "expr": "len('bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee')",
+    "result": "42"
+   },
+   {
+    "label": "Bytes a twenty-byte commitment and a one-byte version take before encoding",
+    "expr": "1 + 20",
+    "result": "21"
+   }
+  ]
+ },
+ "SecureRandomness": {
+  "kind": "facts",
+  "caption": "Why a private key may be chosen at random at all. The count of keys is so large that no search can cover it, and the odd-looking upper bound is the order of the curve's group, not a round power of two: a key must fall below it.",
+  "facts": [
+   {
+    "label": "How many private keys there are, as a power of two",
+    "expr": "2**256",
+    "result": "115792089237316195423570985008687907853269984665640564039457584007913129639936"
+   },
+   {
+    "label": "The same count, in decimal digits",
+    "expr": "len(str(2**256))",
+    "result": "78"
+   },
+   {
+    "label": "The order of the curve group, which bounds a valid key",
+    "expr": "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141",
+    "result": "115792089237316195423570985008687907852837564279074904382605163141518161494337"
+   },
+   {
+    "label": "How many of the 2**256 numbers are too large to be a key",
+    "expr": "2**256 - 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141",
+    "result": "432420386565659656852420866394968145599"
+   },
+   {
+    "label": "The share of numbers that are too large",
+    "expr": "round((2**256 - 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141) / 2**256, 40)",
+    "result": "3.7e-39"
+   },
+   {
+    "label": "Is a key drawn by the standard library's secure source in range?",
+    "expr": "0 < __import__('secrets').randbelow(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141 - 1) + 1 < 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141",
+    "result": "True"
+   },
+   {
+    "label": "Years to try them all at a thousand million million keys a second",
+    "expr": "round(2**256 / 1e15 / (365 * 24 * 3600))",
+    "result": "3671743063080803363076811728205800059821580936644919296"
+   }
+  ]
+ },
+ "Entropy": {
+  "kind": "hist",
+  "caption": "Four thousand private keys drawn from a seeded generator, sorted by their first hexadecimal digit. The bars are level because the digit carries no information about the key: a generator whose bars were uneven would be leaking exactly the kind of structure a search could use.",
+  "draws": 4000,
+  "seed": 20260401,
+  "bars": [
+   {
+    "index": 0,
+    "text": "first digit 0",
+    "count": 282
+   },
+   {
+    "index": 1,
+    "text": "first digit 1",
+    "count": 236
+   },
+   {
+    "index": 2,
+    "text": "first digit 2",
+    "count": 224
+   },
+   {
+    "index": 3,
+    "text": "first digit 3",
+    "count": 216
+   },
+   {
+    "index": 4,
+    "text": "first digit 4",
+    "count": 281
+   },
+   {
+    "index": 5,
+    "text": "first digit 5",
+    "count": 246
+   },
+   {
+    "index": 6,
+    "text": "first digit 6",
+    "count": 234
+   },
+   {
+    "index": 7,
+    "text": "first digit 7",
+    "count": 246
+   },
+   {
+    "index": 8,
+    "text": "first digit 8",
+    "count": 237
+   },
+   {
+    "index": 9,
+    "text": "first digit 9",
+    "count": 270
+   },
+   {
+    "index": 10,
+    "text": "first digit a",
+    "count": 243
+   },
+   {
+    "index": 11,
+    "text": "first digit b",
+    "count": 260
+   },
+   {
+    "index": 12,
+    "text": "first digit c",
+    "count": 268
+   },
+   {
+    "index": 13,
+    "text": "first digit d",
+    "count": 237
+   },
+   {
+    "index": 14,
+    "text": "first digit e",
+    "count": 255
+   },
+   {
+    "index": 15,
+    "text": "first digit f",
+    "count": 265
+   }
+  ]
+ }
+}

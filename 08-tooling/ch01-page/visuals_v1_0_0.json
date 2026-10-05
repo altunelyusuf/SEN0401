@@ -1,0 +1,261 @@
+{
+ "_version": "1.0.0",
+ "_note": "Every value in this file was produced by running the expression recorded beside it, under 3.14.4, by 08-tooling/sen0401_ch01_visuals_gen_v1_0_0.py. The kinds used - passes, facts, hist and boxes - are kinds the course page template already draws.",
+ "Halving": {
+  "kind": "passes",
+  "caption": "The subsidy of a block is 50 bitcoin shifted right once for every completed interval of 210,000 blocks, so it halves at each interval and every shift drops any fraction below one satoshi. One row per era, with the new bitcoin that era creates and the total in circulation once it ends.",
+  "tables": [
+   {
+    "header": "subsidy_sat = (50 * 10**8) >> (height // 210000)",
+    "cols": [
+     "era",
+     "first block",
+     "subsidy (sat)",
+     "subsidy (BTC)",
+     "new BTC in the era",
+     "total BTC after it"
+    ],
+    "rows": [
+     [
+      "0",
+      "0",
+      "5,000,000,000",
+      "50",
+      "10,500,000",
+      "10,500,000"
+     ],
+     [
+      "1",
+      "210,000",
+      "2,500,000,000",
+      "25",
+      "5,250,000",
+      "15,750,000"
+     ],
+     [
+      "2",
+      "420,000",
+      "1,250,000,000",
+      "12.5",
+      "2,625,000",
+      "18,375,000"
+     ],
+     [
+      "3",
+      "630,000",
+      "625,000,000",
+      "6.25",
+      "1,312,500",
+      "19,687,500"
+     ],
+     [
+      "4",
+      "840,000",
+      "312,500,000",
+      "3.125",
+      "656,250",
+      "20,343,750"
+     ]
+    ]
+   }
+  ],
+  "printed_label": "What the schedule says, era by era",
+  "printed": [
+   "era 0 starts at block 0 and pays 50 BTC a block",
+   "era 1 starts at block 210,000 and pays 25 BTC a block",
+   "era 2 starts at block 420,000 and pays 12.5 BTC a block",
+   "era 3 starts at block 630,000 and pays 6.25 BTC a block",
+   "era 4 starts at block 840,000 and pays 3.125 BTC a block"
+  ],
+  "start": {
+   "expr": "(50 * 10**8 >> 840000 // 210000) / 10**8",
+   "result": "3.125"
+  }
+ },
+ "SupplyCap": {
+  "kind": "facts",
+  "caption": "The cap is not a number stored anywhere in the protocol: it is what comes out when the subsidy of every block of every era is added together. Each line below is an expression this page ran and the value it gave.",
+  "facts": [
+   {
+    "label": "The first subsidy, in satoshis",
+    "expr": "50 * 10**8",
+    "result": "5000000000"
+   },
+   {
+    "label": "Blocks in one halving interval",
+    "expr": "210000",
+    "result": "210000"
+   },
+   {
+    "label": "The last era with a non-zero subsidy",
+    "expr": "max(e for e in range(64) if (50 * 10**8) >> e)",
+    "result": "32"
+   },
+   {
+    "label": "The first era whose subsidy rounds to nothing",
+    "expr": "min(e for e in range(64) if not (50 * 10**8) >> e)",
+    "result": "33"
+   },
+   {
+    "label": "Blocks until the subsidy reaches zero",
+    "expr": "33 * 210000",
+    "result": "6930000"
+   },
+   {
+    "label": "Every subsidy of every era, added up, in bitcoin",
+    "expr": "sum((50 * 10**8 >> era) * 210000 for era in range(33)) / 10**8",
+    "result": "20999999.9769"
+   },
+   {
+    "label": "How far that total falls short of 21 million",
+    "expr": "round(21_000_000 - sum((50 * 10**8 >> era) * 210000 for era in range(33)) / 10**8, 4)",
+    "result": "0.0231"
+   },
+   {
+    "label": "The subsidy of block 840,000, in bitcoin",
+    "expr": "(50 * 10**8 >> 840000 // 210000) / 10**8",
+    "result": "3.125"
+   }
+  ]
+ },
+ "ProofOfWork": {
+  "kind": "hist",
+  "draws": 100000,
+  "seed": "the text SEN0401- followed by the candidate number",
+  "caption": "Mining is a search: a miner changes one number in the block and hashes again until the result begins with enough zeros. Hashing the text SEN0401- followed by each of the first 100,000 candidate numbers, this is how many of them gave a hash with at least one, two, three, four and five leading zero digits - each extra digit is about sixteen times rarer than the last. The first candidate whose hash begins with four zeros is number 15,083, so 15,084 hashes were computed to find it.",
+  "bars": [
+   {
+    "index": 1,
+    "text": "at least 1 leading zero digit",
+    "count": 6224
+   },
+   {
+    "index": 2,
+    "text": "at least 2 leading zero digits",
+    "count": 387
+   },
+   {
+    "index": 3,
+    "text": "at least 3 leading zero digits",
+    "count": 26
+   },
+   {
+    "index": 4,
+    "text": "at least 4 leading zero digits",
+    "count": 3
+   },
+   {
+    "index": 5,
+    "text": "at least 5 leading zero digits",
+    "count": 0
+   }
+  ]
+ },
+ "RecoveryCode": {
+  "kind": "boxes",
+  "name": "words",
+  "len": 12,
+  "list": [
+   "nephew",
+   "dog",
+   "crane",
+   "clever",
+   "quantum",
+   "crazy",
+   "purse",
+   "traffic",
+   "repeat",
+   "fruit",
+   "old",
+   "clutch"
+  ],
+  "caption": "A recovery code is an ordered list of words, and the order is part of the secret: the same twelve words in another order rebuild another wallet, or nothing at all. The boxes are the words of the code the chapter uses; the number above a box counts from the first word, the number below from the last.",
+  "picks": [
+   {
+    "expr": "words[0]",
+    "at": [
+     0
+    ],
+    "result": "'nephew'"
+   },
+   {
+    "expr": "words[11]",
+    "at": [
+     11
+    ],
+    "result": "'clutch'"
+   },
+   {
+    "expr": "words[-1]",
+    "at": [
+     11
+    ],
+    "result": "'clutch'"
+   },
+   {
+    "expr": "words[:4]",
+    "at": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "result": "['nephew', 'dog', 'crane', 'clever']"
+   },
+   {
+    "expr": "words[-3:]",
+    "at": [
+     9,
+     10,
+     11
+    ],
+    "result": "['fruit', 'old', 'clutch']"
+   }
+  ],
+  "error": {
+   "expr": "words[12]",
+   "message": "IndexError: list index out of range"
+  }
+ },
+ "BitcoinAddress": {
+  "kind": "facts",
+  "caption": "An address is a string with parts: a prefix that names the network, a separator, a data part written in a 32-character alphabet that leaves out the characters most easily misread, and a six-character checksum computed from everything before it. Each line below takes the address the textbook prints apart, and the worked example of this concept runs the checksum itself.",
+  "facts": [
+   {
+    "label": "Characters in the address",
+    "expr": "len('bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee')",
+    "result": "42"
+   },
+   {
+    "label": "The part before the separator, which names the network",
+    "expr": "'bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee'.split('1', 1)[0]",
+    "result": "'bc'"
+   },
+   {
+    "label": "The character that separates the two parts",
+    "expr": "'bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee'[2]",
+    "result": "'1'"
+   },
+   {
+    "label": "The last six characters, which are the checksum itself",
+    "expr": "'bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee'[-6:]",
+    "result": "'c6aaee'"
+   },
+   {
+    "label": "Distinct characters the data part is written in",
+    "expr": "len(set('bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee'.split('1', 1)[1]))",
+    "result": "19"
+   },
+   {
+    "label": "Every character after the separator comes from the 32-character alphabet",
+    "expr": "set('bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee'.split('1', 1)[1]) <= set('qpzry9x8gf2tvdw0s3jn54khce6mua7l')",
+    "result": "True"
+   },
+   {
+    "label": "The four letters and digits the alphabet leaves out, to stop one being read as another",
+    "expr": "sorted(set('0123456789abcdefghijklmnopqrstuvwxyz') - set('qpzry9x8gf2tvdw0s3jn54khce6mua7l'))",
+    "result": "['1', 'b', 'i', 'o']"
+   }
+  ]
+ }
+}

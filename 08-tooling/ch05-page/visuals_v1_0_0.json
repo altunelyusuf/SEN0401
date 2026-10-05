@@ -1,0 +1,108 @@
+{
+ "_version": "1.0.0",
+ "_note": "Built by 08-tooling/sen0401_visuals_gen_v1_0_0.py. Every result in a `facts` table and every count in a `hist` bar was produced by executing the expression beside it under the interpreter named on that run's command line; the generator refuses to write a result it did not execute, and a histogram whose counts do not add up to the stated number of draws stops it. The draws are seeded, so the bars are identical on every build.",
+ "CodeLength": {
+  "kind": "facts",
+  "caption": "Why a recovery code has twelve words rather than any other number. The standard adds one checksum bit for every thirty-two bits of entropy and then cuts the result into eleven-bit pieces, one word each, so the word count follows from the entropy and nothing is chosen.",
+  "facts": [
+   {
+    "label": "Words in the list, which is two to the eleventh",
+    "expr": "2 ** 11",
+    "result": "2048"
+   },
+   {
+    "label": "Bits one word therefore carries",
+    "expr": "2048 .bit_length() - 1",
+    "result": "11"
+   },
+   {
+    "label": "Entropy in the chapter's own example, in bits",
+    "expr": "len(bytes.fromhex('0c1e24e5917779d297e14d45f14e1a1a')) * 8",
+    "result": "128"
+   },
+   {
+    "label": "Checksum bits for that entropy: one per thirty-two",
+    "expr": "128 // 32",
+    "result": "4"
+   },
+   {
+    "label": "Pieces of eleven bits the two together make",
+    "expr": "(128 + 128 // 32) // 11",
+    "result": "12"
+   },
+   {
+    "label": "The checksum bits themselves, the first four of a SHA-256 of the entropy",
+    "expr": "bin(__import__('hashlib').sha256(bytes.fromhex('0c1e24e5917779d297e14d45f14e1a1a')).digest()[0])[2:].zfill(8)[:4]",
+    "result": "'0111'"
+   },
+   {
+    "label": "The first three word numbers the example's bits give",
+    "expr": "[int(bin(int.from_bytes(bytes.fromhex('0c1e24e5917779d297e14d45f14e1a1a'), 'big'))[2:].zfill(128)[i:i + 11], 2) for i in range(0, 33, 11)]",
+    "result": "[96, 1929, 459]"
+   },
+   {
+    "label": "Entropy, checksum and word count for every length the standard allows",
+    "expr": "[(e, e // 32, (e + e // 32) // 11) for e in (128, 160, 192, 224, 256)]",
+    "result": "[(128, 4, 12), (160, 5, 15), (192, 6, 18), (224, 7, 21), (256, 8, 24)]"
+   },
+   {
+    "label": "Rounds of key stretching between the words and the seed",
+    "expr": "2048",
+    "result": "2048"
+   },
+   {
+    "label": "Bytes of seed the stretching produces",
+    "expr": "64",
+    "result": "64"
+   }
+  ]
+ },
+ "Entropy": {
+  "kind": "hist",
+  "caption": "Three thousand two hundred runs of the first step of making a recovery code: a hundred and twenty-eight random bits, of which the first eleven name the first word. The bars group the two thousand and forty-eight words into eight blocks of two hundred and fifty-six, and they are level because every word must be as likely as every other - a code whose first word were predictable would have less entropy than its length claims.",
+  "draws": 3200,
+  "seed": 20260501,
+  "bars": [
+   {
+    "index": 0,
+    "text": "words 0-255",
+    "count": 409
+   },
+   {
+    "index": 1,
+    "text": "words 256-511",
+    "count": 404
+   },
+   {
+    "index": 2,
+    "text": "words 512-767",
+    "count": 385
+   },
+   {
+    "index": 3,
+    "text": "words 768-1023",
+    "count": 396
+   },
+   {
+    "index": 4,
+    "text": "words 1024-1279",
+    "count": 402
+   },
+   {
+    "index": 5,
+    "text": "words 1280-1535",
+    "count": 397
+   },
+   {
+    "index": 6,
+    "text": "words 1536-1791",
+    "count": 412
+   },
+   {
+    "index": 7,
+    "text": "words 1792-2047",
+    "count": 395
+   }
+  ]
+ }
+}
