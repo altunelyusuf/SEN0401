@@ -3,7 +3,7 @@
 Version: 1.0.0 · Recorded 2026-10-04
 
 This file is the per-fact source record for the four course-level parts written on 2026-10-04:
-`00-course-profile/sen0401_course_v1_0_0.ttl`, `01-outcomes/sen0401_outcomes_v1_0_0.ttl`,
+`00-course-profile/sen0401_course_v1_0_0.ttl`, `01-outcomes/sen0401_outcomes_v1_1_0.ttl`,
 `02-textbook/sen0401_textbook_v1_0_0.ttl` and `03-materials/sen0401_materials_v1_0_0.ttl`.
 Everything below was read in the session that wrote those files; nothing is carried over from a
 summary. Where a fact could not be sourced it is listed under **Not sourced** and left out of the
@@ -75,13 +75,7 @@ Ten outcomes, LO-1 to LO-10, each with its own `dcterms:source`. Their evidence 
 | LO-9 Bitcoin's public figures | Analyze | PKG numbers (Blockchain.com snapshot) |
 | LO-10 team project in the term theme | Create | README's term theme |
 
-**They are not approved.** They were drafted by this session from the evidence above. The file
-carries no `cme:approvedBy` and no `cme:approvedAt`, deliberately: SEN0414's outcomes record an
-owner approval at a stated time, and nothing of that kind has happened for SEN0401. The absence of
-those two properties is the machine-readable signal that approval is outstanding. Until the owner
-approves, revises or rejects them — and in particular rules on LO-6, LO-7 and LO-8, whose evidence
-is the 2025 material and the mission rather than a built 2026 package — no assessment component
-should be aligned to them and no submission should rest on them.
+**They are approved.** The owner approved all ten as drafted, with their levels, on 2026-10-05 (`01-outcomes/sen0401_outcomes_v1_1_0.ttl` carries `cme:approvedBy` and `cme:approvedAt`; version 1.0.0, the draft, remains in git history). One alignment is asserted in `06-quality/sen0401_quality_v1_1_0.ttl`: the Project assesses LO-10. The Midterm and Final are not aligned: the outline does not say what they cover, so the gap stays declared.
 
 CASE terms were verified before use: `dtCFDocument`, `dtCFItem`, `dtCFItemType`, `title`,
 `humanCodingScheme`, `CFItemType` and `fullStatement` were each confirmed present in the fetched
