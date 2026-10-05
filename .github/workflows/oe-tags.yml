@@ -1,0 +1,69 @@
+name: OE tags
+# Release tag for the SEN0401 package, which is the whole repository (root layout).
+# Deployment of the rules in altunelyusuf/Ontologies .github/workflows/oe-tags.yml (commit 1597e030) as adapted
+# for a named folder in altunelyusuf/mastering-bitcoin (commit eb58328): a missing tag is created at the first
+# commit whose VERSION.txt held that version; an existing tag elsewhere is never moved; a version that never
+# appeared fails the run. Manual run: Actions -> OE tags -> Run workflow (empty = current; or an older version).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Tag this version instead of the current one (empty = current)'
+        required: false
+        default: ''
+concurrency:
+  group: oe-tags
+  cancel-in-progress: false
+permissions:
+  contents: write
+env:
+  PKG_DIR: .
+  TAG_PREFIX: sen0401
+jobs:
+  tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Create the missing release tag
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          set -uo pipefail
+          DRY="${DRY_RUN:-0}"
+          if [ "${TAG_PREFIX}" = "CHANGE-ME-to-the-prefix-of-the-existing-tags" ] || [ -z "${TAG_PREFIX}" ]; then
+            echo "::error::TAG_PREFIX has not been set to this repository's tag prefix"; exit 1
+          fi
+          if [ "${PKG_DIR}" = "CHANGE-ME-to-the-package-folder" ] || [ -z "${PKG_DIR}" ]; then
+            echo "::error::PKG_DIR has not been set to the package's folder in this repository"; exit 1
+          fi
+          case "$PKG_DIR" in /*|*..*) echo "::error::PKG_DIR must be a plain relative folder"; exit 1 ;; esac
+          if [ "$PKG_DIR" = "." ]; then VF="VERSION.txt"; else VF="${PKG_DIR%/}/VERSION.txt"; fi
+          [ -f "$VF" ] || { echo "::error::no $VF in this repository"; exit 1; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          ver="${INPUT_VERSION:-$(tr -d ' \n\r' < "$VF")}"
+          [ -n "$ver" ] || { echo "::error::empty version in $VF"; exit 1; }
+          tag="${TAG_PREFIX}-v${ver}"
+          commit=""
+          for c in $(git log --reverse --format=%H -- "$VF"); do
+            v="$(git show "$c:$VF" 2>/dev/null | tr -d ' \n\r' || true)"
+            if [ "$v" = "$ver" ]; then commit="$c"; break; fi
+          done
+          if [ -z "$commit" ]; then
+            echo "::error::$tag: version $ver never appeared in $VF history"; exit 1
+          fi
+          if have="$(git rev-parse -q --verify "refs/tags/${tag}^{commit}")"; then
+            if [ "$have" = "$commit" ]; then
+              echo "ok       $tag already at ${commit:0:7}"; exit 0
+            fi
+            echo "::error::$tag exists at ${have:0:7} but version $ver first appeared at ${commit:0:7}; not moved"
+            exit 1
+          fi
+          if [ "$DRY" = "1" ]; then echo "would tag $tag at ${commit:0:7}"; exit 0; fi
+          git tag -a "$tag" "$commit" -m "${TAG_PREFIX} v$ver"
+          git push origin "refs/tags/$tag"
+          echo "tagged   $tag at ${commit:0:7}"
