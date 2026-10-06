@@ -26,6 +26,8 @@ attribution kept below and carried on the slide that shows it.
 |---|---|---|---|
 | photo_rai_stone.jpg | Wikimedia Commons, "Yap Stone Money.jpg" | CC BY-SA 3.0 | photo: Eric Guinther |
 | photo_pizza_margherita.jpg | Wikimedia Commons, "Eq it-na pizza-margherita sep2005 sml.jpg" | CC BY-SA 3.0 | photo: Valerio Capello (ElfQrin) |
+| photo_cma_stater.jpg | Cleveland Museum of Art open access, Stater: Lion (2000.203, 600-550 BCE) | CC0 | Cleveland Museum of Art |
+| photo_met_tablet.jpg | Wikimedia Commons, "Cuneiform tablet- administrative account concerning the distribution of barley and emmer MET DP297601.jpg" (The Met open access) | CC0 | The Metropolitan Museum of Art |
 | photo_lydian_coins.jpg | Wikimedia Commons, "Lydian electrum Lion coins - Flickr - brewbooks.jpg" | CC BY-SA 2.0 | photo: brewbooks (Flickr) |
 | mbc3_0101.png | github.com/bitcoinbook/bitcoinbook (the course textbook, 3rd ed.), images/ | CC BY-SA 4.0 (book); figure derived from Bitcoin Design Guide, CC-BY | Antonopoulos & Harding, Mastering Bitcoin 3e |
 | mbc3_0102.png | github.com/bitcoinbook/bitcoinbook, images/ | CC BY-SA 4.0 (book); figure derived from Bitcoin Design Guide, CC-BY | Antonopoulos & Harding, Mastering Bitcoin 3e |
@@ -38,4 +40,7 @@ those images under the same licence family; each slide that shows one carries it
 | file | made from | note |
 |---|---|---|
 | genesis_hexdump.png | block 0's raw 285 bytes, fetched from blockstream.info/api in this build | double-SHA256 of the 80-byte header recomputed and matched against the genesis hash before rendering; the Times sentence highlighted |
-| pizza_value_chart.png | documented price milestones (story companion v1.1.0, PIZZA_VALUE) plus the live price from mempool.space and CoinGecko (85,409 / 85,387 USD, 0.03% apart) | log scale; rendered in the deck palette |
+
+Since deck v2.5.0 the value chart is a NATIVE PowerPoint chart (its data series live in the
+chart object; deck_chart_logaxis_v1_0_0.py guarantees the logarithmic axis), so the earlier
+rendered chart picture left the assets; the milestone data stays in the story companion.
