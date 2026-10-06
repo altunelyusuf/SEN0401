@@ -1,0 +1,1283 @@
+{
+ "meta": {
+  "title": "Chapter 5: Wallet Recovery",
+  "sub": "SEN0401, third-edition redesign",
+  "version": "2.0.0",
+  "python": "3.14.4",
+  "total": 0,
+  "redesign": "2026-10-06, to the chapter-1 v2.8.0 standard (CME materials look-and-feel v1.0.0)"
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 5: Wallet Recovery",
+   "sub": "One seed, twelve words, and every key you will ever need back",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch05/assets/mbc3_0503.png",
+     "x": 5.9,
+     "y": 1.2,
+     "w": 3.7,
+     "h": 2.5,
+     "cap": "the HD tree - Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "SAY: Chapter 4 made one key; chapter 5 makes ALL of them recoverable from twelve words you can write on paper - and shows what happens to people who skip the writing.\nFULL TEXT: course page, chapter 5.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "Five parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 6.3,
+     "h": 3.4,
+     "fs": 12.5,
+     "items": [
+      "Questions and the chapter map  (slides 3-4)",
+      "Keys in wallets - loose, deterministic, hierarchical  (slides 5-7)",
+      "Recovery codes - BIP-39, measured and stretched  (slides 8-11)",
+      "The tree and its paths - to Core's own address  (slides 12-15)",
+      "Beyond keys, summary, and resources  (slides 16-23)"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.5,
+     "w": 2.45,
+     "h": 3.4,
+     "vert": true,
+     "items": [
+      {
+       "n": "23",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "3",
+       "label": "true stories, each with WHO / WHERE / WHEN / READ"
+      },
+      {
+       "n": "18",
+       "label": "live-run consoles, each shown with its result"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: Five parts, ending at a tested backup. One story costs 7,002 BTC, one finds 200,000, and one explains the twelve words in your pocket.\nASK: Which part do you expect to be hardest - mark it now, check at the summary.\nFULL TEXT: course page, chapter 5 - every section.",
+   "take": "Five parts - and at the end, a backup you have actually tested",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions - we return to each",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 3.5,
+     "fs": 12.5,
+     "items": [
+      "What does a Bitcoin wallet actually contain?",
+      "How is a BIP39 recovery code generated from entropy and turned into a seed?",
+      "How does BIP32 make a tree of keys from one seed?",
+      "Which recovery code schemes are in use?",
+      "Which derivation paths does a wallet use?",
+      "Where do the chapter's statements differ from the standards and from Bitcoin Core 31.1?",
+      "Which terms do the explanations of this chapter rely on?"
+     ]
+    }
+   ],
+   "notes": "SAY: This first branch of the chapter asks what a Bitcoin wallet really contains and where its keys come from. The chapter begins by correcting a common belief.\nFULL TEXT: course page, chapter 5 - WalletKeys.",
+   "bg": "light",
+   "take": "If you can answer these, chapter 5 is yours"
+  },
+  {
+   "kind": "content",
+   "title": "One chapter, eight branches",
+   "sub": "The concept map the whole chapter hangs on",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 2.9,
+     "cols": 4,
+     "fs": 12.5,
+     "subfs": 10,
+     "accent": [
+      2
+     ],
+     "items": [
+      {
+       "label": "Wallet Keys",
+       "sub": "10 concepts"
+      },
+      {
+       "label": "Recovery Codes",
+       "sub": "14 concepts"
+      },
+      {
+       "label": "BIP39 Stack",
+       "sub": "14 concepts"
+      },
+      {
+       "label": "HD Wallet",
+       "sub": "25 concepts"
+      },
+      {
+       "label": "Path Backup",
+       "sub": "15 concepts"
+      },
+      {
+       "label": "Nonkey Backup",
+       "sub": "9 concepts"
+      },
+      {
+       "label": "Wallet Deployment",
+       "sub": "8 concepts"
+      },
+      {
+       "label": "Foundations",
+       "sub": "8 concepts"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: This first branch of the chapter asks what a Bitcoin wallet really contains and where its keys come from. The chapter begins by correcting a common belief.\nFULL TEXT: course page, chapter 5 - WalletKeys, RecoveryCodes.",
+   "bg": "light",
+   "lede": "Eight branches; the count under each is how many concepts the course page explains for it - today walks the spine.",
+   "take": "Eight branches - every slide today lives on this map"
+  },
+  {
+   "kind": "section",
+   "title": "Keys in wallets",
+   "sub": "From a bag of keys to one recoverable seed",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 5.3,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Wallet databases"
+      },
+      {
+       "label": "Loose keys"
+      },
+      {
+       "label": "Deterministic"
+      },
+      {
+       "label": "Hierarchical"
+      }
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch05/assets/mbc3_0502.png",
+     "x": 6.3,
+     "y": 2.0,
+     "w": 3.3,
+     "h": 2.4,
+     "cap": "one seed, many keys - Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "SAY: This first branch of the chapter asks what a Bitcoin wallet really contains and where its keys come from. The chapter begins by correcting a common belief.\nFULL TEXT: course page, chapter 5 - WalletKeys.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Two guesses from 7,002 bitcoin",
+   "sub": "2021-01-12",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch05/assets/photo_stefan_thomas.jpg",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 2.4,
+     "h": 3.1,
+     "cap": "Stefan Thomas - Lift 2015, CC BY 2.0"
+    },
+    {
+     "t": "beats",
+     "x": 3.3,
+     "y": 1.5,
+     "w": 6.2,
+     "h": 2.3,
+     "fs": 13,
+     "items": [
+      "2011: paid 7,002 BTC for an animated bitcoin explainer",
+      "Keys on an encrypted drive; password on a paper, lost",
+      "The drive allows ten guesses - by 2021, eight were gone",
+      "Front page of the New York Times, and of this chapter"
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 3.3,
+     "y": 4.05,
+     "w": 6.2,
+     "who": "Stefan Thomas, programmer (early bitcoin adopter, later Ripple's CTO)",
+     "where": "an IronKey USB drive in a safe - and the front page of the New York Times",
+     "when": "2021-01-12",
+     "link": "https://www.nytimes.com/2021/01/12/technology/bitcoin-passwords-wallets-fortunes.html",
+     "linkText": "nytimes.com"
+    }
+   ],
+   "notes": "STORY (2021-01-12): In 2011 Stefan Thomas was paid 7,002 BTC for making an animated explainer about bitcoin. He put the keys on an encrypted IronKey drive, wrote the password on a paper he later lost, and the drive allows ten guesses before locking forever. By January 2021, when the New York Times told the story, he had used eight. The chapter you are in - recovery codes, written backups, backup TESTING - is the discipline that makes this story impossible to repeat.\nSOURCE: The New York Times, 2021-01-12, 'Lost Passwords Lock Millionaires Out of Their Bitcoin Fortunes': 7,002 BTC, ten guesses, eight used. Photo: Lift Conference 2015, CC BY 2.0 (the file page names Stefan Thomas).",
+   "bg": "light",
+   "take": "Memory is not a backup - this chapter is the alternative"
+  },
+  {
+   "kind": "content",
+   "title": "From loose keys to one seed",
+   "sub": "Three generations of wallet, one slide",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.55,
+     "w": 9.0,
+     "h": 1.15,
+     "fs": 12,
+     "steps": [
+      {
+       "label": "Loose keys",
+       "sub": "back up every key, forever"
+      },
+      {
+       "label": "Deterministic",
+       "sub": "one seed makes them all"
+      },
+      {
+       "label": "Hierarchical",
+       "sub": "a tree with branches",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.0,
+     "w": 4.3,
+     "h": 0.85,
+     "rows": [
+      [
+       "32 * 1000",
+       "32000"
+      ],
+      [
+       "32 * 1001 - 32 * 1000",
+       "32"
+      ]
+     ],
+     "fs": 7.6,
+     "cap": "run under Python 3.14.4",
+     "label": "loose keys: unrelated by design"
+    },
+    {
+     "t": "code",
+     "x": 5.1,
+     "y": 2.96,
+     "w": 4.4,
+     "h": 1.02,
+     "rows": [
+      [
+       "line = lambda i: (BOOK_SEED + ' + %d\\n' % i).encode()",
+       ""
+      ],
+      [
+       "[hashlib.sha256(line(i)).hexdigest()[:8] for i in range(3)]",
+       "['50b18e0b', 'a965dbcd', '19580c97']"
+      ],
+      [
+       "hashlib.sha256((BOOK_SEED + ' + 0\\n').encode()).hexdigest()[:8]",
+       "'50b18e0b'"
+      ]
+     ],
+     "fs": 7.1,
+     "cap": "run under Python 3.14.4",
+     "label": "same seed in, same keys out - always"
+    },
+    {
+     "t": "when",
+     "x": 2.8,
+     "y": 4.3,
+     "w": 4.4,
+     "body": "back up ONE secret, ONCE"
+    }
+   ],
+   "notes": "SAY: Independent key generation is the method in which a wallet application creates each of the keys that it plans to use independently of the others. Each is a fresh random number with no connection to the rest, and the wallet database is simply the collection of them.\nASK: What breaks if a deterministic wallet's RNG is biased? (chapter 4 answered)\nFULL TEXT: course page, chapter 5 - IndependentKeyGeneration, DeterministicKeyGeneration.",
+   "bg": "light",
+   "take": "Back up one secret once, instead of every key forever"
+  },
+  {
+   "kind": "section",
+   "title": "Recovery codes",
+   "sub": "Entropy, dressed for handwriting",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 5.3,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "BIP-39 words"
+      },
+      {
+       "label": "Checksum"
+      },
+      {
+       "label": "Passphrase"
+      },
+      {
+       "label": "The rivals"
+      }
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch05/assets/mbc3_0504.png",
+     "x": 6.4,
+     "y": 1.8,
+     "w": 3.1,
+     "h": 2.9,
+     "cap": "entropy to code - Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "SAY: A recovery code is the short, written form of a wallet's seed: a sequence of words, or in one case a string of letters and digits, from which every key of a deterministic wallet can be computed again.\nFULL TEXT: course page, chapter 5 - RecoveryCodes.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Twelve words between you and 128 bits",
+   "sub": "2013-09-10",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch05/assets/photo_trezor_pair.jpg",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 3.3,
+     "h": 2.1,
+     "cap": "Trezor One devices - photo: Gage Skidmore, CC BY-SA 3.0"
+    },
+    {
+     "t": "beats",
+     "x": 4.2,
+     "y": 1.5,
+     "w": 5.3,
+     "h": 2.3,
+     "fs": 13,
+     "items": [
+      "2013: the first hardware-wallet team hits a human problem",
+      "Nobody transcribes 128 raw bits correctly",
+      "BIP 39: 2,048 words, 11 bits each, checksum folded in",
+      "These slides run that standard against its own vectors"
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.42,
+     "w": 9.0,
+     "who": "Marek Palatinus and Pavol Rusnak (SatoshiLabs/Trezor), with Aaron Voisine and Sean Bowe",
+     "where": "BIP 39, in the public bips repository",
+     "when": "2013-09-10",
+     "link": "https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki",
+     "linkText": "github.com"
+    }
+   ],
+   "notes": "STORY (2013-09-10): The team building the first hardware signing device faced a human problem: nobody transcribes 128 raw bits correctly. Their 2013 proposal, BIP 39, encodes entropy as ordinary words from a curated list of 2,048 - eleven bits a word, a checksum folded in, a key-stretching function from words to seed. The slides around this one do not describe that pipeline; they run it, word by word, against the standard's own test vectors.\nSOURCE: BIP 39, 'Mnemonic code for generating deterministic keys', authors Palatinus, Rusnak, Voisine, Bowe, dated 2013-09-10, in bitcoin/bips. Photo: two Trezor One devices by Gage Skidmore, CC BY-SA 3.0.",
+   "bg": "light",
+   "take": "The recovery code is an interface between humans and entropy"
+  },
+  {
+   "kind": "content",
+   "title": "Words to bits, measured",
+   "sub": "The whole size table, computed - then checked word by word",
+   "items": [
+    {
+     "t": "chart",
+     "x": 0.45,
+     "y": 1.5,
+     "w": 5.3,
+     "h": 3.3,
+     "ctype": "bar",
+     "title": "Entropy carried by a recovery code (bits)",
+     "dataLabels": true,
+     "dlFmt": "0",
+     "dlFs": 9,
+     "labels": [
+      "12 words",
+      "15 words",
+      "18 words",
+      "21 words",
+      "24 words"
+     ],
+     "series": [
+      {
+       "name": "entropy bits",
+       "data": [
+        128,
+        160,
+        192,
+        224,
+        256
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 6.0,
+     "y": 1.55,
+     "w": 3.5,
+     "h": 1.5,
+     "rows": [
+      [
+       "2 ** 11, len(wordlist())",
+       "(2048, 2048)"
+      ],
+      [
+       "[wordlist()[i] for i in (96, 1929, 459)]",
+       "['army', 'van', 'defense']"
+      ],
+      [
+       "sorted(wordlist()) == wordlist()",
+       "True"
+      ]
+     ],
+     "fs": 8.4,
+     "cap": "run under Python 3.14.4",
+     "label": "the list: 2,048 words, sorted"
+    },
+    {
+     "t": "code",
+     "x": 6.0,
+     "y": 3.4,
+     "w": 3.5,
+     "h": 1.4,
+     "rows": [
+      [
+       "mnemonic_to_entropy(WORDS)[0].hex()",
+       "'0c1e24e5917779d297e14d45f14e1a1a'"
+      ],
+      [
+       "mnemonic_to_entropy(WORDS)[1]",
+       "True"
+      ]
+     ],
+     "fs": 7.5,
+     "cap": "run under Python 3.14.4",
+     "label": "the vector decodes and verifies"
+    }
+   ],
+   "notes": "SAY: The length of a recovery code is not a free choice: it is determined by the amount of entropy. The chapter prints the relation as a table with four columns, entropy in bits, checksum in bits, entropy plus checksum, and recovery code words, whose five rows run from 128 bits and 12 words to 256 bits and 24 words (Antonopoulos and Harding, 2023).\nASK: Why eleven bits a word - what is 2 to the 11?\nFULL TEXT: course page, chapter 5 - CodeLength, WordList.",
+   "bg": "light",
+   "lede": "The bars are computed, never quoted: CodeLength derived every pair, and the checker re-runs it off this file.",
+   "take": "Eleven bits a word; the checksum rides along"
+  },
+  {
+   "kind": "content",
+   "title": "From words to seed, slowly on purpose",
+   "sub": "PBKDF2, salt, and the passphrase that changes everything",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 1.0,
+     "fs": 12,
+     "steps": [
+      {
+       "label": "words",
+       "sub": "the code you wrote"
+      },
+      {
+       "label": "+ 'mnemonic' + passphrase",
+       "sub": "the salt"
+      },
+      {
+       "label": "PBKDF2, 2048 rounds",
+       "sub": "HMAC-SHA512"
+      },
+      {
+       "label": "512-bit seed",
+       "sub": "the tree's root",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.68,
+     "w": 4.3,
+     "h": 0.85,
+     "rows": [
+      [
+       "len(bytes.fromhex(BOOK_SEED)) * 8",
+       "256"
+      ],
+      [
+       "len(mnemonic_to_seed(WORDS)) * 8",
+       "512"
+      ]
+     ],
+     "fs": 7.6,
+     "cap": "run under Python 3.14.4",
+     "label": "the seed is 512 bits, counted"
+    },
+    {
+     "t": "code",
+     "x": 5.1,
+     "y": 2.68,
+     "w": 4.4,
+     "h": 0.85,
+     "rows": [
+      [
+       "mnemonic_to_seed(WORDS).hex()[:16]",
+       "'5b56c417303faa3f'"
+      ],
+      [
+       "mnemonic_to_seed(WORDS, PASSPHRASE).hex()[:16]",
+       "'3b5df16df2157104'"
+      ]
+     ],
+     "fs": 7.6,
+     "cap": "run under Python 3.14.4",
+     "label": "same words, new passphrase - different wallet"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.72,
+     "w": 9.0,
+     "h": 1.1,
+     "rows": [
+      [
+       "mnemonic_to_seed(WORDS).hex()[:16]",
+       "'5b56c417303faa3f'"
+      ],
+      [
+       "len(mnemonic_to_seed(WORDS))",
+       "64"
+      ],
+      [
+       "hashlib.pbkdf2_hmac('sha512', 'words', b'mnemonic', 2048)",
+       "TypeError: a bytes-like object is required, not 'str'"
+      ]
+     ],
+     "fs": 7.4,
+     "cap": "run under Python 3.14.4",
+     "label": "the stretcher itself - and it refuses sloppy input"
+    }
+   ],
+   "notes": "SAY: PBKDF2 is the second password-based key derivation function of the PKCS #5 standard, and it is the particular key-stretching function BIP39 names. Its specification defines it as applying a pseudorandom function to derive keys, with four inputs: a password, a salt, an iteration count and the intended length of the derived key in octets, and says it is recommended for new applications (Moriarty et al., 2017).\nASK: Where must the passphrase NOT be stored - and why is 'nowhere' a defensible answer?\nFULL TEXT: course page, chapter 5 - Pbkdf2, RecoveryPassphrase.",
+   "bg": "light",
+   "take": "The passphrase changes everything - by design"
+  },
+  {
+   "kind": "section",
+   "title": "The tree and its paths",
+   "sub": "One seed, a numbered key for every purpose",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Master key"
+      },
+      {
+       "label": "Child derivation"
+      },
+      {
+       "label": "Hardened"
+      },
+      {
+       "label": "Standard paths"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: A hierarchical deterministic wallet, which the chapter and the standards abbreviate to HD wallet, is a wallet whose keys form a tree, every node of which is computed from the seed. The book's glossary calls the hierarchical deterministic protocol the key creation and transfer protocol of BIP32, which allows creating child keys from parent keys in a hierarchy, and an HD wallet a wallet using that protocol (Antonopoulos and Harding, 2023).\nFULL TEXT: course page, chapter 5 - HdWallet.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "One seed, a tree of keys",
+   "sub": "HMAC-SHA512 splits every node in two",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 3.55,
+     "h": 1.9,
+     "fs": 10.5,
+     "items": [
+      "The seed makes a master key and a chain code",
+      "Each child: HMAC of parent and an index",
+      "32 bytes of key, 32 of chain code - every node"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 4.3,
+     "y": 1.6,
+     "w": 5.2,
+     "h": 1.3,
+     "rows": [
+      [
+       "k, c = master(TV)",
+       ""
+      ],
+      [
+       "'%064x' % k",
+       "'e8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35'"
+      ],
+      [
+       "0 < k < N",
+       "True"
+      ]
+     ],
+     "fs": 8.6,
+     "cap": "run under Python 3.14.4",
+     "label": "the master pair, derived and range-checked"
+    },
+    {
+     "t": "code",
+     "x": 4.3,
+     "y": 3.25,
+     "w": 5.2,
+     "h": 1.3,
+     "rows": [
+      [
+       "(512 // 2, 512 // 2 // 8)",
+       "(256, 32)"
+      ],
+      [
+       "k, c = master(TV)",
+       ""
+      ],
+      [
+       "k1, c1 = ckd_priv(k, c, 0)",
+       ""
+      ],
+      [
+       "(len(c1), k1 < N)",
+       "(32, True)"
+      ]
+     ],
+     "fs": 9.2,
+     "cap": "run under Python 3.14.4",
+     "label": "child zero, with its own chain code"
+    },
+    {
+     "t": "when",
+     "x": 0.5,
+     "y": 3.95,
+     "w": 3.55,
+     "body": "the tree never runs dry"
+    }
+   ],
+   "notes": "SAY: Hierarchical deterministic key generation, usually shortened to HD, is the standard way to derive keys from a seed. It is defined in BIP32, a Bitcoin Improvement Proposal by Pieter Wuille that has the status Deployed (Wuille, 2012).\nASK: Why carry a chain code at all - what would leak without it?\nFULL TEXT: course page, chapter 5 - HdKeyGeneration, ChildKeyDerivation.",
+   "bg": "light",
+   "take": "Two 32-byte halves at every node keep the tree alive"
+  },
+  {
+   "kind": "content",
+   "title": "Hardened or not: one question, two columns",
+   "sub": "Can a thief with the xpub climb down?",
+   "items": [
+    {
+     "t": "compare",
+     "x": 0.5,
+     "y": 1.55,
+     "w": 9.0,
+     "h": 1.95,
+     "fs": 12,
+     "left": {
+      "head": "Normal derivation (index < 2^31)",
+      "rows": [
+       "Public keys derivable WITHOUT private keys",
+       "Perfect for watch-only shops",
+       "But: child private + xpub leaks the parent"
+      ]
+     },
+     "right": {
+      "head": "Hardened (index >= 2^31, the h)",
+      "rows": [
+       "Needs the private parent - no public shortcut",
+       "Standard for account levels",
+       "The run proves the two differ"
+      ]
+     }
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.75,
+     "w": 9.0,
+     "h": 1.2,
+     "rows": [
+      [
+       "k, c = master(TV)",
+       ""
+      ],
+      [
+       "kh, ch = ckd_priv(k, c, 2 ** 31)",
+       ""
+      ],
+      [
+       "'%064x' % kh",
+       "'edb2e14f9ee77d26dd93b4ecede8d16ed408ce149b6cd80b0715a2d911a0afea'"
+      ],
+      [
+       "ckd_priv(k, c, 0)[0] == kh",
+       "False"
+      ]
+     ],
+     "fs": 8.3,
+     "cap": "run under Python 3.14.4",
+     "label": "same index, hardened and not - different keys, provably"
+    }
+   ],
+   "notes": "SAY: Hardened derivation is the alternative derivation function that breaks the relationship between the parent public key and the child chain code.\nASK: Read m/84h/0h/0h/0/2: which hops could a watch-only server have taken itself?\nFULL TEXT: course page, chapter 5 - HardenedDerivation, PrivateChildDerivation.",
+   "bg": "light",
+   "take": "The h in a path is a security decision, not decoration"
+  },
+  {
+   "kind": "content",
+   "title": "The paths everyone agreed on",
+   "sub": "Five levels, and Core derives the same address we do",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.55,
+     "w": 9.0,
+     "h": 0.95,
+     "rows": [
+      [
+       "LEVELS = 'purpose / coin_type / account / change / address_index'.split(' / ')",
+       ""
+      ],
+      [
+       "len(LEVELS)",
+       "5"
+      ],
+      [
+       "[i >= 2 ** 31 for i in path_indices('m/44h/0h/0h/0/2')]",
+       "[True, True, True, False, False]"
+      ]
+     ],
+     "fs": 7.2,
+     "cap": "run under Python 3.14.4",
+     "label": "purpose / coin / account / change / index - hardened where it matters"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.75,
+     "w": 9.0,
+     "h": 1.3,
+     "rows": [
+      [
+       "k0, c0 = keys_at(B84, 'm/84h/0h/0h/0/0')",
+       ""
+      ],
+      [
+       "p2wpkh_address(ser_p(ec_mul(k0)))",
+       "'bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu'"
+      ],
+      [
+       "CORE_BIP84['addresses'][0]",
+       "'bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu'"
+      ],
+      [
+       "p2wpkh_address(ser_p(ec_mul(k0))) == CORE_BIP84['addresses'][0]",
+       "True"
+      ]
+     ],
+     "fs": 7.9,
+     "cap": "run under Python 3.14.4",
+     "label": "BIP-84's own test vector: our math, then Core's answer - equal"
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 12,
+     "items": [
+      "44h legacy",
+      "49h nested",
+      "84h segwit",
+      "86h taproot"
+     ]
+    }
+   ],
+   "notes": "SAY: BIP44 is the layout that gives a tree its familiar shape. The chapter says that, extending BIP43, BIP44 proposes a multi-account structure as purpose number 44 with a prime, that all wallets following the structure are identified by using only the branch m/44', and that the structure consists of five predefined tree levels: purpose, coin type, account, change and address index (Antonopoulos and Harding, 2023).\nASK: Your phone wallet says 'account 0' - write its path from memory.\nFULL TEXT: course page, chapter 5 - Bip44Structure, StandardPath84.",
+   "bg": "light",
+   "take": "m/84h/0h/0h/0/0 - and Core derives the same address"
+  },
+  {
+   "kind": "section",
+   "title": "Beyond keys",
+   "sub": "What else must survive, and how wallets ship",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Watch-only xpubs"
+      },
+      {
+       "label": "Labels and channels"
+      },
+      {
+       "label": "Split secrets"
+      },
+      {
+       "label": "Test the backup"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: This branch is about everything in a wallet that a seed cannot reproduce.\nFULL TEXT: course page, chapter 5 - NonkeyBackup.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Watch-only: the shop holds no keys",
+   "sub": "An xpub derives addresses; it cannot spend",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 9.0,
+     "h": 0.9,
+     "fs": 9.5,
+     "items": [
+      "Deploy the xpub to the web shop, keep keys cold - it mints a fresh address per customer",
+      "The gap limit decides how far a recovery scan looks for used addresses"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.55,
+     "w": 9.0,
+     "h": 1.3,
+     "rows": [
+      [
+       "['M/84h/0h/0h/0/%d' % i for i in range(3)]",
+       "['M/84h/0h/0h/0/0', 'M/84h/0h/0h/0/1', 'M/84h/0h/0h/0/2']"
+      ],
+      [
+       "acct = parse_extended(BOOK_XPUB)",
+       ""
+      ],
+      [
+       "K, ch = decompress(acct['key']), acct['chain']",
+       ""
+      ],
+      [
+       "[p2wpkh_address(ser_p(pub_at(K, ch, '0/%d' % i)[0])) for i in range(2)]",
+       "['bc1qrx4d48k7etw6cvq8czlmd8j0c5rwswccl3vk06', 'bc1qt4qgamxv55gm0lksl0aay3pkjvt02zy4h8j3lv']"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.4",
+     "label": "three addresses from the public key alone - cold keys, warm addresses"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 4.1,
+     "w": 9.0,
+     "h": 0.82,
+     "rows": [
+      [
+       "scan_with_gap({0, 3, 25}, 20)",
+       "[0, 3]"
+      ],
+      [
+       "scan_with_gap({0, 3, 25}, 30)",
+       "[0, 3, 25]"
+      ]
+     ],
+     "fs": 7.2,
+     "cap": "run under Python 3.14.4",
+     "label": "scan 20: index 25 is missed; scan 30 finds it"
+    }
+   ],
+   "notes": "SAY: Deploying an extended public key means installing the public half of a branch on a machine that needs to receive but not to spend.\nASK: A donation page went viral and used 400 addresses - what must recovery change?\nFULL TEXT: course page, chapter 5 - XpubDeployment, GapLimit.",
+   "bg": "light",
+   "take": "Publish the xpub; the keys never feel the internet"
+  },
+  {
+   "kind": "content",
+   "title": "The 200,000 BTC in a forgotten wallet file",
+   "sub": "2014-03-21",
+   "items": [
+    {
+     "t": "stat",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 9.0,
+     "h": 1.2,
+     "items": [
+      {
+       "n": "200,000 BTC",
+       "label": "reported found, three weeks into bankruptcy"
+      },
+      {
+       "n": "2011",
+       "label": "when the old-format wallet file was last used"
+      },
+      {
+       "n": "10+ yrs",
+       "label": "later, those coins began repaying creditors"
+      }
+     ]
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.0,
+     "w": 9.0,
+     "h": 1.25,
+     "fs": 12.5,
+     "items": [
+      "A file written by software two generations older still held spendable keys",
+      "Backups do not expire - label them, test them, never discard them blindly"
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.42,
+     "w": 9.0,
+     "who": "Mt. Gox, weeks into its bankruptcy proceedings",
+     "where": "an old-format wallet file, unused since June 2011",
+     "when": "2014-03-21",
+     "link": "https://en.wikipedia.org/wiki/Mt._Gox",
+     "linkText": "en.wikipedia.org"
+    }
+   ],
+   "notes": "STORY (2014-03-21): Chapter 1 told how Mt. Gox collapsed owing 850,000 BTC. Three weeks after the bankruptcy filing came a twist: the company reported finding about 200,000 BTC in an old-format wallet file that had sat unused since 2011. A file made by software two generations older still held spendable keys - backups do not expire. Those coins became the pool from which creditors, a decade later, began to be repaid.\nSOURCE: Mt. Gox announcement of 2014-03-20/21 reporting approximately 200,000 BTC found in an old-format wallet; summarized with the bankruptcy chronology at en.wikipedia.org/wiki/Mt._Gox.",
+   "bg": "light",
+   "take": "Backups do not expire - treat old wallet files as live keys"
+  },
+  {
+   "kind": "content",
+   "title": "Split the secret, not the risk",
+   "sub": "Shamir: three of five recovers; two learn nothing",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.55,
+     "w": 3.55,
+     "h": 1.9,
+     "fs": 10.5,
+     "items": [
+      "Split the seed into five shares, threshold three",
+      "Any three reconstruct it exactly",
+      "Any two: provably nothing - the run shows both"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 4.3,
+     "y": 1.55,
+     "w": 5.2,
+     "h": 1.75,
+     "rows": [
+      [
+       "SHARES = shamir_split(0x1337c0de, 3, 5, [11, 22])",
+       ""
+      ],
+      [
+       "len(SHARES)",
+       "5"
+      ],
+      [
+       "shamir_combine([SHARES[0], SHARES[2], SHARES[4]]) == 0x1337c0de",
+       "True"
+      ],
+      [
+       "shamir_combine([SHARES[0], SHARES[2]]) == 0x1337c0de",
+       "False"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.4",
+     "label": "split, recover, and fail honestly"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.65,
+     "w": 9.0,
+     "h": 1.25,
+     "rows": [
+      [
+       "SHARES = shamir_split(0x1337c0de, 3, 5, [11, 22])",
+       ""
+      ],
+      [
+       "[x for x, y in SHARES]",
+       "[1, 2, 3, 4, 5]"
+      ],
+      [
+       "shamir_combine(SHARES[:3]) == 0x1337c0de",
+       "True"
+      ],
+      [
+       "shamir_combine(SHARES[:2]) == 0x1337c0de",
+       "False"
+      ]
+     ],
+     "fs": 7.5,
+     "cap": "run under Python 3.14.4",
+     "label": "SLIP-39 does this in words; Codex32 by hand on paper"
+    }
+   ],
+   "notes": "SAY: Secret sharing is a way of splitting one secret into several parts with a threshold. SLIP39's description is the clearest: the scheme splits a secret into a number of unique parts, of which any threshold-many are required to reconstruct it, and knowledge of fewer than the required number does not leak information about the secret (Rusnak et al., 2017).\nASK: Where do five shares live so no burglary, flood, or sibling feud collects three?\nFULL TEXT: course page, chapter 5 - SecretSharing, Slip39Code.",
+   "bg": "light",
+   "take": "Three of five recovers; two of five learns nothing"
+  },
+  {
+   "kind": "content",
+   "title": "Test the backup, not your luck",
+   "sub": "The chapter's closing discipline, executable",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.55,
+     "w": 9.0,
+     "h": 1.25,
+     "rows": [
+      [
+       "mnemonic_to_seed(WORDS) == mnemonic_to_seed(WORDS)",
+       "True"
+      ],
+      [
+       "mnemonic_to_entropy(WORDS)[1]",
+       "True"
+      ],
+      [
+       "mnemonic_to_entropy(WORDS.replace('crunch', 'cruise'))[1]",
+       "False"
+      ]
+     ],
+     "fs": 8.8,
+     "cap": "run under Python 3.14.4",
+     "label": "restore-drill: right words verify; one wrong word is caught"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.1,
+     "w": 9.0,
+     "h": 0.9,
+     "rows": [
+      [
+       "'Safely copies the current wallet file' in flat(CORE_BACKUP)",
+       "True"
+      ],
+      [
+       "'(default: 1000)' in flat(CORE_KEYPOOL)",
+       "True"
+      ]
+     ],
+     "fs": 8.3,
+     "cap": "run under Python 3.14.4",
+     "label": "Core's own tooling: backupwallet, and the keypool that guards gaps"
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 4.25,
+     "w": 9.0,
+     "h": 0.6,
+     "fs": 12.5,
+     "items": [
+      "write it",
+      "split it if large",
+      "store it apart",
+      "TEST the restore"
+     ]
+    }
+   ],
+   "notes": "SAY: Testing a backup means performing the recovery while it is still optional. It is the action the chapter's last sentence asks for: it is up to the reader to actually use the systems available to make good backups and regularly test them (Antonopoulos and Harding, 2023).\nASK: When did you last restore a backup of anything - and how do you know it works?\nFULL TEXT: course page, chapter 5 - BackupTesting, DataLoss.",
+   "bg": "light",
+   "take": "A backup counts only after a successful restore drill"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per part - each one provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.3,
+     "fs": 12.5,
+     "items": [
+      "Wallets stopped storing keys and started deriving them - one seed, backed up once",
+      "A recovery code is entropy in human clothing: 11 bits a word, checksum included",
+      "Words become a 512-bit seed through deliberate slowness - and a passphrase forks the wallet",
+      "The HD tree hands every purpose a numbered key; hardened hops keep the xpub harmless",
+      "Beyond keys: labels, channels, split secrets - and a backup only counts once restored"
+     ]
+    }
+   ],
+   "notes": "SAY: Five lines, one per part; the agenda names the slides that prove each.\nASK: Which line would you defend first, and with which slide?\nFULL TEXT: course page, chapter 5 - every section.",
+   "take": "If a line feels unproven, its part's slides carry the receipt",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Checked 2026-10-06; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.45,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "This chapter, free (CC BY-SA)",
+         "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch05_wallets.adoc"
+        ],
+        [
+         "The IronKey story, as reported",
+         "https://www.nytimes.com/2021/01/12/technology/bitcoin-passwords-wallets-fortunes.html"
+        ]
+       ]
+      },
+      {
+       "head": "Standards",
+       "rows": [
+        [
+         "BIP 39 - the recovery code",
+         "https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki"
+        ],
+        [
+         "BIP 32 - the HD tree",
+         "https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki"
+        ],
+        [
+         "BIP 84 - the path these slides derived",
+         "https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki"
+        ]
+       ]
+      },
+      {
+       "head": "Tools",
+       "rows": [
+        [
+         "Ian Coleman's BIP-39 tool (offline use!)",
+         "https://iancoleman.io/bip39/"
+        ],
+        [
+         "learnmeabitcoin - HD wallets, drawn",
+         "https://learnmeabitcoin.com"
+        ]
+       ]
+      },
+      {
+       "head": "Community",
+       "rows": [
+        [
+         "Bitcoin Stack Exchange Q&A",
+         "https://bitcoin.stackexchange.com"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: Everything here is free. Homework: generate a THROWAWAY twelve-word code, restore it in a second wallet, and bring the one surprise you hit to class. Never type a real code into any website.\nASK: Which of the four closing chips does your current phone wallet fail?\nFULL TEXT: course page, chapter 5 - WalletDeployment.",
+   "bg": "light",
+   "take": "Twelve words on paper beat every password you have ever memorized"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "Why one seed replaced bags of keys",
+      "What twelve words carry, and how they become a tree",
+      "Which path your wallet walks, and who else can walk it",
+      "What a tested backup is - and what Stefan Thomas teaches"
+     ]
+    }
+   ],
+   "notes": "SAY: Four claims, each carried by a computation you watched run against the standards' own vectors. First five chapters complete - the course page carries every word.\nFULL TEXT: course page, chapter 5.",
+   "bg": "dark"
+  }
+ ]
+}
