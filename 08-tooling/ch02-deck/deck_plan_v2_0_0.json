@@ -1,0 +1,1587 @@
+{
+ "meta": {
+  "title": "Chapter 2: How Bitcoin Works",
+  "sub": "SEN0401, third-edition redesign",
+  "version": "2.0.0",
+  "python": "3.13.16",
+  "total": 0,
+  "redesign": "2026-10-06, to the chapter-1 v2.8.0 standard (CME materials look-and-feel v1.0.0)"
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 2: How Bitcoin Works",
+   "sub": "Transactions, the network, and the chain - one payment, followed all the way",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/c2s04_overview.png",
+     "x": 5.9,
+     "y": 1.15,
+     "w": 3.7,
+     "h": 2.6,
+     "cap": "users, wallets, nodes, miners - from the owner's 2025 deck"
+    }
+   ],
+   "notes": "SAY: Chapter 1 asked what Bitcoin is; chapter 2 follows one payment - Alice pays Bob - all the way from her wallet to a buried block, and meets every moving part on the way.\nFULL TEXT: course page, chapter 2.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "Five parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 6.3,
+     "h": 3.4,
+     "fs": 12.5,
+     "items": [
+      "Questions and the chapter map  (slides 3-4)",
+      "Transactions - inputs, outputs, change, fees  (slides 5-10)",
+      "The network - gossip, nodes, explorers  (slides 11-15)",
+      "Blockchain and mining - blocks, proof, confirmations  (slides 16-24)",
+      "Semantics, practice, summary, and resources  (slides 25-30)"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.5,
+     "w": 2.45,
+     "h": 3.4,
+     "vert": true,
+     "items": [
+      {
+       "n": "30",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "3",
+       "label": "true stories, each with WHO / WHERE / WHEN / READ"
+      },
+      {
+       "n": "18",
+       "label": "code examples, run live - each shown with its result"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: Five parts, one payment followed all the way. The stories carry the why, the consoles carry the proof, and every slide number here is printed bottom-right as we pass it.\nASK: Which part do you expect to be hardest - mark it now, check at the summary.\nFULL TEXT: course page, chapter 2 - every section.",
+   "take": "Five parts, one payment followed all the way through",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions - we return to each",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.35,
+     "w": 9.0,
+     "h": 3.7,
+     "fs": 12.5,
+     "items": [
+      "Which parts does a Bitcoin transaction consist of?",
+      "Which mathematical tools does a transaction rely on - hashing?",
+      "How does a payment begin: what does the invoice of the chapter contain?",
+      "How does a signed transaction reach the miners?",
+      "How is a transaction recorded: how is a block built?",
+      "What exactly does a confirmation buy?",
+      "How can the chapter's transaction chain be expressed as a provenance graph in the vocabulary of the W3C PROV Ontology?",
+      "Which terms do the explanations of this chapter rely on?"
+     ]
+    }
+   ],
+   "notes": "SAY: A transaction is the unit of action in Bitcoin: a message telling the network that the owner of certain bitcoins has authorized the transfer of that value to another owner. The new owner can in turn spend the value by creating another transaction, and so on, which gives a chain of ownership.\nFULL TEXT: course page, chapter 2 - Transaction.",
+   "bg": "light",
+   "take": "If you can answer these, chapter 2 is yours"
+  },
+  {
+   "kind": "content",
+   "title": "One chapter, five branches",
+   "sub": "The concept map the whole chapter hangs on",
+   "items": [
+    {
+     "t": "tree",
+     "x": 0.4,
+     "y": 1.62,
+     "w": 9.2,
+     "h": 3.3,
+     "fs": 12,
+     "root": "Chapter 2",
+     "nodes": [
+      {
+       "label": "Transaction",
+       "kids": [
+        "Transaction Part",
+        "Cryptography",
+        "Linkage",
+        "Form",
+        "Unit",
+        "Payment Request",
+        "Construction"
+       ]
+      },
+      {
+       "label": "Network",
+       "kids": [
+        "Participants",
+        "Propagation"
+       ]
+      },
+      {
+       "label": "Blockchain",
+       "kids": [
+        "Mining",
+        "Security",
+        "Spending"
+       ]
+      },
+      {
+       "label": "Semantics",
+       "kids": [
+        "Provenance Model"
+       ]
+      },
+      {
+       "label": "Practice",
+       "kids": [
+        "Interactive Demo"
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: A transaction is the unit of action in Bitcoin: a message telling the network that the owner of certain bitcoins has authorized the transfer of that value to another owner. The new owner can in turn spend the value by creating another transaction, and so on, which gives a chain of ownership.\nFULL TEXT: course page, chapter 2 - Transaction, Network, Blockchain.",
+   "bg": "light",
+   "lede": "Each branch is a question the chapter answers; the grey lists are the concepts that answer it, every one explained on the course page.",
+   "take": "Five branches - every slide today lives on this map"
+  },
+  {
+   "kind": "section",
+   "title": "Transactions",
+   "sub": "Who pays whom, with what, and what it costs",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 5.3,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Inputs and outputs"
+      },
+      {
+       "label": "Change"
+      },
+      {
+       "label": "Fees"
+      },
+      {
+       "label": "The chain of spends"
+      }
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/mbc3_0203.png",
+     "x": 6.4,
+     "y": 2.2,
+     "w": 3.2,
+     "h": 1.6,
+     "cap": "outputs become inputs - Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "SAY: A transaction is the unit of action in Bitcoin: a message telling the network that the owner of certain bitcoins has authorized the transfer of that value to another owner. The new owner can in turn spend the value by creating another transaction, and so on, which gives a chain of ownership.\nFULL TEXT: course page, chapter 2 - Transaction.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Nine pages, and a table of odds",
+   "sub": "2008-10-31",
+   "items": [
+    {
+     "t": "news",
+     "x": 0.5,
+     "y": 1.42,
+     "w": 3.1,
+     "h": 2.5,
+     "paper": "The Cryptography List",
+     "date": "Friday October 31 2008",
+     "badge": "nine pages at bitcoin.org",
+     "headline": "Bitcoin P2P e-cash paper"
+    },
+    {
+     "t": "text",
+     "x": 3.95,
+     "y": 1.55,
+     "w": 5.55,
+     "h": 1.5,
+     "fs": 12,
+     "italic": true,
+     "color": "mute",
+     "body": "\"A purely peer-to-peer version of electronic cash would allow online payments to be sent directly from one party to another without going through a financial institution.\" - the abstract's first sentence"
+    },
+    {
+     "t": "beats",
+     "x": 3.95,
+     "y": 3.1,
+     "w": 5.55,
+     "h": 1.15,
+     "fs": 13,
+     "items": [
+      "Section 11 computes the attacker's catch-up odds",
+      "We rerun that computation live, later in this deck"
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 3.95,
+     "y": 4.42,
+     "w": 5.55,
+     "who": "Satoshi Nakamoto, announcing on the metzdowd.com cryptography mailing list",
+     "where": "bitcoin.org - a nine-page PDF",
+     "when": "2008-10-31",
+     "link": "https://bitcoin.org/bitcoin.pdf",
+     "linkText": "bitcoin.org"
+    }
+   ],
+   "notes": "STORY (2008-10-31): On 31 October 2008 a pseudonymous author posted nine pages to a cryptography mailing list. Section 11 does something unusual for a systems paper: it computes the attacker's odds. Modelling the race between an honest chain and a secret one as a binomial random walk, it tabulates the probability that an attacker with a share q of the hash power ever catches up from z blocks behind. This deck does not quote that table - it reruns the paper's own procedure and draws the result.\nSOURCE: Nakamoto, 'Bitcoin: A Peer-to-Peer Electronic Cash System' (2008), section 11; announcement of 2008-10-31 on the metzdowd.com cryptography list. The chapter research record reproduced the paper's q=0.1 column - 0.2045873 at one confirmation, 0.0002428 at six - to seven decimal places (examples group AttackerSuccess reruns it for this deck).",
+   "bg": "light",
+   "take": "The paper computes its promises - today we recompute them"
+  },
+  {
+   "kind": "content",
+   "title": "Alice pays Bob: one transaction, whole",
+   "sub": "The chapter's running example, shown as the ledger sees it",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/mbc3_0202.png",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 4.3,
+     "h": 2.85,
+     "cap": "double-entry view - Mastering Bitcoin 3e, CC BY-SA"
+    },
+    {
+     "t": "numlist",
+     "x": 5.1,
+     "y": 1.55,
+     "w": 4.4,
+     "h": 1.5,
+     "fs": 10.5,
+     "items": [
+      "One 100,000-sat output of Alice's is spent whole",
+      "Two new outputs: 75,000 to Bob, 20,000 back to Alice",
+      "What the sums leave over - 5,000 sat - is the fee"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 5.1,
+     "y": 3.3,
+     "w": 4.4,
+     "h": 1.05,
+     "rows": [
+      [
+       "ins, outs = [100000], [20000, 75000]",
+       ""
+      ],
+      [
+       "(len(ins), len(outs), sum(ins) - sum(outs))",
+       "(1, 2, 5000)"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.13.16",
+     "label": "counted by the run: 1 input, 2 outputs, 5,000 fee"
+    }
+   ],
+   "notes": "SAY: A transaction is the unit of action in Bitcoin: a message telling the network that the owner of certain bitcoins has authorized the transfer of that value to another owner. The new owner can in turn spend the value by creating another transaction, and so on, which gives a chain of ownership.\nASK: Why must the 100,000 be spent whole rather than split?\nFULL TEXT: course page, chapter 2 - Transaction, Input.",
+   "bg": "light",
+   "take": "A transaction spends whole outputs and makes new ones"
+  },
+  {
+   "kind": "content",
+   "title": "Your balance is outputs, not an account",
+   "sub": "The UTXO idea - what a wallet actually sums",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 5.3,
+     "h": 1.75,
+     "fs": 10.5,
+     "items": [
+      "Every payment leaves outputs - coins of exact sizes",
+      "Spending consumes outputs whole and mints new ones",
+      "Your balance = the outputs your keys can unlock",
+      "The run keeps only the unspent: Tx2:0 and Tx2:1"
+     ]
+    },
+    {
+     "t": "chips",
+     "x": 6.2,
+     "y": 1.9,
+     "w": 3.3,
+     "h": 1.2,
+     "fs": 12.5,
+     "items": [
+      "Tx2:0 unspent",
+      "Tx2:1 unspent",
+      "Tx1:0 spent"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.6,
+     "w": 9.0,
+     "h": 1.1,
+     "rows": [
+      [
+       "[o for o, spent in {'Tx1:0': True, 'Tx2:0': False, 'Tx2:1': False}.items() if not spent]",
+       "['Tx2:0', 'Tx2:1']"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.13.16",
+     "label": "the ledger's view, filtered to the spendable"
+    }
+   ],
+   "notes": "SAY: An unspent transaction output, abbreviated UTXO, is a transaction output that has not yet been used as an input by any later transaction. The glossary defines it as an unspent transaction output that can be spent as an input in a new transaction (Antonopoulos and Harding, 2023).\nASK: Where does the idea of an 'account balance' live, if not on the chain?\nFULL TEXT: course page, chapter 2 - UnspentOutput, Output.",
+   "bg": "light",
+   "take": "No accounts anywhere - only unspent outputs your keys can unlock"
+  },
+  {
+   "kind": "content",
+   "title": "Change comes back to you",
+   "sub": "Inputs are spent whole, like banknotes",
+   "items": [
+    {
+     "t": "bars",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 5.4,
+     "h": 1.5,
+     "rows": [
+      {
+       "label": "to Bob",
+       "v": 75000,
+       "hot": true
+      },
+      {
+       "label": "change, back to Alice",
+       "v": 20000
+      },
+      {
+       "label": "fee, to the miner",
+       "v": 5000
+      }
+     ]
+    },
+    {
+     "t": "when",
+     "x": 6.3,
+     "y": 1.75,
+     "w": 3.1,
+     "body": "75,000 + 20,000 + 5,000 = 100,000"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.55,
+     "w": 5.4,
+     "h": 0.95,
+     "rows": [
+      [
+       "100000 - sum([75000, 20000])",
+       "5000"
+      ]
+     ],
+     "fs": 10.5,
+     "cap": "run under Python 3.13.16",
+     "label": "the fee is the remainder - computed, not quoted"
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/c2s07_fractions.jpg",
+     "x": 6.3,
+     "y": 3.3,
+     "w": 3.1,
+     "h": 1.55,
+     "cap": "the fraction table, from the owner's 2025 deck"
+    }
+   ],
+   "notes": "SAY: Making change is the practice of adding to a transaction an output that returns the surplus to the person who is paying. The book explains the need with money in a shop: if you buy a five-dollar item with a twenty-dollar bill you expect fifteen dollars back, and in the same way a transaction input, like a currency note, cannot be partly spent (Antonopoulos and Harding, 2023).\nASK: Pay a 20-lira coffee with a 50-lira note: where is the change output?\nFULL TEXT: course page, chapter 2 - MakingChange, TransactionFee.",
+   "bg": "light",
+   "lede": "A 100,000-satoshi output pays a 75,000 bill the way a banknote pays a coffee: spent whole, with change coming back - minus the tip to the miner.",
+   "take": "Inputs are spent whole; the difference returns as change"
+  },
+  {
+   "kind": "content",
+   "title": "Fees price bytes, not value",
+   "sub": "Block space is the scarce good",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.66,
+     "w": 3.55,
+     "h": 1.9,
+     "fs": 10.5,
+     "items": [
+      "A block holds bytes, not value - space is what runs out",
+      "So fees are bid per virtual byte, not per coin moved",
+      "This transaction: 143 vbytes, 5,000 sat - about 35 sat/vB"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 4.3,
+     "y": 1.6,
+     "w": 5.2,
+     "h": 0.95,
+     "rows": [
+      [
+       "(569 + 3) // 4",
+       "143"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.13.16",
+     "label": "1 - weight to virtual bytes"
+    },
+    {
+     "t": "code",
+     "x": 4.3,
+     "y": 2.85,
+     "w": 5.2,
+     "h": 0.95,
+     "rows": [
+      [
+       "round(5000 / 143, 2)",
+       "34.97"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.13.16",
+     "label": "2 - the rate a wallet actually bids"
+    },
+    {
+     "t": "stat",
+     "x": 4.3,
+     "y": 3.95,
+     "w": 5.2,
+     "h": 1.0,
+     "items": [
+      {
+       "n": "34.97",
+       "label": "sat/vB, from the run"
+      },
+      {
+       "n": "143",
+       "label": "virtual bytes here"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: The fee rate is the fee a transaction pays for each unit of the space it takes in a block. Miners do not compare transactions by their total fee alone; they divide the fee by the size of the transaction, as a shopper divides the price of a bag of rice by its weight to find the best deal.\nASK: Why does moving 1 BTC cost the same as moving 100?\nFULL TEXT: course page, chapter 2 - FeeRate, TransactionSize.",
+   "bg": "light",
+   "take": "You pay for block space - size, not amount"
+  },
+  {
+   "kind": "section",
+   "title": "The network",
+   "sub": "No postmaster - transactions travel by gossip",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 5.3,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Propagation"
+      },
+      {
+       "label": "Mempools"
+      },
+      {
+       "label": "Full and light nodes"
+      },
+      {
+       "label": "Explorers"
+      }
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/c8s06_mesh.png",
+     "x": 6.5,
+     "y": 2.1,
+     "w": 3.1,
+     "h": 2.5
+    }
+   ],
+   "notes": "SAY: The Bitcoin network is the set of computers that run the Bitcoin protocol and exchange transactions and blocks with one another. This second branch of the chapter follows Alice's transaction out of her wallet and across that network.\nFULL TEXT: course page, chapter 2 - Network.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Five free bitcoins for every visitor",
+   "sub": "2010-06-11",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/photo_gavin_andresen.jpg",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 2.6,
+     "h": 3.05,
+     "cap": "Gavin Andresen - photo: Stephen McCarthy / Web Summit, CC BY 2.0"
+    },
+    {
+     "t": "beats",
+     "x": 3.5,
+     "y": 1.5,
+     "w": 6.0,
+     "h": 2.3,
+     "fs": 13,
+     "items": [
+      "June 2010: almost nowhere to buy bitcoin existed",
+      "Andresen stocked a website with 1,100 BTC of his own",
+      "Five coins free per visitor; a CAPTCHA was the only price",
+      "Thousands got their first coins - then came the exchanges"
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 3.5,
+     "y": 4.05,
+     "w": 6.0,
+     "who": "Gavin Andresen, the developer Satoshi later handed the project to",
+     "where": "freebitcoins.appspot.com, announced on the bitcointalk forum",
+     "when": "2010-06-11",
+     "link": "https://bitcointalk.org/index.php?topic=141.0",
+     "linkText": "bitcointalk.org"
+    }
+   ],
+   "notes": "STORY (2010-06-11): In June 2010 there was almost nowhere to buy bitcoin, so a developer in Massachusetts stocked a website with 1,100 of his own coins and gave five to anyone who asked - solving a CAPTCHA was the only price. Thousands of people got their first bitcoin from Gavin Andresen's faucet. The giveaway seeded the user base the first exchanges and the first payments then grew from, and Andresen went on to lead Bitcoin's development when Satoshi withdrew in 2011.\nSOURCE: Andresen's own announcement thread, bitcointalk.org topic 141, 2010-06-11: 'Get 5 free bitcoins from freebitcoins.appspot.com', initially stocked with 1,100 BTC. Photo: Web Summit 2014, CC BY 2.0.",
+   "bg": "light",
+   "take": "Before exchanges, distribution itself had to be invented"
+  },
+  {
+   "kind": "content",
+   "title": "A transaction's journey to everyone",
+   "sub": "Gossip, hop by hop, until every mempool holds it",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 9.0,
+     "h": 1.2,
+     "fs": 12.5,
+     "steps": [
+      {
+       "label": "Alice signs",
+       "sub": "her wallet builds the tx"
+      },
+      {
+       "label": "One peer hears",
+       "sub": "any node will do"
+      },
+      {
+       "label": "Gossip",
+       "sub": "each peer tells its peers"
+      },
+      {
+       "label": "Every mempool",
+       "sub": "seconds later",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 3.1,
+     "w": 3.6,
+     "h": 1.3,
+     "fs": 10.5,
+     "items": [
+      "No central dispatcher - the whisper network is the mail",
+      "Bob sees it unconfirmed within seconds",
+      "It waits in mempools until a miner picks it"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 4.3,
+     "y": 3.05,
+     "w": 5.2,
+     "h": 1.0,
+     "rows": [
+      [
+       "sec, nodes = 5, 10000",
+       ""
+      ],
+      [
+       "round(nodes / sec)",
+       "2000"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.13.16",
+     "label": "hops counted by the run"
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/shot_bitcoinqt_0_5_2.png",
+     "x": 4.3,
+     "y": 4.2,
+     "w": 2.3,
+     "h": 0.72
+    }
+   ],
+   "notes": "SAY: Transaction propagation is the spread of a signed transaction across the network until it has reached, in practice, everyone who cares, including the miners who may record it. It is the composition of the two previous concepts: the wallet transmits the transaction to some node, and then the gossip rule carries it onward hop by hop.\nASK: What happens if two conflicting spends gossip at once? (next section answers)\nFULL TEXT: course page, chapter 2 - TransactionPropagation, Mempool.",
+   "bg": "light",
+   "take": "Four seconds of gossip puts Alice's payment in every mempool"
+  },
+  {
+   "kind": "content",
+   "title": "Who checks? Everyone who wants to",
+   "sub": "Full nodes verify history; light clients verify proofs",
+   "items": [
+    {
+     "t": "compare",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 9.0,
+     "h": 2.3,
+     "fs": 12.5,
+     "left": {
+      "head": "Full node",
+      "rows": [
+       "Downloads and checks every block since 2009",
+       "Trusts nobody - recomputes all the rules",
+       "Serves the network; needs disk and patience"
+      ]
+     },
+     "right": {
+      "head": "Lightweight client",
+      "rows": [
+       "Keeps headers only - megabytes, not gigabytes",
+       "Verifies proofs that a tx sits in a block",
+       "Perfect for phones; trusts the strongest chain"
+      ]
+     }
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 4.1,
+     "w": 9.0,
+     "h": 0.8,
+     "rows": [
+      [
+       "checks = {'syntax': True, 'inputs_nonempty': True, 'amounts_in_range': True, 'outputs_unspent': True, 'scripts_valid': True}",
+       ""
+      ],
+      [
+       "all(checks.values()) and len(checks)",
+       "5"
+      ]
+     ],
+     "fs": 8.0,
+     "cap": "run under Python 3.13.16",
+     "label": "the checklist a full node runs on every block"
+    }
+   ],
+   "notes": "SAY: A full node, which the chapter calls a full verification node, is a program that has both the software logic and the data necessary to fully verify the correctness of a new transaction (Antonopoulos and Harding, 2023).\nASK: Which one is Alice's phone wallet, and what exactly does it trust?\nFULL TEXT: course page, chapter 2 - FullNode, LightweightClient.",
+   "bg": "light",
+   "take": "Full nodes verify; light clients trust proofs, not people"
+  },
+  {
+   "kind": "content",
+   "title": "Watch any transaction live",
+   "sub": "The ledger is public - explorers are windows on it",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 3.55,
+     "h": 1.75,
+     "fs": 10.5,
+     "items": [
+      "Paste any txid into an explorer and watch it confirm",
+      "Chapter 1's genesis bytes came from such an API",
+      "Same data, three windows: your node, a site, an API"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 4.3,
+     "y": 1.66,
+     "w": 5.2,
+     "h": 1.3,
+     "rows": [
+      [
+       "q = '466200308696215bbc949d5141a49a4138ecdfdfaa2a8029c1f9bcecd1f96177'",
+       ""
+      ],
+      [
+       "'txid' if len(q) == 64 else 'address' if q.startswith('bc1') else 'height'",
+       "'txid'"
+      ]
+     ],
+     "fs": 7.3,
+     "cap": "run under Python 3.13.16",
+     "label": "what an explorer answers, computed by the run"
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 3.9,
+     "w": 9.0,
+     "h": 0.6,
+     "fs": 13,
+     "items": [
+      "mempool.space",
+      "blockstream.info",
+      "your own node"
+     ]
+    }
+   ],
+   "notes": "SAY: A block explorer is a web application that operates as a Bitcoin search engine: it allows you to search for addresses, transactions and blocks and to see the relationships and flows between them, in the chapter's own words (Antonopoulos and Harding, 2023).\nASK: Why does Bob check his OWN copy rather than trust Alice's screenshot?\nFULL TEXT: course page, chapter 2 - BlockExplorer, RecipientVerification.",
+   "bg": "light",
+   "take": "The ledger is public - explorers are just viewers on it"
+  },
+  {
+   "kind": "section",
+   "title": "Blockchain and mining",
+   "sub": "How the next page of history gets written",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Proof-of-work"
+      },
+      {
+       "label": "Blocks and Merkle trees"
+      },
+      {
+       "label": "The coinbase"
+      },
+      {
+       "label": "Confirmations"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: The blockchain is the record in which Bitcoin's transactions are finally written down. The chapter calls it the distributed journal of all transactions and, in its opening overview, the consensus blockchain which is the authoritative journal of all transactions (Antonopoulos and Harding, 2023).\nFULL TEXT: course page, chapter 2 - Blockchain.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Mining: hard to win, instant to verify",
+   "sub": "A sudoku in reverse - and the run finds a real nonce",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.66,
+     "w": 3.55,
+     "h": 1.9,
+     "fs": 10.5,
+     "items": [
+      "Guess a nonce, hash the block, hope the digest is small",
+      "Like sudoku: hours to solve, seconds to check",
+      "The run really searches - and finds 6,630"
+     ]
+    },
+    {
+     "t": "funnel",
+     "x": 4.35,
+     "y": 1.6,
+     "w": 5.1,
+     "h": 1.7,
+     "cap": "nonce found: 6630 - anyone re-checks it in one hash",
+     "steps": [
+      "try nonce 0, 1, 2, ...",
+      "hash each candidate",
+      "most fail the target",
+      "6,630 clears it"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.75,
+     "w": 9.0,
+     "h": 1.1,
+     "rows": [
+      [
+       "h = hashlib.sha256",
+       ""
+      ],
+      [
+       "next(n for n in range(200000) if h(('1' + str(n) + 'Alice pays Bob 75000').encode()).hexdigest().startswith('0000'))",
+       "6630"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.13.16",
+     "label": "the search, exactly as the slide claims it"
+    }
+   ],
+   "notes": "SAY: Proof of work is a piece of data that takes a great deal of computation to find and almost none to check.\nASK: Who pays for all the losing tickets - and why is that the point?\nFULL TEXT: course page, chapter 2 - ProofOfWork, SudokuAnalogy.",
+   "bg": "light",
+   "take": "Proof-of-work is a lottery whose ticket anyone can check"
+  },
+  {
+   "kind": "content",
+   "title": "A block, anatomized",
+   "sub": "80 bytes of header summarize everything beneath",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/mbc3_0207.png",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 3.1,
+     "h": 3.45,
+     "cap": "Alice's tx inside a block - Mastering Bitcoin 3e, CC BY-SA"
+    },
+    {
+     "t": "numlist",
+     "x": 3.95,
+     "y": 1.55,
+     "w": 5.55,
+     "h": 1.9,
+     "fs": 10.5,
+     "items": [
+      "Header: previous-block hash, Merkle root, time, target, nonce",
+      "Body: the transactions - Alice's among them",
+      "Chain the headers and you chain all history"
+     ]
+    },
+    {
+     "t": "chips",
+     "x": 3.95,
+     "y": 3.5,
+     "w": 5.55,
+     "h": 0.55,
+     "fs": 11,
+     "items": [
+      "prev hash",
+      "Merkle root",
+      "time",
+      "target",
+      "nonce"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.95,
+     "y": 4.14,
+     "w": 5.55,
+     "h": 0.8,
+     "rows": [
+      [
+       "header, body = 80, 4000000",
+       ""
+      ],
+      [
+       "(header, body // header)",
+       "(80, 50000)"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.13.16",
+     "label": "80 header bytes carry a 4,000,000-byte body: 1 to 50,000"
+    }
+   ],
+   "notes": "SAY: A block is the unit in which transactions are added to the blockchain. The chapter says that transactions are bundled into blocks, and that blocks have a very small header that must be formed in a very specific way, requiring an enormous amount of computation to get right but only a small amount to verify as correct (Antonopoulos and Harding, 2023).\nASK: Why hash the header only, not the whole megabyte?\nFULL TEXT: course page, chapter 2 - Block, BlockHeader.",
+   "bg": "light",
+   "take": "A header of 80 bytes summarizes everything beneath it"
+  },
+  {
+   "kind": "content",
+   "title": "One root for a thousand leaves",
+   "sub": "The Merkle tree pins every transaction at once",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.66,
+     "w": 3.55,
+     "h": 1.9,
+     "fs": 10.5,
+     "items": [
+      "Hash the transactions in pairs, then pairs of pairs",
+      "One root remains - 32 bytes for any number of leaves",
+      "Change any leaf and the root betrays it instantly"
+     ]
+    },
+    {
+     "t": "funnel",
+     "x": 4.35,
+     "y": 1.6,
+     "w": 5.1,
+     "h": 1.7,
+     "cap": "root of A,B,C,D: 59e82c45a3662f55...",
+     "steps": [
+      "4 leaves: A B C D",
+      "2 pair-hashes",
+      "1 root seals them all"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.75,
+     "w": 9.0,
+     "h": 1.1,
+     "rows": [
+      [
+       "d = lambda b: hashlib.sha256(hashlib.sha256(b).digest()).digest()",
+       ""
+      ],
+      [
+       "L = [d(x) for x in (b'A', b'B', b'C', b'D')]",
+       ""
+      ],
+      [
+       "d(d(L[0] + L[1]) + d(L[2] + L[3])).hex()[:16]",
+       "'59e82c45a3662f55'"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.13.16",
+     "label": "four leaves to one root, computed"
+    }
+   ],
+   "notes": "SAY: A merkle tree, also called a binary hash tree, is a structure for summarizing and verifying the integrity of large sets of data. The book defines it as a tree constructed by hashing paired data, the leaves, then pairing and hashing the results until a single hash remains, the merkle root, and notes that in Bitcoin the leaves are almost always the transactions of a single block (Antonopoulos and Harding, 2023).\nASK: A light client holds only the root - what must a proof hand it?\nFULL TEXT: course page, chapter 2 - MerkleTree.",
+   "bg": "light",
+   "take": "Change any leaf and the root betrays it"
+  },
+  {
+   "kind": "content",
+   "title": "The coinbase: where new coin enters",
+   "sub": "The one transaction with no inputs",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 9.0,
+     "h": 1.2,
+     "fs": 12.5,
+     "steps": [
+      {
+       "label": "Coinbase tx",
+       "sub": "first in every block"
+      },
+      {
+       "label": "No inputs",
+       "sub": "value from the protocol"
+      },
+      {
+       "label": "Subsidy + fees",
+       "sub": "chapter 1's chart",
+       "hot": true
+      },
+      {
+       "label": "100 blocks",
+       "sub": "before it can be spent"
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.1,
+     "w": 5.6,
+     "h": 1.0,
+     "rows": [
+      [
+       "inputs_spent, subsidy, fees = 0, 625000000, 183000",
+       ""
+      ],
+      [
+       "(inputs_spent, subsidy + fees)",
+       "(0, 625183000)"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.13.16",
+     "label": "the reward at this block, computed"
+    },
+    {
+     "t": "stat",
+     "x": 6.4,
+     "y": 3.05,
+     "w": 3.1,
+     "h": 1.35,
+     "items": [
+      {
+       "n": "0",
+       "label": "inputs in a coinbase - the only transaction so allowed"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: The coinbase transaction is the special first transaction of every block, by which the miner pays itself. The book's glossary calls it the first transaction in a block, always created by a miner, and the mining chapter adds the distinguishing property: unlike regular transactions the coinbase transaction does not consume unspent outputs as inputs, but has only one input, called the coinbase input, which implicitly contains the block reward (Antonopoulos and Harding, 2023).\nASK: Trace any coin backwards: where must the trail always end?\nFULL TEXT: course page, chapter 2 - CoinbaseTransaction, BlockReward.",
+   "bg": "light",
+   "take": "Every coin in existence began life in a coinbase"
+  },
+  {
+   "kind": "content",
+   "title": "The day someone printed 184 billion bitcoin",
+   "sub": "2010-08-15",
+   "items": [
+    {
+     "t": "stat",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 9.0,
+     "h": 1.2,
+     "items": [
+      {
+       "n": "184,467,440,737",
+       "label": "BTC conjured by one transaction in block 74,638"
+      },
+      {
+       "n": "74,638",
+       "label": "the block that carried it, 2010-08-15"
+      },
+      {
+       "n": "~5 hours",
+       "label": "from forum report to Satoshi's 0.3.10 fix"
+      }
+     ]
+    },
+    {
+     "t": "claims",
+     "x": 0.5,
+     "y": 3.0,
+     "w": 9.0,
+     "h": 1.3,
+     "rows": [
+      {
+       "label": "output of 92,233,720,368.54 BTC - overflow, summed as a small number",
+       "ok": false
+      },
+      {
+       "label": "its twin output, same trick",
+       "ok": false
+      },
+      {
+       "label": "0.3.10's corrected rule: outputs must sum in range - chain rebuilt without them",
+       "ok": true
+      }
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.42,
+     "w": 9.0,
+     "who": "An unknown attacker; spotted by developer Jeff Garzik; patched by Satoshi Nakamoto",
+     "where": "block 74,638, discussed live on the bitcointalk forum",
+     "when": "2010-08-15",
+     "link": "https://en.bitcoin.it/wiki/Value_overflow_incident",
+     "linkText": "en.bitcoin.it"
+    }
+   ],
+   "notes": "STORY (2010-08-15): On 15 August 2010 block 74,638 contained a transaction paying out about 184,467,440,737 BTC - thousands of times the 21 million cap. Two outputs were so large that, summed as 64-bit integers, they overflowed to a small number and slipped past the checks. Jeff Garzik flagged the 'strange block' on the forum within the hour; Satoshi shipped version 0.3.10 with a corrected rule about five hours after the block, and the honest chain, rebuilt without the forged coins, overtook the bad one. The 184 billion bitcoins ceased to exist.\nSOURCE: en.bitcoin.it/wiki/Value_overflow_incident: block 74,638 of 2010-08-15 (two outputs of 92,233,720,368.54 BTC each), Garzik's 'Strange block 74638' thread, Satoshi's 0.3.10 patch ~5 hours later, good chain ahead by block 74,691.",
+   "bg": "light",
+   "take": "Validation by every node is the immune system - it worked"
+  },
+  {
+   "kind": "content",
+   "title": "Confirmations: depth, not time",
+   "sub": "Each block on top multiplies the attacker's bill",
+   "items": [
+    {
+     "t": "chainviz",
+     "x": 0.5,
+     "y": 1.66,
+     "w": 5.3,
+     "h": 1.5,
+     "tampered": false,
+     "cap": "Alice's block + 2 on top = 3 confirmations"
+    },
+    {
+     "t": "code",
+     "x": 6.2,
+     "y": 1.7,
+     "w": 3.3,
+     "h": 1.2,
+     "rows": [
+      [
+       "depth = 2",
+       ""
+      ],
+      [
+       "depth + 1",
+       "3"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.13.16",
+     "label": "depth, counted"
+    },
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 3.5,
+     "w": 9.0,
+     "h": 1.3,
+     "fs": 10.5,
+     "items": [
+      "A confirmation is a block on top of yours - depth, not minutes",
+      "To rewrite yours an attacker must redo every block above it, faster than everyone",
+      "How unlikely that is, the whitepaper computes - next slide"
+     ]
+    }
+   ],
+   "notes": "SAY: A confirmation is a block that commits to a transaction, counted once for the block that contains it and once more for each block built on top.\nASK: Why does a reorg of depth 1 happen weekly, depth 6 almost never?\nFULL TEXT: course page, chapter 2 - Confirmation, BestBlockchain.",
+   "bg": "light",
+   "take": "Each block on top multiplies the cost of rewriting yours"
+  },
+  {
+   "kind": "content",
+   "title": "The whitepaper's table, recomputed live",
+   "sub": "Section 11's procedure, rerun for this deck - not quoted",
+   "items": [
+    {
+     "t": "chart",
+     "x": 0.45,
+     "y": 1.5,
+     "w": 6.5,
+     "h": 3.4,
+     "ctype": "line",
+     "log": true,
+     "min": 0.0001,
+     "max": 1,
+     "fmt": "0.####",
+     "title": "P(attacker ever catches up) vs confirmations (log axis)",
+     "dataLabels": true,
+     "dlFmt": "0.0###",
+     "dlFs": 7.5,
+     "labels": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6"
+     ],
+     "series": [
+      {
+       "name": "attacker holds 10% of hash power",
+       "data": [
+        0.2045873,
+        0.0509779,
+        0.0131722,
+        0.0034552,
+        0.0009137,
+        0.0002428
+       ]
+      },
+      {
+       "name": "attacker holds 30%",
+       "data": [
+        0.6277491,
+        0.4457171,
+        0.3245841,
+        0.2391269,
+        0.1773523,
+        0.1321112
+       ]
+      }
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.15,
+     "y": 1.55,
+     "w": 2.35,
+     "h": 2.5,
+     "vert": true,
+     "items": [
+      {
+       "n": "0.2045873",
+       "label": "catch-up odds after 1 block (q=0.1)"
+      },
+      {
+       "n": "0.0002428",
+       "label": "after 6 - the '6 confirmations' rule"
+      }
+     ]
+    },
+    {
+     "t": "when",
+     "x": 7.15,
+     "y": 4.3,
+     "w": 2.3,
+     "body": "the paper's own table"
+    }
+   ],
+   "notes": "SAY: This chart is not an illustration: the build ran the whitepaper's section-11 procedure (examples group AttackerSuccess) and drew what it returned; the chapter research record matched the q=0.1 column against the paper to seven decimals.\nASK: Read the 30% line at six blocks - why do exchanges wait longer for huge deposits?\nFULL TEXT: course page, chapter 2 - Probability, Confirmation.",
+   "bg": "light",
+   "take": "Six confirmations: the attacker's odds drop below 0.03%"
+  },
+  {
+   "kind": "content",
+   "title": "Zero-conf espresso, six-block house",
+   "sub": "Match the wait to the stake",
+   "items": [
+    {
+     "t": "compare",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 2.4,
+     "fs": 12.5,
+     "left": {
+      "head": "Espresso: accept at zero",
+      "rows": [
+       "Small sum, repeat customer, in person",
+       "Risk: someone races a double-spend for a coffee",
+       "Seconds matter more than certainty"
+      ]
+     },
+     "right": {
+      "head": "House: wait for six",
+      "rows": [
+       "Large, irreversible, worth attacking",
+       "Six blocks: odds near one in four thousand (q=0.1)",
+       "An hour of patience prices out the attack"
+      ]
+     }
+    },
+    {
+     "t": "when",
+     "x": 3.35,
+     "y": 4.35,
+     "w": 3.3,
+     "body": "same rule, different stakes"
+    }
+   ],
+   "notes": "SAY: Accepting a small payment unconfirmed is the practice of treating a transaction as paid as soon as it has propagated, without waiting for a block. It is not a rule of Bitcoin but a judgement about risk.\nASK: Where would you put a used-car sale on this line?\nFULL TEXT: course page, chapter 2 - SmallPaymentAcceptance, UnconfirmedTransaction.",
+   "bg": "light",
+   "take": "Match the wait to the stake - that is all 6 blocks means"
+  },
+  {
+   "kind": "section",
+   "title": "Semantics and practice",
+   "sub": "The chapter as data, and the chapter on your laptop",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 3,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Triples"
+      },
+      {
+       "label": "Provenance"
+      },
+      {
+       "label": "Run it at home"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: This branch reads the chapter with the eyes of the course rather than of the book. A transaction chain, as the first branch described it, is a record of what came from what: each output exists because a transaction consumed earlier outputs, and each transaction happened because somebody who held a key authorized it.\nFULL TEXT: course page, chapter 2 - Semantics.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter as data: triples and provenance",
+   "sub": "How the course page itself stores what you just learned",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 1.0,
+     "fs": 9.5,
+     "items": [
+      "Every fact on the course page is a triple: subject, predicate, object",
+      "Provenance says who asserted it and from where - the run builds one of each and reads it back"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.75,
+     "w": 9.0,
+     "h": 0.9,
+     "rows": [
+      [
+       "triples = [('Tx2', 'used', 'Tx1:0'), ('Tx2:1', 'wasGeneratedBy', 'Tx2'), ('Tx2', 'wasAttributedTo', 'Alice')]",
+       ""
+      ],
+      [
+       "(len(triples), len({s for s, p, o in triples} | {o for s, p, o in triples}))",
+       "(3, 4)"
+      ]
+     ],
+     "fs": 9.0,
+     "cap": "run under Python 3.13.16",
+     "label": "1 - one fact, as the page stores it"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.95,
+     "w": 9.0,
+     "h": 0.9,
+     "rows": [
+      [
+       "chain = ['Tx1:0', 'Tx2:1', 'Tx3:0']",
+       ""
+      ],
+      [
+       "[(b, 'wasDerivedFrom', a) for a, b in zip(chain, chain[1:])]",
+       "[('Tx2:1', 'wasDerivedFrom', 'Tx1:0'), ('Tx3:0', 'wasDerivedFrom', 'Tx2:1')]"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.13.16",
+     "label": "2 - and who says so"
+    }
+   ],
+   "notes": "SAY: A triple is the unit in which these descriptions are written: a subject, a predicate and an object, read as a single sentence. The statement that Alice's transaction used Joe's output is a triple whose subject is the transaction, whose predicate is the relation used and whose object is the output.\nASK: What triple would record Alice's payment to Bob?\nFULL TEXT: course page, chapter 2 - Triple, ProvenanceGraph.",
+   "bg": "light",
+   "take": "The course page you use is built exactly this way"
+  },
+  {
+   "kind": "content",
+   "title": "Run the chapter at home",
+   "sub": "Three consoles reproduce today's claims",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.55,
+     "w": 9.0,
+     "h": 0.85,
+     "rows": [
+      [
+       "hashlib.sha256(b'Alice pays Bob 75000').hexdigest()[:16]",
+       "'320a22eeeb9c0391'"
+      ]
+     ],
+     "fs": 10.5,
+     "cap": "run under Python 3.13.16",
+     "label": "1 - the fingerprint that seals everything"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.68,
+     "w": 9.0,
+     "h": 0.85,
+     "rows": [
+      [
+       "h = hashlib.sha256",
+       ""
+      ],
+      [
+       "next(n for n in range(500000) if h(('1' + str(n) + 'Alice pays Bob 75000').encode()).hexdigest().startswith('0000'))",
+       "6630"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.13.16",
+     "label": "2 - a toy block, mined like the real ones"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.81,
+     "w": 9.0,
+     "h": 0.95,
+     "rows": [
+      [
+       "chain, edited = ['b1', 'b2', 'b3', 'b4', 'b5'], 1",
+       ""
+      ],
+      [
+       "[i for i in range(len(chain)) if i >= edited]",
+       "[1, 2, 3, 4]"
+      ]
+     ],
+     "fs": 10.5,
+     "cap": "run under Python 3.13.16",
+     "label": "3 - chain two and break one"
+    }
+   ],
+   "notes": "SAY: The last branch of this chapter is about trying things out. The concepts of the earlier branches are all mechanical, which means that a learner can operate them rather than only read about them, and a small number of interactive pages have become the standard way to do that in teaching.\nFULL TEXT: course page, chapter 2 - Practice.",
+   "bg": "light",
+   "take": "Three consoles reproduce the chapter - tonight, on your laptop"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per part - each one provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.3,
+     "fs": 12.5,
+     "items": [
+      "A transaction spends outputs whole and mints new ones - balance is a sum, not an account",
+      "Fees buy bytes of block space; change is just an output back to yourself",
+      "Transactions travel by gossip; within seconds every mempool holds Alice's payment",
+      "Miners race a lottery that is instant to verify - and rules caught the 184-billion forgery",
+      "A confirmation is depth; the whitepaper computes what each block of depth buys you"
+     ]
+    }
+   ],
+   "notes": "SAY: Five lines, one per part. If any feels like a claim rather than a fact, the agenda names the slides that prove it; the course page carries the full text.\nASK: Which line would you defend to a sceptic first, and with which slide?\nFULL TEXT: course page, chapter 2 - every section.",
+   "take": "If a line feels unproven, its part's slides carry the receipt",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Checked 2026-10-06; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.45,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "The whitepaper - section 11 is today's chart",
+         "https://bitcoin.org/bitcoin.pdf"
+        ],
+        [
+         "This chapter, free (CC BY-SA)",
+         "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch02_overview.adoc"
+        ],
+        [
+         "The value-overflow incident, documented",
+         "https://en.bitcoin.it/wiki/Value_overflow_incident"
+        ]
+       ]
+      },
+      {
+       "head": "Explore & verify",
+       "rows": [
+        [
+         "mempool.space - watch a tx confirm tonight",
+         "https://mempool.space"
+        ],
+        [
+         "blockstream.info - the API chapter 1 used",
+         "https://blockstream.info"
+        ],
+        [
+         "learnmeabitcoin - every structure, drawn",
+         "https://learnmeabitcoin.com"
+        ]
+       ]
+      },
+      {
+       "head": "Community & history",
+       "rows": [
+        [
+         "Bitcoin Stack Exchange Q&A",
+         "https://bitcoin.stackexchange.com"
+        ],
+        [
+         "The faucet announcement, as posted (2010)",
+         "https://bitcointalk.org/index.php?topic=141.0"
+        ]
+       ]
+      },
+      {
+       "head": "Watch",
+       "rows": [
+        [
+         "But how does bitcoin work? (3Blue1Brown)",
+         "https://www.youtube.com/watch?v=bBC-nXj3Ng4"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: Everything here is free. Watch one transaction confirm on mempool.space tonight - pick any txid from the latest block - and you will have SEEN this whole chapter happen once.\nASK: Who can find Alice-sized fees (about 35 sat/vB) in the current mempool?\nFULL TEXT: course page, chapter 2 - Practice.",
+   "bg": "light",
+   "take": "One evening on an explorer replays this whole chapter for free"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "What a transaction spends, creates, and pays",
+      "How a payment reaches every mempool with no postmaster",
+      "Why rewriting a buried block costs more than it wins",
+      "What six confirmations actually promises - a number"
+     ]
+    }
+   ],
+   "notes": "SAY: Four claims, each one carried by a computation you watched run. Next week: the wallet that holds Alice's keys.\nFULL TEXT: course page, chapter 2.",
+   "bg": "dark"
+  }
+ ]
+}
