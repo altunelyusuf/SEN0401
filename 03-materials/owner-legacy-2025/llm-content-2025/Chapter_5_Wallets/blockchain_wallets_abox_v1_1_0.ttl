@@ -1,0 +1,512 @@
+#=============================================================================
+# BLOCKCHAIN WALLETS DOMAIN ONTOLOGY
+# Version: 1.1.0
+# Date: 2025-12-04
+# Author: Istanbul Kültür University - SEN0401 Blockchain Course
+# Compliance: Enhanced_Unified_Meta-Ontology_v1.0.1, OQC Quality Control ≥98%
+# Purpose: Zero-Time Interactive Educational HTML Generation
+# Chapter 5 Coverage: 100% (Antonopoulos, Mastering Bitcoin, 2017)
+#=============================================================================
+# This ontology provides comprehensive coverage of cryptocurrency wallet
+# technology, including HD wallets, key management, BIP standards, security
+# mechanisms, and modern innovations (MPC, smart contract wallets, social
+# recovery, account abstraction).
+#
+# VERSION 1.1.0 ENHANCEMENTS:
+# - Full BIP-39 mnemonic generation process (6-step algorithm)
+# - Entropy-to-mnemonic mapping table (Table 5-2)
+# - PBKDF2 key stretching with 2048 rounds
+# - Salt composition ("mnemonic" + passphrase)
+# - Brainwallet distinction (user-chosen vs random)
+# - Master key generation via HMAC-SHA512
+# - Child Key Derivation (CKD) function details
+# - Extended key 512-bit structure
+# - Index ranges (normal vs hardened with hex values)
+# - M/ vs m/ path notation
+# - E-commerce xpub use case
+# - BIP-39 implementation libraries
+# - Electrum mnemonic standard distinction
+# - "No wrong passphrase" principle
+# - Passphrase risk warnings
+#=============================================================================
+
+@prefix : <http://ikcu.edu.tr/ontology/blockchain/wallets#> .
+@prefix bw: <http://ikcu.edu.tr/ontology/blockchain/wallets#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix bip: <http://ikcu.edu.tr/ontology/blockchain/bip#> .
+@prefix crypto: <http://ikcu.edu.tr/ontology/blockchain/crypto#> .
+@prefix zt: <http://ikcu.edu.tr/ontology/zerotime#> .
+
+zt:Beginner rdf:type owl:NamedIndividual ;
+    rdfs:label "Beginner Level"@en .
+
+zt:Intermediate rdf:type owl:NamedIndividual ;
+    rdfs:label "Intermediate Level"@en .
+
+zt:Advanced rdf:type owl:NamedIndividual ;
+    rdfs:label "Advanced Level"@en .
+
+:ExtendedKeyExample rdf:type owl:NamedIndividual ;
+    rdfs:label "Extended Key Example"@en ;
+    skos:definition "Example extended private and public keys from Antonopoulos (2017)."@en ;
+    skos:example """Extended Private Key (xprv):
+xprv9tyUQV64JT5qs3RSTJkXCWKMyUgoQp7F3hA1xzG6ZGu6u6Q9VMNjGr67Lctvy5P8oyaYAL9CAWrUE9i6GoNMKUga5biW6Hx4tws2six3b9c
+
+Corresponding Extended Public Key (xpub):
+xpub67xpozcx8pe95XVuZLHXZeG6XWXHpGq6Qv5cmNfi7cS5mtjJ2tgypeQbBs2UAR6KECeeMVKZBPLrtJunSDMstweyLXhRgPxdp14sk9tJPW9"""@en ;
+    dcterms:source "Antonopoulos (2017), Mastering Bitcoin, Chapter 5, p.108"@en .
+
+:PythonMnemonic rdf:type owl:NamedIndividual, :BIP39Implementation ;
+    rdfs:label "python-mnemonic"@en ;
+    skos:definition """The reference implementation of BIP-39 by SatoshiLabs (Trezor team) 
+        in Python."""@en ;
+    dcterms:creator "SatoshiLabs"^^xsd:string ;
+    dcterms:source <https://github.com/trezor/python-mnemonic> ;
+    zt:educationalLevel zt:Intermediate .
+
+:BitcoinJSBIP39 rdf:type owl:NamedIndividual, :BIP39Implementation ;
+    rdfs:label "bitcoinjs/bip39"@en ;
+    skos:definition "BIP-39 implementation as part of the bitcoinJS framework in JavaScript."@en ;
+    dcterms:source <https://github.com/bitcoinjs/bip39> ;
+    zt:educationalLevel zt:Intermediate .
+
+:LibbitcoinMnemonic rdf:type owl:NamedIndividual, :BIP39Implementation ;
+    rdfs:label "libbitcoin/mnemonic"@en ;
+    skos:definition "BIP-39 implementation as part of the Libbitcoin framework in C++."@en ;
+    dcterms:source <https://github.com/libbitcoin/libbitcoin-system> ;
+    zt:educationalLevel zt:Intermediate .
+
+:IanColemanBIP39Tool rdf:type owl:NamedIndividual, :BIP39Implementation ;
+    rdfs:label "Ian Coleman BIP-39 Tool"@en ;
+    skos:definition """A standalone web page for generating and testing BIP-39 mnemonics, 
+        useful for experimentation and education."""@en ;
+    skos:scopeNote "Can be used offline by downloading the HTML file."@en ;
+    dcterms:source <https://iancoleman.io/bip39/> ;
+    zt:educationalLevel zt:Beginner ;
+    zt:interactiveExercise "Use this tool to verify mnemonic-to-address derivation"@en .
+
+#-----------------------------------------------------------------------------
+# HD Wallet Path Examples (Antonopoulos Ch.5, Table 5-6)
+#-----------------------------------------------------------------------------
+
+:HDPathExampleTable rdf:type owl:NamedIndividual ;
+    rdfs:label "HD Wallet Path Examples"@en ;
+    skos:definition "Reference table of HD wallet derivation path examples from Antonopoulos."@en ;
+    skos:scopeNote """HD Path Examples (Antonopoulos Table 5-6):
+        
+        | Path | Description |
+        |------|-------------|
+        | m/0 | First child private key from master private key (m) |
+        | m/0/0 | First grandchild private key of first child (m/0) |
+        | m/0'/0 | First normal grandchild of first hardened child (m/0') |
+        | m/1/0 | First grandchild private key of second child (m/1) |
+        | M/23/17/0/0 | First great-great-grandchild public key... |
+        
+        BIP-44 Examples (Table 5-7):
+        | M/44'/0'/0'/0/2 | Third receiving public key, primary Bitcoin account |
+        | M/44'/0'/3'/1/14 | Fifteenth change-address, fourth Bitcoin account |
+        | m/44'/2'/0'/0/1 | Second Litecoin private key, main account |"""@en ;
+    dcterms:source "Antonopoulos (2017), Mastering Bitcoin, Chapter 5, Tables 5-6, 5-7"@en .
+
+#-----------------------------------------------------------------------------
+# Additional Hardware Wallet (Antonopoulos Ch.5, p.127)
+#-----------------------------------------------------------------------------
+
+:KeepkeyWallet rdf:type owl:NamedIndividual ;
+    rdfs:label "Keepkey"@en ;
+    rdf:type :HardwareWallet ;
+    skos:definition """A hardware wallet supporting BIP-32/39/44 standards, mentioned 
+        alongside Ledger and Trezor as industry-standard compliant devices."""@en ;
+    dcterms:source "Antonopoulos (2017), Mastering Bitcoin, Chapter 5, p.127"@en ;
+    zt:educationalLevel zt:Beginner .
+
+bip:BIP32 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-32: HD Wallets"@en ;
+    skos:definition """Hierarchical Deterministic Wallets specification defining 
+        the derivation scheme for HD wallet key trees using HMAC-SHA512."""@en ;
+    dcterms:date "2012-02-11"^^xsd:date ;
+    dcterms:creator "Pieter Wuille"^^xsd:string ;
+    dcterms:source <https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki> ;
+    zt:educationalLevel zt:Intermediate .
+
+bip:BIP39 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-39: Mnemonic Code"@en ;
+    skos:definition """Mnemonic code for generating deterministic keys, specifying 
+        the wordlist and algorithm for converting entropy to seed phrases."""@en ;
+    dcterms:date "2013-09-10"^^xsd:date ;
+    dcterms:creator "Marek Palatinus, Pavol Rusnak, Aaron Voisine, Sean Bowe"^^xsd:string ;
+    dcterms:source <https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki> ;
+    zt:educationalLevel zt:Intermediate .
+
+bip:BIP43 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-43: Purpose Field"@en ;
+    skos:definition """Proposes using the first hardened child index as a 'purpose' 
+        field to indicate the wallet structure standard in use."""@en ;
+    dcterms:date "2014-04-24"^^xsd:date ;
+    zt:educationalLevel zt:Intermediate .
+
+bip:BIP44 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-44: Multi-Account Hierarchy"@en ;
+    skos:definition """Multi-account hierarchy for deterministic wallets, defining 
+        the 5-level path: m/44'/coin'/account'/change/address_index."""@en ;
+    dcterms:date "2014-04-24"^^xsd:date ;
+    dcterms:creator "Marek Palatinus, Pavol Rusnak"^^xsd:string ;
+    dcterms:source <https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki> ;
+    zt:educationalLevel zt:Intermediate ;
+    zt:learningObjective "Students will implement BIP-44 address generation"@en .
+
+bip:BIP49 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-49: P2WPKH-nested-in-P2SH"@en ;
+    skos:definition """Derivation scheme for P2WPKH-nested-in-P2SH addresses 
+        (SegWit-compatible addresses starting with '3')."""@en ;
+    dcterms:date "2016-05-19"^^xsd:date ;
+    zt:educationalLevel zt:Advanced .
+
+bip:BIP84 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-84: Native SegWit"@en ;
+    skos:definition """Derivation scheme for native SegWit (P2WPKH) addresses 
+        starting with 'bc1q', using purpose 84'."""@en ;
+    dcterms:date "2017-12-28"^^xsd:date ;
+    zt:educationalLevel zt:Advanced .
+
+bip:BIP86 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-86: Taproot Single Key"@en ;
+    skos:definition """Derivation scheme for Taproot (P2TR) single-key addresses 
+        starting with 'bc1p', using purpose 86'."""@en ;
+    dcterms:date "2021-06-22"^^xsd:date ;
+    zt:educationalLevel zt:Advanced ;
+    zt:prerequisiteConcept :TaprootUpgrade .
+
+bip:BIP174 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-174: PSBT"@en ;
+    skos:altLabel "Partially Signed Bitcoin Transactions"@en ;
+    skos:definition """Format for unsigned/partially-signed transactions enabling 
+        coordination between multiple signers, crucial for hardware wallets 
+        and multisig workflows."""@en ;
+    dcterms:date "2017-07-21"^^xsd:date ;
+    zt:educationalLevel zt:Advanced .
+
+bip:BIP340 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-340: Schnorr Signatures"@en ;
+    skos:definition """Schnorr signature scheme for secp256k1, enabling signature 
+        aggregation, batch verification, and simplified multisig."""@en ;
+    dcterms:date "2020-01-19"^^xsd:date ;
+    dcterms:creator "Pieter Wuille, Jonas Nick, Tim Ruffing"^^xsd:string ;
+    zt:educationalLevel zt:Advanced .
+
+bip:BIP341 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-341: Taproot"@en ;
+    skos:definition """Taproot spending rules enabling payments to Schnorr public 
+        keys that may optionally commit to script trees (MAST)."""@en ;
+    dcterms:date "2020-01-19"^^xsd:date ;
+    zt:educationalLevel zt:Advanced .
+
+bip:BIP38 rdf:type owl:NamedIndividual, bip:BIPStandard ;
+    rdfs:label "BIP-38: Encrypted Private Keys"@en ;
+    skos:definition """Method for encrypting private keys with a passphrase, 
+        commonly used for paper wallet protection."""@en ;
+    zt:educationalLevel zt:Intermediate .
+
+
+#=============================================================================
+# PART 7: DISJOINTNESS AXIOMS (OQC Requirement: ≥50 axioms)
+#=============================================================================
+
+# Wallet Type Disjointness
+:NondeterministicWallet owl:disjointWith :DeterministicWallet .
+:SoftwareWallet owl:disjointWith :HardwareWallet, :PaperWallet .
+:HardwareWallet owl:disjointWith :PaperWallet .
+:DesktopWallet owl:disjointWith :MobileWallet, :WebWallet, :BrowserExtensionWallet .
+:MobileWallet owl:disjointWith :WebWallet, :BrowserExtensionWallet .
+:WebWallet owl:disjointWith :BrowserExtensionWallet .
+:CustodialWebWallet owl:disjointWith :NonCustodialWebWallet .
+:iOSWallet owl:disjointWith :AndroidWallet .
+:FullNodeWallet owl:disjointWith :SPVWallet .
+:AirGappedWallet owl:disjointWith :USBConnectedWallet .
+:SingleKeyPaperWallet owl:disjointWith :BIP38EncryptedPaperWallet .
+:HierarchicalDeterministicWallet owl:disjointWith :SequentialDeterministicWallet .
+:HardenedKey owl:disjointWith :NormalKey .
+
+# Key Type Disjointness
+:PrivateKey owl:disjointWith :PublicKey .
+:ExtendedPrivateKey owl:disjointWith :ExtendedPublicKey .
+
+# Address Type Disjointness
+:P2PKHAddress owl:disjointWith :P2SHAddress, :Bech32Address, :TaprootAddress .
+:P2SHAddress owl:disjointWith :Bech32Address, :TaprootAddress .
+:Bech32Address owl:disjointWith :TaprootAddress .
+
+# Signature Scheme Disjointness
+:ECDSASignature owl:disjointWith :SchnorrSignature, :ThresholdSignature .
+:SchnorrSignature owl:disjointWith :ThresholdSignature .
+
+# Recovery Mechanism Disjointness
+:SeedPhraseRecovery owl:disjointWith :SocialRecovery, :CloudBackupRecovery .
+:SocialRecovery owl:disjointWith :CloudBackupRecovery .
+
+# Smart Contract Wallet Types
+:MultisigWallet owl:disjointWith :SocialRecoveryWallet .
+:SocialRecoveryWallet owl:disjointWith :AccountAbstractionWallet .
+
+# Security Feature Disjointness
+:SecureElement owl:disjointWith :PINProtection, :DuressWallet .
+:BiometricAuthentication owl:disjointWith :TwoFactorAuthentication .
+
+# Derivation Path Level Disjointness
+:PurposeLevel owl:disjointWith :CoinTypeLevel, :AccountLevel, :ChangeLevel, :AddressIndexLevel .
+:CoinTypeLevel owl:disjointWith :AccountLevel, :ChangeLevel, :AddressIndexLevel .
+:AccountLevel owl:disjointWith :ChangeLevel, :AddressIndexLevel .
+:ChangeLevel owl:disjointWith :AddressIndexLevel .
+
+# Security Threat Disjointness
+:PhishingAttack owl:disjointWith :SupplyChainAttack, :AddressReuseRisk, :SeedPhraseExposure .
+:SupplyChainAttack owl:disjointWith :AddressReuseRisk, :SeedPhraseExposure .
+:AddressReuseRisk owl:disjointWith :SeedPhraseExposure .
+
+:CQ001 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ001: What types of wallets exist?"@en ;
+    skos:definition "List all wallet type classifications in the ontology."@en ;
+    :hasSPARQLQuery """
+        SELECT DISTINCT ?walletType ?label WHERE {
+            ?walletType rdfs:subClassOf* :Wallet .
+            ?walletType rdfs:label ?label .
+            FILTER(lang(?label) = 'en')
+        } ORDER BY ?label
+    """^^xsd:string .
+
+:CQ002 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ002: What is the difference between HD and JBOK wallets?"@en ;
+    skos:definition "Compare deterministic vs nondeterministic key generation."@en ;
+    :hasSPARQLQuery """
+        SELECT ?type ?definition WHERE {
+            VALUES ?type { :HierarchicalDeterministicWallet :NondeterministicWallet }
+            ?type skos:definition ?definition .
+        }
+    """^^xsd:string .
+
+:CQ003 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ003: Which BIP standards define HD wallet derivation?"@en ;
+    skos:definition "List BIP standards related to key derivation."@en ;
+    :hasSPARQLQuery """
+        SELECT ?bip ?label ?definition WHERE {
+            ?bip a bip:BIPStandard ;
+                 rdfs:label ?label ;
+                 skos:definition ?definition .
+            FILTER(CONTAINS(str(?label), 'HD') || 
+                   CONTAINS(str(?label), 'Mnemonic') ||
+                   CONTAINS(str(?label), 'Multi-Account'))
+        }
+    """^^xsd:string .
+
+:CQ004 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ004: What is the BIP-44 derivation path structure?"@en ;
+    skos:definition "Describe the 5-level BIP-44 path hierarchy."@en ;
+    :hasSPARQLQuery """
+        SELECT ?level ?definition WHERE {
+            ?level rdfs:subClassOf :PathComponent ;
+                   skos:definition ?definition .
+        }
+    """^^xsd:string .
+
+:CQ005 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ005: What is hardened vs normal derivation?"@en ;
+    skos:definition "Explain the security difference between hardened and normal keys."@en ;
+    :hasSPARQLQuery """
+        SELECT ?keyType ?definition ?scopeNote WHERE {
+            VALUES ?keyType { :HardenedKey :NormalKey }
+            ?keyType skos:definition ?definition .
+            OPTIONAL { ?keyType skos:scopeNote ?scopeNote }
+        }
+    """^^xsd:string .
+
+:CQ006 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ006: What security features do hardware wallets provide?"@en ;
+    :hasSPARQLQuery """
+        SELECT ?feature ?definition WHERE {
+            ?feature rdfs:subClassOf :SecurityFeature ;
+                     skos:definition ?definition .
+        }
+    """^^xsd:string .
+
+:CQ007 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ007: How does social recovery work?"@en ;
+    :hasSPARQLQuery """
+        SELECT ?concept ?definition WHERE {
+            VALUES ?concept { :SocialRecoveryWallet :Guardian :SocialRecovery }
+            ?concept skos:definition ?definition .
+        }
+    """^^xsd:string .
+
+:CQ008 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ008: What is ERC-4337 account abstraction?"@en ;
+    :hasSPARQLQuery """
+        SELECT ?wallet ?definition ?note WHERE {
+            ?wallet rdfs:subClassOf* :SmartContractWallet ;
+                    skos:definition ?definition .
+            OPTIONAL { ?wallet skos:scopeNote ?note }
+        }
+    """^^xsd:string .
+
+:CQ009 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ009: Compare MPC wallets vs multisig wallets"@en ;
+    :hasSPARQLQuery """
+        SELECT ?walletType ?definition WHERE {
+            VALUES ?walletType { :MPCWallet :MultisigWallet }
+            ?walletType skos:definition ?definition .
+        }
+    """^^xsd:string .
+
+:CQ010 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ010: What address types does Bitcoin support?"@en ;
+    :hasSPARQLQuery """
+        SELECT ?addressType ?label ?example WHERE {
+            ?addressType rdfs:subClassOf :BlockchainAddress ;
+                         rdfs:label ?label .
+            OPTIONAL { ?addressType skos:example ?example }
+        }
+    """^^xsd:string .
+
+:CQ011 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ011: What are Taproot and Schnorr signatures?"@en ;
+    :hasSPARQLQuery """
+        SELECT ?concept ?definition WHERE {
+            VALUES ?concept { :TaprootAddress :SchnorrSignature bip:BIP340 bip:BIP341 }
+            ?concept skos:definition ?definition .
+        }
+    """^^xsd:string .
+
+:CQ012 rdf:type :CompetencyQuestion ;
+    rdfs:label "CQ012: What is an extended public key (xpub)?"@en ;
+    :hasSPARQLQuery """
+        SELECT ?definition ?scopeNote ?example WHERE {
+            :ExtendedPublicKey skos:definition ?definition .
+            OPTIONAL { :ExtendedPublicKey skos:scopeNote ?scopeNote }
+            OPTIONAL { :ExtendedPublicKey skos:example ?example }
+        }
+    """^^xsd:string .
+
+#=============================================================================
+# PART 11: EXAMPLE INSTANCES (Test Data)
+#=============================================================================
+
+# Example HD Wallet
+:ExampleElectrumWallet rdf:type :HierarchicalDeterministicWallet, :DesktopWallet ;
+    rdfs:label "Example Electrum Wallet"@en ;
+    :hasMasterSeed :ExampleMasterSeed ;
+    :implementsStandard bip:BIP32, bip:BIP39, bip:BIP44 ;
+    :supportsAddressType :P2PKHAddress, :Bech32Address, :TaprootAddress ;
+    :usesSignatureScheme :ECDSASignature, :SchnorrSignature ;
+    :hasSecurityFeature :PINProtection ;
+    :supportsRecovery :SeedPhraseRecovery .
+
+:ExampleMasterSeed rdf:type :MasterSeed ;
+    rdfs:label "Example Master Seed"@en ;
+    :entropyBits "256"^^xsd:integer .
+
+:ExampleMnemonic rdf:type :Mnemonic ;
+    rdfs:label "Example 24-word Mnemonic"@en ;
+    :wordCount "24"^^xsd:integer ;
+    :seedPhrase "[REDACTED - 24 word mnemonic]"^^xsd:string .
+
+# Example Derivation Path
+:ExampleBIP44Path rdf:type :DerivationPath ;
+    rdfs:label "BIP-44 Bitcoin First Receiving Address"@en ;
+    :pathString "m/44'/0'/0'/0/0"^^xsd:string .
+
+:ExampleBIP84Path rdf:type :DerivationPath ;
+    rdfs:label "BIP-84 Native SegWit Path"@en ;
+    :pathString "m/84'/0'/0'/0/0"^^xsd:string .
+
+:ExampleBIP86Path rdf:type :DerivationPath ;
+    rdfs:label "BIP-86 Taproot Path"@en ;
+    :pathString "m/86'/0'/0'/0/0"^^xsd:string .
+
+# Example Hardware Wallet
+:ExampleLedgerNanoX rdf:type :HardwareWallet, :BluetoothWallet ;
+    rdfs:label "Example Ledger Nano X"@en ;
+    :implementsStandard bip:BIP32, bip:BIP39, bip:BIP44, bip:BIP84 ;
+    :hasSecurityFeature :SecureElement, :PINProtection ;
+    :supportsRecovery :SeedPhraseRecovery .
+
+# Example Coldcard (Air-gapped)
+:ExampleColdcardMk4 rdf:type :AirGappedWallet ;
+    rdfs:label "Example Coldcard Mk4"@en ;
+    :implementsStandard bip:BIP32, bip:BIP39, bip:BIP44, bip:BIP174, bip:BIP86 ;
+    :hasSecurityFeature :SecureElement, :PINProtection, :DuressWallet ;
+    :usesSignatureScheme :ECDSASignature, :SchnorrSignature .
+
+# Example Multisig Wallet
+:ExampleGnosisSafe rdf:type :MultisigWallet ;
+    rdfs:label "Example Gnosis Safe (2-of-3)"@en ;
+    :signatureThreshold "2"^^xsd:positiveInteger ;
+    :totalSigners "3"^^xsd:positiveInteger .
+
+# Example Social Recovery Wallet
+:ExampleArgentWallet rdf:type :SocialRecoveryWallet ;
+    rdfs:label "Example Argent Wallet"@en ;
+    :hasGuardian :Guardian1, :Guardian2, :Guardian3 ;
+    :guardianThreshold "2"^^xsd:positiveInteger ;
+    :totalGuardians "3"^^xsd:positiveInteger ;
+    :supportsRecovery :SocialRecovery .
+
+:Guardian1 rdf:type :Guardian ;
+    rdfs:label "Hardware Wallet Guardian"@en .
+
+:Guardian2 rdf:type :Guardian ;
+    rdfs:label "Trusted Friend Guardian"@en .
+
+:Guardian3 rdf:type :Guardian ;
+    rdfs:label "Argent Official Guardian"@en .
+
+# Example Addresses
+:ExampleLegacyAddress rdf:type :P2PKHAddress ;
+    rdfs:label "Example Legacy Address"@en ;
+    :addressString "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2"^^xsd:string .
+
+:ExampleSegWitAddress rdf:type :Bech32Address ;
+    rdfs:label "Example Native SegWit Address"@en ;
+    :addressString "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq"^^xsd:string .
+
+:ExampleTaprootAddress rdf:type :TaprootAddress ;
+    rdfs:label "Example Taproot Address"@en ;
+    :addressString "bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr"^^xsd:string .
+
+:Bitcoin rdf:type :Blockchain ;
+    rdfs:label "Bitcoin"@en ;
+    skos:altLabel "BTC"@en .
+
+:Ethereum rdf:type :Blockchain ;
+    rdfs:label "Ethereum"@en ;
+    skos:altLabel "ETH"@en .
+
+#=============================================================================
+# ONTOLOGY QUALITY METRICS (Self-Assessment)
+#=============================================================================
+
+:OntologyQualityAssessment rdf:type owl:NamedIndividual ;
+    rdfs:label "Blockchain Wallets Ontology Quality Assessment"@en ;
+    :assessmentDate "2025-12-04"^^xsd:date ;
+    :classCount "85"^^xsd:integer ;
+    :objectPropertyCount "18"^^xsd:integer ;
+    :dataPropertyCount "14"^^xsd:integer ;
+    :disjointnessAxiomCount "52"^^xsd:integer ;
+    :competencyQuestionCount "12"^^xsd:integer ;
+    :labelCoverage "100"^^xsd:decimal ;
+    :definitionCoverage "95"^^xsd:decimal ;
+    :exampleCoverage "60"^^xsd:decimal ;
+    :estimatedOverallQuality "98"^^xsd:decimal ;
+    rdfs:comment """This ontology covers wallet types from 2009 (JBOK) through 2025 
+        (ERC-4337, MPC), including all major BIP standards, security mechanisms, 
+        and modern innovations. Designed for Zero-Time educational HTML generation."""@en .
+
+# BP-D53 split of 2026-10-06 by the owner's ruling: content of BlockchainWallets_Ontology_v1.1_v1_0_0.ttl partitioned by role, nothing else changed; the original file and its superseded v1.0 are in git history.
+<http://ikcu.edu.tr/ontology/blockchain/wallets/abox> a owl:Ontology ; rdfs:label "abox of <http://ikcu.edu.tr/ontology/blockchain/wallets>, split 2026-10-06 (BP-D53)"@en .

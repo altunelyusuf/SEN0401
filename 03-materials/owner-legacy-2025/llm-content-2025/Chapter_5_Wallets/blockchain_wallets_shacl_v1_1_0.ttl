@@ -1,0 +1,149 @@
+#=============================================================================
+# BLOCKCHAIN WALLETS DOMAIN ONTOLOGY
+# Version: 1.1.0
+# Date: 2025-12-04
+# Author: Istanbul Kültür University - SEN0401 Blockchain Course
+# Compliance: Enhanced_Unified_Meta-Ontology_v1.0.1, OQC Quality Control ≥98%
+# Purpose: Zero-Time Interactive Educational HTML Generation
+# Chapter 5 Coverage: 100% (Antonopoulos, Mastering Bitcoin, 2017)
+#=============================================================================
+# This ontology provides comprehensive coverage of cryptocurrency wallet
+# technology, including HD wallets, key management, BIP standards, security
+# mechanisms, and modern innovations (MPC, smart contract wallets, social
+# recovery, account abstraction).
+#
+# VERSION 1.1.0 ENHANCEMENTS:
+# - Full BIP-39 mnemonic generation process (6-step algorithm)
+# - Entropy-to-mnemonic mapping table (Table 5-2)
+# - PBKDF2 key stretching with 2048 rounds
+# - Salt composition ("mnemonic" + passphrase)
+# - Brainwallet distinction (user-chosen vs random)
+# - Master key generation via HMAC-SHA512
+# - Child Key Derivation (CKD) function details
+# - Extended key 512-bit structure
+# - Index ranges (normal vs hardened with hex values)
+# - M/ vs m/ path notation
+# - E-commerce xpub use case
+# - BIP-39 implementation libraries
+# - Electrum mnemonic standard distinction
+# - "No wrong passphrase" principle
+# - Passphrase risk warnings
+#=============================================================================
+
+@prefix : <http://ikcu.edu.tr/ontology/blockchain/wallets#> .
+@prefix bw: <http://ikcu.edu.tr/ontology/blockchain/wallets#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix bip: <http://ikcu.edu.tr/ontology/blockchain/bip#> .
+@prefix crypto: <http://ikcu.edu.tr/ontology/blockchain/crypto#> .
+@prefix zt: <http://ikcu.edu.tr/ontology/zerotime#> .
+
+#=============================================================================
+# PART 9: SHACL VALIDATION SHAPES
+#=============================================================================
+
+:HDWalletShape rdf:type sh:NodeShape ;
+    sh:targetClass :HierarchicalDeterministicWallet ;
+    rdfs:label "HD Wallet Validation Shape"@en ;
+    sh:property [
+        sh:path :hasMasterSeed ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class :MasterSeed ;
+        sh:name "master seed"@en ;
+        sh:message "HD wallet must have exactly one master seed"@en ;
+        sh:severity sh:Violation
+    ] ;
+    sh:property [
+        sh:path :implementsStandard ;
+        sh:minCount 1 ;
+        sh:name "BIP standard"@en ;
+        sh:message "HD wallet should implement at least one BIP standard"@en ;
+        sh:severity sh:Warning
+    ] .
+
+:MnemonicShape rdf:type sh:NodeShape ;
+    sh:targetClass :Mnemonic ;
+    rdfs:label "Mnemonic Validation Shape"@en ;
+    sh:property [
+        sh:path :wordCount ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:in (12 15 18 21 24) ;
+        sh:name "word count"@en ;
+        sh:message "Mnemonic must have 12, 15, 18, 21, or 24 words"@en ;
+        sh:severity sh:Violation
+    ] .
+
+:DerivationPathShape rdf:type sh:NodeShape ;
+    sh:targetClass :DerivationPath ;
+    rdfs:label "Derivation Path Validation Shape"@en ;
+    sh:property [
+        sh:path :pathString ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:pattern "^m(/\\d+'?)+$" ;
+        sh:name "path string"@en ;
+        sh:message "Path must match BIP-32 format (e.g., m/44'/0'/0'/0/0)"@en ;
+        sh:severity sh:Violation
+    ] .
+
+:MultisigWalletShape rdf:type sh:NodeShape ;
+    sh:targetClass :MultisigWallet ;
+    rdfs:label "Multisig Wallet Validation Shape"@en ;
+    sh:property [
+        sh:path :signatureThreshold ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minInclusive 1 ;
+        sh:name "signature threshold"@en ;
+        sh:message "Multisig must specify signature threshold"@en
+    ] ;
+    sh:property [
+        sh:path :totalSigners ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minInclusive 2 ;
+        sh:name "total signers"@en ;
+        sh:message "Multisig must have at least 2 signers"@en
+    ] .
+
+:SocialRecoveryWalletShape rdf:type sh:NodeShape ;
+    sh:targetClass :SocialRecoveryWallet ;
+    rdfs:label "Social Recovery Wallet Validation Shape"@en ;
+    sh:property [
+        sh:path :hasGuardian ;
+        sh:minCount 1 ;
+        sh:name "guardians"@en ;
+        sh:message "Social recovery wallet must have at least one guardian"@en
+    ] ;
+    sh:property [
+        sh:path :guardianThreshold ;
+        sh:minCount 1 ;
+        sh:name "guardian threshold"@en ;
+        sh:message "Must specify guardian threshold for recovery"@en
+    ] .
+
+:AddressShape rdf:type sh:NodeShape ;
+    sh:targetClass :BlockchainAddress ;
+    rdfs:label "Blockchain Address Validation Shape"@en ;
+    sh:property [
+        sh:path :addressString ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:minLength 26 ;
+        sh:maxLength 90 ;
+        sh:name "address string"@en ;
+        sh:message "Address must be valid length"@en
+    ] .
+
+# BP-D53 split of 2026-10-06 by the owner's ruling: content of BlockchainWallets_Ontology_v1.1_v1_0_0.ttl partitioned by role, nothing else changed; the original file and its superseded v1.0 are in git history.
+<http://ikcu.edu.tr/ontology/blockchain/wallets/shacl> a owl:Ontology ; rdfs:label "shacl of <http://ikcu.edu.tr/ontology/blockchain/wallets>, split 2026-10-06 (BP-D53)"@en .
