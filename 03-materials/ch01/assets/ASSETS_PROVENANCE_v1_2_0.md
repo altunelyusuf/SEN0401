@@ -1,4 +1,4 @@
-# Chapter 1 deck and page assets - provenance and licences (v1.1.0)
+# Chapter 1 deck and page assets - provenance and licences (v1.2.0)
 
 Two sources. First, the owner's own 2025 lecture decks
 (`03-materials/owner-legacy-2025/slides-2025/`), reused on his instruction of 2026-10-06. Second,
@@ -31,6 +31,12 @@ attribution kept below and carried on the slide that shows it.
 | photo_lydian_coins.jpg | Wikimedia Commons, "Lydian electrum Lion coins - Flickr - brewbooks.jpg" | CC BY-SA 2.0 | photo: brewbooks (Flickr) |
 | mbc3_0101.png | github.com/bitcoinbook/bitcoinbook (the course textbook, 3rd ed.), images/ | CC BY-SA 4.0 (book); figure derived from Bitcoin Design Guide, CC-BY | Antonopoulos & Harding, Mastering Bitcoin 3e |
 | mbc3_0102.png | github.com/bitcoinbook/bitcoinbook, images/ | CC BY-SA 4.0 (book); figure derived from Bitcoin Design Guide, CC-BY | Antonopoulos & Harding, Mastering Bitcoin 3e |
+| photo_paypal_logo.png | Wikimedia Commons, "PayPal Logo2014.svg" (960px render) | Public domain (text logo, below originality threshold) | PayPal wordmark, via Wikimedia Commons |
+| photo_fedorov.jpg | Wikimedia Commons, "Mykhailo Fedorov ... at Diia Center in Bucha on 19 July 2023 (cropped).jpg" | Public domain (US Embassy Kyiv, US government work) | U.S. Embassy Kyiv |
+| photo_mpesa_agent.jpg | Wikimedia Commons, "M-PESA mobile money and Equity agent, Nairobi, Kenya.jpg" | CC BY-SA 2.0 | photo: Fiona Graham / WorldRemit |
+| photo_laiki_bank.jpg | Wikimedia Commons, "Marfin Laiki Bank - geograph.org.uk - 1479016.jpg" | CC BY-SA 2.0 | photo: Martin Addison (geograph.org.uk) |
+| photo_greece_atm.jpg | Wikimedia Commons, "ATM - Fira - Santorini - Greece.jpg" | CC BY-SA 3.0 | photo: Norbert Nagel |
+| photo_bolivar_note.jpg | Wikimedia Commons, "Billete de 200 Bolivares.jpg" | CC BY-SA 4.0 | photo: Rjcastillo |
 
 Reusing CC BY-SA material inside these course materials keeps the materials' own distribution of
 those images under the same licence family; each slide that shows one carries its credit line.

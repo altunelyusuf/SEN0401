@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SEN0401 chapter 1 - the story companion to the chapter corpus (version 1.3.0).
+"""SEN0401 chapter 1 - the story companion to the chapter corpus (version 1.4.0).
 
 The owner's ruling of 2026-10-06: the teaching materials need stories - the histories and
 biographical notes of money, cryptography, digital currencies and Bitcoin - because stories make
@@ -28,9 +28,15 @@ from Kenya, Cyprus, Greece, Venezuela and Ukraine where cards, banks or cash sto
 people, and where even a government under attack turned to an open payment network. Every case
 carries its own link and passes the 5N1K self-check.
 
-Usage: import STORIES, PIZZA_VALUE, MONEY_KINDS, WHEN_MONEY_STOPS; run the file for self-checks.
+1.4.0, on the owner's ruling of 2026-10-06 that "era 0..8" chart labels are not how the field
+speaks: HALVINGS - the real halving dates, one row per 210,000-block era, the first five dated
+from the chain itself (any explorer shows the block timestamps at heights 0, 210,000, 420,000,
+630,000, 840,000), the rest marked as projections at the 10-minute target. The issuance chart
+labels its axis from this table and from nowhere else.
+
+Usage: import STORIES, PIZZA_VALUE, MONEY_KINDS, WHEN_MONEY_STOPS, HALVINGS; run for self-checks.
 """
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 STORIES = [
     {
@@ -229,6 +235,24 @@ PIZZA_VALUE = [
     ("2026-10", 854_090_000, "live price fetched 2026-10-06, two independent APIs"),
 ]
 
+# The halving schedule with its REAL dates. The first five rows are chain facts: the block at
+# each height carries its timestamp, and any explorer shows it (the link below tabulates them
+# all). Rows with est=True have not happened yet - they are projections at the protocol's
+# 10-minute block target and are displayed with a leading "~" wherever they appear.
+#   (era, axis_label, date, block_height, subsidy_btc, est)
+HALVINGS = [
+    (0, "2009",  "2009-01-03", 0,         50.0,       False),  # the genesis block itself
+    (1, "2012",  "2012-11-28", 210_000,   25.0,       False),
+    (2, "2016",  "2016-07-09", 420_000,   12.5,       False),
+    (3, "2020",  "2020-05-11", 630_000,   6.25,       False),
+    (4, "2024",  "2024-04-20", 840_000,   3.125,      False),
+    (5, "~2028", None,         1_050_000, 1.5625,     True),
+    (6, "~2032", None,         1_260_000, 0.78125,    True),
+    (7, "~2036", None,         1_470_000, 0.390625,   True),
+    (8, "~2040", None,         1_680_000, 0.1953125,  True),
+]
+HALVINGS_LINK = "https://en.bitcoin.it/wiki/Controlled_supply"
+
 # Traditional money vs digital money vs cryptocurrency - the chapter's comparison.
 MONEY_KINDS = {
     "axes": ["Issued by", "Exists as", "Who keeps the ledger", "Supply is set by", "Settles"],
@@ -278,6 +302,22 @@ def run_checks():
     for k, v in MONEY_KINDS.items():
         if k != "axes" and len(v) != n:
             bad.append("MONEY_KINDS: %s has %d rows, axes %d" % (k, len(v), n))
+    # the halving table: heights and subsidies re-derived from the protocol arithmetic, the
+    # documented dates pinned, and every projection visibly marked
+    for era, lab, d, h, sub, est in HALVINGS:
+        if h != era * 210_000:
+            bad.append("HALVINGS: era %d height %d is not era*210000" % (era, h))
+        if sub != (50 * 10**8 >> era) / 10**8:
+            bad.append("HALVINGS: era %d subsidy %r disagrees with the shift" % (era, sub))
+        if est and (not lab.startswith("~") or d is not None):
+            bad.append("HALVINGS: era %d is a projection but not marked '~'/dateless" % era)
+        if not est and (d is None or lab != d[:4]):
+            bad.append("HALVINGS: era %d label %r does not match its date %r" % (era, lab, d))
+    if [x[2] for x in HALVINGS if not x[5]] != ["2009-01-03", "2012-11-28", "2016-07-09",
+                                                "2020-05-11", "2024-04-20"]:
+        bad.append("HALVINGS: the documented dates drifted")
+    if not HALVINGS_LINK.startswith("http"):
+        bad.append("HALVINGS_LINK is not a URL")
     return bad
 
 
