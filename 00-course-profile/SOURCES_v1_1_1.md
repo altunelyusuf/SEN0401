@@ -4,8 +4,8 @@ Version: 1.0.0 · Recorded 2026-10-04
 
 This file is the per-fact source record for the four course-level parts written on 2026-10-04:
 `00-course-profile/sen0401_course_v1_2_0.ttl` (individuals; its two classes in
-`sen0401_course_tbox_v1_0_0.ttl` since the BP-D53 split of 2026-10-05), `01-outcomes/sen0401_outcomes_v1_1_0.ttl`,
-`02-textbook/sen0401_textbook_v1_2_0.ttl`, `03-materials/sen0401_materials_v1_4_3.ttl`,
+`sen0401_course_tbox_v1_0_0.ttl` since the BP-D53 split of 2026-10-05), `01-outcomes/sen0401_outcomes_v1_1_1.ttl`,
+`02-textbook/sen0401_textbook_v1_2_0.ttl`, `03-materials/sen0401_materials_v1_4_4.ttl`,
 `04-assessment/sen0401_assessment_v1_0_0.ttl`, `05-projects/sen0401_projects_v1_0_0.ttl` and
 `06-quality/sen0401_quality_v1_1_0.ttl`. Superseded part versions leave the tree (BP-D7) and live in git history.
 Everything below was read in the session that wrote those files; nothing is carried over from a
@@ -78,7 +78,7 @@ Ten outcomes, LO-1 to LO-10, each with its own `dcterms:source`. Their evidence 
 | LO-9 Bitcoin's public figures | Analyze | PKG numbers (Blockchain.com snapshot) |
 | LO-10 team project in the term theme | Create | README's term theme |
 
-**They are approved.** The owner approved all ten as drafted, with their levels, on 2026-10-05 (`01-outcomes/sen0401_outcomes_v1_1_0.ttl` carries `cme:approvedBy` and `cme:approvedAt`; version 1.0.0, the draft, remains in git history). One alignment is asserted in `06-quality/sen0401_quality_v1_1_0.ttl`: the Project assesses LO-10. The Midterm and Final are not aligned: the outline does not say what they cover, so the gap stays declared.
+**They are approved.** The owner approved all ten as drafted, with their levels, on 2026-10-05 (`01-outcomes/sen0401_outcomes_v1_1_1.ttl` carries `cme:approvedBy` and `cme:approvedAt`; version 1.0.0, the draft, remains in git history). One alignment is asserted in `06-quality/sen0401_quality_v1_1_0.ttl`: the Project assesses LO-10. The Midterm and Final are not aligned: the outline does not say what they cover, so the gap stays declared.
 
 CASE terms were verified before use: `dtCFDocument`, `dtCFItem`, `dtCFItemType`, `title`,
 `humanCodingScheme`, `CFItemType` and `fullStatement` were each confirmed present in the fetched
