@@ -32,3 +32,10 @@ attribution kept below and carried on the slide that shows it.
 
 Reusing CC BY-SA material inside these course materials keeps the materials' own distribution of
 those images under the same licence family; each slide that shows one carries its credit line.
+
+## Self-made from live, verified data (2026-10-06)
+
+| file | made from | note |
+|---|---|---|
+| genesis_hexdump.png | block 0's raw 285 bytes, fetched from blockstream.info/api in this build | double-SHA256 of the 80-byte header recomputed and matched against the genesis hash before rendering; the Times sentence highlighted |
+| pizza_value_chart.png | documented price milestones (story companion v1.1.0, PIZZA_VALUE) plus the live price from mempool.space and CoinGecko (85,409 / 85,387 USD, 0.03% apart) | log scale; rendered in the deck palette |

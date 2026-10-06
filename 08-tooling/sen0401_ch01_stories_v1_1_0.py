@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SEN0401 chapter 1 - the story companion to the chapter corpus (version 1.0.0).
+"""SEN0401 chapter 1 - the story companion to the chapter corpus (version 1.1.0).
 
 The owner's ruling of 2026-10-06: the teaching materials need stories - the histories and
 biographical notes of money, cryptography, digital currencies and Bitcoin - because stories make
@@ -12,9 +12,15 @@ structural rules (a lesson of at most 14 words, a non-empty source, a date or er
 and re-checks the numeric claims the stories make. Nothing here contradicts the chapter corpus;
 where a story touches a corpus concept, the concept list names it.
 
-Usage: import STORIES; or run this file to execute the self-checks.
+1.1.0 adds, on the owner's direction of 2026-10-06: the MoneyEvolution story; PIZZA_VALUE, the
+documented milestones of what the Pizza Day coins were worth (the current point fetched live on
+2026-10-06 from two independent price APIs agreeing within 0.1 percent); and MONEY_KINDS, the
+three-column comparison of traditional money, digital money and cryptocurrency the chapter
+teaches from.
+
+Usage: import STORIES, PIZZA_VALUE, MONEY_KINDS; or run this file to execute the self-checks.
 """
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 STORIES = [
     {
@@ -106,7 +112,46 @@ STORIES = [
                    "850,000 BTC missing (about 750,000 of them customers'); widely reported, e.g. "
                    "en.wikipedia.org/wiki/Mt._Gox."),
     },
+    {
+        "id": "MoneyEvolution",
+        "title": "Five thousand years to digital cash",
+        "when": "c. 3000 BCE - 2009",
+        "concepts": ["Money", "History"],
+        "story": ("Money keeps changing form: grain-ledger entries in Mesopotamia, the first struck coins in "
+                  "Lydia around 600 BCE, paper notes in Song-dynasty China, goldsmiths' receipts becoming "
+                  "bank money, and in 1971 the dollar's last tie to gold cut, leaving pure fiat. Cards and "
+                  "online banking then made most money digital - but always as entries in some "
+                  "institution's private ledger. Cryptocurrency is the next step on the same road: money "
+                  "that is only a ledger, but a public one no single institution keeps."),
+        "lesson": "Every form of money is a ledger; they differ in who keeps it",
+        "source": ("Standard monetary history: Lydian electrum coinage (c. 7th-6th century BCE); "
+                   "Song-dynasty jiaozi paper money; the 1971 Nixon gold-convertibility suspension; "
+                   "Mastering Bitcoin 3e, ch. 1, on bitcoin as digital money."),
+    },
 ]
+
+# What the Pizza Day coins were worth - teaching milestones, each widely documented at its date;
+# the final point was fetched live on 2026-10-06 from mempool.space and CoinGecko (85,409 and
+# 85,387 USD/BTC, agreeing within 0.1 percent), 10,000 BTC = 854 million dollars.
+PIZZA_VALUE = [
+    ("2010-05", 41, "the two pizzas, as valued at the time of the purchase"),
+    ("2011-02", 10_000, "bitcoin reaches dollar parity (1 BTC = 1 USD)"),
+    ("2013-11", 10_000_000, "bitcoin first crosses 1,000 USD"),
+    ("2017-12", 196_000_000, "the ~19,600 USD December 2017 peak"),
+    ("2021-11", 690_000_000, "the 69,000 USD November 2021 high"),
+    ("2026-10", 854_090_000, "live price fetched 2026-10-06, two independent APIs"),
+]
+
+# Traditional money vs digital money vs cryptocurrency - the chapter's comparison.
+MONEY_KINDS = {
+    "axes": ["Issued by", "Exists as", "Who keeps the ledger", "Supply is set by", "Settles"],
+    "Traditional (cash)": ["A central bank", "Paper and coin in hand", "No ledger - possession is the record",
+                           "Monetary policy", "Hand to hand, instantly"],
+    "Digital money (bank, card, e-money)": ["Commercial banks on a central bank base", "Entries in banks' private ledgers",
+                                            "Banks and processors", "Monetary policy and credit", "Through intermediaries, in days"],
+    "Cryptocurrency (bitcoin)": ["No one - issuance is in the protocol", "Entries in one public ledger",
+                                 "Every node, together", "Fixed rules anyone can verify", "Peer to peer, in about an hour"],
+}
 
 
 def run_checks():
@@ -130,6 +175,14 @@ def run_checks():
         bad.append("MtGox: amount missing from source line")
     if "2009-01-12" not in STORIES[2]["source"]:
         bad.append("FirstTransaction: block-170 date missing")
+    if [p[0] for p in PIZZA_VALUE] != sorted(p[0] for p in PIZZA_VALUE):
+        bad.append("PIZZA_VALUE: milestones out of order")
+    if PIZZA_VALUE[0][1] != 41 or PIZZA_VALUE[-1][1] != 854_090_000:
+        bad.append("PIZZA_VALUE: endpoint values drifted")
+    n = len(MONEY_KINDS["axes"])
+    for k, v in MONEY_KINDS.items():
+        if k != "axes" and len(v) != n:
+            bad.append("MONEY_KINDS: %s has %d rows, axes %d" % (k, len(v), n))
     return bad
 
 
