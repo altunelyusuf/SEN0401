@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SEN0401 chapter 1 - the story companion to the chapter corpus (version 1.2.0).
+"""SEN0401 chapter 1 - the story companion to the chapter corpus (version 1.3.0).
 
 The owner's ruling of 2026-10-06: the teaching materials need stories - the histories and
 biographical notes of money, cryptography, digital currencies and Bitcoin - because stories make
@@ -22,9 +22,15 @@ teaches from.
 fields and carries one live link for further reading or watching, and the self-check refuses a
 story missing any of them. The deck and page print these on the story itself.
 
-Usage: import STORIES, PIZZA_VALUE, MONEY_KINDS; or run this file to execute the self-checks.
+1.3.0, on the owner's direction of 2026-10-06: the online-payments story (Confinity, X.com,
+PayPal, and the dot-com digital-cash failures) and WHEN_MONEY_STOPS - dated, named, linked cases
+from Kenya, Cyprus, Greece, Venezuela and Ukraine where cards, banks or cash stopped serving
+people, and where even a government under attack turned to an open payment network. Every case
+carries its own link and passes the 5N1K self-check.
+
+Usage: import STORIES, PIZZA_VALUE, MONEY_KINDS, WHEN_MONEY_STOPS; run the file for self-checks.
 """
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 STORIES = [
     {
@@ -153,6 +159,62 @@ STORIES = [
                    "Song-dynasty jiaozi paper money; the 1971 Nixon gold-convertibility suspension; "
                    "Mastering Bitcoin 3e, ch. 1, on bitcoin as digital money."),
     },
+    {
+        "id": "OnlinePayments",
+        "title": "The internet got payments - and new gatekeepers",
+        "when": "1998 - 2002",
+        "who": "Max Levchin and Peter Thiel (Confinity), Elon Musk (X.com)",
+        "where": "Palo Alto, in the dot-com boom",
+        "link": "https://en.wikipedia.org/wiki/PayPal",
+        "concepts": ["History", "Transfer"],
+        "story": ("The web could sell before it could pay: cards were unsafe to type and banks had no "
+                  "internet rails. Confinity, founded 1998 by Max Levchin and Peter Thiel, and X.com, "
+                  "founded 1999 by Elon Musk, raced to fix it, merged in 2000, and became PayPal - sold "
+                  "to eBay for 1.5 billion dollars in 2002. The same boom's pure digital currencies, "
+                  "Beenz and Flooz, died in the 2001 crash, taking their customers' balances with them. "
+                  "Online payment was solved, but only as accounts on one company's private ledger - "
+                  "the internet still had no cash."),
+        "lesson": "The dot-com era digitised payments by adding middlemen, not by removing them",
+        "source": ("en.wikipedia.org/wiki/PayPal (Confinity 1998, X.com 1999, merger 2000, eBay "
+                   "acquisition 2002); en.wikipedia.org/wiki/Flooz.com and /wiki/Beenz.com "
+                   "(both closed 2001 in the dot-com crash)."),
+    },
+    {
+        "id": "WhenMoneyStops",
+        "title": "When the money in your hand stops working",
+        "when": "2007 - 2022",
+        "who": "savers, the unbanked, and one government under invasion",
+        "where": "Kenya, Cyprus, Greece, Venezuela, Ukraine",
+        "link": "https://www.cnbc.com/2022/03/02/ukraine-dogecoin-other-cryptocurrencies-accepted-for-donations.html",
+        "concepts": ["Money", "Characteristic", "Borderless"],
+        "story": ("Money fails people in documented ways. Kenya, 2007: most adults had no bank, so "
+                  "Safaricom's M-Pesa turned phone credit into the country's money rail. Cyprus, March "
+                  "2013: banks closed for days and a levy took part of large deposits overnight. Greece, "
+                  "summer 2015: capital controls capped ATM withdrawals at 60 euros a day. Venezuela, "
+                  "2018: hyperinflation passed one million percent and wages evaporated between morning "
+                  "and evening. Ukraine, February 2022: with war at the capital, the government itself "
+                  "posted donation addresses and raised tens of millions of dollars in crypto within "
+                  "days, run by Deputy Minister Alex Bornyakov, when ordinary rails were too slow."),
+        "lesson": "Open digital money matters most exactly where banks, cards or cash stop",
+        "source": ("en.wikipedia.org/wiki/M-Pesa (Safaricom, 2007); en.wikipedia.org/wiki/2012-2013_Cypriot_financial_crisis "
+                   "(deposit levy, March 2013); en.wikipedia.org/wiki/Greek_government-debt_crisis (2015 capital controls, 60-euro limit); "
+                   "en.wikipedia.org/wiki/Hyperinflation_in_Venezuela (over 1,000,000% in 2018); "
+                   "CNBC 2022-03-02 and Fortune 2022-03-26 on Ukraine's official crypto donations (Alex Bornyakov, 35 million dollars within the first week)."),
+    },
+]
+
+# The five cases, one per card on the slide and the page, each with its own link (5N1K).
+WHEN_MONEY_STOPS = [
+    ("Kenya", "2007", "No banks for most adults - M-Pesa made phones the payment rail",
+     "https://en.wikipedia.org/wiki/M-Pesa"),
+    ("Cyprus", "2013", "Banks shut for days; a levy took part of deposits overnight",
+     "https://en.wikipedia.org/wiki/2012%E2%80%932013_Cypriot_financial_crisis"),
+    ("Greece", "2015", "Capital controls: ATM withdrawals capped at 60 euros a day",
+     "https://en.wikipedia.org/wiki/Greek_government-debt_crisis"),
+    ("Venezuela", "2018", "Hyperinflation beyond 1,000,000% - wages melted in hours",
+     "https://en.wikipedia.org/wiki/Hyperinflation_in_Venezuela"),
+    ("Ukraine", "2022", "Under invasion, the state itself raised ~$35M in crypto in a week",
+     "https://www.cnbc.com/2022/03/02/ukraine-dogecoin-other-cryptocurrencies-accepted-for-donations.html"),
 ]
 
 # What the Pizza Day coins were worth - teaching milestones, each widely documented at its date;
@@ -205,6 +267,9 @@ def run_checks():
         bad.append("MtGox: amount missing from source line")
     if "2009-01-12" not in STORIES[2]["source"]:
         bad.append("FirstTransaction: block-170 date missing")
+    for c in WHEN_MONEY_STOPS:
+        if len(c) != 4 or not c[3].startswith("http"):
+            bad.append("WHEN_MONEY_STOPS: malformed case %r" % (c[0],))
     if [p[0] for p in PIZZA_VALUE] != sorted(p[0] for p in PIZZA_VALUE):
         bad.append("PIZZA_VALUE: milestones out of order")
     if PIZZA_VALUE[0][1] != 41 or PIZZA_VALUE[-1][1] != 854_090_000:
