@@ -40,8 +40,11 @@ function drawCode(s,e){ codeLabel(s,e); s.addShape(pres.shapes.ROUNDED_RECTANGLE
 
 // a program the example runs as a whole: its lines verbatim, then the value of result
 function drawProg(s,e){ codeLabel(s,e); s.addShape(pres.shapes.ROUNDED_RECTANGLE,{x:e.x,y:e.y,w:e.w,h:e.h,fill:{color:C.code},line:{color:C.code},rectRadius:0.1});
-  const runs=[]; e.lines.forEach((t,i)=>{ const rs=colorLine(t); rs[rs.length-1].options=Object.assign({},rs[rs.length-1].options,{breakLine:i<e.lines.length-1}); rs.forEach(r=>runs.push(r)); });
+  const runs=[]; e.lines.forEach(t=>{ const rs=colorLine(t); rs[rs.length-1].options=Object.assign({},rs[rs.length-1].options,{breakLine:true}); rs.forEach(r=>runs.push(r)); });
+  if(e.compact && e.out){ runs.push({text:'result ',options:{color:C.orange,bold:true}}); runs.push({text:e.out,options:{color:C.green}}); }
+  else if(runs.length) runs[runs.length-1].options=Object.assign({},runs[runs.length-1].options,{breakLine:false});
   s.addText(runs,{x:e.x+0.2,y:e.y+0.13,w:e.w-0.4,h:e.h-0.26,fontFace:MONO,fontSize:e.fs,valign:'top',margin:0,isTextBox:true});
+  if(e.compact){ if(e.cap) s.addText(e.cap,{x:e.x+0.2,y:e.y+e.h-0.26,w:e.w-0.4,h:0.22,fontFace:B,fontSize:8,italic:true,color:'8B949E',align:'right',margin:0,isTextBox:true}); return; }
   let y=e.y+e.h+0.02;
   if(e.out){ s.addText([{text:'result  ',options:{color:C.orange,bold:true}},{text:e.out,options:{color:C.dark}}],
     {x:e.x,y:y,w:e.w,h:0.28,fontFace:MONO,fontSize:Math.max(9,e.fs),margin:0,valign:'middle',isTextBox:true}); y+=0.28; }

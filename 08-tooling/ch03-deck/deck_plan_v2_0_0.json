@@ -1,0 +1,1216 @@
+{
+ "meta": {
+  "title": "Chapter 3: Bitcoin Core",
+  "sub": "SEN0401, third-edition redesign",
+  "version": "2.0.0",
+  "python": "3.14.4",
+  "total": 0,
+  "redesign": "2026-10-06, to the chapter-1 v2.8.0 standard (CME materials look-and-feel v1.0.0)"
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 3: Bitcoin Core",
+   "sub": "The reference implementation - download it, verify it, run it, question it",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch03/assets/c3_cointocode.png",
+     "x": 6.1,
+     "y": 1.15,
+     "w": 3.5,
+     "h": 2.5,
+     "cap": "from the owner's 2025 deck"
+    }
+   ],
+   "notes": "SAY: Chapters 1 and 2 described the system; this chapter hands it to you. By tonight you can be running the same program that wrote the genesis block's successors.\nFULL TEXT: course page, chapter 3.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "Five parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 6.3,
+     "h": 3.4,
+     "fs": 12.5,
+     "items": [
+      "Questions and the chapter map  (slides 3-4)",
+      "The node - full, pruned, and the UTXO set  (slides 5-7)",
+      "From source to binary - tags, builds, proofs  (slides 8-11)",
+      "Running and talking to it - logs, RPC, wallets  (slides 12-17)",
+      "The chain as data, summary, and resources  (slides 18-23)"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.5,
+     "w": 2.45,
+     "h": 3.4,
+     "vert": true,
+     "items": [
+      {
+       "n": "23",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "3",
+       "label": "true stories, each with WHO / WHERE / WHEN / READ"
+      },
+      {
+       "n": "15",
+       "label": "live-run examples, shown with their results"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: Five parts: by the end you can fetch, verify, build, run and query the reference implementation - and every claim on the way arrives with its receipt.\nASK: Who already runs a node? You are today's teaching assistants.\nFULL TEXT: course page, chapter 3 - every section.",
+   "take": "Five parts - and by tonight, your own node",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions - we return to each",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 3.5,
+     "fs": 12.5,
+     "items": [
+      "Which programs does Bitcoin Core consist of?",
+      "Which settings and files decide how a node runs?",
+      "Which numbers does the node report about a transaction and a block?",
+      "Where do the book's printed outputs differ from the real release 31.1 and the current source?",
+      "How can a downloaded release and a chosen library be checked before they are trusted?",
+      "Which terms do the explanations of this chapter rely on?"
+     ]
+    }
+   ],
+   "notes": "SAY: A node is a computer that runs Bitcoin software and takes part in the peer-to-peer network, and this first branch of the chapter is about the most complete kind of node, the full verification node. The chapter opens with the reason such a node exists.\nFULL TEXT: course page, chapter 3 - Node.",
+   "bg": "light",
+   "take": "If you can answer these, chapter 3 is yours"
+  },
+  {
+   "kind": "content",
+   "title": "One chapter, eight branches",
+   "sub": "The concept map the whole chapter hangs on",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 2.9,
+     "cols": 4,
+     "fs": 13,
+     "subfs": 10,
+     "accent": [
+      0
+     ],
+     "items": [
+      {
+       "label": "Node",
+       "sub": "13 concepts"
+      },
+      {
+       "label": "Build",
+       "sub": "13 concepts"
+      },
+      {
+       "label": "Operation",
+       "sub": "19 concepts"
+      },
+      {
+       "label": "Interface",
+       "sub": "13 concepts"
+      },
+      {
+       "label": "Data",
+       "sub": "23 concepts"
+      },
+      {
+       "label": "Ecosystem",
+       "sub": "7 concepts"
+      },
+      {
+       "label": "Semantics",
+       "sub": "4 concepts"
+      },
+      {
+       "label": "Computing",
+       "sub": "15 concepts"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: A node is a computer that runs Bitcoin software and takes part in the peer-to-peer network, and this first branch of the chapter is about the most complete kind of node, the full verification node. The chapter opens with the reason such a node exists.\nFULL TEXT: course page, chapter 3 - Node, Build, Operation, Interface.",
+   "bg": "light",
+   "lede": "Eight branches; the count under each is how many concepts the course page explains for it - today walks the spine.",
+   "take": "Eight branches - every slide today lives on this map"
+  },
+  {
+   "kind": "section",
+   "title": "The node",
+   "sub": "What the reference implementation is, and what it keeps",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 5.3,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Full node"
+      },
+      {
+       "label": "Pruned node"
+      },
+      {
+       "label": "Initial download"
+      },
+      {
+       "label": "The UTXO set"
+      }
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch03/assets/mbc3_0301.png",
+     "x": 6.3,
+     "y": 1.9,
+     "w": 3.3,
+     "h": 2.9,
+     "cap": "Bitcoin Core architecture - Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "SAY: A node is a computer that runs Bitcoin software and takes part in the peer-to-peer network, and this first branch of the chapter is about the most complete kind of node, the full verification node. The chapter opens with the reason such a node exists.\nFULL TEXT: course page, chapter 3 - Node.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Version 0.1, set in stone",
+   "sub": "2009-01-09",
+   "items": [
+    {
+     "t": "news",
+     "x": 0.5,
+     "y": 1.42,
+     "w": 3.1,
+     "h": 2.5,
+     "paper": "The Cryptography List",
+     "date": "Friday January 9 2009",
+     "badge": "a download on SourceForge",
+     "headline": "Bitcoin v0.1 released"
+    },
+    {
+     "t": "beats",
+     "x": 3.95,
+     "y": 1.5,
+     "w": 5.55,
+     "h": 2.0,
+     "fs": 13,
+     "items": [
+      "Six days after the genesis block: a runnable Windows program",
+      "'The core design was set in stone' - Satoshi, a year later",
+      "Everything this chapter runs descends from that program"
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch03/assets/shot_bitcoinqt_0_5_2.png",
+     "x": 3.95,
+     "y": 3.52,
+     "w": 2.2,
+     "h": 0.8
+    },
+    {
+     "t": "factrow",
+     "x": 3.95,
+     "y": 4.42,
+     "w": 5.55,
+     "who": "Satoshi Nakamoto, announcing on the metzdowd.com cryptography mailing list",
+     "where": "a Windows build on SourceForge",
+     "when": "2009-01-09",
+     "link": "https://en.wikipedia.org/wiki/Bitcoin_Core",
+     "linkText": "en.wikipedia.org"
+    }
+   ],
+   "notes": "STORY (2009-01-09): Six days after the genesis block, Satoshi announced Bitcoin version 0.1 - a Windows program on SourceForge. A year and a half later he wrote the sentence this course keeps returning to: once version 0.1 was released, the core design was set in stone for the rest of its lifetime. Everything this chapter builds, configures and queries descends from that one program, which is why Bitcoin Core is called the reference implementation.\nSOURCE: Announcement of 2009-01-09 on the metzdowd.com cryptography list ('Bitcoin v0.1 released'); the 'set in stone' sentence is Satoshi's forum post of 2010-06-17; project history summarized at en.wikipedia.org/wiki/Bitcoin_Core.\nIMAGE: the 0.5.2 GUI (MIT licence) - the same program two years on.",
+   "bg": "light",
+   "take": "The software came first - the program IS the specification"
+  },
+  {
+   "kind": "content",
+   "title": "One program, many postures",
+   "sub": "Full, pruned, and the set every posture must keep",
+   "items": [
+    {
+     "t": "compare",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 9.0,
+     "h": 2.0,
+     "fs": 12,
+     "left": {
+      "head": "Full archive",
+      "rows": [
+       "Keeps every block since 2009",
+       "Serves history to anyone who asks"
+      ]
+     },
+     "right": {
+      "head": "Pruned",
+      "rows": [
+       "Verifies everything, then discards old blocks",
+       "550 MB floor - the run checks 5000 >= 550"
+      ]
+     }
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.85,
+     "w": 4.3,
+     "h": 0.95,
+     "rows": [
+      [
+       "5000 >= 550",
+       "True"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.14.4",
+     "label": "pruning's floor, checked"
+    },
+    {
+     "t": "code",
+     "x": 5.1,
+     "y": 3.85,
+     "w": 4.4,
+     "h": 0.95,
+     "rows": [
+      [
+       "400 * 10 / 1000",
+       "4.0"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.14.4",
+     "label": "IBD: 400 GB at 10 MB/s, in hours"
+    }
+   ],
+   "notes": "SAY: A pruned node is a full node that deletes old block files after it has verified them, so that it needs far less disk space.\nASK: Which posture still enforces every consensus rule? (both - that is the point)\nFULL TEXT: course page, chapter 3 - PrunedNode, InitialDownload.",
+   "bg": "light",
+   "take": "Same rules, different storage - pruning keeps the checks, drops the history"
+  },
+  {
+   "kind": "section",
+   "title": "From source to binary",
+   "sub": "Trust arithmetic, not downloads",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Clone and tags"
+      },
+      {
+       "label": "Reproducible builds"
+      },
+      {
+       "label": "CMake"
+      },
+      {
+       "label": "Tests"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: The build branch is about turning the text of Bitcoin Core into a program that can run. The book calls this part of the chapter the Bitcoin development environment: the tools, libraries and support software a developer needs for writing Bitcoin applications, which the chapter walks through step by step.\nFULL TEXT: course page, chapter 3 - Build.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Clone it, then pick your version by tag",
+   "sub": "The repository is the publication of record",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 9.0,
+     "h": 1.15,
+     "fs": 12.5,
+     "steps": [
+      {
+       "label": "git clone",
+       "sub": "the whole history"
+      },
+      {
+       "label": "git tag",
+       "sub": "list the releases"
+      },
+      {
+       "label": "git checkout v...",
+       "sub": "one exact snapshot",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.0,
+     "w": 4.3,
+     "h": 0.95,
+     "rows": [
+      [
+       "len('05bc2f53ce0cb239c17dbdd6b261bd2db7d2a940')",
+       "40"
+      ]
+     ],
+     "fs": 9.1,
+     "cap": "run under Python 3.14.4",
+     "label": "a commit name is 40 hex digits"
+    },
+    {
+     "t": "code",
+     "x": 5.1,
+     "y": 3.0,
+     "w": 4.4,
+     "h": 0.95,
+     "rows": [
+      [
+       "'v24.0.1'.lstrip('v').split('.')",
+       "['24', '0', '1']"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.14.4",
+     "label": "a tag is just a version, readable"
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 4.2,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 12,
+     "items": [
+      "stable today: v31.1",
+      "next candidate: v32.0rc3",
+      "book's example: v24.0.1"
+     ]
+    }
+   ],
+   "notes": "SAY: Git is a distributed version control system, and a repository is the database in which it keeps a project and all of its history. The book calls Git the most widely used distributed version control system and an essential part of the toolkit of every software developer (Antonopoulos and Harding, 2023).\nASK: Why does the course pin a commit instead of saying 'latest'?\nFULL TEXT: course page, chapter 3 - GitRepository, ReleaseTag.",
+   "bg": "light",
+   "lede": "The chapter corpus itself reads a pinned checkout - commit 05bc2f53 - and the tag list was read live from the public repository on 2026-10-02.",
+   "take": "A release is a tag; a tag names one exact snapshot"
+  },
+  {
+   "kind": "content",
+   "title": "Dozens of builders, one identical binary",
+   "sub": "since 2011; Guix from release 22.0",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch03/assets/core_logo_128.png",
+     "x": 0.6,
+     "y": 1.6,
+     "w": 1.5,
+     "h": 1.5,
+     "cap": "the project's own icon (MIT)"
+    },
+    {
+     "t": "funnel",
+     "x": 2.5,
+     "y": 1.55,
+     "w": 4.6,
+     "h": 1.8,
+     "cap": "one hash, many signers - a mismatch would betray itself",
+     "steps": [
+      "source at the tag",
+      "Guix builds it, bit for bit",
+      "builders compare hashes",
+      "signed attestations, public"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.3,
+     "y": 1.6,
+     "w": 2.2,
+     "h": 1.7,
+     "vert": true,
+     "items": [
+      {
+       "n": "22.0",
+       "label": "first Guix-built release line"
+      }
+     ]
+    },
+    {
+     "t": "bullets",
+     "x": 0.5,
+     "y": 3.7,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 12.5,
+     "items": [
+      "The chapter's research re-verified a real release: checksum equal, signatures good, node run"
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.42,
+     "w": 9.0,
+     "who": "independent Bitcoin Core builders publishing signed attestations",
+     "where": "the guix.sigs repository beside bitcoin/bitcoin",
+     "when": "since 2011; Guix from release 22.0",
+     "link": "https://github.com/bitcoin-core/guix.sigs",
+     "linkText": "github.com"
+    }
+   ],
+   "notes": "STORY (since 2011; Guix from release 22.0): A downloaded binary asks for trust; Bitcoin Core answers with arithmetic. Every release is built reproducibly - first under Gitian, since release 22.0 under Guix - so that anyone compiling the tagged source gets a byte-identical result. Independent builders publish signed hashes of what they produced, side by side, in a public repository. If one build differed, its hash would betray it instantly - the same trick the chapter's Merkle root plays on transactions.\nSOURCE: bitcoin-core/guix.sigs on GitHub: per-release folders of builder attestations; Guix build documentation in the pinned source tree, contrib/guix/README.md.",
+   "bg": "light",
+   "take": "Verify, don't trust - applied to the software itself"
+  },
+  {
+   "kind": "content",
+   "title": "From source to bitcoind",
+   "sub": "The build branch, compressed to one slide",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.55,
+     "w": 9.0,
+     "h": 1.15,
+     "fs": 12.5,
+     "steps": [
+      {
+       "label": "cmake -B build",
+       "sub": "configure"
+      },
+      {
+       "label": "compile + link",
+       "sub": "the toolchain"
+      },
+      {
+       "label": "ctest",
+       "sub": "the suite must pass"
+      },
+      {
+       "label": "bitcoind",
+       "sub": "your node",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.9,
+     "w": 9.0,
+     "h": 0.8,
+     "rows": [
+      [
+       "{'--disable-wallet': '-DENABLE_WALLET=OFF'}['--disable-wallet']",
+       "'-DENABLE_WALLET=OFF'"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.14.4",
+     "label": "old autotools flag, new CMake flag - one mapping"
+    },
+    {
+     "t": "prog",
+     "x": 0.5,
+     "y": 3.8,
+     "w": 9.0,
+     "h": 1.12,
+     "lines": [
+      "def subsidy(h):",
+      "    return 0 if h // 210000 >= 64 else (50 * 10**8) >> (h // 210000)",
+      "result = [subsidy(h) for h in (0, 209999, 210000, 630000, 775072)]"
+     ],
+     "fs": 7.8,
+     "cap": "program SoftwareTesting, lines 1 to 3 of 3, run under Python 3.14.4",
+     "out": "[5000000000, 5000000000, 2500000000, 625000000, 625000000]",
+     "block": "SoftwareTesting",
+     "first": 1,
+     "total": 3,
+     "compact": true,
+     "label": "the test the chapter runs: chapter 1's subsidy staircase, as a unit test"
+    }
+   ],
+   "notes": "SAY: CMake is the build system that Bitcoin Core has used since release 29.0. The manual of CMake explains its role: a buildsystem describes how to build a project's executables and libraries from its source code using a build tool to automate the process, and CMake lets a project describe its buildsystem abstractly in files written in the CMake language, from which it generates a preferred buildsystem for each user (Kitware, 2026).\nASK: Why does the project treat review and tests as the bottleneck?\nFULL TEXT: course page, chapter 3 - CMakeBuild, SoftwareTesting.",
+   "bg": "light",
+   "take": "The build system turns audited text into your node"
+  },
+  {
+   "kind": "section",
+   "title": "Running and talking to it",
+   "sub": "A daemon, a log that explains itself, and one protocol",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "First run"
+      },
+      {
+       "label": "The daemon"
+      },
+      {
+       "label": "bitcoin-cli"
+      },
+      {
+       "label": "JSON-RPC"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: Operation is the second large part of the chapter, and it is about what happens after the software has been built or downloaded: how a node is started, how it is configured, how its state is observed, and what kind of wallet comes with it.\nFULL TEXT: course page, chapter 3 - Operation.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The log narrates everything the node decides",
+   "sub": "A real 31.1 startup, captured for this chapter",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 3.55,
+     "h": 1.9,
+     "fs": 10.5,
+     "items": [
+      "First run creates the data directory and a config",
+      "The log names every subsystem as it wakes",
+      "The run reads the real log: 16 worker threads"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 4.3,
+     "y": 1.6,
+     "w": 5.2,
+     "h": 1.3,
+     "rows": [
+      [
+       "log = 'Starting HTTP server with 16 worker threads'",
+       ""
+      ],
+      [
+       "next(l for l in log.splitlines() if 'worker threads' in l).split()[-3]",
+       "'16'"
+      ]
+     ],
+     "fs": 7.7,
+     "cap": "run under Python 3.14.4",
+     "label": "one line of the captured log, parsed"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.6,
+     "w": 9.0,
+     "h": 1.25,
+     "rows": [
+      [
+       "text = DAEMON_D1",
+       ""
+      ],
+      [
+       "line = text.split('\\nExecStart=')[1].split('ExecStartPre')[0]",
+       ""
+      ],
+      [
+       "[w.split('=')[0] for w in line.split() if w.startswith('-') and not w.startswith('--')]",
+       "['-pid', '-conf', '-datadir', '-startupnotify', '-shutdownnotify']"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.4",
+     "label": "the systemd unit's own flags, extracted from the pinned source tree"
+    }
+   ],
+   "notes": "SAY: The start-up log is the stream of messages that the node writes while it starts, and afterwards as it runs. With the option that sends the log to the console it appears in the terminal, and otherwise it goes to a file called debug.log in the data directory, as the documentation of the data directory states (Bitcoin Core, 2026).\nASK: Where would you look first when a node misbehaves? (the answer is this slide's title)\nFULL TEXT: course page, chapter 3 - StartupLog, Daemon.",
+   "bg": "light",
+   "take": "When a node misbehaves, the log already wrote the diagnosis"
+  },
+  {
+   "kind": "content",
+   "title": "The project that outlives its keyholders",
+   "sub": "2011 and 2014",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 9.0,
+     "h": 1.2,
+     "fs": 12.5,
+     "steps": [
+      {
+       "label": "Satoshi",
+       "sub": "2009: v0.1"
+      },
+      {
+       "label": "Gavin Andresen",
+       "sub": "2011: the handoff"
+      },
+      {
+       "label": "W. van der Laan",
+       "sub": "2014: lead maintainer"
+      },
+      {
+       "label": "many maintainers",
+       "sub": "today",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.1,
+     "w": 9.0,
+     "h": 1.1,
+     "fs": 13,
+     "items": [
+      "The faucet builder of chapter 2 is the 2011 keyholder here",
+      "Hundreds of contributors; no one has been indispensable since"
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.42,
+     "w": 9.0,
+     "who": "Satoshi Nakamoto to Gavin Andresen (2011); Andresen to Wladimir van der Laan (2014)",
+     "where": "the public bitcoin/bitcoin repository",
+     "when": "2011 and 2014",
+     "link": "https://en.wikipedia.org/wiki/Bitcoin_Core",
+     "linkText": "en.wikipedia.org"
+    }
+   ],
+   "notes": "STORY (2011 and 2014): Bitcoin Core is the program Satoshi published in January 2009, still developed in public. In 2011 Satoshi handed the project to Gavin Andresen - the faucet builder of chapter 2 - and withdrew. In April 2014 Andresen passed the lead-maintainer role to Wladimir van der Laan to focus on protocol work. Hundreds of contributors and several maintainers later, the repository, its tags and its releases carry on; no single person has been indispensable since.\nSOURCE: Repository history of bitcoin/bitcoin (the chapter's pinned checkout is commit 05bc2f53); maintainer handoffs of 2011 and April 2014 as recorded in the project history and summarized at en.wikipedia.org/wiki/Bitcoin_Core.",
+   "bg": "light",
+   "take": "Maintainers change; the repository and its rules remain"
+  },
+  {
+   "kind": "content",
+   "title": "Talking to the node: bitcoin-cli and JSON-RPC",
+   "sub": "One protocol under every interface",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.55,
+     "w": 9.0,
+     "h": 1.1,
+     "fs": 12.5,
+     "steps": [
+      {
+       "label": "bitcoin-cli",
+       "sub": "or any HTTP client"
+      },
+      {
+       "label": "JSON request",
+       "sub": "method + params"
+      },
+      {
+       "label": "bitcoind",
+       "sub": "cookie-authenticated"
+      },
+      {
+       "label": "JSON answer",
+       "sub": "machine-readable",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.88,
+     "w": 9.0,
+     "h": 1.05,
+     "rows": [
+      [
+       "import json",
+       ""
+      ],
+      [
+       "body = json.dumps({'jsonrpc': '1.0', 'id': 'curltest', 'method': 'getblockchaininfo', 'params': []})",
+       ""
+      ],
+      [
+       "json.loads(body)['method']",
+       "'getblockchaininfo'"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.14.4",
+     "label": "a real request body, built and read back"
+    },
+    {
+     "t": "stat",
+     "x": 0.5,
+     "y": 4.02,
+     "w": 9.0,
+     "h": 0.98,
+     "items": [
+      {
+       "n": "'main'",
+       "label": "chain, from the captured getblockchaininfo"
+      },
+      {
+       "n": "0",
+       "label": "blocks still to verify"
+      },
+      {
+       "n": "True",
+       "label": "initial download complete"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: JSON-RPC is a protocol for remote procedure calls whose messages are written in JSON. Its specification describes it as a stateless, light-weight remote procedure call protocol that defines a few data structures and the rules for processing them, independent of the transport, so that the same messages may travel within a process, over sockets or over HTTP (JSON-RPC Working Group, 2013).\nASK: Your phone wallet never shows this - what is it speaking underneath?\nFULL TEXT: course page, chapter 3 - JsonRpc, BitcoinCommand.",
+   "bg": "light",
+   "take": "Every GUI and every explorer speaks this same protocol"
+  },
+  {
+   "kind": "content",
+   "title": "Wallets are descriptors now",
+   "sub": "One line states what the wallet watches",
+   "items": [
+    {
+     "t": "compare",
+     "x": 0.5,
+     "y": 1.52,
+     "w": 9.0,
+     "h": 1.7,
+     "fs": 11.5,
+     "left": {
+      "head": "Descriptor wallet (today)",
+      "rows": [
+       "A readable expression names keys and script type",
+       "Ends in a checksum, like an address does"
+      ]
+     },
+     "right": {
+      "head": "Legacy wallet (retired)",
+      "rows": [
+       "A bag of loose keys in a binary file",
+       "Removed from current Bitcoin Core"
+      ]
+     }
+    },
+    {
+     "t": "prog",
+     "x": 0.5,
+     "y": 3.4,
+     "w": 9.0,
+     "h": 1.58,
+     "lines": [
+      "    symbols = descsum_expand(s[:-9]) + [CHECKSUM_CHARSET.find(x) for x in s[-8:]]",
+      "    return descsum_polymod(symbols) == 1",
+      "def descsum_create(s):",
+      "    symbols = descsum_expand(s) + [0, 0, 0, 0, 0, 0, 0, 0]",
+      "    checksum = descsum_polymod(symbols) ^ 1",
+      "    return s + '#' + ''.join(CHECKSUM_CHARSET[(checksum >> (5 * (7 - i))) & 31] for i in range(8))",
+      "result = descsum_create('wpkh(02f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9)')[-9:]"
+     ],
+     "fs": 7.1,
+     "cap": "program OutputDescriptor, lines 34 to 40 of 40, run under Python 3.14.4",
+     "out": "'#8zl0zxma'",
+     "block": "OutputDescriptor",
+     "first": 34,
+     "total": 40,
+     "compact": true,
+     "label": "the tail of the chapter's descriptor program - the checksum the node itself confirms"
+    }
+   ],
+   "notes": "SAY: A descriptor wallet is a wallet whose content is a set of output descriptions, each stating one family of scripts that the wallet can receive to and spend from. Bitcoin Core's documentation says that its code internally stores and operates on descriptors to reason about the sets of outputs that belong to the wallet (Bitcoin Core, 2026).\nASK: What does the # suffix buy you when you mistype one character?\nFULL TEXT: course page, chapter 3 - DescriptorWallet, LegacyWallet.",
+   "bg": "light",
+   "take": "A descriptor states, in one line, what the wallet watches"
+  },
+  {
+   "kind": "content",
+   "title": "Decode a real transaction",
+   "sub": "The node explains Alice's payment back to us",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.46,
+     "w": 9.0,
+     "h": 1.18,
+     "fs": 9.5,
+     "items": [
+      "Chapter 2 built Alice's payment; here the real node decodes the real thing",
+      "Two outputs come back typed: a taproot payment and taproot change",
+      "Full parse (version, marker, flag, ins, outs, locktime) = (1, 0, 1, 1, 2, 0); flip one witness byte and (wtxid equal, txid equal) = (False, True)"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.78,
+     "w": 9.0,
+     "h": 0.78,
+     "rows": [
+      [
+       "[(o['n'], o['value'], o['scriptPubKey']['type']) for o in json.load(io.StringIO(DECODEDTRANSACTION_D1))['vout']]",
+       "[(0, 0.0002, 'witness_v1_taproot'), (1, 0.00075, 'witness_v0_keyhash')]"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.4",
+     "label": "the outputs, as the node reports them"
+    },
+    {
+     "t": "prog",
+     "x": 0.5,
+     "y": 3.68,
+     "w": 9.0,
+     "h": 1.32,
+     "lines": [
+      "locktime = int.from_bytes(raw[i:i + 4], 'little')",
+      "stripped = raw[:4] + raw[6:out_end] + raw[wit_end:]",
+      "txid = d(stripped)[::-1].hex()",
+      "wtxid = d(raw)[::-1].hex()",
+      "result = (txid[:16], wtxid[:16])"
+     ],
+     "fs": 7.0,
+     "cap": "program TransactionIdentifier, lines 44 to 48 of 48, run under Python 3.14.4",
+     "out": "('466200308696215b', 'f7cdbc7cf8b910d3')",
+     "block": "TransactionIdentifier",
+     "first": 44,
+     "total": 48,
+     "compact": true,
+     "label": "txid and wtxid, computed from her raw bytes"
+    }
+   ],
+   "notes": "SAY: A decoded transaction is the structure that results from reading the bytes of a serialized transaction and naming each field. The command decoderawtransaction takes the hexadecimal string and returns a JSON object (Antonopoulos and Harding, 2023).\nASK: Which of the two identifiers survives a witness change, and why does that matter?\nFULL TEXT: course page, chapter 3 - DecodedTransaction, TransactionIdentifier.",
+   "bg": "light",
+   "take": "The node explains any transaction - Alice's included"
+  },
+  {
+   "kind": "section",
+   "title": "The chain as data",
+   "sub": "Headers, roots, and the same node from your own code",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "The 80-byte header"
+      },
+      {
+       "label": "Merkle root, recomputed"
+      },
+      {
+       "label": "Libraries"
+      },
+      {
+       "label": "Semantics"
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: The data branch is about what a node holds and what the interface shows of it: the transactions that move value, the blocks that gather them into the shared record, and the state of the chain that results.\nFULL TEXT: course page, chapter 3 - Data.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The header is 80 bytes of commitment",
+   "sub": "Block 123,456's root, recomputed from its transactions",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 3.4,
+     "h": 0.95,
+     "rows": [
+      [
+       "4 + 32 + 32 + 4 + 4 + 4",
+       "80"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.14.4",
+     "label": "the six fields, summed"
+    },
+    {
+     "t": "stat",
+     "x": 4.2,
+     "y": 1.55,
+     "w": 5.3,
+     "h": 1.1,
+     "items": [
+      {
+       "n": "80",
+       "label": "bytes that pin the whole block"
+      },
+      {
+       "n": "0e60651a...",
+       "label": "block 123,456's Merkle root, recomputed"
+      }
+     ]
+    },
+    {
+     "t": "prog",
+     "x": 0.5,
+     "y": 3.0,
+     "w": 9.0,
+     "h": 1.9,
+     "lines": [
+      "import hashlib",
+      "d = lambda b: hashlib.sha256(hashlib.sha256(b).digest()).digest()",
+      "level = [bytes.fromhex(t)[::-1] for t in MERKLEROOT_D1.split()]",
+      "while len(level) > 1:",
+      "    if len(level) % 2: level.append(level[-1])",
+      "    level = [d(level[i] + level[i + 1]) for i in range(0, len(level), 2)]",
+      "result = level[0][::-1].hex()"
+     ],
+     "fs": 9,
+     "cap": "program MerkleRoot, lines 1 to 7 of 7, run under Python 3.14.4",
+     "out": "'0e60651a9934e8f0decd1c5fde39309e48fca0cd1c84a21ddfde95033762d86c'",
+     "block": "MerkleRoot",
+     "first": 1,
+     "total": 7,
+     "compact": true,
+     "label": "the whole program: pair, hash, repeat - against a real block"
+    }
+   ],
+   "notes": "SAY: The block header is the summary at the head of every block.\nASK: Chapter 2 drew this tree with toy leaves - what changed here? (nothing but the data)\nFULL TEXT: course page, chapter 3 - BlockHeader, MerkleRoot.",
+   "bg": "light",
+   "take": "Eighty bytes pin megabytes - that is the whole trick"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter as data, and in one library call",
+   "sub": "Your scripts and the course page read the same node",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.55,
+     "w": 9.0,
+     "h": 0.95,
+     "fs": 9.5,
+     "items": [
+      "A wrapper library turns the RPC protocol into one function call",
+      "And the course page stores what you just learned as triples with provenance - same discipline"
+     ]
+    },
+    {
+     "t": "prog",
+     "x": 0.5,
+     "y": 2.7,
+     "w": 9.0,
+     "h": 1.32,
+     "lines": [
+      "import json",
+      "class Proxy:",
+      "    def __getattr__(self, name):",
+      "        return lambda *args: json.dumps({'version': '1.1', 'method': name, 'params': list(args), 'id': 1})",
+      "result = Proxy().getblockhash(1000)"
+     ],
+     "fs": 7.0,
+     "cap": "program WrapperLibrary, lines 1 to 5 of 5, run under Python 3.14.4",
+     "out": "'{\"version\": \"1.1\", \"method\": \"getblockhash\", \"params\": [1000], \"id\": 1}'",
+     "block": "WrapperLibrary",
+     "first": 1,
+     "total": 5,
+     "compact": true,
+     "label": "the whole program: the request a library builds for you"
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 4.2,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 12,
+     "items": [
+      "python-bitcoinlib",
+      "JSON-RPC",
+      "triples",
+      "provenance"
+     ]
+    }
+   ],
+   "notes": "SAY: The semantics branch connects the chapter to the course's wider theme, the meaning of data. A node answers every request in the JSON text format, a structure of names and values, which a program can read but whose names carry no meaning of their own; the field called height in a block's answer means what the documentation says it means, and nothing in the text states it.\nFULL TEXT: course page, chapter 3 - Semantics.",
+   "bg": "light",
+   "take": "The course page and your scripts read the same node"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per part - each one provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.3,
+     "fs": 12.5,
+     "items": [
+      "Bitcoin Core descends from v0.1 of 2009 - the program IS the specification",
+      "A release is a tag on a public repository; reproducible builds make the binary provable",
+      "The node narrates itself: a data directory, a config, and a log that explains decisions",
+      "Everything speaks JSON-RPC underneath - your scripts can too, today",
+      "80 header bytes commit to the whole chain - the Merkle root we recomputed is the hinge"
+     ]
+    }
+   ],
+   "notes": "SAY: Five lines, one per part; the agenda names the slides that prove each.\nASK: Which line would you defend first, and with which slide?\nFULL TEXT: course page, chapter 3 - every section.",
+   "take": "If a line feels unproven, its part's slides carry the receipt",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Checked 2026-10-06; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.45,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "This chapter, free (CC BY-SA)",
+         "https://github.com/bitcoinbook/bitcoinbook/blob/develop/ch03_bitcoin-core.adoc"
+        ],
+        [
+         "Bitcoin Core's own site and releases",
+         "https://bitcoincore.org"
+        ],
+        [
+         "The source, at any tag",
+         "https://github.com/bitcoin/bitcoin"
+        ]
+       ]
+      },
+      {
+       "head": "Verify & build",
+       "rows": [
+        [
+         "Builder attestations (guix.sigs)",
+         "https://github.com/bitcoin-core/guix.sigs"
+        ],
+        [
+         "Build documentation in-tree",
+         "https://github.com/bitcoin/bitcoin/tree/master/doc"
+        ]
+       ]
+      },
+      {
+       "head": "Talk to a node",
+       "rows": [
+        [
+         "RPC reference, every method",
+         "https://developer.bitcoin.org/reference/rpc/"
+        ],
+        [
+         "Bitcoin Stack Exchange Q&A",
+         "https://bitcoin.stackexchange.com"
+        ]
+       ]
+      },
+      {
+       "head": "History",
+       "rows": [
+        [
+         "Bitcoin Core, the project's story",
+         "https://en.wikipedia.org/wiki/Bitcoin_Core"
+        ],
+        [
+         "Pro Git, free - the tool under it all",
+         "https://git-scm.com/book"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "SAY: Everything here is free. The homework writes itself: clone, checkout the newest tag, build, and bring your log's worker-thread line to class.\nASK: Who will have a pruned node syncing before Friday?\nFULL TEXT: course page, chapter 3 - Ecosystem.",
+   "bg": "light",
+   "take": "Clone, verify, build, run - the whole chapter is one evening of commands"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "Where the program comes from, and how to pick a version",
+      "Why a verified build beats a trusted download",
+      "What the daemon writes, and how to ask it anything",
+      "How 80 bytes commit to everything beneath them"
+     ]
+    }
+   ],
+   "notes": "SAY: Four claims, each carried by something you watched run - a log, a request, a recomputed root. Next: the keys and addresses that make ownership work.\nFULL TEXT: course page, chapter 3.",
+   "bg": "dark"
+  }
+ ]
+}
