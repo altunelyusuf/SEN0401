@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SEN0401 chapter 1 - the story companion to the chapter corpus (version 1.1.0).
+"""SEN0401 chapter 1 - the story companion to the chapter corpus (version 1.2.0).
 
 The owner's ruling of 2026-10-06: the teaching materials need stories - the histories and
 biographical notes of money, cryptography, digital currencies and Bitcoin - because stories make
@@ -18,13 +18,20 @@ documented milestones of what the Pizza Day coins were worth (the current point 
 three-column comparison of traditional money, digital money and cryptocurrency the chapter
 teaches from.
 
+1.2.0, on the owner's 5N1K ruling of 2026-10-06: every story now answers who/where as its own
+fields and carries one live link for further reading or watching, and the self-check refuses a
+story missing any of them. The deck and page print these on the story itself.
+
 Usage: import STORIES, PIZZA_VALUE, MONEY_KINDS; or run this file to execute the self-checks.
 """
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 STORIES = [
     {
         "id": "StoneMoney",
+        "who": "the Yapese; documented by anthropologist W. H. Furness III",
+        "where": "Yap, Micronesia",
+        "link": "https://en.wikipedia.org/wiki/Rai_stones",
         "title": "The island where money never moved",
         "when": "Yap, documented 1903",
         "concepts": ["Money", "PublicJournal"],
@@ -39,6 +46,9 @@ STORIES = [
     },
     {
         "id": "GenesisHeadline",
+        "who": "Satoshi Nakamoto",
+        "where": "block 0 of the chain itself",
+        "link": "https://blockstream.info/block-height/0",
         "title": "A newspaper headline carved into block zero",
         "when": "3 January 2009",
         "concepts": ["History", "PublicJournal"],
@@ -53,6 +63,9 @@ STORIES = [
     },
     {
         "id": "FirstTransaction",
+        "who": "Satoshi Nakamoto to Hal Finney",
+        "where": "block 170",
+        "link": "https://blockstream.info/block-height/170",
         "title": "The first person ever paid in bitcoin",
         "when": "January 2009",
         "concepts": ["Transfer", "History"],
@@ -67,6 +80,9 @@ STORIES = [
     },
     {
         "id": "PizzaDay",
+        "who": "Laszlo Hanyecz",
+        "where": "the bitcointalk forum (Jacksonville, Florida)",
+        "link": "https://www.guinnessworldrecords.com/world-records/696240-first-commercial-bitcoin-transaction",
         "title": "Two pizzas for ten thousand bitcoin",
         "when": "22 May 2010",
         "concepts": ["Price", "Unit"],
@@ -82,6 +98,9 @@ STORIES = [
     },
     {
         "id": "CypherpunkLineage",
+        "who": "Chaum, Back, Dai, Szabo - then Nakamoto",
+        "where": "academic papers and mailing lists",
+        "link": "https://bitcoin.org/bitcoin.pdf",
         "title": "Forty years of failed digital money",
         "when": "1982 - 2008",
         "concepts": ["Foundations", "History"],
@@ -98,10 +117,13 @@ STORIES = [
     },
     {
         "id": "MtGox",
+        "who": "Mt. Gox, led by CEO Mark Karpeles",
+        "where": "Tokyo; bankruptcy filed at the Tokyo District Court",
+        "link": "https://en.wikipedia.org/wiki/Mt._Gox",
         "title": "The exchange that lost everyone's coins",
         "when": "February 2014",
         "concepts": ["KeyControl", "Backup"],
-        "story": ("Mt. Gox of Tokyo was once the world's largest bitcoin exchange, handling the large "
+        "story": ("Mt. Gox of Tokyo, led by Mark Karpeles, was once the world's largest bitcoin exchange, handling the large "
                   "majority of all trades. In February 2014 it halted withdrawals, filed for bankruptcy "
                   "and admitted that around 850,000 bitcoins held on customers' behalf were gone - the "
                   "customers had balances on a website, but the keys, and therefore the coins, had been "
@@ -114,6 +136,9 @@ STORIES = [
     },
     {
         "id": "MoneyEvolution",
+        "who": "ledger-keepers, from temple scribes to central banks",
+        "where": "Mesopotamia, Lydia, China, and onward",
+        "link": "https://en.wikipedia.org/wiki/History_of_money",
         "title": "Five thousand years to digital cash",
         "when": "c. 3000 BCE - 2009",
         "concepts": ["Money", "History"],
@@ -160,6 +185,11 @@ def run_checks():
     if len(ids) != len(set(ids)):
         bad.append("duplicate story ids")
     for s in STORIES:
+        for f in ("who", "where", "link"):
+            if not s.get(f, "").strip():
+                bad.append("%s: missing %s (5N1K)" % (s["id"], f))
+        if not s.get("link", "").startswith("http"):
+            bad.append("%s: link is not a URL" % s["id"])
         if len(s["lesson"].split()) > 14:
             bad.append("%s: lesson over 14 words" % s["id"])
         if not s["source"].strip():
