@@ -1,0 +1,287 @@
+#!/usr/bin/env python3
+"""Data for a SEN0401 chapter page, version 2: everything the page shows, extracted from the chapter's
+Stage 2 ontology and Stage 3 document, with every example executed and every code diagram built from
+Python's own ast module under the given interpreter. Nothing is typed by hand except the agent names.
+Usage: sen0401_page_data_v2_11_0.py <NN> <python>  ->  08-tooling/chNN-page/page_data_vPV.json"""
+__version__ = "2.11.0"
+# 2.11.0 (over 2.10.0), the owner's ruling of 2026-10-07 14:46 - a paragraph gets the diagram its narrative calls for,
+#   and the mapping is kept in the CME ontology for reuse. (a) Reads course_page_config_v2_10_0.json (materials 1.4.8;
+#   corpus.standards names the two CME mapping files with their digests). (b) The CME mapping is parsed from the CME
+#   checkout (CME_REPO, default /home/claude/cme) and refused if a file's bytes differ from the recorded digest; the
+#   page gets it as data["diagram_map"] - per narrative pattern its label, question, cue phrases, suggested diagram
+#   types and the first type's notation. (c) The newest 08-tooling/sen0401_chNN_diagrams_v*.py is imported, its
+#   run_checks(nodes, mapping) must pass (structure, grounding of every label in the concepts' explanations at 0.8 or
+#   better, pattern known to the mapping), the diagram type is ASSIGNED from the mapping (never authored), and the
+#   diagrams go under data["ndiag"]. (d) The same diagrams are written as cme:NarrativeDiagram individuals into a
+#   Turtle block (data["ndiag_abox"], named sen0401_chNN_diagrams_abox_v<module version>.ttl) that the page build
+#   embeds, so the page's own corpus states which pattern each diagram was recognised as and which passage it was
+#   read from. The block is not written as a file: BP-D54 counts every Turtle file of the package against the
+#   course's recorded ceiling (34 A files), and five more would be refused; the authored module and the page carry it.
+# 2.10.0 (over 2.9.0): reads course_page_config_v2_9_0.json (materials register 1.4.7). No other change.
+# 2.9.0 (over 2.8.0): reads course_page_config_v2_8_0.json (materials register 1.4.6). No other change.
+# 2.8.0 (over 2.7.0): reads course_page_config_v2_7_0.json (materials register 1.4.5). No other change.
+# 2.7.0 (over 2.6.0): two changes for the owner's two-fold rule (2026-10-06 13:42) - the decks and the pages carry
+#   one look and one story discipline. (a) Reads course_page_config_v2_6_0.json (the re-provisioned exam key;
+#   course_page_config_build_v2_6_0.py records why). (b) The chapter's 5N1K story companion joins the page data:
+#   the newest 08-tooling/sen0401_chNN_stories_v*.py is imported, its OWN run_checks() must pass (the same gate the
+#   deck build runs), and every story ships with its fields verbatim - title, when, who, where, link, story, lesson,
+#   source, concepts - under data["stories"]. Photographs come from the chapter's existing deck assets through the
+#   chapter's stories_img_v*.json mapping (file + credit per story, taken from the deck's own placements and
+#   ASSETS_PROVENANCE); each is downscaled with Pillow (640px wide alone, 420px in a strip) and embedded as a data
+#   URI so the page stays one self-contained file, with width, height and the credit carried beside the bytes. A
+#   mapped file that does not exist stops the build; a story without a mapping simply has no photograph. A named
+#   unit (the numbers page) has no story companion and gets no stories key.
+# 2.6.0 (over 2.5.0): reads course_page_config_v2_5_0.json, which resolves the book package in its own
+#   repository, altunelyusuf/mastering-bitcoin, at folder 3e, rather than in the Ontologies monorepo. No other
+#   change: the same concepts, relations, agents, findings and references are extracted from the same chapter
+#   ontology files, and the configuration is still read whole and carried into the page data unchanged.
+# 2.5.0 (over 2.4.0): reads course_page_config_v2_4_0.json, which pins the book package at its 0.9.1 release and names each chapter's newest part. No other change.
+# 2.4.0 (over 2.3.0): reads course_page_config_v2_4_0.json, which adds the course-learning-outcomes SPARQL sample. No other change.
+# 2.3.0 (over 2.2.0): reads course_page_config_v2_4_0.json instead of course_page_config_v2_1_0.json - the only change.
+# That configuration is the one that names the book ontology of each chapter (the corpus 2.1.0 wrongly declared empty),
+# so the page data must carry it for the page build to find data.course.corpus.book. Nothing else in this step changes:
+# the same concepts, relations, agents, findings and references are extracted from the same chapter ontology files.
+# 2.2.0 (over 2.1.0; brings in what SEN0414's page data 2.5.0 has, for template 9.24.0): a document section may be several paragraphs, each opening with the
+# question it answers ('What it is: ...'); the node keeps them as `paras` ([{facet, text}]) and its `body` is the first paragraph without the facet; the co-mention
+# relations read all the paragraphs. The visuals file is the newest visuals_v*.json of the unit, a chapter may replace the course's playground program with
+# playground_v*.json, and may carry resources_v*.json and lecture_v*.json (D.resources, D.resources_checked, D.lecture). Reads course_page_config_v2_1_0.json
+# (exam identity, Code Lab / SPARQL / Step-through / Playground content for template 9.24.0). Named units (the numbers page) and chart canvases build as in 2.1.0.
+import json, os, re, subprocess, sys
+PV = os.environ.get("PAGE_VER", "9_24_0")  # generated files carry the version of the page they were produced for
+import rdflib
+from rdflib import RDF, RDFS, OWL
+N, PY = sys.argv[1], sys.argv[2]
+NUM = N; N = ("ch%s" % N) if N.isdigit() else N  # a numbered chapter, or a named supplement such as "numbers"
+REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RD = os.path.join(REPO, "03-materials", N, "rdodi"); import glob
+f = lambda p: sorted(glob.glob(os.path.join(RD, "sen0401_%s_%s_v*.ttl" % (N, p))), key=lambda x: [int(v) for v in x.rsplit("_v",1)[1][:-4].split("_")])[-1]
+T = rdflib.Graph(); T.parse(f("domain_tbox"), format="turtle"); A = rdflib.Graph(); A.parse(f("domain_abox"), format="turtle")
+D = rdflib.Graph(); D.parse(f("document"), format="turtle"); R = rdflib.Graph(); R.parse(f("research"), format="turtle")
+DOC = rdflib.Namespace("http://example.org/rdodi/document-ontology#"); SK = rdflib.namespace.SKOS; DC = rdflib.namespace.DCTERMS
+RDN = rdflib.Namespace("http://example.org/rdodi/domain-ontology#"); RES = rdflib.Namespace("http://example.org/rdodi/research-ontology#")
+BASE = "http://example.org/sen0401/%s" % N; CH = rdflib.Namespace(BASE + "#")
+pyver = subprocess.run([PY, "--version"], capture_output=True, text=True).stdout.strip()
+
+EXEC = r'''
+import ast, json, sys
+expr = sys.argv[1]
+def tree(n):
+    kids = [tree(c) for c in ast.iter_child_nodes(n) if not isinstance(c, (ast.Load, ast.Store, ast.operator, ast.unaryop, ast.cmpop, ast.boolop))]
+    if isinstance(n, ast.BinOp): lab = {ast.Add:"+",ast.Sub:"-",ast.Mult:"*",ast.Div:"/",ast.FloorDiv:"//",ast.Mod:"%",ast.Pow:"**"}.get(type(n.op), type(n.op).__name__)
+    elif isinstance(n, ast.Constant): lab = repr(n.value)
+    elif isinstance(n, ast.Name): lab = n.id
+    elif isinstance(n, ast.Call): lab = "call"
+    elif isinstance(n, ast.JoinedStr): lab = "f-string"
+    elif isinstance(n, ast.FormattedValue): lab = "{ }"
+    else: lab = type(n).__name__
+    return {"label": lab, "kind": type(n).__name__, "children": kids}
+t = ast.parse(expr, mode="eval").body
+try: out = repr(eval(expr, {}))
+except Exception as e: out = "%s: %s" % (type(e).__name__, e)
+# evaluation steps: the innermost operation whose operands are already values is evaluated and replaced, until one value
+# remains - every step computed by this interpreter, not written by hand
+SAFE = {"int", "str", "float", "len", "round", "bool", "abs", "repr", "type", "min", "max"}
+def reducible(n):
+    if isinstance(n, ast.Call):
+        return isinstance(n.func, ast.Name) and n.func.id in SAFE and not n.keywords and all(isinstance(a, ast.Constant) for a in n.args)
+    if isinstance(n, ast.BoolOp) and isinstance(n.values[0], ast.Constant):
+        # short-circuit: "and" stops at a false value, "or" at a true one, without evaluating the rest
+        v = n.values[0].value
+        if (isinstance(n.op, ast.And) and not v) or (isinstance(n.op, ast.Or) and v): return True
+    if isinstance(n, (ast.BinOp, ast.UnaryOp, ast.Compare, ast.BoolOp)):
+        return all(isinstance(c, ast.Constant) for c in ast.iter_child_nodes(n) if isinstance(c, ast.expr))
+    if isinstance(n, ast.IfExp):
+        return isinstance(n.test, ast.Constant) and isinstance(n.body, ast.Constant) and isinstance(n.orelse, ast.Constant)
+    if isinstance(n, ast.JoinedStr):
+        return all(isinstance(v, ast.Constant) or (isinstance(v, ast.FormattedValue) and isinstance(v.value, ast.Constant) and v.format_spec is None) for v in n.values)
+    return False
+steps = []
+try:
+    whole = ast.parse(expr, mode="eval")
+    for _ in range(40):
+        # Python evaluates operands left to right, innermost first: post-order, and the first reducible node wins
+        def post(n):
+            if isinstance(n, ast.BoolOp):
+                # operands left to right, stopping as soon as the operation can short-circuit
+                for c in n.values:
+                    yield from post(c)
+                    if reducible(n): break
+                yield n; return
+            for c in ast.iter_child_nodes(n): yield from post(c)
+            yield n
+        cand = [n for n in post(whole.body) if reducible(n)]
+        if not cand: break
+        node = cand[0]
+        before, focus = ast.unparse(whole.body), ast.unparse(node)
+        try: val = eval(compile(ast.Expression(node), "<step>", "eval"), {})
+        except Exception as e:
+            steps.append({"expr": before, "focus": focus, "value": "%s: %s" % (type(e).__name__, e), "error": True}); break
+        if not isinstance(val, (int, float, str, bool, type(None))): break
+        steps.append({"expr": before, "focus": focus, "value": repr(val)})
+        new = ast.Constant(val)
+        for parent in ast.walk(whole):
+            for f, v in ast.iter_fields(parent):
+                if v is node: setattr(parent, f, new)
+                elif isinstance(v, list): parent.__dict__[f] = [new if x is node else x for x in v]
+        ast.fix_missing_locations(whole)
+        if isinstance(whole.body, ast.Constant): break
+except SyntaxError:
+    steps = []
+print(json.dumps({"out": out, "tree": tree(t), "steps": steps}))
+'''
+def ex(expr):
+    r = subprocess.run([PY, "-c", EXEC, expr], capture_output=True, text=True, timeout=20)
+    return json.loads(r.stdout)
+
+label = lambda c: str(T.value(c, RDFS.label))
+classes = list(T.subjects(RDF.type, OWL.Class))
+parent = {str(c): str(T.value(c, RDFS.subClassOf)) if T.value(c, RDFS.subClassOf) else None for c in classes}
+secs = {str(D.value(s, DC.source)): s for s in D.subjects(DOC.sectionTitle, None)}
+order = sorted(classes, key=lambda c: int(D.value(secs[str(c)], DOC.sectionOrder)))
+FACETS = ("What it is", "Why it matters", "Where you meet it", "How it works", "What changed", "Watch out")
+def PARAS(t):
+    out = []
+    for p in t.split("\n\n"):
+        m = re.match(r"^(%s): (.*)$" % "|".join(FACETS), p, re.S)
+        out.append({"facet": m.group(1), "text": m.group(2)} if m else {"facet": "", "text": p})
+    return out
+nodes = []
+for c in order:
+    s = secs[str(c)]; cid = str(c).split("#")[-1]
+    X = next((x for x in A.subjects(RDF.type, c) if str(x).split("#")[-1].startswith("X_")), None)
+    node = {"id": cid, "label": label(c), "level": int(D.value(s, DOC.hierarchyLevel)), "parent": parent[str(c)].split("#")[-1] if parent[str(c)] else None,
+            "body": PARAS(str(D.value(s, SK.definition)))[0]["text"], "paras": PARAS(str(D.value(s, SK.definition))) if "\n\n" in str(D.value(s, SK.definition)) else [], "section_iri": str(s), "class_iri": str(c)}
+    if X is not None:
+        node["example"] = str(A.value(X, RDFS.label)); node["definition"] = str(A.value(X, SK.definition))
+        io = A.value(X, RDN.hasIOExample)
+        if io is not None:
+            e = str(A.value(io, CH.input)); r = ex(e); node["io"] = {"code": e, "out": r["out"], "tree": r["tree"], "steps": r.get("steps", [])}
+        er = A.value(X, RDN.hasErrorCondition)
+        if er is not None:
+            e = str(A.value(er, RDFS.label)).split(" raises ")[0]; node["error"] = {"code": e, "out": ex(e)["out"]}
+        chart = A.value(X, rdflib.URIRef("http://example.org/sen0401#hasChartCanvas"))
+        if chart is not None: node["chart"] = str(chart)
+        own = A.value(X, CH.hasOwner)
+        if own is not None: node["owner"] = str(own).split("#")[-1].replace("X_", "")
+    nodes.append(node)
+ids = {n["id"] for n in nodes}; bylabel = {n["label"].lower(): n["id"] for n in nodes}
+# Relations, each with its evidence: stated in the ontology, or a co-mention the document itself makes.
+rels = []
+for n in nodes:
+    if n["parent"]: rels.append({"source": n["id"], "target": n["parent"], "type": "is a kind of", "evidence": "rdfs:subClassOf in the chapter's domain TBox"})
+    if n.get("owner"): rels.append({"source": n["id"], "target": n["owner"], "type": "operates on", "evidence": "hasOwner (a subproperty of RDODI's hasOwningConcept) in the chapter's domain ABox"})
+for n in nodes:
+    if n["level"] < 3: continue
+    for m in nodes:
+        if m is n or m["level"] < 3 or m["parent"] == n["parent"]: continue
+        if re.search(r"\b%s\b" % re.escape(m["label"].lower()), " ".join([p["text"] for p in n["paras"]] if n["paras"] else [n["body"]]).lower()):
+            rels.append({"source": n["id"], "target": m["id"], "type": "mentions", "evidence": "the document's section on %s names %s" % (n["label"], m["label"])})
+# Subjects and their agents: one per second-level subject, named for what it covers.
+AGENT = {"Unit": "Units agent", "Supply": "Supply agent", "Price": "Price agent", "Consensus": "Consensus agent", "History": "History agent", "WalletPlatform": "Wallet agent", "NodeType": "Node agent", "KeyControl": "Keys agent", "Backup": "Recovery agent", "Address": "Address agent", "Transfer": "Payments agent", "SemanticBridge": "Semantic web agent", "NumericValue": "Numbers agent", "TextValue": "Text agent", "ArithmeticOperation": "Arithmetic agent", "TextOperation": "String agent",
+         "BindingOperation": "Variables agent", "IOFunction": "Input-output agent", "ConversionFunction": "Conversion agent", "MeasurementFunction": "Measurement agent",
+         "InteractiveEnvironment": "Shell agent", "InterpreterBuild": "Interpreter agent", "StringFormatting": "Formatting agent", "Tooling": "Tooling agent",
+         "TruthValue": "Truth agent", "EqualityComparison": "Equality agent", "OrderingComparison": "Ordering agent", "LogicalOperator": "Logic agent",
+         "Evaluation": "Evaluation agent", "ControlStructure": "Structure agent", "Branching": "Branching agent", "ExpressionForm": "Expression agent",
+         "PatternMatching": "Matching agent", "Style": "Style agent"}
+agents = [{"id": "agent-" + n["id"], "name": AGENT.get(n["id"], n["label"] + " agent"), "subject": n["id"],
+           "covers": [m["id"] for m in nodes if m["parent"] == n["id"]] + [n["id"]]} for n in nodes if n["level"] == 2]
+refs = sorted((str(R.value(p, RDFS.label)), str(R.value(p, DC.source))) for p in R.subjects(RDF.type, RES.Publication))
+title = next(str(o) for s, o in D.subject_objects(RDFS.label) if str(s).endswith("#Document"))
+DISC = os.path.join(REPO, "08-tooling", "%s-page" % N, "discussion_v1_0_0.json")
+EXTRA = os.path.join(REPO, "08-tooling", "%s-page" % N, "extra_v1_1_0.html")
+data_extra = open(EXTRA).read() if os.path.exists(EXTRA) else ""
+SEN = rdflib.Namespace("http://example.org/sen0401#")
+findings = sorted(((str(R.value(f, RDFS.label)), str(R.value(f, SEN.findingText))) for f in R.subjects(RDF.type, SEN.Finding)), key=lambda x: x[0])
+COURSE = json.load(open(os.path.join(REPO, "08-tooling", "course_page_config_v2_10_0.json")))
+def _versions(pat):
+    return sorted(glob.glob(os.path.join(REPO, "08-tooling", "%s-page" % N, pat)), key=lambda x: [int(v) for v in x.rsplit("_v", 1)[1][:-5].split("_")])
+_vf = _versions("visuals_v*.json"); VIS = _vf[-1] if _vf else ""
+_pf = _versions("playground_v*.json")
+if _pf: COURSE["playground"] = {k: v for k, v in json.load(open(_pf[-1])).items() if not k.startswith("_")}
+newest = lambda pat: (lambda fs: json.load(open(fs[-1])) if fs else None)(_versions(pat))
+_res = newest("resources_v*.json"); _lec = newest("lecture_v*.json")
+# ---- 2.7.0: the chapter's 5N1K stories, checked by their own module, photos from the deck's assets --------------
+STORIES = None
+if NUM is not None and NUM.isdigit():
+    _sf = sorted(glob.glob(os.path.join(REPO, "08-tooling", "sen0401_%s_stories_v*.py" % N)),
+                 key=lambda x: [int(v) for v in x.rsplit("_v", 1)[1][:-3].split("_")])
+    if _sf:
+        import base64, io, importlib.util
+        from PIL import Image
+        spec = importlib.util.spec_from_file_location("stories_mod", _sf[-1]); _sm = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(_sm)
+        _bad = _sm.run_checks()
+        if _bad: raise SystemExit("story companion %s fails its own checks: %s" % (os.path.basename(_sf[-1]), _bad))
+        _imap = {}
+        _if = _versions("stories_img_v*.json")
+        if _if: _imap = {k: v for k, v in json.load(open(_if[-1])).items() if not k.startswith("_")}
+        ADIR = os.path.join(REPO, "03-materials", N, "assets")
+        def _embed(fn, maxw):
+            fp = os.path.join(ADIR, fn)
+            if not os.path.exists(fp): raise SystemExit("stories_img maps %s, which is not in %s" % (fn, ADIR))
+            im = Image.open(fp); im.load()
+            if im.width > maxw: im = im.resize((maxw, round(im.height * maxw / im.width)), Image.LANCZOS)
+            buf = io.BytesIO()
+            if fn.lower().endswith(".png"): im.save(buf, "PNG", optimize=True); mime = "image/png"
+            else: im.convert("RGB").save(buf, "JPEG", quality=82, optimize=True); mime = "image/jpeg"
+            return {"data": "data:%s;base64,%s" % (mime, base64.b64encode(buf.getvalue()).decode()), "w": im.width, "h": im.height}
+        STORIES = []
+        for s in _sm.STORIES:
+            e = {k: s[k] for k in ("id", "title", "when", "who", "where", "link", "story", "lesson", "source")}
+            e["concepts"] = list(s.get("concepts", []))
+            pics = _imap.get(s["id"], [])
+            e["imgs"] = [dict(_embed(p["file"], 640 if len(pics) == 1 else 420), credit=p["credit"], file=p["file"]) for p in pics]
+            STORIES.append(e)
+        print("stories: %d from %s (%d with photographs, %d photographs embedded)" % (
+            len(STORIES), os.path.basename(_sf[-1]), sum(1 for e in STORIES if e["imgs"]), sum(len(e["imgs"]) for e in STORIES)))
+# ---- 2.11.0: the CME narrative-to-diagram mapping, and the chapter's authored diagrams typed by it ----------------
+import hashlib
+CME_REPO = os.environ.get("CME_REPO", "/home/claude/cme")
+CMEN = rdflib.Namespace("http://example.org/cme#")
+MAPG = rdflib.Graph()
+for st in COURSE["corpus"].get("standards", []):
+    fp = os.path.join(CME_REPO, st["folder"], st["path"]); b = open(fp, "rb").read()
+    if hashlib.sha256(b).hexdigest() != st["sha256"]:
+        raise SystemExit("the CME standard %s at %s does not match the digest recorded in the configuration; re-run course_page_config_build" % (st["path"], fp))
+    MAPG.parse(data=b.decode(), format="turtle")
+def _lab(s): return str(MAPG.value(s, RDFS.label) or "")
+DMAP = {}
+for p in MAPG.subjects(RDF.type, CMEN.NarrativePattern):
+    types = [str(t).split("#")[1] for t in MAPG.objects(p, CMEN.suggestsDiagram)]
+    DMAP[str(p).split("#")[1]] = {"label": _lab(p), "question": str(MAPG.value(p, CMEN.answersQuestion) or ""), "cues": sorted(str(c) for c in MAPG.objects(p, CMEN.cuePhrase)),
+                                   "types": types, "notation": str(MAPG.value(CMEN[types[0]], CMEN.notation) or "") if types else "", "renderer": str(MAPG.value(CMEN[types[0]], CMEN.renderer) or "") if types else ""}
+NDIAG = None; NDIAG_ABOX = None
+if NUM is not None and NUM.isdigit():
+    _df = sorted(glob.glob(os.path.join(REPO, "08-tooling", "sen0401_%s_diagrams_v*.py" % N)), key=lambda x: [int(v) for v in x.rsplit("_v", 1)[1][:-3].split("_")])
+    if _df:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("diagrams_mod", _df[-1]); _dm = importlib.util.module_from_spec(spec); spec.loader.exec_module(_dm)
+        _bad = _dm.run_checks(nodes, DMAP)
+        if _bad: raise SystemExit("diagram companion %s fails its checks: %s" % (os.path.basename(_df[-1]), _bad))
+        NDIAG = [{k: d[k] for k in ("id", "pattern", "type", "title", "concepts", "read_from", "why", "data", "grounding")} for d in _dm.DIAGRAMS]
+        # the diagrams as individuals of the CME vocabulary, beside the page
+        def _tl(s): return '"' + s.replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ") + '"'
+        ab = ["@prefix cme: <http://example.org/cme#> .", "@prefix chx: <http://example.org/sen0401/%s#> .", "@prefix owl: <http://www.w3.org/2002/07/owl#> .", "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .", "@prefix dcterms: <http://purl.org/dc/terms/> .", "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .", "",
+              "<http://example.org/sen0401/%s/diagrams> a owl:Ontology ; rdfs:label \"SEN0401 %s narrative diagrams - ABox\"@en ; owl:versionInfo \"%s\" ; dcterms:identifier \"sen0401_%s_diagrams_abox_v%s\" ;" % (N, N, _dm.__version__, N, _dm.__version__.replace(".", "_")),
+              "    rdfs:comment \"The chapter's authored diagrams as cme:NarrativeDiagram individuals: generated by sen0401_page_data_v2_11_0.py from sen0401_%s_diagrams_v%s.py, typed by the CME narrative-to-diagram mapping (a module of cme_standards_adoption_v1_3_0.ttl, CME 0.16.0).\"@en ; owl:imports <http://example.org/cme/narrative-diagram> ." % (N, _dm.__version__.replace(".", "_")), ""]
+        ab[1] = ab[1] % N
+        for d in NDIAG:
+            ab.append("chx:Diagram_%s a cme:NarrativeDiagram ; rdfs:label %s@en ; cme:hasPattern cme:%s ; cme:hasDiagramType cme:%s ; cme:readFrom %s ; cme:elementCount %d ;" % (d["id"], _tl(d["title"]), d["pattern"], d["type"], _tl(d["read_from"]), len(_dm._labels(d))))
+            ab.append("    " + " ; ".join("cme:accompanies %s" % _tl(c) for c in d["concepts"]) + " ; rdfs:comment %s@en ." % _tl(d["why"]))
+        _abn = "sen0401_%s_diagrams_abox_v%s.ttl" % (N, _dm.__version__.replace(".", "_"))
+        _abt = "\n".join(ab) + "\n"
+        rdflib.Graph().parse(data=_abt, format="turtle")
+        NDIAG_ABOX = {"name": _abn, "text": _abt}
+        print("diagrams: %d from %s (%s), grounding %s; ABox block %s (embedded in the page, not a file: BP-D54 counts every Turtle file of the package, and the course's A-file ceiling is 34)" % (len(NDIAG), os.path.basename(_df[-1]), ", ".join("%s->%s" % (d["pattern"], d["type"]) for d in NDIAG), " ".join("%d/%d" % tuple(d["grounding"]) for d in NDIAG), _abn))
+data = {"_version": PV.replace("_", "."), "visuals": {k: v for k, v in (json.load(open(VIS)) if os.path.exists(VIS) else {}).items() if not k.startswith("_")}, "course": COURSE, "discussion": (lambda x: x["items"] if isinstance(x, dict) else x)(json.load(open(DISC))) if os.path.exists(DISC) else [], "research_file": os.path.basename(f("research")), "chapter": int(NUM) if NUM.isdigit() else None, "unit": json.load(open(os.path.join(REPO, "08-tooling", "%s-page" % N, "unit_v1_0_0.json"))) if not NUM.isdigit() else None, "title": title, "python": pyver, "nodes": nodes, "relations": rels, "agents": agents, "findings": findings, "refs": refs}
+if STORIES is not None: data["stories"] = STORIES
+data["diagram_map"] = DMAP
+if NDIAG is not None: data["ndiag"] = NDIAG; data["ndiag_abox"] = NDIAG_ABOX
+if _res: data["resources"] = _res["links"]; data["resources_checked"] = _res["checked"]
+if _lec: data["lecture"] = _lec["slides"]
+out = os.path.join(REPO, "08-tooling", "%s-page" % N); os.makedirs(out, exist_ok=True)
+json.dump(data, open(os.path.join(out, "page_data_v%s.json" % PV), "w"), indent=1)
+open(os.path.join(out, "extra_resolved_v%s.html" % PV), "w").write(data_extra)
+print("chapter %s: %d concepts, %d relations (%d stated, %d co-mentions), %d agents, %d executed examples with ast trees, under %s" % (
+    N, len(nodes), len(rels), sum(1 for r in rels if r["type"] != "mentions"), sum(1 for r in rels if r["type"] == "mentions"),
+    len(agents), sum(1 for n in nodes if "io" in n), pyver))

@@ -125,3 +125,33 @@ Port the two-fold patch onto SEN0414's line, one subject per version, exactly as
   versus JS strings - `:root` definitions are consumed by the root swap first) and never widen blindly.
 - `pkill -f <pattern>` kills the shell that runs it when the pattern appears in its own command line; kill
   by pid.
+
+## 7. Added 2026-10-07 (v1.1.0): what SEN0401 shipped after this plan was written, and what the SEN0414 port now includes
+
+SEN0401 went on to pages 9.38.0, 9.39.0, 9.40.0 and 9.41.0 (releases v0.42.0-v0.45.0), answering four owner
+reviews of the chapter-1 page. The template series to port onto SEN0414's line is therefore 9.33.0-9.44.0, one
+subject per version, each a count-asserted `template_patch_v9_NN_0.py` (read its docstring for the measurement
+that motivated it; re-measure every count on SEN0414's template before asserting):
+9.34 Learn sections (concept pills, enrich-on-reveal, neighbourhood map, story chips); 9.35 concept map (sections
+and concepts views, filters, find, focus); 9.36 ontology-graph syntax and behaviour layers from executed code;
+9.37 chapter ERD; 9.38 fit to the screen; 9.39 the page-machinery chips leave the concepts; 9.40 ERD connections
+on by default, sections tinted by subject; 9.41 the reading area (one breadcrumb row, no folds, visuals on reveal,
+pane notes as (i)+card, one-sentence tooltips); 9.42 relocate on the ERD; 9.43 relocate on every diagram;
+9.44 narrative diagrams. Tests: SEN0401's 9.30.0, 9.31.0 and 9.32.0 blocks, inserted at the same anchors.
+
+The narrative diagrams (9.44.0) bring three more things to port:
+- a per-chapter authored module `sen0414_chNN_diagrams_v1_0_0.py` on the pattern of `sen0401_ch01_diagrams_v1_0_0.py`
+  (DIAGRAMS with id, pattern, title, concepts, also_from, read_from, why, data; run_checks(nodes, mapping) with the
+  grounding measure at 0.8). The author declares the PATTERN only; the type is assigned from the CME mapping. For
+  SEN0414 (Automate the Boring Stuff) the narratives are mostly workflows (a program's steps), interactions (a
+  script and the files or sites it talks to), life cycles (a file, a process, an exception) and topic-and-parts
+  (the parts of a language feature); write each from the chapter's own explanations, as the grounding check demands;
+- the CME dependency: `course_page_config_build` gains `corpus.standards` (the two CME mapping files with digests,
+  read from CME_REPO, default /home/claude/cme; SEN0401's v2_10_0 shows the eleven lines), `page_data` gains the
+  2.11.0 block (mapping parsed with rdflib, diagrams checked and typed, the chapter's `cme:NarrativeDiagram` ABox
+  written to 03-materials/chNN/page/), `page_build` gains the 4.14.0 block (diagrams ABox and the two standard
+  blocks embedded, digests re-checked), and every chapter's test_config lists `standard` among corpus_kinds;
+- CME 0.16.0 (the mapping, as modules of `00-standards/cme_standards_adoption_tbox_v1_1_0.ttl`,
+  `cme_standards_adoption_v1_3_0.ttl` and `02-shacl-safeguards/cme_shacl_v1_1_0.ttl`) is published: commit e3a36ce, tag
+  cme-v0.16.0. CME's structure debt is recorded in the governance aggregate at 24 A / 5 S / 20 T, so a new CME subject
+  goes into the existing files as a module (dcterms:isPartOf), never as a new file.
