@@ -5,7 +5,7 @@ Version: 1.0.0 · Recorded 2026-10-04
 This file is the per-fact source record for the four course-level parts written on 2026-10-04:
 `00-course-profile/sen0401_course_v1_2_0.ttl` (individuals; its two classes in
 `sen0401_course_tbox_v1_0_0.ttl` since the BP-D53 split of 2026-10-05), `01-outcomes/sen0401_outcomes_v1_1_1.ttl`,
-`02-textbook/sen0401_textbook_v1_2_0.ttl`, `03-materials/sen0401_materials_v1_4_4.ttl`,
+`02-textbook/sen0401_textbook_v1_2_0.ttl`, `03-materials/sen0401_materials_v1_4_5.ttl`,
 `04-assessment/sen0401_assessment_v1_0_0.ttl`, `05-projects/sen0401_projects_v1_0_0.ttl` and
 `06-quality/sen0401_quality_v1_1_0.ttl`. Superseded part versions leave the tree (BP-D7) and live in git history.
 Everything below was read in the session that wrote those files; nothing is carried over from a
