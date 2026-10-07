@@ -16,7 +16,8 @@ __version__ = "9.30.0"
 #   code_layers true because the executed examples now feed the syntax and behaviour layers, so the existing
 #   three-layer checks run instead of being skipped. Template 9.37.0 (ERD): the entities are the chapter's subjects,
 #   the sections choice draws one entity per section, the mentioned-together toggle adds relationships, and the
-#   page's schema remains the third choice.
+#   page's schema remains the third choice. 9.40.0 turned the mentioned-together relationships on by default, so the
+#   toggle in that check now removes them and the count must fall.
 # 9.29.0 (over 9.28.0): the owner's two-fold rule of 2026-10-06 made checkable. Template 9.33.0 restyles the page
 #   to the CME materials look-and-feel v1.0.0 and adds the deck's story layer; this version asserts both, and skips
 #   the story checks for a unit whose data carries none. (a) The deck tokens are read from the LIVE page - body
@@ -234,7 +235,7 @@ with sync_playwright() as p:
     feat("paragraphs after the first fold under their lead sentence and the whole text stays in the page", (n_par < 2 or folds >= 1) and whole and sec.locator("details.para summary").count() == folds, "%d paragraphs, %d folds" % (n_par, folds))
     pg.locator('#crumb-%s [data-sub]' % topOf).click(); pg.wait_for_timeout(400)  # Show all: the section's concepts side by side, each enriched on reveal
     SS = '[data-subpane="%s"] section.leaf' % mid1["id"]
-    feat("every concept of a shown section carries the WHERE/WHO facts strip, a neighbourhood map and (where it has one) its worked example as a card - built when the section is shown, not at boot", pg.locator(SS + " .cfacts").count() == len(lv) and pg.locator(SS + " .nbh svg").count() == len(lv) and pg.locator(SS + " .excard").count() == len([x for x in lv if x.get("example")]) and pg.locator('section.leaf[data-rich="0"]').count() > 0, "%d strips, %d maps, %d example cards; %d sections still lean" % (pg.locator(SS + " .cfacts").count(), pg.locator(SS + " .nbh svg").count(), pg.locator(SS + " .excard").count(), pg.locator('section.leaf[data-rich="0"]').count()))
+    feat("every concept of a shown section carries a neighbourhood map, built when the section is shown, not at boot; no facts strip and no repeated example card (9.39.0)", pg.locator(SS + " .nbh svg").count() == len(lv) and pg.locator(SS + " .cfacts").count() == 0 and pg.locator(SS + " .excard").count() == 0 and pg.locator('section.leaf[data-rich="0"]').count() > 0, "%d maps; %d sections still lean" % (pg.locator(SS + " .nbh svg").count(), pg.locator('section.leaf[data-rich="0"]').count()))
     pills.nth(1).click(); pg.wait_for_timeout(300)
     nb = sec.locator(".nbh g.nbc").first; nb_id = nb.get_attribute("data-nbh"); nb.click(); pg.wait_for_timeout(300)
     feat("touching a box of the neighbourhood map shows that concept's options in the detail card; the main area stays", pg.locator("#card").is_visible() and byLabel(nb_id) in pg.text_content("#card") and pg.evaluate(in_view, "s-" + lv[1]["id"]), nb_id); pg.keyboard.press("Escape")
@@ -1170,7 +1171,7 @@ with sync_playwright() as p:
     pg.click('[data-erdm]'); pg.wait_for_timeout(1500); r3 = pg.locator("#oerd .oe-r").count(); pg.click('[data-erdm]'); pg.wait_for_timeout(800)
     pg.click('[data-erd="schema"]'); pg.wait_for_function("()=>[...document.querySelectorAll('#oerd [data-ent]')].some(e=>e.dataset.ent==='syntax')", timeout=300000); e4 = pg.locator("#oerd [data-ent]").count()
     pg.click('[data-erd="subjects"]'); pg.wait_for_function("()=>document.querySelectorAll('#oerd [data-ent]').length===%d" % len(tops), timeout=60000)
-    feat("the ERD's sections choice draws one entity per section, mentioned-together adds relationships, and the page's schema stays the third choice", e2 == len([n for n in nodes if n["level"] == 2]) and r3 > r2 and e4 == 7, "sections %d, rels %d -> %d with mentions, schema entities %d" % (e2, r2, r3, e4))
+    feat("the ERD's sections choice draws one entity per section with the mentioned-together relationships on by default (the toggle removes them), and the page's schema stays the third choice", e2 == len([n for n in nodes if n["level"] == 2]) and r2 > r3 and e4 == 7, "sections %d, rels %d -> %d with mentions off, schema entities %d" % (e2, r2, r3, e4))
     # WCAG on the new panes
     axn = []
     for k in ("taxonomy", "ontograph", "ontoclass", "ontoerd") + (("stories",) if d.get("stories") else ()):
