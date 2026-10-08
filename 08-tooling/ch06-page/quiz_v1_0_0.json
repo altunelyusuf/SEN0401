@@ -1,0 +1,125 @@
+{
+ "_version": "1.0.0",
+ "items": [
+  {
+   "q": "What is a Bitcoin transaction, in the chapter's definition?",
+   "options": [
+    "A message from Alice to Bob that carries the bitcoins",
+    "The data Alice uses to convince full nodes to update their database of coin ownership",
+    "A record of Alice's balance signed by her wallet"
+   ],
+   "answer": 1,
+   "level": "Understand",
+   "objective": "CO2",
+   "rationales": [
+    "Bitcoins are not sent to Bob; full nodes are convinced to change their records, and Bob's software reads the shared record.",
+    "A transaction names outputs and new conditions, never a balance."
+   ]
+  },
+  {
+   "q": "Alice's transaction is 388 hexadecimal characters. How many bytes is that, and how many weight units?",
+   "options": [
+    "388 bytes and 1,552 weight",
+    "194 bytes and 569 weight",
+    "194 bytes and 776 weight"
+   ],
+   "answer": 1,
+   "level": "Apply",
+   "objective": "CO1",
+   "rationales": [
+    "Two hexadecimal characters make one byte, so 388 characters are 194 bytes.",
+    "Weight counts the 125 legacy bytes four times and the 69 segwit bytes once: 500 plus 69 is 569."
+   ]
+  },
+  {
+   "q": "The byte after the version of a transaction is 0x00. What does a modern parser conclude?",
+   "options": [
+    "The transaction has no inputs and is invalid",
+    "The transaction is in the extended format: a marker, then a flag, then the real input count",
+    "The version field is five bytes long"
+   ],
+   "answer": 1,
+   "level": "Understand",
+   "objective": "CO1",
+   "rationales": [
+    "A legacy parser would read zero inputs, which no transaction can have; that impossibility is what makes the byte a signal.",
+    "The version is always exactly four bytes."
+   ]
+  },
+  {
+   "q": "An input's sequence is 30 in a version 2 transaction, and the output it spends was confirmed at height 774,958. What is the earliest block that can confirm the spend?",
+   "options": [
+    "774,959",
+    "774,988",
+    "775,018"
+   ],
+   "answer": 1,
+   "level": "Apply",
+   "objective": "CO3",
+   "rationales": [
+    "A sequence below 2 to the 31 in a version 2 transaction is a relative timelock, not an ordinary input.",
+    "The lock is 30 blocks: 774,958 plus 30 is 774,988, with 29 blocks strictly between."
+   ]
+  },
+  {
+   "q": "Which sequence value does NOT signal BIP125 replaceability?",
+   "options": [
+    "0xfffffffd",
+    "0xfffffffe",
+    "0x00000000"
+   ],
+   "answer": 1,
+   "level": "Remember",
+   "objective": "CO3",
+   "rationales": [
+    "0xfffffffd is the highest value that signals: at least two below the maximum.",
+    "Zero is far below the threshold and signals."
+   ]
+  },
+  {
+   "q": "A third party replaces OP_2 with OP_PUSH1 0x02 in the input script of Alice's legacy transaction. What changes?",
+   "options": [
+    "Nothing: both encodings put the same number on the stack",
+    "The transaction identifier, so a transaction Bob built on the original output can become invalid",
+    "The signature becomes invalid and the transaction is rejected"
+   ],
+   "answer": 1,
+   "level": "Analyze",
+   "objective": "CO4",
+   "rationales": [
+    "The script result is the same, but the txid is a hash of the bytes, and the bytes differ.",
+    "A legacy signature cannot cover the input script that contains it, so it stays valid."
+   ]
+  },
+  {
+   "q": "Why could segregated witness be deployed as a soft fork?",
+   "options": [
+    "Because old nodes see a segwit output as anyone-can-spend and accept an empty input script, while new nodes require a valid witness",
+    "Because every node upgraded on the same day",
+    "Because the witness structure is included in the legacy serialization"
+   ],
+   "answer": 0,
+   "level": "Understand",
+   "objective": "CO4",
+   "rationales": [
+    "New rules only reject more than old rules did, which is the definition of a soft fork.",
+    "The witness is excluded from the legacy serialization and from the txid."
+   ]
+  },
+  {
+   "q": "The chapter says Alice's transaction is in block 774,958. What did two explorers report?",
+   "options": [
+    "The same block, 774,958",
+    "Block 775,072; 774,958 is the block of the transaction her input spends",
+    "Block 774,957, the lock time of the previous transaction"
+   ],
+   "answer": 1,
+   "level": "Apply",
+   "objective": "CO5",
+   "rationales": [
+    "mempool.space and blockstream.info both place 46620030... in block 775,072.",
+    "774,957 is the lock time of the previous transaction, not a block it is in."
+   ]
+  }
+ ]
+}

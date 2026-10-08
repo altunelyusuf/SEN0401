@@ -1,0 +1,1512 @@
+{
+ "meta": {
+  "title": "Chapter 6: Transactions",
+  "sub": "SEN0401, third-edition redesign",
+  "version": "1.0.0",
+  "python": "3.14.6",
+  "total": 0,
+  "redesign": "2026-10-08, to the chapter-1 v2.8.0 standard (CME materials look-and-feel v1.0.0), notes as reader's prose"
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 6: Transactions",
+   "sub": "One real transaction, 194 bytes, read field by field - and every number recomputed",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/mbc3_0601.png",
+     "x": 5.7,
+     "y": 1.1,
+     "w": 3.9,
+     "h": 2.6,
+     "cap": "a byte map of Alice's transaction - Antonopoulos & Harding, Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "This deck reads one real Bitcoin transaction, Alice's payment to Bob from the book's own example, byte by byte. Every number on the slides was computed from those bytes with the Python standard library and the chapter's own library, and the identifier and the weight were compared with an independent explorer's record of the same transaction, because no Bitcoin Core node was available where this deck was built. The full text of every slide is on the course page for chapter 6.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "Five parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 6.3,
+     "h": 3.4,
+     "fs": 12.5,
+     "items": [
+      "Questions and the chapter map  (slides 3-4)",
+      "A transaction, byte by byte - block 170 and the pizza  (slides 5-9)",
+      "Sequence and lock time - three meanings, three readings  (slides 10-12)",
+      "Outputs - amounts, the 2010 overflow, dust  (slides 13-16)",
+      "Witnesses, the coinbase, the weight, and resources  (slides 17-26)"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.5,
+     "w": 2.45,
+     "h": 3.4,
+     "vert": true,
+     "items": [
+      {
+       "n": "26",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "4",
+       "label": "true stories, each with WHO / WHERE / WHEN / READ"
+      },
+      {
+       "n": "21",
+       "label": "live-run consoles, each shown with its result"
+      }
+     ]
+    }
+   ],
+   "notes": "The route has five parts and ends with a transaction the reader can parse alone. One story is the first transaction ever to spend an output, one is the most expensive pizza in history, one is a block that briefly created 184 billion bitcoins, and one is an exchange that blamed the protocol. The part a reader expects to be hardest is worth marking now and checking at the summary slide.",
+   "take": "Five parts - and at the end, a transaction you have parsed yourself",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions - we return to each",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 3.5,
+     "fs": 12.0,
+     "items": [
+      "What does a Bitcoin transaction ask full nodes to do?",
+      "How is a transaction serialized in the extended and the legacy format?",
+      "What do the version?",
+      "Which three meanings has the sequence field carried?",
+      "Why did placing witnesses in the input script make the transaction identifier malleable?",
+      "How are weight and vbytes computed, and does the chapter's figure of 569 for Alice's transaction reproduce from the bytes?",
+      "Where do the chapter's statements differ from the standards?"
+     ]
+    }
+   ],
+   "notes": "This first branch asks what a Bitcoin transaction is before any of its bytes are read. The book opens with a contrast. The seven questions are the chapter's own competency questions, and each one is answered by a slide range of this deck and in full on the course page. A question to think about is this: which of the seven you could already answer from chapters 2 and 3? The full explanation is on the course page, chapter 6, under What a transaction is, in the concept What a transaction is.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "One chapter, eight branches",
+   "sub": "The concept map the whole chapter hangs on",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 2.9,
+     "cols": 4,
+     "fs": 12.5,
+     "subfs": 10,
+     "accent": [
+      2
+     ],
+     "items": [
+      {
+       "label": "What a transaction is",
+       "sub": "10 concepts"
+      },
+      {
+       "label": "Version, marker and flag",
+       "sub": "8 concepts"
+      },
+      {
+       "label": "Inputs",
+       "sub": "18 concepts"
+      },
+      {
+       "label": "The sequence field",
+       "sub": "13 concepts"
+      },
+      {
+       "label": "Outputs",
+       "sub": "14 concepts"
+      },
+      {
+       "label": "Witnesses",
+       "sub": "20 concepts"
+      },
+      {
+       "label": "Lock time and the coinbase",
+       "sub": "12 concepts"
+      },
+      {
+       "label": "Weight and foundations",
+       "sub": "12 concepts"
+      }
+     ]
+    }
+   ],
+   "notes": "This first branch asks what a Bitcoin transaction is before any of its bytes are read. The book opens with a contrast. The count under each branch is how many concepts the course page explains for it; the deck walks the spine of the eight in the order the bytes are serialized. A question to think about is this: why the sequence field, four bytes inside each input, earns a branch of its own? The full explanation is on the course page, chapter 6, under Inputs and What a transaction is, in the concepts What a transaction is, Inputs.",
+   "bg": "light",
+   "lede": "Eight branches, one per field group; the deck follows the bytes in order and stops at four true stories.",
+   "take": "Eight branches - every slide today lives on this map"
+  },
+  {
+   "kind": "section",
+   "title": "A transaction, byte by byte",
+   "sub": "What a transaction asks of strangers, and how it is written as bytes",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 5.3,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "The request"
+      },
+      {
+       "label": "194 bytes"
+      },
+      {
+       "label": "Inputs and outpoints"
+      },
+      {
+       "label": "Byte order"
+      }
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/mbc3_0602.png",
+     "x": 6.1,
+     "y": 2.2,
+     "w": 3.5,
+     "h": 1.05,
+     "cap": "the inputs field of Alice's transaction - Antonopoulos & Harding, Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "This first branch asks what a Bitcoin transaction is before any of its bytes are read. The book opens with a contrast. The picture is the book's map of the inputs field of Alice's transaction, which the slides of this part recompute from the hexadecimal. A question to think about is this: what a transaction would have to contain if it were a message to Bob rather than a request to full nodes? The full explanation is on the course page, chapter 6, under Serialization formats and What a transaction is, in the concepts What a transaction is, Serialization formats.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Ten bitcoins to Hal Finney, block 170",
+   "sub": "2009-01-12",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/photo_hal_finney_1972.jpg",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 2.6,
+     "h": 2.95,
+     "cap": "Hal Finney, 1972 - Daily News-Post, public domain"
+    },
+    {
+     "t": "beats",
+     "x": 3.4,
+     "y": 1.45,
+     "w": 6.1,
+     "h": 1.45,
+     "fs": 12.5,
+     "items": [
+      "11 January 2009: Finney posts two words, running bitcoin",
+      "The next day the author of the software sends him 10 BTC",
+      "One input spends the coinbase of block 9; two outputs, 10 and 40 BTC",
+      "Legacy format: no marker, no flag, no witness - parsed below"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.4,
+     "y": 3.28,
+     "w": 6.1,
+     "h": 0.8,
+     "rows": [
+      [
+       "parse_tx(FIRST)['segwit'], FIRST_REC['status']['block_height']",
+       "(False, 170)"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "the first transaction, from its saved bytes"
+    },
+    {
+     "t": "factrow",
+     "x": 3.4,
+     "y": 4.42,
+     "w": 6.1,
+     "who": "Satoshi Nakamoto (sender) and Hal Finney, cryptographer and the second person to run the software",
+     "where": "block 170 of the blockchain; Finney's computer in California, running bitcoin since the day before",
+     "when": "2009-01-12",
+     "link": "https://mempool.space/tx/f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16",
+     "linkText": "mempool.space"
+    }
+   ],
+   "notes": "This is a true story, dated 2009-01-12. On 11 January 2009 Hal Finney posted two words, running bitcoin, and the next day the software's author sent him 10 BTC. The transaction, f4184fc5..., sits in block 170 and is the first ever to spend an output: its single input points at the coinbase of block 9, 161 blocks earlier, and its two outputs pay 10 BTC to Finney's public key and 40 BTC back to the sender. It is a legacy transaction - no marker, no flag, no witness - and the chapter's own library parses it and recomputes its identifier from the bytes. Every field this chapter reads was already there, unchanged, in 2009. The console parses the saved bytes of that transaction and finds no segwit marker and the block height 170, which is what the explorer records too. The lesson the slide carries is that the format you are reading is the one from block 170. The sources are these. The transaction f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16 as saved in ch06-evidence from mempool.space on 2026-10-08: block 170, 275 bytes, one input spending output 0 of 0437cd7f..., outputs of 10 BTC and 40 BTC; Finney's post of 2009-01-11 is on Wikimedia Commons as 'First tweet about bitcoin'. Photo: Hal Finney in 1972, Daily News-Post staff photo, public domain.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "194 bytes, seven fields",
+   "sub": "Alice's transaction parsed by the chapter's own library",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.98,
+     "w": 9.0,
+     "h": 1.2,
+     "rows": [
+      [
+       "len(ALICE) // 2, tx['size']",
+       "(194, 194)"
+      ],
+      [
+       "tx['version'], tx['marker'], tx['flag'], tx['segwit']",
+       "(1, 0, 1, True)"
+      ],
+      [
+       "len(tx['inputs']), len(tx['outputs']), len(tx['witness'][0]), tx['locktime']",
+       "(1, 2, 1, 0)"
+      ]
+     ],
+     "fs": 8.3,
+     "cap": "run under Python 3.14.6",
+     "label": "size, version, marker and flag, counts, lock time: version 1, extended format, one input, two outputs"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 0.85,
+     "rows": [
+      [
+       "[s for s in tx['spans'] if s[0] in ('version', 'marker', 'flag', 'lock time')]",
+       "[('version', 0, 4), ('marker', 4, 1), ('flag', 5, 1), ('lock time', 190, 4)]"
+      ],
+      [
+       "sum(k for n, p, k in tx['spans'])",
+       "194"
+      ]
+     ],
+     "fs": 7.6,
+     "cap": "run under Python 3.14.6",
+     "label": "the fixed fields at their offsets; all the spans sum to 194 bytes"
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 4.58,
+     "w": 9.0,
+     "h": 0.4,
+     "fs": 10,
+     "items": [
+      "extended format, version 1",
+      "1 in, 2 out, 1 witness",
+      "lock time 0"
+     ]
+    }
+   ],
+   "notes": "A serialized transaction is the transaction written as bytes in Bitcoin Core's format. The book retrieves Alice's payment to Bob again with the getrawtransaction command and prints the result as hexadecimal, two characters per byte, noting that it takes 64 hexadecimal characters to display 32 bytes (Antonopoulos and Harding, 2023). Read the first console from the top: the two lengths agree, the marker is zero and the flag one, and the counts are what the byte map shows. A question to think about is this: why a parser must read the input count before it can find the lock time? The full explanation is on the course page, chapter 6, under Serialization formats, in the concepts Serialized transaction, Byte map.",
+   "bg": "light",
+   "lede": "The legacy form is 125 bytes; the marker, the flag and the 67-byte witness structure are the other 69.",
+   "take": "Every byte belongs to a named field, and the fields are found in order"
+  },
+  {
+   "kind": "content",
+   "title": "Inputs: an outpoint, read both ways round",
+   "sub": "32 bytes of identifier, 4 of index - and the byte order that trips everyone",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 1.45,
+     "rows": [
+      [
+       "i0 = tx['inputs'][0]",
+       ""
+      ],
+      [
+       "i0['txid_internal'][:16], i0['vout']",
+       "('eb3ae38f27191aa5', 1)"
+      ],
+      [
+       "internal_to_display(i0['txid_internal'])[:16]",
+       "'4ac5418026798669'"
+      ],
+      [
+       "PREV_REC['vout'][1]['value'], PREV_REC['status']['block_height']",
+       "(100000, 774958)"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "the outpoint: the identifier in internal order, index 1, and the 100,000-satoshi output in block 774,958"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.25,
+     "w": 9.0,
+     "h": 1.2,
+     "rows": [
+      [
+       "d = 'eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a'",
+       ""
+      ],
+      [
+       "''.join(reversed([d[i:i + 2] for i in range(0, 64, 2)]))[:16]",
+       "'4ac5418026798669'"
+      ],
+      [
+       "txid(PREV)[:16]",
+       "'4ac5418026798669'"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "the fold-tac pipeline in Python: the reversed bytes equal the identifier the library computes"
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 4.6,
+     "w": 9.0,
+     "h": 0.4,
+     "fs": 11,
+     "items": [
+      "eb3a... hashed",
+      "4ac5... shown",
+      "two spellings"
+     ]
+    }
+   ],
+   "notes": "An outpoint is the field of an input that points at the output being spent. The book says that since control over bitcoins is assigned in transaction outputs, Alice points to the previous output using an outpoint field, that each input must contain a single outpoint, and that the outpoint contains a 32-byte txid for the transaction where Alice received the bitcoins she now wants to spend, followed by the output index (Antonopoulos and Harding, 2023). The reversed identifier in the right console equals the identifier the library computes for the previous transaction, which is the check that the reversal is the right one. A question to think about is this: which of the two spellings an explorer shows, and which one a node hashes? The full explanation is on the course page, chapter 6, under Internal and display byte order and The outpoint, in the concepts Outpoint, Display byte order.",
+   "bg": "light",
+   "take": "An input states no amount; the node reads it from the output the outpoint names"
+  },
+  {
+   "kind": "content",
+   "title": "10,000 bitcoins for two pizzas",
+   "sub": "2010-05-22",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/photo_papa_johns_jacksonville.jpg",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 2.4,
+     "h": 2.95,
+     "cap": "the plaque at Papa John's, Jacksonville - photo: Sanjev Rajaram, CC0"
+    },
+    {
+     "t": "beats",
+     "x": 3.2,
+     "y": 1.45,
+     "w": 6.3,
+     "h": 1.2,
+     "fs": 12.5,
+     "items": [
+      "22 May 2010: Laszlo Hanyecz pays 10,000 BTC for two pizzas",
+      "131 inputs, one output, and 0.99 BTC left to the miner as fee",
+      "Block 57,043 - and the whole 23,620-byte transaction parses below"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.2,
+     "y": 3.0,
+     "w": 6.3,
+     "h": 1.2,
+     "rows": [
+      [
+       "p = parse_tx(PIZZA)",
+       ""
+      ],
+      [
+       "len(p['inputs']), bytes.fromhex(PIZZA)[4], len(p['outputs'])",
+       "(131, 131, 1)"
+      ],
+      [
+       "p['outputs'][0]['value'] // COIN, PIZZA_REC['fee'] / COIN",
+       "(10000, 0.99)"
+      ],
+      [
+       "txid(PIZZA)[:16], PIZZA_REC['status']['block_height']",
+       "('a1075db55d416d3c', 57043)"
+      ]
+     ],
+     "fs": 7.1,
+     "cap": "run under Python 3.14.6",
+     "label": "the pizza transaction: inputs, output, fee, identifier"
+    },
+    {
+     "t": "factrow",
+     "x": 3.2,
+     "y": 4.5,
+     "w": 6.3,
+     "who": "Laszlo Hanyecz, programmer in Jacksonville, Florida; the pizzas ordered by forum user jercos",
+     "where": "a Papa John's on Atlantic Avenue, Jacksonville - the shop now carries a plaque",
+     "when": "2010-05-22",
+     "link": "https://bitcointalk.org/index.php?topic=137.0",
+     "linkText": "bitcointalk.org"
+    }
+   ],
+   "notes": "This is a true story, dated 2010-05-22. Four days after offering 10,000 BTC on the bitcointalk forum to anyone who would send him two pizzas, Laszlo Hanyecz reported that the deal was done. The payment, a1075db5..., confirmed in block 57,043 on 22 May 2010: 131 inputs, because his wallet gathered mining rewards of 50 BTC each, and a single output of 10,000 BTC, with 0.99 BTC left as the fee. The transaction is 23,620 bytes and, as a legacy transaction, weighs exactly four times that. The chapter's library parses all 131 inputs and recomputes its identifier; the bitcoin community marks 22 May as Pizza Day. The console counts the 131 inputs twice, once from the parsed list and once from the single count byte 0x83, and recomputes the identifier that the explorer and the forum thread name. The lesson the slide carries is that an input count of 131 is what one-output payments can look like. The sources are these. The bitcointalk thread 'Pizza for bitcoins?' opened by laszlo on 2010-05-18 and his report of 2010-05-22; the transaction a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d saved in ch06-evidence from mempool.space: block 57,043, 131 inputs, 1 output of 1,000,000,000,000 satoshis, fee 99,000,000 satoshis, weight 94,480. Photo: the plaque at Papa John's, Atlantic Ave, Jacksonville, by Sanjev Rajaram, CC0.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Sequence and lock time",
+   "sub": "Four bytes with three meanings, and four bytes with three readings",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 5.3,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "The card game"
+      },
+      {
+       "label": "Replace by fee"
+      },
+      {
+       "label": "BIP68 timelocks"
+      },
+      {
+       "label": "Lock time and MTP"
+      }
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/mbc3_0603.png",
+     "x": 6.1,
+     "y": 2.3,
+     "w": 3.5,
+     "h": 0.5,
+     "cap": "BIP68's layout of the sequence field - Antonopoulos & Harding, Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "This branch reads the last four bytes of an input, which the book calls its sequence number, and follows the three meanings the field has carried. The figure is BIP68's own layout of the sequence field as the book reproduces it: the disable flag, the type flag and the sixteen bits of value. A question to think about is this: how one field can carry three meanings without the three ever colliding? The full explanation is on the course page, chapter 6, under Lock time and The sequence field, in the concepts The sequence field, Lock time.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "One field, three meanings",
+   "sub": "Final, replaceable, or a relative timelock - decided bit by bit",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 0.95,
+     "fs": 11.5,
+     "steps": [
+      {
+       "label": "0xffffffff",
+       "sub": "final: no replacement, no lock"
+      },
+      {
+       "label": "below 0xfffffffe",
+       "sub": "BIP125: replaceable"
+      },
+      {
+       "label": "below 2^31, v2",
+       "sub": "BIP68: a relative timelock",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.75,
+     "w": 9.0,
+     "h": 0.75,
+     "rows": [
+      [
+       "[(hex(s), sequence_decode(s)['rbf_signal']) for s in (0xffffffff, 0xfffffffe, 0xfffffffd)]",
+       "[('0xffffffff', False), ('0xfffffffe', False), ('0xfffffffd', True)]"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "the BIP125 threshold, tested on three values"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.75,
+     "w": 9.0,
+     "h": 1.2,
+     "rows": [
+      [
+       "sequence_decode(30)['relative_timelock'], earliest_block(774958, 30)",
+       "(('blocks', 30), 774988)"
+      ],
+      [
+       "s = sequence_for(seconds=3600)",
+       ""
+      ],
+      [
+       "hex(s), sequence_decode(s)['relative_timelock']",
+       "('0x400008', ('seconds', 4096))"
+      ],
+      [
+       "hex(SEQUENCE_LOCKTIME_TYPE_FLAG), hex(SEQUENCE_LOCKTIME_DISABLE_FLAG), hex(SEQUENCE_LOCKTIME_MASK)",
+       "('0x400000', '0x80000000', '0xffff')"
+      ]
+     ],
+     "fs": 7.1,
+     "cap": "run under Python 3.14.6",
+     "label": "30 blocks from 774,958; an hour in 512-second units; the constants"
+    }
+   ],
+   "notes": "The sequence number is the four-byte unsigned integer that ends each input, after the outpoint and the input script. The book says the final four bytes of an input are its sequence number and that the use and meaning of this field has changed over time (Antonopoulos and Harding, 2023). The first console shows that 0xfffffffe does not signal while 0xfffffffd does; the second shows the lock of 30 blocks landing at 774,988 and an hour rounding up to eight units of 512 seconds. A question to think about is this: why a transaction that sets a relative timelock also, unavoidably, signals replaceability? The full explanation is on the course page, chapter 6, under Original sequence-based replacement and Sequence as a relative timelock, in the concepts Sequence number, BIP68 relative timelock.",
+   "bg": "light",
+   "take": "Bit 31 of the sequence is this chapter's security bit"
+  },
+  {
+   "kind": "content",
+   "title": "Lock time, and the clock it is checked against",
+   "sub": "A height below 500,000,000, a time above it, and the median of eleven blocks",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 0.95,
+     "fs": 11.5,
+     "steps": [
+      {
+       "label": "0",
+       "sub": "eligible for any block"
+      },
+      {
+       "label": "below 500,000,000",
+       "sub": "a block height: that block or later"
+      },
+      {
+       "label": "500,000,000 or more",
+       "sub": "an epoch time, against the median time past",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.85,
+     "w": 9.0,
+     "h": 0.95,
+     "rows": [
+      [
+       "tx['locktime'], parse_tx(PREV)['locktime'], PREV_REC['status']['block_height']",
+       "(0, 774957, 774958)"
+      ],
+      [
+       "locktime_decode(123456), locktime_decode(ALICE_REC['status']['block_time'])",
+       "(('block height', 123456), ('epoch time', 1675559245))"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "Alice's lock time is 0; the transaction that funded her used 774,957 and confirmed in 774,958"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 4.1,
+     "w": 9.0,
+     "h": 0.8,
+     "rows": [
+      [
+       "times = [1675556500 + 100 * k for k in (15, 21, 5, 27, 24, 0, 26, 18, 12, 23, 25)]",
+       ""
+      ],
+      [
+       "median_time_past(times), max(times) - median_time_past(times)",
+       "(1675558600, 600)"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "eleven block times, their median, and how far it trails the newest: 600 seconds here"
+    }
+   ],
+   "notes": "The lock time field is the final field in a serialized transaction. The first console decodes Alice's zero, the funding transaction's 774,957 and a block's time; the second sorts eleven timestamps and takes the sixth, which trails the newest by 600 seconds in this sample. A question to think about is this: why a time lock set for noon is usually only satisfiable in the early afternoon? The full explanation is on the course page, chapter 6, under Lock time, in the concepts The lock time field, Median time past.",
+   "bg": "light",
+   "take": "Lock time says not before; nothing in a transaction can say not after"
+  },
+  {
+   "kind": "section",
+   "title": "Outputs",
+   "sub": "Satoshis, the consensus range, dust, and the script that says who may spend",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 5.3,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Amounts"
+      },
+      {
+       "label": "The 2010 overflow"
+      },
+      {
+       "label": "Dust"
+      },
+      {
+       "label": "Output scripts"
+      }
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/mbc3_0604.png",
+     "x": 6.1,
+     "y": 2.0,
+     "w": 3.5,
+     "h": 1.35,
+     "cap": "the outputs field - Antonopoulos & Harding, Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "This branch reads the outputs field, the 75 bytes of Alice's transaction that assign her bitcoins to new conditions. The book says the outputs field contains several fields related to specific outputs and, as with the inputs, starts from a byte map; the field begins with a count, and each output has an amount followed by a length-prefixed output script, the script that contains the conditions that will need to be fulfilled in order to spend the bitcoins (Antonopoulos and Harding, 2023). The figure is the book's map of the outputs field: a count, then for each output eight bytes of amount, a length and a script. A question to think about is this: why the fee is written nowhere in these bytes? The full explanation is on the course page, chapter 6, under Outputs and The output list, in the concepts Outputs, The output list.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Amounts: 20,000, 75,000, and a 5,000 fee",
+   "sub": "8-byte signed integers of satoshis, and the fee nobody writes down",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 1.3,
+     "rows": [
+      [
+       "[(o['value'], o['value'] / COIN) for o in tx['outputs']]",
+       "[(20000, 0.0002), (75000, 0.00075)]"
+      ],
+      [
+       "PREV_REC['vout'][1]['value'] - sum(o['value'] for o in tx['outputs']), ALICE_REC['fee']",
+       "(5000, 5000)"
+      ],
+      [
+       "MAX_MONEY, money_range(MAX_MONEY + 1)",
+       "(2100000000000000, False)"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "the two amounts, the fee as a difference, and the consensus maximum"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.1,
+     "w": 9.0,
+     "h": 0.75,
+     "rows": [
+      [
+       "[(o['value'], len(bytes.fromhex(o['script'])), segwit_output_version(o['script'])[0]) for o in tx['outputs']]",
+       "[(20000, 34, 1), (75000, 22, 0)]"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "each output's script: 34 bytes of taproot for Bob, 22 bytes of version 0 for the change"
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 4.15,
+     "w": 9.0,
+     "h": 0.6,
+     "fs": 12,
+     "items": [
+      "100,000 in",
+      "20,000 + 75,000 out",
+      "5,000 fee",
+      "max 2,100,000,000,000,000"
+     ]
+    }
+   ],
+   "notes": "The amount is the first field of a specific output. The book says it is also called value in Bitcoin Core, that it is an 8-byte signed integer indicating the number of satoshis to transfer, that a satoshi is the smallest unit of bitcoin that can be represented in an on-chain transaction, and that there are 100 million satoshis in a bitcoin (Antonopoulos and Harding, 2023). The fee in the first console is computed as the previous output's amount minus the two new amounts, and it equals the fee the explorer reports. A question to think about is this: what a wallet shows as a balance when the chain holds only whole outputs? The full explanation is on the course page, chapter 6, under The output list and The output script, in the concepts Amount, Output script.",
+   "bg": "light",
+   "take": "An output is an amount and a condition; no field holds a balance or a fee"
+  },
+  {
+   "kind": "content",
+   "title": "The block that created 184 billion bitcoins",
+   "sub": "2010-08-15",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/photo_gavin_andresen_2014.jpg",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 2.2,
+     "h": 2.95,
+     "cap": "Gavin Andresen, 2014 - photo: Stephen McCarthy / Web Summit, CC BY 2.0"
+    },
+    {
+     "t": "beats",
+     "x": 3.0,
+     "y": 1.45,
+     "w": 6.5,
+     "h": 1.2,
+     "fs": 12,
+     "items": [
+      "15 August 2010: block 74,638 holds two outputs of 92,233,720,368.54 BTC",
+      "Summed as 64-bit integers they wrap to a small negative number: the check passes",
+      "A patch within five hours, 0.3.10 the next day, the chain reorganised at 74,691"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.0,
+     "y": 3.0,
+     "w": 6.5,
+     "h": 1.2,
+     "rows": [
+      [
+       "big = 92_233_720_368_54277039",
+       ""
+      ],
+      [
+       "w = (2 * big) & 0xffffffffffffffff",
+       ""
+      ],
+      [
+       "big > MAX_MONEY, w - 2 ** 64 if w >= 2 ** 63 else w",
+       "(True, -997538)"
+      ],
+      [
+       "money_range(w - 2 ** 64), money_range(big), 50 * COIN - (w - 2 ** 64) > 50 * COIN",
+       "(False, False, True)"
+      ]
+     ],
+     "fs": 7.5,
+     "cap": "run under Python 3.14.6",
+     "label": "the overflow reproduced, and refused by the range check Core still cites"
+    },
+    {
+     "t": "factrow",
+     "x": 3.0,
+     "y": 4.5,
+     "w": 6.5,
+     "who": "an unknown attacker; Jeff Garzik, who reported the strange block on the forum; Satoshi Nakamoto, who patched the software the same day",
+     "where": "block 74,638 - and the bitcointalk forum thread Strange block 74638, where the fix was coordinated within hours",
+     "when": "2010-08-15",
+     "link": "https://en.bitcoin.it/wiki/Value_overflow_incident",
+     "linkText": "en.bitcoin.it"
+    }
+   ],
+   "notes": "This is a true story, dated 2010-08-15. Block 74,638 contained a transaction with two outputs of 92,233,720,368.54277039 BTC each. Added as 64-bit integers the two amounts overflowed to a small negative number, so the check that outputs do not exceed inputs passed and the chain accepted 184 billion bitcoins out of thin air. Jeff Garzik reported the block within two hours, Satoshi Nakamoto pushed a patch within about five hours and released version 0.3.10 the next day with a check on the sum of the outputs, and the honest chain overtook the bad one at block 74,691, erasing the transaction. Bitcoin Core's tx_check.cpp still cites the bug, CVE-2010-5139, beside the three refusals this chapter reads: a negative value, a value above 21 million, a total that leaves the range. The console doubles the overflowing amount as a 64-bit signed integer, obtains the negative sum of 997,538 satoshis that the 2010 check accepted, and shows that the money-range check refuses both the sum and each output. The lesson the slide carries is that a signed amount needs a range check; the chain learned it the hard way. The sources are these. The Bitcoin wiki's 'Value overflow incident' page: block 74638 on 2010-08-15, two outputs of 92,233,720,368.54277039 BTC, the 0.3.10 fix and the reorganisation at block 74691; the forum thread 'Strange block 74638' (bitcointalk topic 822) with its timeline of the patch; Bitcoin Core src/consensus/tx_check.cpp at commit 05bc2f5, '(see CVE-2010-5139)', saved in ch06-evidence. Photo: Gavin Andresen, the developer to whom Satoshi handed the project after this era, at Web Summit 2014 - Stephen McCarthy / Web Summit, CC BY 2.0.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Dust, measured",
+   "sub": "Bitcoin Core's threshold is a size times a rate - and it depends on the output type",
+   "items": [
+    {
+     "t": "chart",
+     "x": 0.45,
+     "y": 1.72,
+     "w": 4.5,
+     "h": 3.15,
+     "ctype": "bar",
+     "title": "Dust threshold by output type (satoshis, 3,000 sat/kvB)",
+     "dataLabels": true,
+     "dlFmt": "0",
+     "dlFs": 9,
+     "labels": [
+      "P2PKH (legacy)",
+      "P2WPKH (segwit v0)",
+      "P2TR (taproot)",
+      "OP_RETURN"
+     ],
+     "series": [
+      {
+       "name": "dust threshold",
+       "data": [
+        546,
+        294,
+        330,
+        0
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 5.1,
+     "y": 2.0,
+     "w": 4.4,
+     "h": 1.6,
+     "rows": [
+      [
+       "P2PKH = '76a914' + '00' * 20 + '88ac'",
+       ""
+      ],
+      [
+       "P2WPKH, P2TR = '0014' + '00' * 20, '5120' + '00' * 32",
+       ""
+      ],
+      [
+       "RET = '6a04deadbeef'",
+       ""
+      ],
+      [
+       "[dust_threshold(s) for s in (P2PKH, P2WPKH, P2TR, RET)]",
+       "[546, 294, 330, 0]"
+      ],
+      [
+       "DUST_RELAY_TX_FEE, (34 + 148) * 3, (31 + 67) * 3",
+       "(3000, 546, 294)"
+      ]
+     ],
+     "fs": 7.5,
+     "cap": "run under Python 3.14.6",
+     "label": "the four thresholds, and the sizes behind two of them"
+    },
+    {
+     "t": "numlist",
+     "x": 5.1,
+     "y": 3.75,
+     "w": 4.4,
+     "h": 1.15,
+     "fs": 10,
+     "items": [
+      "Output size plus the smallest input that could spend it, times 3 satoshis a byte",
+      "An OP_RETURN output can never be spent, so it is never dust"
+     ]
+    }
+   ],
+   "notes": "The dust limit is the value below which a relaying node treats an output as dust and refuses to relay or mine the transaction that creates it. The bars are computed, never quoted: the console's fourth line produced them, and the last line shows the rate and the sizes that give 546 and 294. A question to think about is this: why a 600-satoshi output passes the dust policy and may still not be worth spending on a busy day? The full explanation is on the course page, chapter 6, under Uneconomical outputs and dust, in the concepts Dust limit, Data-carrier output.",
+   "bg": "light",
+   "lede": "The bars are the console's own output; the checker re-runs it off this file.",
+   "take": "Dust is a policy about who pays for the UTXO set: everyone, for ever"
+  },
+  {
+   "kind": "section",
+   "title": "Witnesses",
+   "sub": "Where the proof of authorisation lives, and why it moved",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 5.3,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Malleability"
+      },
+      {
+       "label": "Mt. Gox, 2014"
+      },
+      {
+       "label": "Segregated witness"
+      },
+      {
+       "label": "The soft fork"
+      }
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/mbc3_0605.png",
+     "x": 6.1,
+     "y": 2.0,
+     "w": 3.5,
+     "h": 1.35,
+     "cap": "the witness structure - Antonopoulos & Harding, Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "This branch explains the witness structure, the 67 bytes near the end of Alice's transaction that prove she was allowed to spend. The figure is the book's map of the witness structure: one stack for Alice's one input, holding one 65-byte item, her signature. A question to think about is this: what a court would ask of a witness that it cannot ask of a number? The full explanation is on the course page, chapter 6, under The idea of a witness and Witnesses, in the concepts Witnesses, The idea of a witness.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Malleability: the same spend, four identifiers",
+   "sub": "Re-encode a push in a legacy input script and the txid changes; outside the txid it cannot",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 1.05,
+     "rows": [
+      [
+       "push_encodings(2)",
+       "{'OP_2': '52', 'OP_PUSH1 0x02': '0102', 'OP_PUSH2 0x0002': '020200', 'OP_PUSHDATA1 0x0102': '4c0102'}"
+      ],
+      [
+       "sorted({txid(with_input_script(FIRST, s))[:8] for s in push_encodings(2).values()})",
+       "['0423a53a', '18da36d1', '4d986cd8', 'b3485f99']"
+      ]
+     ],
+     "fs": 7.5,
+     "cap": "run under Python 3.14.6",
+     "label": "four ways to push the number 2: four identifiers for the first bitcoin transaction"
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.85,
+     "w": 9.0,
+     "h": 1.25,
+     "rows": [
+      [
+       "txid(ALICE)[:16], hash256(legacy)[::-1].hex()[:16]",
+       "('466200308696215b', '466200308696215b')"
+      ],
+      [
+       "mutated = with_witness_item(ALICE, '00' * 65)",
+       ""
+      ],
+      [
+       "txid(mutated) == txid(ALICE), wtxid(mutated) == wtxid(ALICE)",
+       "(True, False)"
+      ]
+     ],
+     "fs": 8,
+     "cap": "run under Python 3.14.6",
+     "label": "Alice's txid is the hash of the 125 legacy bytes; a new witness changes the wtxid, not the txid"
+    },
+    {
+     "t": "when",
+     "x": 2.3,
+     "y": 4.4,
+     "w": 5.4,
+     "body": "the witness is outside the txid - by design"
+    }
+   ],
+   "notes": "Third-party transaction malleability is the second problem: it is often possible to solve the same script in different ways. The first console's set has four members, one per encoding; the second console's last line is the whole of segregated witness in two booleans. A question to think about is this: what Bob loses when a stranger's re-encoded copy of Alice's transaction confirms instead of hers? The full explanation is on the course page, chapter 6, under Segregated witness and The malleability problems, in the concepts Third-party transaction malleability, Segregated witness.",
+   "bg": "light",
+   "take": "What a hash covers decides what can be built on it"
+  },
+  {
+   "kind": "content",
+   "title": "Mt. Gox blames malleability",
+   "sub": "2014-02-10",
+   "items": [
+    {
+     "t": "stat",
+     "x": 0.5,
+     "y": 1.55,
+     "w": 9.0,
+     "h": 1.2,
+     "items": [
+      {
+       "n": "302,000 BTC",
+       "label": "ever involved in malleability attacks (Decker and Wattenhofer)"
+      },
+      {
+       "n": "1,811 BTC",
+       "label": "of those before the press release of 10 February"
+      },
+      {
+       "n": "850,000 BTC",
+       "label": "the shortfall declared in the filing of 28 February"
+      }
+     ]
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 2.95,
+     "w": 9.0,
+     "h": 1.3,
+     "fs": 12,
+     "items": [
+      "Withdrawals halted on 7 February; the press release blamed a bug in the bitcoin software",
+      "Researchers who had recorded the network for a year found no widespread attacks before the announcement",
+      "Software that tracked payments by txid saw mutated copies as failed payments"
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.42,
+     "w": 9.0,
+     "who": "Mt. Gox, then the largest bitcoin exchange, and its CEO Mark Karpeles; Christian Decker and Roger Wattenhofer of ETH Zurich, who measured the claim",
+     "where": "Shibuya, Tokyo - and the whole Bitcoin network, whose relayed transactions the researchers recorded",
+     "when": "2014-02-10",
+     "link": "https://arxiv.org/abs/1403.6676",
+     "linkText": "arxiv.org"
+    }
+   ],
+   "notes": "This is a true story, dated 2014-02-10. On 7 February 2014 Mt. Gox halted bitcoin withdrawals, and on 10 February it issued a press release blaming a bug in the bitcoin software: someone could alter transaction details to make it seem that a sending of bitcoins had not occurred when it had. That is third-party malleability - a stranger re-encodes a push in the input script, the txid changes, and software that tracks payments by txid believes the payment failed. Decker and Wattenhofer, who had recorded the network's transactions for a year, found no widespread malleability attacks before the announcement: about 302,000 BTC were ever involved in such attacks, and only 1,811 BTC of them before the press release. On 28 February the exchange filed for bankruptcy protection, 850,000 BTC short; segregated witness, activated in 2017, took the input script out of the txid for good. The three figures are the paper's and the bankruptcy filing's, as the fact row's link gives them; no free-licence photograph of the exchange could be verified, so the slide shows the numbers. The lesson the slide carries is that track outpoints, not txids - and do not blame the protocol first. The sources are these. Decker and Wattenhofer, 'Bitcoin Transaction Malleability and MtGox', arXiv:1403.6676 (ETH Zurich, March 2014; ESORICS 2014): the figures 302,000 BTC ever involved and 1,811 BTC before the press release, and the finding of no widespread attacks before the closure; the Mt. Gox press release of 2014-02-10 and the bankruptcy filing of 2014-02-28 as summarised at en.wikipedia.org/wiki/Mt._Gox. No free-licence photograph of the exchange or its office could be verified, so the slide shows the story's figures instead.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Segregated witness as a soft fork",
+   "sub": "Old nodes allow an empty input script; new nodes require one",
+   "items": [
+    {
+     "t": "compare",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 1.75,
+     "fs": 11.5,
+     "left": {
+      "head": "What an old node sees",
+      "rows": [
+       "A script of a number 0-16 and 2-40 bytes: anyone can spend it",
+       "An empty input script is allowed",
+       "Every segwit block is valid to it"
+      ]
+     },
+     "right": {
+      "head": "What a new node requires",
+      "rows": [
+       "The same template is a witness program with a version",
+       "The input script must be empty",
+       "A valid witness in the witness structure"
+      ]
+     }
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.55,
+     "w": 9.0,
+     "h": 0.95,
+     "rows": [
+      [
+       "segwit_output_version(tx['outputs'][0]['script'])[0], segwit_output_version(tx['outputs'][1]['script'])[0]",
+       "(1, 0)"
+      ],
+      [
+       "tx['inputs'][0]['script'] == '', len(bytes.fromhex(tx['witness'][0][0]))",
+       "(True, 65)"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Alice's outputs are witness programs of versions 1 and 0; her input script is empty, her witness 65 bytes"
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 4.65,
+     "w": 9.0,
+     "h": 0.4,
+     "fs": 11,
+     "items": [
+      "reject more",
+      "accept no more",
+      "block 481,824 - August 2017"
+     ]
+    }
+   ],
+   "notes": "A soft fork is a backward-compatible change to the consensus rules. The two columns are the book's own sentence turned into a table, and the console checks it on Alice's bytes: two witness programs, an empty input script, a witness item. A question to think about is this: why a change that only tightens the rules can be enforced by a minority of nodes while a change that loosens them cannot? The full explanation is on the course page, chapter 6, under Segregated witness, in the concepts Soft fork, Witness program.",
+   "bg": "light",
+   "take": "A soft fork can only restrict; upgrades are built on anyone-can-spend"
+  },
+  {
+   "kind": "section",
+   "title": "The coinbase and the weight",
+   "sub": "Where bitcoins come from, and how a block is filled",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 5.3,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "items": [
+      {
+       "label": "Null outpoint"
+      },
+      {
+       "label": "The subsidy"
+      },
+      {
+       "label": "Maturity"
+      },
+      {
+       "label": "Weight and vbytes"
+      }
+     ]
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/mbc3_0606.png",
+     "x": 6.1,
+     "y": 1.8,
+     "w": 3.5,
+     "h": 2.0,
+     "cap": "the same transaction in weight units - Antonopoulos & Harding, Mastering Bitcoin 3e, CC BY-SA"
+    }
+   ],
+   "notes": "The coinbase transaction is the first transaction in each block. The figure is the book's map of Alice's transaction drawn in weight units rather than bytes: the witness shrinks to a quarter and everything else stays. A question to think about is this: why the two maps of the same transaction have different shapes? The full explanation is on the course page, chapter 6, under Coinbase transactions and Weight and vbytes, in the concepts Coinbase transactions, Weight and vbytes.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The subsidy, halving by halving",
+   "sub": "50 BTC shifted right once per 210,000 blocks - down to one satoshi, then zero",
+   "items": [
+    {
+     "t": "chart",
+     "x": 0.45,
+     "y": 1.72,
+     "w": 4.4,
+     "h": 3.15,
+     "ctype": "bar",
+     "title": "Block subsidy at each halving (BTC)",
+     "dataLabels": true,
+     "dlFmt": "0.####",
+     "dlFs": 8,
+     "labels": [
+      "0",
+      "210000",
+      "420000",
+      "630000",
+      "840000",
+      "1050000",
+      "1260000",
+      "1470000",
+      "1680000"
+     ],
+     "series": [
+      {
+       "name": "subsidy",
+       "data": [
+        50.0,
+        25.0,
+        12.5,
+        6.25,
+        3.125,
+        1.5625,
+        0.78125,
+        0.390625,
+        0.1953125
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 5.0,
+     "y": 2.0,
+     "w": 4.5,
+     "h": 1.2,
+     "rows": [
+      [
+       "[block_subsidy(h) for h in (6720000, 6929999, 6930000)]",
+       "[1, 1, 0]"
+      ],
+      [
+       "last_subsidy_height(), total_subsidy() / COIN",
+       "(6929999, 20999999.9769)"
+      ]
+     ],
+     "fs": 8,
+     "cap": "run under Python 3.14.6",
+     "label": "one satoshi from 6,720,000, zero from 6,930,000"
+    },
+    {
+     "t": "code",
+     "x": 5.0,
+     "y": 3.55,
+     "w": 4.5,
+     "h": 1.3,
+     "rows": [
+      [
+       "r = FIRST_REC",
+       ""
+      ],
+      [
+       "r['vin'][0]['txid'][:16], r['status']['block_height']",
+       "('0437cd7f8525ceed', 170)"
+      ],
+      [
+       "coinbase_mature(9, 170), 170 - 9, COINBASE_MATURITY",
+       "(True, 161, 100)"
+      ]
+     ],
+     "fs": 8,
+     "cap": "run under Python 3.14.6",
+     "label": "block 170 spends block 9's coinbase: mature"
+    }
+   ],
+   "notes": "The block subsidy is the part of a coinbase's claim that consists of bitcoins that have never previously been circulated. The book says the subsidy started at 50 BTC per block and halves every 210,000 blocks, approximately every four years, with values rounded down to the nearest satoshi, and it dates the subsidy to block 6,720,000 (Antonopoulos and Harding, 2023). The bars are the first executed line of the subsidy example; the console beside them shows where the schedule ends, which is 209,999 blocks later than the figure the book names. A question to think about is this: why the schedule sums to a little under 21 million and never exactly to it? The full explanation is on the course page, chapter 6, under Coinbase transactions, in the concepts Block subsidy, Maturity rule.",
+   "bg": "light",
+   "lede": "Nine halvings drawn from one executed line; the library and Core's GetBlockSubsidy agree on every bar.",
+   "take": "The coinbase is the only transaction that creates bitcoins"
+  },
+  {
+   "kind": "content",
+   "title": "569: the weight, field by field",
+   "sub": "The book's table recomputed from the bytes - and Bitcoin Core's figure matched without a node",
+   "items": [
+    {
+     "t": "chart",
+     "x": 0.45,
+     "y": 1.72,
+     "w": 4.4,
+     "h": 3.15,
+     "ctype": "bar",
+     "title": "Weight of each field of Alice's transaction",
+     "dataLabels": true,
+     "dlFmt": "0",
+     "dlFs": 8,
+     "labels": [
+      "version",
+      "marker+flag",
+      "in count",
+      "outpoint",
+      "in script",
+      "sequence",
+      "out count",
+      "amounts",
+      "out scripts",
+      "wit count",
+      "wit items",
+      "lock time"
+     ],
+     "series": [
+      {
+       "name": "weight",
+       "data": [
+        16,
+        2,
+        4,
+        144,
+        4,
+        16,
+        4,
+        64,
+        232,
+        1,
+        66,
+        16
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 5.0,
+     "y": 2.0,
+     "w": 4.5,
+     "h": 1.3,
+     "rows": [
+      [
+       "len(legacy) * 3 + len(bytes.fromhex(ALICE)), weight(ALICE)",
+       "(569, 569)"
+      ],
+      [
+       "ALICE_REC['weight'], vbytes(ALICE)",
+       "(569, 143)"
+      ],
+      [
+       "weight(FIRST) == 4 * parse_tx(FIRST)['size']",
+       "True"
+      ]
+     ],
+     "fs": 7.9,
+     "cap": "run under Python 3.14.6",
+     "label": "569 from the bytes and from the explorer; 143 vbytes"
+    },
+    {
+     "t": "code",
+     "x": 5.0,
+     "y": 3.65,
+     "w": 4.5,
+     "h": 1.2,
+     "rows": [
+      [
+       "[w for n, b, f, w in field_weights(ALICE) if f == 1]",
+       "[1, 1, 1, 1, 65]"
+      ],
+      [
+       "sum(w for n, b, f, w in field_weights(ALICE)), 80 * 3 + 80",
+       "(569, 320)"
+      ]
+     ],
+     "fs": 7.9,
+     "cap": "run under Python 3.14.6",
+     "label": "the spans that weigh one per byte; the header"
+    }
+   ],
+   "notes": "Weight is the modern unit of measurement for the size of Bitcoin transactions and blocks. The book says each block is limited in the amount of transaction data it can contain, so most software needs to measure the transactions it creates or processes, and that the unit is called weight (Antonopoulos and Harding, 2023). The twelve bars are the book's twelve rows, each computed from the byte spans the parser recorded, and they sum to 569; the console shows the same 569 three ways, the third being the explorer's saved record. A question to think about is this: why the witness item of 65 bytes weighs less than the 34-byte script that pays Bob? The full explanation is on the course page, chapter 6, under Weight and vbytes, in the concepts Weight, Weight factors.",
+   "bg": "light",
+   "lede": "No node ran here: 569 is recomputed from the bytes and compared with the explorer's saved record.",
+   "take": "Weight is what a transaction pays for, and witness bytes cost a quarter"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per part - each one provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.3,
+     "fs": 12.5,
+     "items": [
+      "A transaction is a request to strangers: inputs point, witnesses prove, outputs assign - 194 bytes, every one named",
+      "The sequence field has meant three things; the lock time is read against the median of eleven blocks",
+      "An output is an amount and a condition; the fee is a difference, and dust is a policy about everyone's database",
+      "Witnesses in the input script made identifiers malleable; segregated witness moved them out, as a soft fork",
+      "The coinbase creates under a schedule that ends at block 6,929,999, and weight is what a block is filled by"
+     ]
+    }
+   ],
+   "notes": "These five lines are the deck in miniature, one per part, and each of them is carried by a slide range that the agenda names. A line that feels unproven should send the reader back to its consoles, because every figure in it was computed on a slide. The full text behind all five lines is on the course page for chapter 6.",
+   "bg": "light",
+   "take": "If a line feels unproven, its part's slides carry the receipt"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Checked 2026-10-08; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.45,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "This chapter, free (CC BY-SA)",
+         "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/develop/ch06_transactions.adoc"
+        ],
+        [
+         "The malleability paper behind the Mt. Gox story",
+         "https://arxiv.org/abs/1403.6676"
+        ]
+       ]
+      },
+      {
+       "head": "Standards",
+       "rows": [
+        [
+         "BIP 141 - segregated witness, weight",
+         "https://raw.githubusercontent.com/bitcoin/bips/master/bip-0141.mediawiki"
+        ],
+        [
+         "BIP 68 - the relative timelock",
+         "https://raw.githubusercontent.com/bitcoin/bips/master/bip-0068.mediawiki"
+        ],
+        [
+         "BIP 125 - opt-in replace-by-fee",
+         "https://raw.githubusercontent.com/bitcoin/bips/master/bip-0125.mediawiki"
+        ]
+       ]
+      },
+      {
+       "head": "Tools",
+       "rows": [
+        [
+         "Alice's transaction on mempool.space",
+         "https://mempool.space/tx/466200308696215bbc949d5141a49a4138ecdfdfaa2a8029c1f9bcecd1f96177"
+        ],
+        [
+         "learnmeabitcoin - a raw transaction, drawn",
+         "https://learnmeabitcoin.com/technical/transaction/"
+        ]
+       ]
+      },
+      {
+       "head": "Community",
+       "rows": [
+        [
+         "Pizza for bitcoins? - the 2010 thread",
+         "https://bitcointalk.org/index.php?topic=137.0"
+        ],
+        [
+         "Strange block 74638 - the overflow, live",
+         "https://bitcointalk.org/index.php?topic=822.0"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "Everything here is free to read, and every link was fetched on the date in the subtitle. A good exercise is to take any confirmed transaction from the explorer, paste its hexadecimal into the chapter's library on the course page, and check that the identifier and the weight you compute are the ones the explorer shows. The course page for chapter 6 carries the full resource list with a sentence on why each entry is there.",
+   "bg": "light",
+   "take": "Parse any transaction yourself and match the explorer's identifier and weight"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "What a transaction asks full nodes to do, field by field",
+      "What the sequence and lock time permit, and when",
+      "Why identifiers were malleable, and how segwit fixed it",
+      "How 569 is computed, and who creates bitcoins under which schedule"
+     ]
+    }
+   ],
+   "notes": "Four claims, each carried by a computation that ran on a slide of this deck against the chapter's own transaction, the standards and Bitcoin Core's sources. The course page for chapter 6 carries every word behind them, the stories with their sources, and the question bank to test the four claims on yourself.",
+   "bg": "dark"
+  }
+ ]
+}

@@ -1,0 +1,232 @@
+{
+ "_version": "1.0.0",
+ "_python": "3.14.6",
+ "StackExecution": [
+  [
+   "L.run('2 3', 'OP_ADD 5 OP_EQUAL')",
+   "'OK'"
+  ],
+  [
+   "L.run('2 3', 'OP_ADD 6 OP_EQUAL')",
+   "'EVAL_FALSE'"
+  ],
+  [
+   "L.assemble('2 3 OP_ADD 5 OP_EQUAL').hex()",
+   "'5253935587'"
+  ]
+ ],
+ "OpReturnBug": [
+  [
+   "old_joined('OP_1 OP_RETURN', LOCK)",
+   "'OK'"
+  ],
+  [
+   "L.run('OP_1 OP_RETURN', LOCK, flags=())",
+   "'OP_RETURN'"
+  ],
+  [
+   "L.run('0x06' + b'secret'.hex(), LOCK, flags=())",
+   "'OK'"
+  ]
+ ],
+ "PayToPublicKeyHash": [
+  [
+   "spk = L.p2pkh_script(L.hash160(K.pub(1)))",
+   ""
+  ],
+  [
+   "len(spk), L.classify(spk)[0]",
+   "(25, 'pubkeyhash')"
+  ],
+  [
+   "p2pkh(), p2pkh(signer=2), p2pkh(amount_after=99999)",
+   "('OK', 'EVAL_FALSE', 'EVAL_FALSE')"
+  ]
+ ],
+ "SignatureEncoding": [
+  [
+   "sig = L.ecdsa_sign(K.secret(1), L.sha256(b'pay Bob'))",
+   ""
+  ],
+  [
+   "len(sig) + 1, sig[0], L.is_valid_der(sig + b'\\x01'), L.is_low_s(sig + b'\\x01')",
+   "(72, 48, True, True)"
+  ],
+  [
+   "p2pkh(loose=True, flags=L.MAINNET_FLAGS - {'DERSIG'}), p2pkh(loose=True)",
+   "('OK', 'SIG_DER')"
+  ]
+ ],
+ "ScriptedMultisignature": [
+  [
+   "len(RED), L.classify(RED)[0]",
+   "(105, 'multisig')"
+  ],
+  [
+   "K.ms_spend(2, 3, [0, 2]), K.ms_spend(2, 3, [2, 0]), K.ms_spend(2, 3, [1])",
+   "('OK', 'EVAL_FALSE', 'INVALID_STACK_OPERATION')"
+  ],
+  [
+   "K.ms_spend(2, 3, [0, 1], dummy=b'\\x01'), K.ms_spend(2, 3, [0, 1], dummy=b'\\x01', flags=L.MAINNET_FLAGS - {'NULLDUMMY'})",
+   "('SIG_NULLDUMMY', 'OK')"
+  ]
+ ],
+ "RedeemScript": [
+  [
+   "spk = L.p2sh_script(L.hash160(RED))",
+   ""
+  ],
+  [
+   "L.script_to_address(spk)[:6], len(spk)",
+   "('3BuKam', 23)"
+  ],
+  [
+   "K.ms_spend(2, 3, [0, 1], wrap='p2sh'), K.p2sh_spend(RED, hashed=RED + b'\\x00')",
+   "('OK', 'EVAL_FALSE')"
+  ]
+ ],
+ "CheckLockTimeVerify": [
+  [
+   "K.key_spend(CLTV, locktime=800000, sequence=0xfffffffe)",
+   "'OK'"
+  ],
+  [
+   "K.key_spend(CLTV, locktime=799999, sequence=0xfffffffe), K.key_spend(CLTV, locktime=800000)",
+   "('UNSATISFIED_LOCKTIME', 'UNSATISFIED_LOCKTIME')"
+  ],
+  [
+   "K.is_final(800000, 800000, 0, [0xfffffffe]), K.is_final(800000, 800001, 0, [0xfffffffe])",
+   "(False, True)"
+  ]
+ ],
+ "CheckSequenceVerify": [
+  [
+   "K.key_spend(CSV, version=2, sequence=4320)",
+   "'OK'"
+  ],
+  [
+   "K.key_spend(CSV, version=2, sequence=4319), K.key_spend(CSV, version=1, sequence=4320)",
+   "('UNSATISFIED_LOCKTIME', 'UNSATISFIED_LOCKTIME')"
+  ],
+  [
+   "K.key_spend(CSV, version=2, sequence=0x80000000 | 4320)",
+   "'UNSATISFIED_LOCKTIME'"
+  ]
+ ],
+ "MohammedScript": [
+  [
+   "len(K.moh_script()), K.moh_spend(1)",
+   "(192, 'OK')"
+  ],
+  [
+   "K.moh_spend(2, sequence=4320), K.moh_spend(2, sequence=4319)",
+   "('OK', 'UNSATISFIED_LOCKTIME')"
+  ],
+  [
+   "K.moh_spend(3, sequence=12960), K.moh_spend(3, sequence=4320)",
+   "('OK', 'UNSATISFIED_LOCKTIME')"
+  ]
+ ],
+ "P2wpkh": [
+  [
+   "K.wpkh_spend(), K.wpkh_spend(nested=True)",
+   "('OK', 'OK')"
+  ],
+  [
+   "K.wpkh_spend(signed_amount=99999)",
+   "'EVAL_FALSE'"
+  ],
+  [
+   "L.script_to_address(L.p2wpkh_script(L.hash160(K.pub(1))))",
+   "'bc1qm5gqhe7e46jhyy2ca00x66slmrlljwa33n9fts'"
+  ]
+ ],
+ "BlockCensus": [
+  [
+   "sum(K.census(L).values())",
+   "1022"
+  ],
+  [
+   "census_groups()",
+   "[('P2WPKH', 626), ('P2PKH', 194), ('P2SH-P2WPKH', 95), ('P2WSH', 57), ('P2SH-P2WSH', 34), ('P2SH multisig', 10), ('taproot', 6)]"
+  ]
+ ],
+ "Mast": [
+  [
+   "[len(p) for p in K.tap_tree(MOH_LEAVES)[1]]",
+   "[2, 2, 1]"
+  ],
+  [
+   "[(n, (n - 1).bit_length()) for n in (3, 8, 1024, 2**20)]",
+   "[(3, 2), (8, 3), (1024, 10), (1048576, 20)]"
+  ]
+ ],
+ "Taproot": [
+  [
+   "par, q = L.taproot_tweak_pubkey(K.xpub(1), b'')",
+   ""
+  ],
+  [
+   "L.script_to_address(L.p2tr_script(q))[:6], len(q)",
+   "('bc1pwd', 32)"
+  ],
+  [
+   "r, wit, wt = K.tr_keypath(1)",
+   ""
+  ],
+  [
+   "r, len(wit[0]), wt",
+   "('OK', 64, 308)"
+  ],
+  [
+   "K.tr_keypath(1, MOH_LEAVES)[0], K.tr_keypath(1, MOH_LEAVES, tamper='untweaked')[0]",
+   "('OK', 'SCHNORR_SIG')"
+  ]
+ ],
+ "ScriptPathSpending": [
+  [
+   "[moh_tap(i)[0] for i in range(3)]",
+   "['OK', 'OK', 'OK']"
+  ],
+  [
+   "[moh_tap(i)[2] for i in range(3)]",
+   "[577, 617, 414]"
+  ],
+  [
+   "[moh_wsh(p) for p in (1, 2, 3)]",
+   "[585, 584, 509]"
+  ],
+  [
+   "[len(moh_tap(i)[1][-1]) for i in range(3)]",
+   "[97, 97, 65]"
+  ]
+ ],
+ "ChecksigAdd": [
+  [
+   "len(K.csa_script([0, 1, 2], 2)), len(RED)",
+   "(104, 105)"
+  ],
+  [
+   "K.tr_spend([K.csa_script([0, 1, 2], 2)], 0, [b'', ('sig', 1), ('sig', 0)])[0]",
+   "'OK'"
+  ],
+  [
+   "K.tr_spend([K.csa_script([0, 1, 2], 2)], 0, [b'', b'', ('sig', 0)])[0]",
+   "'EVAL_FALSE'"
+  ]
+ ],
+ "OpSuccess": [
+  [
+   "sum(1 for o in range(256) if L.is_op_success(o))",
+   "87"
+  ],
+  [
+   "K.tr_spend([bytes([0x51, 152])], 0, [])[0]",
+   "'OK'"
+  ],
+  [
+   "L.run('OP_1 OP_LSHIFT', 'OP_1', flags=())",
+   "'DISABLED_OPCODE'"
+  ]
+ ]
+}

@@ -1,0 +1,155 @@
+{
+ "_version": "1.0.0",
+ "items": [
+  {
+   "q": "What does a full node check when it validates the spend of a pay to public key hash output?",
+   "options": [
+    "That the public key in the input script hashes to the 20 bytes in the output script, and that the signature is valid for that key",
+    "That the input script and the output script are byte for byte equal",
+    "That the signature is the same as the signature of the previous spend of the key"
+   ],
+   "answer": 0,
+   "level": "Understand",
+   "objective": "CO1",
+   "rationales": [
+    "The two scripts are different programs: one supplies data and the other states a condition.",
+    "Each signature commits to the spending transaction, so it cannot repeat."
+   ]
+  },
+  {
+   "q": "The input script of a spend is 1 OP_RETURN. In today's software, what happens?",
+   "options": [
+    "The spend succeeds, because 1 is true",
+    "The spend fails, because OP_RETURN ends the script with an error",
+    "The output script runs and the result decides"
+   ],
+   "answer": 1,
+   "level": "Understand",
+   "objective": "CO1",
+   "rationales": [
+    "That was the behaviour of the first release and the bug CVE-2010-5141; the scripts are now run separately and OP_RETURN fails.",
+    "The input script is evaluated first and a failure there ends the validation."
+   ]
+  },
+  {
+   "q": "A 2-of-3 multisignature script with compressed keys is 105 bytes. How long is a 2-of-5 script?",
+   "options": [
+    "175 bytes",
+    "173 bytes",
+    "210 bytes"
+   ],
+   "answer": 1,
+   "level": "Apply",
+   "objective": "CO2",
+   "rationales": [
+    "Each key adds 34 bytes, but the three fixed bytes are counted only once: 175 is 5 times 35.",
+    "Doubling the keys does not double the fixed bytes: the script is 34 per key plus 3."
+   ]
+  },
+  {
+   "q": "Why can a redeem script be as long as 520 bytes but a 16-key multisignature not be used in a script hash output?",
+   "options": [
+    "The 16-key script is 547 bytes and a redeem script is one push of at most 520 bytes",
+    "Keys are limited to 15 by the signature hash",
+    "Script hash outputs cannot hold compressed keys"
+   ],
+   "answer": 0,
+   "level": "Apply",
+   "objective": "CO2",
+   "rationales": [
+    "The limit of 20 keys applies to the opcode; the limit of 15 comes from the size of the push.",
+    "Compressed keys are what make 15 keys fit."
+   ]
+  },
+  {
+   "q": "An input sequence is 0x00400008 in a version 2 transaction. What lock does it set?",
+   "options": [
+    "8 blocks",
+    "8 units of 512 seconds, that is 4,096 seconds",
+    "No lock: the type flag disables it"
+   ],
+   "answer": 1,
+   "level": "Apply",
+   "objective": "CO3",
+   "rationales": [
+    "Bit 22 is set, which selects units of 512 seconds.",
+    "The disable flag is bit 31, which is clear in this value."
+   ]
+  },
+  {
+   "q": "Which statement about OP_CHECKLOCKTIMEVERIFY in a script is correct?",
+   "options": [
+    "It sets the lock time of the transaction that contains the script",
+    "It fails the spend unless the spending transaction's lock time is of the same kind and at least as large as the script's number",
+    "It pauses the node until the time is reached"
+   ],
+   "answer": 1,
+   "level": "Understand",
+   "objective": "CO3",
+   "rationales": [
+    "It reads the lock time of the spending transaction; the spender sets it.",
+    "Nodes validate at once; a spend that is too early is simply invalid for now."
+   ]
+  },
+  {
+   "q": "Why can segregated witness be deployed as a soft fork?",
+   "options": [
+    "Old nodes see a witness program as an output anyone can spend and accept an empty input script, while new nodes require a valid witness",
+    "Because every node upgraded on the same day",
+    "Because the witness data is placed inside the transaction identifier"
+   ],
+   "answer": 0,
+   "level": "Understand",
+   "objective": "CO4",
+   "rationales": [
+    "Upgrades cannot be assumed to be simultaneous; the design lets old nodes follow the chain.",
+    "The point of the change is to leave the witness out of the identifier."
+   ]
+  },
+  {
+   "q": "A taproot output is spent with a witness of one element of 64 bytes. Which spend is it?",
+   "options": [
+    "A script path spend",
+    "A key path spend with the default hash type",
+    "An invalid spend, because a signature has 65 bytes"
+   ],
+   "answer": 1,
+   "level": "Apply",
+   "objective": "CO5",
+   "rationales": [
+    "A script path witness has at least two elements: the script and the control block.",
+    "A signature of 64 bytes implies the default hash type; 65 bytes carry the type byte."
+   ]
+  },
+  {
+   "q": "The block 775,072 inscription spend has a control block of 33 bytes. How many levels deep is its leaf?",
+   "options": [
+    "0, a tree with one leaf",
+    "1",
+    "33"
+   ],
+   "answer": 0,
+   "level": "Apply",
+   "objective": "CO5",
+   "rationales": [
+    "A control block of 33 bytes plus 32 for each level would be 65 bytes at depth 1.",
+    "The 33 bytes are the fixed part, not a depth."
+   ]
+  },
+  {
+   "q": "The chapter gives 7,760,000 seconds for three months. What is the exact figure for 90 days?",
+   "options": [
+    "7,776,000 seconds",
+    "7,200,000 seconds",
+    "7,862,400 seconds"
+   ],
+   "answer": 0,
+   "level": "Apply",
+   "objective": "CO6",
+   "rationales": [
+    "90 days of 86,400 seconds are 7,776,000; 7,200,000 is about 83.3 days.",
+    "That would be 91 days."
+   ]
+  }
+ ]
+}

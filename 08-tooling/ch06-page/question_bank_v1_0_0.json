@@ -1,0 +1,2687 @@
+[
+ {
+  "concept": "TransactionAnatomy",
+  "level": "Understand",
+  "q": "Why does the comparison with a land register fit Bitcoin better than the comparison with cash?",
+  "options": [
+   "Bitcoins are not handed over; a record kept by every full node is updated to say who controls them",
+   "Bitcoins are physical tokens like banknotes",
+   "A land register is also kept on a blockchain",
+   "Cash cannot be sent by email, but bitcoins can"
+  ],
+  "answer": 0,
+  "why": "Alice pays Bob by convincing full nodes to update their databases, exactly as a land register is updated."
+ },
+ {
+  "concept": "TransactionIdea",
+  "level": "Understand",
+  "q": "What are the three ideas a reader needs before the bytes of a transaction make sense?",
+  "options": [
+   "The price, the exchange and the wallet",
+   "The transaction as a request, the ownership record it changes, and the parts every transaction has",
+   "The miner, the block and the difficulty",
+   "The private key, the seed and the recovery code"
+  ],
+  "answer": 1,
+  "why": "A transaction is a request addressed to the record every full node keeps, built from a fixed set of parts."
+ },
+ {
+  "concept": "Transaction",
+  "level": "Understand",
+  "q": "Who is the audience of a transaction?",
+  "options": [
+   "Bob, who receives it by email",
+   "The miner who created the previous block",
+   "The full nodes, which check it and update their databases",
+   "The exchange where Alice bought her bitcoins"
+  ],
+  "answer": 2,
+  "why": "A transaction is the data Alice uses to convince full nodes; Bob learns of the payment from the shared record."
+ },
+ {
+  "concept": "Transaction",
+  "level": "Apply",
+  "q": "How many bytes long is Alice's serialized transaction?",
+  "code": "print(len(bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')))",
+  "options": [
+   "388",
+   "125",
+   "569",
+   "194"
+  ],
+  "answer": 3,
+  "why": "The 388 hexadecimal characters the listing prints are 194 bytes."
+ },
+ {
+  "concept": "OwnershipRecord",
+  "level": "Understand",
+  "q": "What does the record of a full node hold for each entry?",
+  "options": [
+   "A whole unspent output with its amount, its conditions and the height of its block",
+   "A balance per person",
+   "A list of addresses and their owners' names",
+   "A copy of every wallet file"
+  ],
+  "answer": 0,
+  "why": "Bitcoin Core stores every UTXO with essential metadata; there are no names and no balances."
+ },
+ {
+  "concept": "OwnershipRecord",
+  "level": "Apply",
+  "q": "A record maps 'Alice' to 100000. After the update that removes Alice and adds Bob with the same amount, what does the record hold?",
+  "code": "record = {'Alice': 100000}\nrecord.pop('Alice')\nrecord['Bob'] = 100000\nprint(record)",
+  "options": [
+   "{'Alice': 100000, 'Bob': 100000}",
+   "{'Bob': 100000}",
+   "{'Alice': 0, 'Bob': 100000}",
+   "{}"
+  ],
+  "answer": 1,
+  "why": "The spent entry is removed and the new one added, which is what a node does with outputs."
+ },
+ {
+  "concept": "TransactionParts",
+  "level": "Remember",
+  "q": "In what order are the top-level fields of an extended-format transaction serialized?",
+  "options": [
+   "Inputs, outputs, version, lock time, witness",
+   "Lock time, version, inputs, outputs",
+   "Version, marker, flag, inputs, outputs, witness structure, lock time",
+   "Version, inputs, witness, outputs, lock time"
+  ],
+  "answer": 2,
+  "why": "The marker and flag follow the version, the witness structure follows the outputs, and the lock time is last."
+ },
+ {
+  "concept": "TransactionParts",
+  "level": "Apply",
+  "q": "How many top-level fields does an extended-format transaction have?",
+  "code": "print(len(['version', 'marker', 'flag', 'inputs', 'outputs', 'witness structure', 'lock time']))",
+  "options": [
+   "5",
+   "4",
+   "8",
+   "7"
+  ],
+  "answer": 3,
+  "why": "Five fields plus the marker and the flag of the extended format."
+ },
+ {
+  "concept": "SerializationFormats",
+  "level": "Understand",
+  "q": "Why does it matter which bytes a transaction is serialized into?",
+  "options": [
+   "Because the identifier is a hash of the bytes, so two serializations would give two identifiers",
+   "Because the bytes are shown to users",
+   "Because a longer serialization pays a lower fee",
+   "Because the wallet stores transactions as text"
+  ],
+  "answer": 0,
+  "why": "Commitments are hashes over the serialization, so every node must agree on the exact bytes."
+ },
+ {
+  "concept": "SerializedTransaction",
+  "level": "Understand",
+  "q": "Why is Bitcoin Core's serialization format special?",
+  "options": [
+   "It is the only format the law recognises",
+   "It is the format used to make commitments to transactions and to relay them across the network",
+   "It compresses transactions with a dictionary",
+   "It is encrypted with the sender's key"
+  ],
+  "answer": 1,
+  "why": "Other programs may use another format as long as they transmit the same data, but commitments and relay use this one."
+ },
+ {
+  "concept": "SerializedTransaction",
+  "level": "Apply",
+  "q": "The listing prints 388 hexadecimal characters. How many bytes is that?",
+  "code": "print(len('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000') // 2)",
+  "options": [
+   "388",
+   "776",
+   "194",
+   "97"
+  ],
+  "answer": 2,
+  "why": "Two hexadecimal characters encode one byte."
+ },
+ {
+  "concept": "ExtendedFormat",
+  "level": "Remember",
+  "q": "What values must the marker and the flag have in the extended format today?",
+  "options": [
+   "Marker 0x01 and flag 0x00",
+   "Both 0xff",
+   "Both 0x00",
+   "Marker 0x00 and flag 0x01"
+  ],
+  "answer": 3,
+  "why": "The marker must be zero and the flag nonzero; in the current protocol the flag is always one."
+ },
+ {
+  "concept": "ExtendedFormat",
+  "level": "Apply",
+  "q": "What are the fifth and sixth bytes of Alice's transaction, in hexadecimal?",
+  "code": "tx = bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')\nprint(tx[4:6].hex())",
+  "options": [
+   "0001",
+   "0100",
+   "ffff",
+   "0000"
+  ],
+  "answer": 0,
+  "why": "The marker 00 and the flag 01 follow the four version bytes."
+ },
+ {
+  "concept": "LegacyFormat",
+  "level": "Understand",
+  "q": "When must the legacy format still be used on the network?",
+  "options": [
+   "Never; it was retired in 2017",
+   "For any transaction with an empty witness structure, which spends no witness programs",
+   "For every transaction above 1,000 bytes",
+   "For coinbase transactions only"
+  ],
+  "answer": 1,
+  "why": "A transaction without witnesses must not carry the marker and flag."
+ },
+ {
+  "concept": "LegacyFormat",
+  "level": "Apply",
+  "q": "How many bytes does Alice's transaction have in the legacy serialization, without marker, flag and witness?",
+  "code": "tx = bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')\nlegacy = tx[:4] + tx[6:-71] + tx[-4:]\nprint(len(legacy))",
+  "options": [
+   "194",
+   "122",
+   "125",
+   "127"
+  ],
+  "answer": 2,
+  "why": "Two bytes of marker and flag and 67 bytes of witness structure are removed from 194."
+ },
+ {
+  "concept": "PsbtFormat",
+  "level": "Understand",
+  "q": "What is the PSBT format for?",
+  "options": [
+   "Compressing transactions for the peer-to-peer network",
+   "Storing transactions in the UTXO database",
+   "Replacing the legacy format on the network",
+   "Letting an untrusted program build a transaction template that trusted programs with the keys verify and complete"
+  ],
+  "answer": 3,
+  "why": "PSBT carries metadata a signer needs, which makes it less compact than the standard serialization."
+ },
+ {
+  "concept": "PsbtFormat",
+  "level": "Apply",
+  "q": "What do the first four bytes of a PSBT, 70736274, spell?",
+  "code": "print(bytes.fromhex('70736274').decode())",
+  "options": [
+   "psbt",
+   "bip1",
+   "tx00",
+   "sign"
+  ],
+  "answer": 0,
+  "why": "The magic bytes spell psbt, followed by a 0xff separator."
+ },
+ {
+  "concept": "ByteMap",
+  "level": "Understand",
+  "q": "What does a byte map show that a list of fields hides?",
+  "options": [
+   "The fee of the transaction",
+   "How unequal the fields are: scripts and signatures take most of the bytes",
+   "The names of the sender and the recipient",
+   "The block the transaction is in"
+  ],
+  "answer": 1,
+  "why": "Drawn to scale, the two output scripts and the witness item dominate the map."
+ },
+ {
+  "concept": "ByteMap",
+  "level": "Apply",
+  "q": "At which byte offset does the witness structure of Alice's transaction begin, after a 42-byte inputs field and a 75-byte outputs field?",
+  "code": "print(4 + 1 + 1 + 42 + 75)",
+  "options": [
+   "122",
+   "190",
+   "123",
+   "48"
+  ],
+  "answer": 2,
+  "why": "Version 4, marker 1, flag 1, inputs 42 and outputs 75 come first."
+ },
+ {
+  "concept": "VersionMarkerFlag",
+  "level": "Understand",
+  "q": "Why do six bytes deserve a branch of their own?",
+  "options": [
+   "They carry the fee",
+   "They identify the sender",
+   "They are the only bytes a miner reads",
+   "They decide which rules apply to everything that follows and which layout the bytes are in"
+  ],
+  "answer": 3,
+  "why": "The version gates BIP68 and BIP112; the marker and flag select the extended layout."
+ },
+ {
+  "concept": "VersionField",
+  "level": "Understand",
+  "q": "Why is a new constraint tied to a new version number rather than applied to every transaction?",
+  "options": [
+   "So that presigned transactions of the old version stay valid",
+   "Because old versions are deleted from the chain",
+   "Because the version field is otherwise unused",
+   "To make transactions larger"
+  ],
+  "answer": 0,
+  "why": "A rule that applied to existing versions could invalidate transactions that cannot be re-signed."
+ },
+ {
+  "concept": "VersionOne",
+  "level": "Remember",
+  "q": "How is the version 1 written in the first four bytes of a transaction?",
+  "options": [
+   "00000001",
+   "01000000",
+   "0001",
+   "ffffffff"
+  ],
+  "answer": 1,
+  "why": "The integer is little-endian: the least significant byte comes first."
+ },
+ {
+  "concept": "VersionOne",
+  "level": "Apply",
+  "q": "What integer do the bytes 01000000 encode when read little-endian?",
+  "code": "print(int.from_bytes(bytes.fromhex('01000000'), 'little'))",
+  "options": [
+   "16777216",
+   "256",
+   "1",
+   "0"
+  ],
+  "answer": 2,
+  "why": "Read least significant byte first, the bytes give 1."
+ },
+ {
+  "concept": "VersionTwo",
+  "level": "Understand",
+  "q": "What did BIP68 change for version 2 transactions?",
+  "options": [
+   "The amount field became 16 bytes",
+   "The lock time was removed",
+   "Outputs may be negative",
+   "A sequence below 2 to the 31 is read as a relative timelock"
+  ],
+  "answer": 3,
+  "why": "Version 1 transactions are unaffected; only version 2 and higher get the new reading of the sequence."
+ },
+ {
+  "concept": "VersionTwo",
+  "level": "Apply",
+  "q": "A version 2 transaction has an input with sequence 30. What does the rule say?",
+  "code": "version, seq = 2, 30\nprint('relative timelock' if version >= 2 and seq < 2 ** 31 else 'no timelock')",
+  "options": [
+   "relative timelock",
+   "no timelock",
+   "final",
+   "replaceable"
+  ],
+  "answer": 0,
+  "why": "Version 2 or higher and a sequence below 2 to the 31 means a relative timelock."
+ },
+ {
+  "concept": "VersionThree",
+  "level": "Understand",
+  "q": "What kind of change is the version 3 proposal?",
+  "options": [
+   "A hard fork",
+   "A relay policy change, not a consensus change",
+   "A new serialization format",
+   "A change to the subsidy"
+  ],
+  "answer": 1,
+  "why": "BIP431 restricts how a version 3 transaction is relayed; validity in a block is unchanged."
+ },
+ {
+  "concept": "VersionThree",
+  "level": "Apply",
+  "q": "Bitcoin Core builds version 2 by default and treats up to version 3 as standard. What is the difference between the two numbers?",
+  "code": "current, max_standard = 2, 3\nprint(max_standard - current)",
+  "options": [
+   "0",
+   "2",
+   "1",
+   "3"
+  ],
+  "answer": 2,
+  "why": "The transaction class names 2 as current, the policy header 3 as the highest standard version."
+ },
+ {
+  "concept": "PresignedTransaction",
+  "level": "Understand",
+  "q": "Why can a presigned transaction be lost for ever if a new rule applies to it?",
+  "options": [
+   "Presigned transactions expire after a year",
+   "The network deletes old signatures",
+   "Full nodes refuse any transaction older than a block",
+   "The holder may no longer have the keys to sign a replacement"
+  ],
+  "answer": 3,
+  "why": "Months or years later the private keys may be gone, so the invalidated transaction cannot be re-signed."
+ },
+ {
+  "concept": "PresignedTransaction",
+  "level": "Apply",
+  "q": "A transaction was presigned as version 1 and a new rule applies from version 2. Is it still valid?",
+  "code": "presigned, rule_from = 1, 2\nprint('still valid' if presigned < rule_from else 'at risk')",
+  "options": [
+   "still valid",
+   "at risk",
+   "invalid",
+   "replaced"
+  ],
+  "answer": 0,
+  "why": "The rule applies only to version 2 or higher, so the version 1 transaction is untouched."
+ },
+ {
+  "concept": "MarkerAndFlag",
+  "level": "Understand",
+  "q": "What do the two bytes after the version buy the format?",
+  "options": [
+   "A checksum of the transaction",
+   "Backward compatibility: old parsers cannot misread the extended layout and new parsers recognise it",
+   "A record of the fee rate",
+   "Room for a second version number"
+  ],
+  "answer": 1,
+  "why": "The zero marker is impossible as a legacy input count, so it is a safe signal."
+ },
+ {
+  "concept": "MarkerByte",
+  "level": "Understand",
+  "q": "Why is the marker a zero byte?",
+  "options": [
+   "Because zero is the first version number",
+   "Because zero bytes compress well",
+   "Because a legacy parser would read it as a count of zero inputs, which no transaction can have",
+   "Because the flag must be nonzero"
+  ],
+  "answer": 2,
+  "why": "The value is impossible under the old format, so the old format can never be confused with the new."
+ },
+ {
+  "concept": "MarkerByte",
+  "level": "Apply",
+  "q": "Alice's transaction has 00 at byte 4 and 01 at byte 5. Which format is it in?",
+  "code": "tx = bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')\nprint('extended format' if tx[4] == 0 and tx[5] != 0 else 'legacy format')",
+  "options": [
+   "legacy format",
+   "PSBT",
+   "unknown",
+   "extended format"
+  ],
+  "answer": 3,
+  "why": "A zero marker followed by a nonzero flag announces the extended format."
+ },
+ {
+  "concept": "FlagByte",
+  "level": "Understand",
+  "q": "Why does BIP144 give the flag a byte of its own instead of using a single zero marker?",
+  "options": [
+   "A single zero byte would make an empty test transaction look like new serialized data, and the flag can be a bit vector for later data",
+   "Because every field must be two bytes",
+   "Because the flag holds the fee",
+   "Because old nodes require it"
+  ],
+  "answer": 0,
+  "why": "BIP144 states both reasons in its rationale."
+ },
+ {
+  "concept": "FlagByte",
+  "level": "Apply",
+  "q": "Read as a bit vector, which bits of the flag 0x01 are set?",
+  "code": "flag = 0x01\nprint([bit for bit in range(8) if flag >> bit & 1])",
+  "options": [
+   "[1]",
+   "[0]",
+   "[0, 1]",
+   "[7]"
+  ],
+  "answer": 1,
+  "why": "Only bit 0 is set; the other seven are reserved."
+ },
+ {
+  "concept": "Inputs",
+  "level": "Understand",
+  "q": "Why are the inputs where a transaction connects to the past?",
+  "options": [
+   "They contain the sender's balance",
+   "They hold the block height",
+   "They point at outputs of earlier transactions, from which a node reads the amount and the conditions",
+   "They store the recipient's address"
+  ],
+  "answer": 2,
+  "why": "An input states no amount; everything is read from the output its outpoint names."
+ },
+ {
+  "concept": "InputList",
+  "level": "Understand",
+  "q": "Why does the inputs field begin with a count?",
+  "options": [
+   "To tell the miner the fee",
+   "Because the count is hashed separately",
+   "To limit a transaction to one input",
+   "The inputs that follow have no terminator, so a parser must know how many to read"
+  ],
+  "answer": 3,
+  "why": "The count is a compactSize integer; a parser reads it before anything else in the field."
+ },
+ {
+  "concept": "InputCount",
+  "level": "Remember",
+  "q": "What is the minimum number of inputs a transaction may have?",
+  "options": [
+   "One",
+   "Zero",
+   "Two",
+   "Any number, including none"
+  ],
+  "answer": 0,
+  "why": "Bitcoin Core refuses an empty input list with bad-txns-vin-empty."
+ },
+ {
+  "concept": "InputCount",
+  "level": "Apply",
+  "q": "What is the input count stored at byte 6 of Alice's transaction?",
+  "code": "tx = bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')\nprint(tx[6])",
+  "options": [
+   "2",
+   "1",
+   "0",
+   "131"
+  ],
+  "answer": 1,
+  "why": "After the version, the marker and the flag comes the count 1."
+ },
+ {
+  "concept": "CompactSize",
+  "level": "Understand",
+  "q": "How many bytes does a compactSize integer use for the value 253?",
+  "options": [
+   "One",
+   "Two",
+   "Three: the prefix 0xfd and two bytes",
+   "Nine"
+  ],
+  "answer": 2,
+  "why": "Values from 253 to 0xffff take the prefix 0xfd followed by a 16-bit number."
+ },
+ {
+  "concept": "CompactSize",
+  "level": "Apply",
+  "q": "What is the compactSize encoding of 65536, in hexadecimal?",
+  "code": "n = 65536\nprint((b'\\xfe' + n.to_bytes(4, 'little')).hex())",
+  "options": [
+   "fd000001",
+   "ff0000010000000000",
+   "010000",
+   "fe00000100"
+  ],
+  "answer": 3,
+  "why": "65536 is above 0xffff, so it takes the 0xfe prefix and four little-endian bytes."
+ },
+ {
+  "concept": "VarintVarieties",
+  "level": "Understand",
+  "q": "Which name is used for the variable-length integers of transaction serialization, and why the full name?",
+  "options": [
+   "compactSize, because Bitcoin Core's VarInts and the header's Compact encoding are different things",
+   "varint, because all three encodings are the same",
+   "Compact, because it is the shortest",
+   "VarInts, because the UTXO database uses it"
+  ],
+  "answer": 0,
+  "why": "Three encodings share a family resemblance; only compactSize is used in transactions."
+ },
+ {
+  "concept": "VarintVarieties",
+  "level": "Apply",
+  "q": "Sort the three encodings' names: compactSize, VarInts, Compact.",
+  "code": "print(sorted({'compactSize': 'transactions', 'VarInts': 'UTXO database', 'Compact': 'nBits'}))",
+  "options": [
+   "['compactSize', 'Compact', 'VarInts']",
+   "['Compact', 'VarInts', 'compactSize']",
+   "['VarInts', 'Compact', 'compactSize']",
+   "['Compact', 'compactSize', 'VarInts']"
+  ],
+  "answer": 1,
+  "why": "Capital letters sort before lower-case ones in Python's default order."
+ },
+ {
+  "concept": "OutpointField",
+  "level": "Understand",
+  "q": "What does an input say about the amount it spends?",
+  "options": [
+   "It states the amount in its last four bytes",
+   "It states half the amount; the rest is fee",
+   "Nothing directly: the amount is read from the output the outpoint names, and all of it is spent",
+   "It states the amount in the input script"
+  ],
+  "answer": 2,
+  "why": "A node obtains the amount, the conditions and the confirmation data from the previous output."
+ },
+ {
+  "concept": "Outpoint",
+  "level": "Remember",
+  "q": "How long is an outpoint, and what does it hold?",
+  "options": [
+   "32 bytes: a txid",
+   "40 bytes: a txid and an 8-byte amount",
+   "4 bytes: an index",
+   "36 bytes: a 32-byte txid and a 4-byte output index"
+  ],
+  "answer": 3,
+  "why": "Each input has exactly one outpoint pointing at one previous output."
+ },
+ {
+  "concept": "Outpoint",
+  "level": "Apply",
+  "q": "What output index does Alice's outpoint carry?",
+  "code": "tx = bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')\noutpoint = tx[7:43]\nprint(int.from_bytes(outpoint[32:], 'little'))",
+  "options": [
+   "1",
+   "0",
+   "2",
+   "4294967295"
+  ],
+  "answer": 0,
+  "why": "The four bytes after the txid read as 1: the second output of the previous transaction."
+ },
+ {
+  "concept": "PreviousTxid",
+  "level": "Understand",
+  "q": "Why does changing one byte of a previous transaction break every outpoint that names it?",
+  "options": [
+   "Outpoints are stored by block height",
+   "The txid is a hash of the bytes, so it changes completely",
+   "The index would no longer fit",
+   "Outpoints expire when a transaction is edited"
+  ],
+  "answer": 1,
+  "why": "A digest changes unpredictably with any change to its input."
+ },
+ {
+  "concept": "PreviousTxid",
+  "level": "Apply",
+  "q": "How many bytes is the identifier in an outpoint?",
+  "code": "prev = bytes.fromhex('eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a')\nprint(len(prev))",
+  "options": [
+   "64",
+   "20",
+   "32",
+   "16"
+  ],
+  "answer": 2,
+  "why": "A double SHA-256 digest is 32 bytes; 64 hexadecimal characters display it."
+ },
+ {
+  "concept": "OutputIndex",
+  "level": "Understand",
+  "q": "Why does an outpoint need an index as well as a txid?",
+  "options": [
+   "The index is the fee",
+   "The index is the block height",
+   "The txid alone is too short",
+   "A transaction may have several outputs, and the index chooses one"
+  ],
+  "answer": 3,
+  "why": "Naming a transaction alone would be ambiguous and would let a spender claim all its outputs."
+ },
+ {
+  "concept": "OutputIndex",
+  "level": "Apply",
+  "q": "What value do the index bytes 01000000 encode?",
+  "code": "print(int.from_bytes(bytes.fromhex('01000000'), 'little'))",
+  "options": [
+   "1",
+   "16777216",
+   "0",
+   "100"
+  ],
+  "answer": 0,
+  "why": "Little-endian: the first byte is the least significant."
+ },
+ {
+  "concept": "DoubleSpendRule",
+  "level": "Understand",
+  "q": "What does the rule against double spending forbid?",
+  "options": [
+   "Spending an output before it has 100 confirmations",
+   "Any output being spent more than once within a valid blockchain",
+   "Paying two recipients in one transaction",
+   "Spending more than 21 million bitcoins"
+  ],
+  "answer": 1,
+  "why": "Alice cannot use the same previous output to pay both Bob and Carol."
+ },
+ {
+  "concept": "DoubleSpendRule",
+  "level": "Apply",
+  "q": "A node has already seen outpoint '4ac54180:1' spent. A new transaction names it. What does the check say?",
+  "code": "spent = {'4ac54180:1'}\noutpoint = '4ac54180:1'\nprint('refused: already spent' if outpoint in spent else 'accepted')",
+  "options": [
+   "accepted",
+   "pending",
+   "refused: already spent",
+   "replaced"
+  ],
+  "answer": 2,
+  "why": "The outpoint is in the spent set, so the transaction is refused."
+ },
+ {
+  "concept": "ConflictingTransactions",
+  "level": "Understand",
+  "q": "When do two transactions conflict?",
+  "options": [
+   "When they pay the same address",
+   "When they are in the same block",
+   "When they have the same fee",
+   "When they each try to spend the same previous output"
+  ],
+  "answer": 3,
+  "why": "Only one of two conflicting transactions can be included in a valid blockchain."
+ },
+ {
+  "concept": "ConflictingTransactions",
+  "level": "Apply",
+  "q": "Two input lists share the outpoint '4ac54180:1'. Do the transactions conflict?",
+  "code": "a = ['4ac54180:1']\nb = ['4ac54180:1', 'f4184fc5:0']\nprint('conflict' if set(a) & set(b) else 'compatible')",
+  "options": [
+   "conflict",
+   "compatible",
+   "duplicate",
+   "invalid"
+  ],
+  "answer": 0,
+  "why": "A shared outpoint is exactly the definition of a conflict."
+ },
+ {
+  "concept": "UtxoDatabase",
+  "level": "Understand",
+  "q": "What does Bitcoin Core do to its UTXO database when a new block arrives?",
+  "options": [
+   "Deletes everything and rebuilds from the genesis block",
+   "Removes the outputs the block's transactions spend and adds the outputs they create",
+   "Adds the block header only",
+   "Stores the block's transactions as text"
+  ],
+  "answer": 1,
+  "why": "The database is a running set of unspent outputs with metadata such as the confirmation height."
+ },
+ {
+  "concept": "UtxoDatabase",
+  "level": "Apply",
+  "q": "After Alice's transaction, how many entries remain of the two outputs of the previous transaction plus her two new outputs?",
+  "code": "utxo = {'4ac54180:0': 18210494, '4ac54180:1': 100000}\nutxo.pop('4ac54180:1')\nutxo['46620030:0'] = 20000\nutxo['46620030:1'] = 75000\nprint(len(utxo))",
+  "options": [
+   "4",
+   "2",
+   "3",
+   "1"
+  ],
+  "answer": 2,
+  "why": "One entry is removed and two are added: three remain."
+ },
+ {
+  "concept": "ByteOrder",
+  "level": "Understand",
+  "q": "Why did bitcoin-cli reject the txid copied straight from Alice's outpoint?",
+  "options": [
+   "The txid was too short",
+   "The transaction had been pruned",
+   "The command only accepts block hashes",
+   "The outpoint stores the digest in internal byte order and the command expects display order, the reverse"
+  ],
+  "answer": 3,
+  "why": "Reversing the 32 bytes gave the identifier the node recognised."
+ },
+ {
+  "concept": "Digest",
+  "level": "Remember",
+  "q": "How long is the digest Bitcoin uses as a transaction identifier?",
+  "options": [
+   "32 bytes",
+   "20 bytes",
+   "64 bytes",
+   "16 bytes"
+  ],
+  "answer": 0,
+  "why": "Double SHA-256 gives 32 bytes whatever the input's length."
+ },
+ {
+  "concept": "Digest",
+  "level": "Apply",
+  "q": "How many bytes does SHA-256 of SHA-256 of a short string give?",
+  "code": "import hashlib\nprint(len(hashlib.sha256(hashlib.sha256(b'a serialized transaction').digest()).digest()))",
+  "options": [
+   "64",
+   "32",
+   "20",
+   "256"
+  ],
+  "answer": 1,
+  "why": "The output length of SHA-256 is fixed at 32 bytes."
+ },
+ {
+  "concept": "InternalByteOrder",
+  "level": "Understand",
+  "q": "Which data is in internal byte order?",
+  "options": [
+   "Amounts and sequence numbers",
+   "Addresses shown to users",
+   "Digests as they appear within transactions and blocks and as they are hashed",
+   "The hexadecimal an explorer prints"
+  ],
+  "answer": 2,
+  "why": "The authors also call it little-endian; only the 32-byte digests have the two spellings."
+ },
+ {
+  "concept": "InternalByteOrder",
+  "level": "Apply",
+  "q": "Reverse the display-order identifier 4ac54180...33aeb into internal order. What are its first four hexadecimal characters?",
+  "code": "d = bytes.fromhex('4ac541802679866935a19d4f40728bb89204d0cac90d85f3a51a19278fe33aeb')\nprint(d[::-1].hex()[:4])",
+  "options": [
+   "4ac5",
+   "aeb3",
+   "eb3e",
+   "eb3a"
+  ],
+  "answer": 3,
+  "why": "The last byte eb becomes the first; the internal form begins eb3a."
+ },
+ {
+  "concept": "DisplayByteOrder",
+  "level": "Understand",
+  "q": "What is the practical lesson about byte order for developers?",
+  "options": [
+   "Developers must remember to reverse the bytes of identifiers they show to users",
+   "Users must type identifiers backwards",
+   "Explorers use internal order",
+   "Block hashes are not reversed"
+  ],
+  "answer": 0,
+  "why": "The sidebar calls the split an unintentional consequence of an early design decision."
+ },
+ {
+  "concept": "DisplayByteOrder",
+  "level": "Apply",
+  "q": "Apply the fold-tac pipeline to eb3ae38f...c54a. What are the first eight characters of the result?",
+  "code": "internal = 'eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a'\npairs = [internal[i:i + 2] for i in range(0, 64, 2)]\nprint(''.join(reversed(pairs))[:8])",
+  "options": [
+   "eb3ae38f",
+   "4ac54180",
+   "a45c1408",
+   "f83ea3be"
+  ],
+  "answer": 1,
+  "why": "Reversing the two-character pairs gives the display form 4ac54180...."
+ },
+ {
+  "concept": "InputScriptField",
+  "level": "Understand",
+  "q": "Why is Alice's input script empty?",
+  "options": [
+   "Her transaction has no signature",
+   "The input script is never used any more",
+   "Her input spends a native segwit output, whose witness goes in the witness structure instead",
+   "Empty scripts pay no fee"
+  ],
+  "answer": 2,
+  "why": "The field is a remnant of the legacy format; segwit moved the witness out of it."
+ },
+ {
+  "concept": "InputScript",
+  "level": "Understand",
+  "q": "What does the 107-byte legacy input script of the example contain?",
+  "options": [
+   "Two signatures",
+   "An address and an amount",
+   "The previous transaction",
+   "A push of a 72-byte signature and a push of a 33-byte public key"
+  ],
+  "answer": 3,
+  "why": "0x48 pushes 72 bytes, then 0x21 pushes 33: one plus 72 plus one plus 33 is 107."
+ },
+ {
+  "concept": "InputScript",
+  "level": "Apply",
+  "q": "The legacy input script begins with 0x48. How many bytes does that opcode push?",
+  "code": "print(0x48)",
+  "options": [
+   "72",
+   "48",
+   "107",
+   "33"
+  ],
+  "answer": 0,
+  "why": "Opcodes 1 to 75 push that many following bytes; 0x48 is 72."
+ },
+ {
+  "concept": "LengthPrefix",
+  "level": "Understand",
+  "q": "Why can a parser not find the sequence field without the script length prefix?",
+  "options": [
+   "The sequence is encrypted",
+   "An input script may contain any bytes and has no terminator, so only the prefix says where it ends",
+   "The prefix holds the sequence",
+   "Scripts always end with 0xff"
+  ],
+  "answer": 1,
+  "why": "A wrong prefix shifts every later field."
+ },
+ {
+  "concept": "LengthPrefix",
+  "level": "Apply",
+  "q": "What script length does the prefix byte 0x6b announce?",
+  "code": "print(0x6b)",
+  "options": [
+   "6",
+   "11",
+   "107",
+   "171"
+  ],
+  "answer": 2,
+  "why": "0x6b is 107 in decimal."
+ },
+ {
+  "concept": "SequenceField",
+  "level": "Understand",
+  "q": "Which three meanings has the sequence field carried?",
+  "options": [
+   "A fee, a timestamp and a checksum",
+   "An input index, an output index and a block height",
+   "A public key, a signature and a hash",
+   "A transaction version counter for replacement, the BIP125 replaceability signal, and a BIP68 relative timelock"
+  ],
+  "answer": 3,
+  "why": "The same four bytes have been read three ways over time."
+ },
+ {
+  "concept": "SequenceReplacement",
+  "level": "Understand",
+  "q": "What was the original purpose of the sequence field?",
+  "options": [
+   "To let later versions of a transaction replace earlier ones as candidates for confirmation",
+   "To number the inputs",
+   "To record the block height",
+   "To signal a hard fork"
+  ],
+  "answer": 0,
+  "why": "The sequence number tracked the version of the transaction."
+ },
+ {
+  "concept": "SequenceNumber",
+  "level": "Remember",
+  "q": "What is the sequence value Bitcoin Core calls final?",
+  "options": [
+   "0x00000000",
+   "0xffffffff",
+   "0xfffffffe",
+   "0x80000000"
+  ],
+  "answer": 1,
+  "why": "The maximal value opts out of replacement, of the BIP125 signal and of any timelock."
+ },
+ {
+  "concept": "SequenceNumber",
+  "level": "Apply",
+  "q": "What integer is the sequence ffffffff?",
+  "code": "print(int.from_bytes(bytes.fromhex('ffffffff'), 'little'))",
+  "options": [
+   "2147483648",
+   "65535",
+   "4294967295",
+   "4294967296"
+  ],
+  "answer": 2,
+  "why": "Four bytes of 0xff are 2 to the 32 minus 1."
+ },
+ {
+  "concept": "SetupTransaction",
+  "level": "Understand",
+  "q": "Why must the refund be signed before the setup transaction is broadcast?",
+  "options": [
+   "Because the refund has a higher sequence",
+   "Because miners require it",
+   "Because the setup is a coinbase",
+   "Otherwise one party could lock the other's money by refusing to cooperate"
+  ],
+  "answer": 3,
+  "why": "The refund is what makes depositing into a two-signature output safe."
+ },
+ {
+  "concept": "SetupTransaction",
+  "level": "Apply",
+  "q": "Alice and Bob each deposit 50,000 satoshis. What does the multisignature output hold?",
+  "code": "deposits = {'Alice': 50000, 'Bob': 50000}\nprint(sum(deposits.values()))",
+  "options": [
+   "100000",
+   "50000",
+   "150000",
+   "0"
+  ],
+  "answer": 0,
+  "why": "The setup output holds both deposits together."
+ },
+ {
+  "concept": "PaymentChannel",
+  "level": "Understand",
+  "q": "Why does a payment channel move value many times with one confirmed transaction?",
+  "options": [
+   "Because miners mine every version",
+   "Every version is a valid signed transaction, but only the final one is broadcast",
+   "Because the setup is repeated each round",
+   "Because the refund is broadcast first"
+  ],
+  "answer": 1,
+  "why": "The chain records the setup and the settlement whatever the number of rounds."
+ },
+ {
+  "concept": "PaymentChannel",
+  "level": "Apply",
+  "q": "After the refund, two rounds and the final version, how many versions of the spend exist?",
+  "code": "versions = [0, 1, 2, 0xffffffff]\nprint(len(versions))",
+  "options": [
+   "3",
+   "2",
+   "4",
+   "5"
+  ],
+  "answer": 2,
+  "why": "The refund, one version per round and the final version."
+ },
+ {
+  "concept": "ReplacementAttack",
+  "level": "Understand",
+  "q": "Why was the original replacement scheme disabled?",
+  "options": [
+   "Miners refused to run it",
+   "It required a hard fork",
+   "It was replaced by PSBT",
+   "Unlimited free replacements let an attacker burden every relaying node for almost nothing"
+  ],
+  "answer": 3,
+  "why": "Each replacement consumed the bandwidth of all relaying nodes at no cost to the attacker."
+ },
+ {
+  "concept": "ReplacementAttack",
+  "level": "Apply",
+  "q": "1,000 replacements a minute of 200 bytes each reach 50,000 nodes. How many gigabytes a minute is that?",
+  "code": "print(50000 * 1000 * 200 // 10 ** 9)",
+  "options": [
+   "10",
+   "20",
+   "1",
+   "100"
+  ],
+  "answer": 0,
+  "why": "Ten gigabytes a minute across the network for about 200 kilobytes of the attacker's own bandwidth."
+ },
+ {
+  "concept": "ReplaceByFee",
+  "level": "Understand",
+  "q": "What compromise let replacement return to Bitcoin Core?",
+  "options": [
+   "Replacement was limited to coinbase transactions",
+   "Replacement became opt-in, signalled through the sequence field",
+   "Only miners may replace",
+   "Replacement requires a hard fork"
+  ],
+  "answer": 1,
+  "why": "Users who objected could ignore unconfirmed transactions that carried the signal."
+ },
+ {
+  "concept": "OptInRbf",
+  "level": "Understand",
+  "q": "What must a replacement pay under replace-by-fee?",
+  "options": [
+   "The same fee as the original",
+   "Nothing, if it has a higher sequence",
+   "More total fee than the original and enough extra to pay for its own relay",
+   "A fee to the original sender"
+  ],
+  "answer": 2,
+  "why": "A higher fee rate alone is not enough; the replacement must also pay for its bandwidth."
+ },
+ {
+  "concept": "OptInRbf",
+  "level": "Apply",
+  "q": "An original pays 5,000 satoshis and a replacement 8,000, both 143 vbytes. Does the replacement qualify?",
+  "code": "old_fee, new_fee, size = 5000, 8000, 143\nprint(new_fee > old_fee and new_fee / size > old_fee / size)",
+  "options": [
+   "False",
+   "None",
+   "5000",
+   "True"
+  ],
+  "answer": 3,
+  "why": "It pays more in total and has the higher rate."
+ },
+ {
+  "concept": "Bip125Signal",
+  "level": "Remember",
+  "q": "Which sequence values signal replaceability under BIP125?",
+  "options": [
+   "Any value below 0xfffffffe",
+   "Only 0x00000000",
+   "Only 0xffffffff",
+   "Any value above 2 to the 31"
+  ],
+  "answer": 0,
+  "why": "At least two below the maximum: 0xfffffffd and lower."
+ },
+ {
+  "concept": "Bip125Signal",
+  "level": "Apply",
+  "q": "Does a sequence of 0xfffffffe signal replaceability?",
+  "code": "print(0xfffffffe <= 0xfffffffd)",
+  "options": [
+   "True",
+   "False",
+   "0xfffffffe",
+   "None"
+  ],
+  "answer": 1,
+  "why": "0xfffffffe is only one below the maximum, so it does not signal."
+ },
+ {
+  "concept": "RelativeTimelock",
+  "level": "Understand",
+  "q": "What is a relative timelock relative to?",
+  "options": [
+   "The genesis block",
+   "The current date",
+   "The confirmation of the output being spent",
+   "The transaction's own confirmation"
+  ],
+  "answer": 2,
+  "why": "The spent output must have aged by the lock before the spend can be confirmed."
+ },
+ {
+  "concept": "Bip68Timelock",
+  "level": "Understand",
+  "q": "An input has a relative timelock of 30 blocks. How many blocks must lie strictly between the output's block and the confirming block?",
+  "options": [
+   "30",
+   "31",
+   "0",
+   "29"
+  ],
+  "answer": 3,
+  "why": "The authors' example: a lock of 30 allows confirmation with at least 29 blocks between."
+ },
+ {
+  "concept": "Bip68Timelock",
+  "level": "Apply",
+  "q": "The output was confirmed at 774,958 and the lock is 30 blocks. What is the earliest confirming height?",
+  "code": "print(774958 + 30)",
+  "options": [
+   "774988",
+   "774959",
+   "774987",
+   "775072"
+  ],
+  "answer": 0,
+  "why": "774,988 leaves 29 blocks strictly between."
+ },
+ {
+  "concept": "TypeFlag",
+  "level": "Remember",
+  "q": "What does a set type flag mean?",
+  "options": [
+   "The lock counts blocks",
+   "The lock counts units of 512 seconds",
+   "The timelock is disabled",
+   "The transaction is replaceable"
+  ],
+  "answer": 1,
+  "why": "Bit 22 chooses time; clear, the value counts blocks."
+ },
+ {
+  "concept": "TypeFlag",
+  "level": "Apply",
+  "q": "What is the value of the type flag, 1 shifted left 22, in hexadecimal?",
+  "code": "print(hex(1 << 22))",
+  "options": [
+   "0x800000",
+   "0x200000",
+   "0x400000",
+   "0x80000000"
+  ],
+  "answer": 2,
+  "why": "1 shifted left 22 is 0x400000."
+ },
+ {
+  "concept": "DisableFlag",
+  "level": "Understand",
+  "q": "What does the disable flag let a transaction do?",
+  "options": [
+   "Skip the signature check",
+   "Spend a coinbase early",
+   "Use version 1 rules",
+   "Mix inputs with a relative timelock and inputs without one"
+  ],
+  "answer": 3,
+  "why": "An input with bit 31 set has no relative timelock even in a version 2 transaction."
+ },
+ {
+  "concept": "DisableFlag",
+  "level": "Apply",
+  "q": "Is the disable flag set in the sequence 0x7fffffff?",
+  "code": "print(bool(0x7fffffff & (1 << 31)))",
+  "options": [
+   "False",
+   "True",
+   "0x7fffffff",
+   "1"
+  ],
+  "answer": 0,
+  "why": "0x7fffffff has bit 31 clear, so it is read as a lock."
+ },
+ {
+  "concept": "TimelockMask",
+  "level": "Understand",
+  "q": "How many bits of the sequence carry the relative timelock value?",
+  "options": [
+   "32",
+   "16",
+   "22",
+   "8"
+  ],
+  "answer": 1,
+  "why": "The value is masked with 0x0000ffff, so the maximum is 65,535."
+ },
+ {
+  "concept": "TimelockMask",
+  "level": "Apply",
+  "q": "What is the largest relative timelock value, 0xffff, in decimal?",
+  "code": "print(0xffff)",
+  "options": [
+   "65536",
+   "4096",
+   "65535",
+   "32767"
+  ],
+  "answer": 2,
+  "why": "Sixteen bits give at most 65,535."
+ },
+ {
+  "concept": "Outputs",
+  "level": "Understand",
+  "q": "What two things does every output state?",
+  "options": [
+   "A sender and a recipient",
+   "A fee and a timestamp",
+   "A txid and an index",
+   "An amount of satoshis and the script giving the conditions for spending it"
+  ],
+  "answer": 3,
+  "why": "Outputs are where value and conditions are written down."
+ },
+ {
+  "concept": "OutputList",
+  "level": "Understand",
+  "q": "How is the fee of a transaction determined?",
+  "options": [
+   "It is the difference between the inputs' previous amounts and the sum of the outputs",
+   "It is stored in a fee field",
+   "It is the first output",
+   "It is the lock time"
+  ],
+  "answer": 0,
+  "why": "No field holds the fee; the miner may claim whatever the inputs are worth beyond the outputs."
+ },
+ {
+  "concept": "OutputCount",
+  "level": "Remember",
+  "q": "What is the minimum output count?",
+  "options": [
+   "Zero",
+   "One",
+   "Two",
+   "Three"
+  ],
+  "answer": 1,
+  "why": "Bitcoin Core refuses an empty output list with bad-txns-vout-empty."
+ },
+ {
+  "concept": "OutputCount",
+  "level": "Apply",
+  "q": "What is the output count byte at offset 48 of Alice's transaction?",
+  "code": "tx = bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')\nprint(tx[48])",
+  "options": [
+   "1",
+   "0",
+   "2",
+   "3"
+  ],
+  "answer": 2,
+  "why": "Alice's transaction has two outputs: the payment and the change."
+ },
+ {
+  "concept": "AmountField",
+  "level": "Remember",
+  "q": "How is an output's amount encoded?",
+  "options": [
+   "A 4-byte unsigned integer of bitcoins",
+   "A decimal string",
+   "A compactSize integer",
+   "An 8-byte signed little-endian integer of satoshis"
+  ],
+  "answer": 3,
+  "why": "Bitcoin Core calls the field value and types it as a 64-bit signed integer."
+ },
+ {
+  "concept": "AmountField",
+  "level": "Apply",
+  "q": "What amount do the bytes 204e000000000000 encode?",
+  "code": "print(int.from_bytes(bytes.fromhex('204e000000000000'), 'little'))",
+  "options": [
+   "20000",
+   "2000",
+   "75000",
+   "8270"
+  ],
+  "answer": 0,
+  "why": "The payment to Bob is 20,000 satoshis."
+ },
+ {
+  "concept": "Satoshi",
+  "level": "Remember",
+  "q": "How many satoshis are in one bitcoin?",
+  "options": [
+   "1,000,000",
+   "100,000,000",
+   "100,000",
+   "21,000,000"
+  ],
+  "answer": 1,
+  "why": "The ratio is Bitcoin Core's constant COIN."
+ },
+ {
+  "concept": "Satoshi",
+  "level": "Apply",
+  "q": "Express 75,000 satoshis in bitcoin.",
+  "code": "print(75000 / 100_000_000)",
+  "options": [
+   "0.0075",
+   "7.5e-05",
+   "0.00075",
+   "0.075"
+  ],
+  "answer": 2,
+  "why": "Divide by one hundred million."
+ },
+ {
+  "concept": "AmountRange",
+  "level": "Understand",
+  "q": "Why does the amount need a range check if it is a 64-bit integer?",
+  "options": [
+   "Because amounts are floating point",
+   "Because fees must be positive",
+   "Because 64 bits are too few for 21 million bitcoins",
+   "The integer can hold negative values and sums that wrap around, which the 2010 overflow exploited"
+  ],
+  "answer": 3,
+  "why": "Bitcoin Core refuses negative, oversized and overflowing totals and cites CVE-2010-5139."
+ },
+ {
+  "concept": "AmountRange",
+  "level": "Apply",
+  "q": "How many satoshis is the consensus maximum of 21 million bitcoins?",
+  "code": "print(21_000_000 * 100_000_000)",
+  "options": [
+   "2100000000000000",
+   "21000000000000",
+   "2100000000000",
+   "210000000000000000"
+  ],
+  "answer": 0,
+  "why": "2.1 quadrillion satoshis, Bitcoin Core's MAX_MONEY."
+ },
+ {
+  "concept": "DustPolicy",
+  "level": "Understand",
+  "q": "Why is an uneconomical output a cost to everyone?",
+  "options": [
+   "It makes blocks larger",
+   "Its owner has no reason to spend it, so every full node keeps it in the UTXO set for ever",
+   "It raises the fee of every other transaction",
+   "It must be mined twice"
+  ],
+  "answer": 1,
+  "why": "Every UTXO makes it slightly harder to run a full node."
+ },
+ {
+  "concept": "UneconomicalOutput",
+  "level": "Understand",
+  "q": "When is an output uneconomical?",
+  "options": [
+   "When it is below one bitcoin",
+   "When it pays a public key",
+   "When its value is less than the extra fee that spending it adds",
+   "When it has no script"
+  ],
+  "answer": 2,
+  "why": "A zero-value output is always uneconomical; others become so when fee rates rise."
+ },
+ {
+  "concept": "UneconomicalOutput",
+  "level": "Apply",
+  "q": "Spending a 68-vbyte input at 10 satoshis per vbyte costs how much, and is a 500-satoshi output worth spending?",
+  "code": "cost = 68 * 10\nprint((cost, 500 < cost))",
+  "options": [
+   "(680, False)",
+   "(68, True)",
+   "(500, True)",
+   "(680, True)"
+  ],
+  "answer": 3,
+  "why": "680 satoshis of fee exceed the output's 500, so it is uneconomical at that rate."
+ },
+ {
+  "concept": "DustLimit",
+  "level": "Remember",
+  "q": "What dust limit do many programs simply assume?",
+  "options": [
+   "546 satoshis",
+   "1,000 satoshis",
+   "294 satoshis",
+   "1 satoshi"
+  ],
+  "answer": 0,
+  "why": "Bitcoin Core's own policy is more complicated; 546 is the legacy P2PKH figure."
+ },
+ {
+  "concept": "DustLimit",
+  "level": "Apply",
+  "q": "Compute Bitcoin Core's dust threshold for a legacy output: 34 plus 148 bytes at 3,000 satoshis per kilobyte.",
+  "code": "print((34 + 148) * 3000 // 1000)",
+  "options": [
+   "294",
+   "546",
+   "182",
+   "330"
+  ],
+  "answer": 1,
+  "why": "182 bytes at 3 satoshis a byte is 546."
+ },
+ {
+  "concept": "DataCarrierOutput",
+  "level": "Understand",
+  "q": "Why may an OP_RETURN output have a value of zero?",
+  "options": [
+   "It is spent by the miner",
+   "It is a coinbase output",
+   "It can never be spent, so nodes need not keep it and no satoshis are stranded",
+   "Its value is paid as fee"
+  ],
+  "answer": 2,
+  "why": "OP_RETURN makes the script fail at once, so the output never enters the UTXO set."
+ },
+ {
+  "concept": "DataCarrierOutput",
+  "level": "Apply",
+  "q": "What is the opcode byte 0x6a in decimal?",
+  "code": "print(0x6a)",
+  "options": [
+   "81",
+   "96",
+   "16",
+   "106"
+  ],
+  "answer": 3,
+  "why": "0x6a, 106, is OP_RETURN."
+ },
+ {
+  "concept": "OutputScriptField",
+  "level": "Understand",
+  "q": "What does the output script contain?",
+  "options": [
+   "The conditions that will need to be fulfilled in order to spend the bitcoins",
+   "The sender's signature",
+   "The transaction's fee",
+   "The block height"
+  ],
+  "answer": 0,
+  "why": "Parsing and using scripts is the subject of the following chapter."
+ },
+ {
+  "concept": "OutputScript",
+  "level": "Understand",
+  "q": "What do the bytes 5120 at the start of Alice's first output script mean?",
+  "options": [
+   "A 51-byte script",
+   "The number 1 followed by a 32-byte push: a segwit version 1 (taproot) program",
+   "OP_RETURN with data",
+   "A legacy pay-to-public-key-hash script"
+  ],
+  "answer": 1,
+  "why": "0x51 is the number 1 and 0x20 pushes 32 bytes."
+ },
+ {
+  "concept": "OutputScript",
+  "level": "Apply",
+  "q": "How long is Alice's second output script, whose length byte follows the second amount?",
+  "code": "tx = bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')\nlen0 = tx[57]\nprint(tx[58 + len0 + 8])",
+  "options": [
+   "34",
+   "20",
+   "22",
+   "25"
+  ],
+  "answer": 2,
+  "why": "The change output pays a 22-byte version 0 script: 0014 and twenty bytes."
+ },
+ {
+  "concept": "ScriptSizeLimit",
+  "level": "Remember",
+  "q": "How large may an output script be for a later transaction to spend it?",
+  "options": [
+   "520 bytes",
+   "Any size",
+   "100 bytes",
+   "10,000 bytes or smaller"
+  ],
+  "answer": 3,
+  "why": "There is no explicit limit at creation, but a spend is refused above 10,000 bytes."
+ },
+ {
+  "concept": "ScriptSizeLimit",
+  "level": "Apply",
+  "q": "Would a 10,000-byte script fit a block by weight, at four weight units a byte?",
+  "code": "print(10000 * 4 <= 4000000)",
+  "options": [
+   "True",
+   "False",
+   "40000",
+   "4000000"
+  ],
+  "answer": 0,
+  "why": "40,000 weight is far below the 4,000,000 limit."
+ },
+ {
+  "concept": "AnyoneCanSpend",
+  "level": "Understand",
+  "q": "Why are anyone-can-spend scripts useful to protocol developers?",
+  "options": [
+   "They pay the highest fees",
+   "Upgrades take such a script and add constraints, which old nodes accept because they would have accepted any spend",
+   "They cannot be mined",
+   "They are the standard templates"
+  ],
+  "answer": 1,
+  "why": "Segwit outputs are anyone-can-spend to old nodes; new nodes require a witness."
+ },
+ {
+  "concept": "AnyoneCanSpend",
+  "level": "Apply",
+  "q": "What is the length of the empty output script, and is 0x51 the opcode OP_TRUE?",
+  "code": "print((len(b''), 0x51 == 81))",
+  "options": [
+   "(1, True)",
+   "(0, False)",
+   "(0, True)",
+   "(81, True)"
+  ],
+  "answer": 2,
+  "why": "The empty script has length zero; OP_TRUE is 0x51, which is 81."
+ },
+ {
+  "concept": "StandardOutput",
+  "level": "Understand",
+  "q": "What are standard transaction outputs?",
+  "options": [
+   "The outputs of a coinbase",
+   "Outputs above the dust limit",
+   "Outputs paying exactly one bitcoin",
+   "The few output script templates Bitcoin Core's relay policy allows"
+  ],
+  "answer": 3,
+  "why": "A non-standard output is valid under consensus but is not relayed by default nodes."
+ },
+ {
+  "concept": "StandardOutput",
+  "level": "Apply",
+  "q": "Sort the template names P2PKH, P2SH, P2WPKH, P2WSH, P2TR. Which comes first?",
+  "code": "print(sorted(['P2PKH', 'P2SH', 'P2WPKH', 'P2WSH', 'P2TR'])[0])",
+  "options": [
+   "P2PKH",
+   "P2SH",
+   "P2TR",
+   "P2WPKH"
+  ],
+  "answer": 0,
+  "why": "In the default string order P2PKH sorts before the others."
+ },
+ {
+  "concept": "Witnesses",
+  "level": "Understand",
+  "q": "Why did where a witness is stored turn out to matter?",
+  "options": [
+   "Witnesses are shown to users",
+   "Witnesses in the input script were hashed into the txid, which made identifiers malleable",
+   "Witnesses change the fee",
+   "Witnesses are stored in the block header"
+  ],
+  "answer": 1,
+  "why": "Segregated witness leaves the witness out of the identifier to remove the problems."
+ },
+ {
+  "concept": "WitnessIdea",
+  "level": "Understand",
+  "q": "What is the common role of a signature in an input script and a value solving a toy script?",
+  "options": [
+   "Both are public keys",
+   "Both are fees",
+   "Both are data that let a node verify an authorisation without trusting anyone",
+   "Both are hashes"
+  ],
+  "answer": 2,
+  "why": "The role is named witness so that the question of where it goes can be asked."
+ },
+ {
+  "concept": "Witness",
+  "level": "Understand",
+  "q": "What is the witness for the script 2 OP_ADD 4 OP_EQUAL?",
+  "options": [
+   "The value 4",
+   "The value 6",
+   "A signature",
+   "The value 2"
+  ],
+  "answer": 3,
+  "why": "Adding 2 to the witness must give 4."
+ },
+ {
+  "concept": "Witness",
+  "level": "Apply",
+  "q": "Does the witness 2 solve the script 2 OP_ADD 4 OP_EQUAL?",
+  "code": "witness = 2\nprint(witness + 2 == 4)",
+  "options": [
+   "True",
+   "False",
+   "4",
+   "2"
+  ],
+  "answer": 0,
+  "why": "Two plus two equals four."
+ },
+ {
+  "concept": "SignatureWitness",
+  "level": "Understand",
+  "q": "In a signature scheme, what is the public key?",
+  "options": [
+   "The solution to the equation",
+   "A public identifier of secret data that only its holder can use to solve the equation",
+   "The secret itself",
+   "A hash of the transaction"
+  ],
+  "answer": 1,
+  "why": "The solution is the signature; it is the witness in a script with OP_CHECKSIG."
+ },
+ {
+  "concept": "SignatureWitness",
+  "level": "Apply",
+  "q": "Which role is the witness in the triple identifier, solver, witness?",
+  "code": "problem = {'identifier': 'public key', 'solver': 'the holder of the private key', 'witness': 'signature'}\nprint(problem['witness'])",
+  "options": [
+   "public key",
+   "the holder of the private key",
+   "signature",
+   "OP_CHECKSIG"
+  ],
+  "answer": 2,
+  "why": "The signature is the datum the spender supplies."
+ },
+ {
+  "concept": "ContractProtocol",
+  "level": "Understand",
+  "q": "Why do contract protocols sign transactions out of order?",
+  "options": [
+   "Because miners require it",
+   "Because signatures expire",
+   "To reduce the fee",
+   "So that each party is protected by a refund before committing funds"
+  ],
+  "answer": 3,
+  "why": "The payment channel and the two-party deposit are the examples."
+ },
+ {
+  "concept": "ContractProtocol",
+  "level": "Apply",
+  "q": "How many stages does the card game have: setup, refund, rounds, final?",
+  "code": "print(len(['setup transaction', 'refund transaction', 'rounds of the game', 'final transaction']))",
+  "options": [
+   "4",
+   "3",
+   "2",
+   "5"
+  ],
+  "answer": 0,
+  "why": "Four stages, each a transaction that is signed and held."
+ },
+ {
+  "concept": "MalleabilityProblems",
+  "level": "Understand",
+  "q": "How do all three malleability problems end for the party that presigned?",
+  "options": [
+   "The fee is lost",
+   "A presigned transaction becomes invalid because the identifier it spends has changed",
+   "The block is rejected",
+   "The private key leaks"
+  ],
+  "answer": 1,
+  "why": "Bob loses his payment to Carol; Alice loses her refund."
+ },
+ {
+  "concept": "CircularDependency",
+  "level": "Understand",
+  "q": "Why could Alice and Bob not build the refund before signing the deposit, in the legacy format?",
+  "options": [
+   "The refund needs a higher fee",
+   "Refunds are not allowed before confirmation",
+   "The refund needs the deposit's txid, which depends on the deposit's signatures",
+   "The deposit has no outputs until mined"
+  ],
+  "answer": 2,
+  "why": "If they know the signatures, one of them can broadcast the deposit first."
+ },
+ {
+  "concept": "CircularDependency",
+  "level": "Apply",
+  "q": "Does the chain of needs refund -> deposit txid -> deposit signatures close a circle?",
+  "code": "needs = {'refund': 'txid of the deposit', 'txid of the deposit': 'signatures of the deposit'}\nprint(needs[needs['refund']] == 'signatures of the deposit')",
+  "options": [
+   "False",
+   "txid of the deposit",
+   "None",
+   "True"
+  ],
+  "answer": 3,
+  "why": "The refund depends on signatures that should come last."
+ },
+ {
+  "concept": "ThirdPartyMalleability",
+  "level": "Understand",
+  "q": "What can a third party change about Alice's legacy transaction without invalidating it?",
+  "options": [
+   "The encoding of a push in the input script, which changes the txid",
+   "The amount of an output",
+   "The recipient",
+   "The lock time"
+  ],
+  "answer": 0,
+  "why": "The signature cannot cover the input script that contains it."
+ },
+ {
+  "concept": "ThirdPartyMalleability",
+  "level": "Apply",
+  "q": "Three encodings of a push give three legacy bodies. How many distinct identifiers result?",
+  "code": "import hashlib\nh256 = lambda b: hashlib.sha256(hashlib.sha256(b).digest()).digest()\nbody = bytes.fromhex('01000000') + bytes(36)\nids = {h256(body + bytes([len(v) // 2]) + bytes.fromhex(v) + bytes.fromhex('ffffffff')).hex() for v in ('52', '0102', '4c0102')}\nprint(len(ids))",
+  "options": [
+   "1",
+   "3",
+   "2",
+   "0"
+  ],
+  "answer": 1,
+  "why": "Different bytes hash to different digests."
+ },
+ {
+  "concept": "PushEncoding",
+  "level": "Understand",
+  "q": "Why does OP_2 and OP_PUSH1 0x02 give the same script result but a different txid?",
+  "options": [
+   "The interpreter rejects OP_2",
+   "The txid is computed over the outputs only",
+   "The interpreter treats them alike while the hash function hashes different bytes",
+   "Push opcodes are not hashed"
+  ],
+  "answer": 2,
+  "why": "Any of the forms changes the legacy serialization."
+ },
+ {
+  "concept": "PushEncoding",
+  "level": "Apply",
+  "q": "What are the bytes of OP_PUSHDATA1 pushing the single byte 0x02, in hexadecimal?",
+  "code": "print(bytes([0x4c, 0x01, 0x02]).hex())",
+  "options": [
+   "0102",
+   "52",
+   "020200",
+   "4c0102"
+  ],
+  "answer": 3,
+  "why": "OP_PUSHDATA1 is 0x4c, then a one-byte length, then the data."
+ },
+ {
+  "concept": "SecondPartyMalleability",
+  "level": "Understand",
+  "q": "Why can a counterparty change the txid even with canonical encodings?",
+  "options": [
+   "A signer chooses a random number, and a different number gives a different valid signature",
+   "The counterparty can change the amount",
+   "Signatures are not checked",
+   "The txid ignores the outputs"
+  ],
+  "answer": 0,
+  "why": "Like a handwritten signature, each signing looks slightly different."
+ },
+ {
+  "concept": "SecondPartyMalleability",
+  "level": "Apply",
+  "q": "Two signatures of the same data with different random numbers. Are they different?",
+  "code": "nonce_a, nonce_b = 1234, 5678\nprint(nonce_a != nonce_b)",
+  "options": [
+   "False",
+   "True",
+   "1234",
+   "None"
+  ],
+  "answer": 1,
+  "why": "A different random number yields a different signature and, in the legacy format, a different txid."
+ },
+ {
+  "concept": "WantedMalleability",
+  "level": "Understand",
+  "q": "What is an example of wanted malleability?",
+  "options": [
+   "A stranger re-encoding a push",
+   "Bob re-signing the deposit",
+   "Alice using a signature hash to let Bob add an input and help pay the fee",
+   "A miner changing the lock time"
+  ],
+  "answer": 2,
+  "why": "The sender permits the change; that is why the authors say unwanted for the other kind."
+ },
+ {
+  "concept": "WantedMalleability",
+  "level": "Apply",
+  "q": "Which of the three kinds is permitted: unwanted third-party, unwanted second-party, sender-permitted (sighash)?",
+  "code": "kinds = {'unwanted third-party': False, 'unwanted second-party': False, 'sender-permitted (sighash)': True}\nprint([k for k in kinds if kinds[k]][0])",
+  "options": [
+   "unwanted third-party",
+   "unwanted second-party",
+   "none",
+   "sender-permitted (sighash)"
+  ],
+  "answer": 3,
+  "why": "Only the sighash-based mutation is wanted."
+ },
+ {
+  "concept": "SegregatedWitness",
+  "level": "Understand",
+  "q": "What did segwit change besides where the witness is stored?",
+  "options": [
+   "The measure of transaction size, from bytes to weight",
+   "The number of outputs allowed",
+   "The subsidy",
+   "The hash function"
+  ],
+  "answer": 0,
+  "why": "The weight unit discounts witness bytes."
+ },
+ {
+  "concept": "Segwit",
+  "level": "Understand",
+  "q": "What does an empty input script achieve under segwit?",
+  "options": [
+   "It makes the transaction smaller",
+   "It keeps witnesses from affecting the txid, removing circular dependencies and both malleabilities",
+   "It hides the sender",
+   "It removes the need for signatures"
+  ],
+  "answer": 1,
+  "why": "The identifier covers the legacy serialization only."
+ },
+ {
+  "concept": "Segwit",
+  "level": "Apply",
+  "q": "Hashing the legacy serialization of Alice's transaction twice gives her txid. What are its first eight characters?",
+  "code": "import hashlib\ntx = bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')\nlegacy = tx[:4] + tx[6:-71] + tx[-4:]\nd = hashlib.sha256(hashlib.sha256(legacy).digest()).digest()\nprint(d[::-1].hex()[:8])",
+  "options": [
+   "f7cdbc7c",
+   "eb3ae38f",
+   "46620030",
+   "4ac54180"
+  ],
+  "answer": 2,
+  "why": "The identifier 46620030... is the double SHA-256 of the 125 legacy bytes, reversed."
+ },
+ {
+  "concept": "HardFork",
+  "level": "Understand",
+  "q": "What makes a change a hard fork?",
+  "options": [
+   "It adds a new opcode",
+   "It changes the subsidy",
+   "It is proposed in a BIP",
+   "Older full nodes would reject blocks that newer nodes accept"
+  ],
+  "answer": 3,
+  "why": "A hard fork requires every node to upgrade or be left on another chain."
+ },
+ {
+  "concept": "HardFork",
+  "level": "Apply",
+  "q": "Old rules accept the set A, new rules accept A plus blocks old nodes reject. Hard or soft?",
+  "code": "old = {'legacy blocks'}\nnew = {'legacy blocks', 'blocks old nodes reject'}\nprint('hard fork' if new - old else 'soft fork')",
+  "options": [
+   "hard fork",
+   "soft fork",
+   "no fork",
+   "both"
+  ],
+  "answer": 0,
+  "why": "New rules accept something old rules reject: a hard fork."
+ },
+ {
+  "concept": "SoftFork",
+  "level": "Understand",
+  "q": "What must a soft fork never do?",
+  "options": [
+   "Reject a block old nodes accept",
+   "Accept a block that nodes without the change would consider invalid",
+   "Change relay policy",
+   "Use a new version number"
+  ],
+  "answer": 1,
+  "why": "Newer nodes may reject more but accept no more."
+ },
+ {
+  "concept": "SoftFork",
+  "level": "Apply",
+  "q": "New rules accept a subset of what old rules accept. Hard or soft?",
+  "code": "old = {'any spend of a segwit output', 'other blocks'}\nnew = {'other blocks'}\nprint('soft fork' if new <= old else 'hard fork')",
+  "options": [
+   "hard fork",
+   "no fork",
+   "soft fork",
+   "both"
+  ],
+  "answer": 2,
+  "why": "A subset of the old acceptances is a soft fork."
+ },
+ {
+  "concept": "WitnessProgram",
+  "level": "Understand",
+  "q": "What is the segwit output script template?",
+  "options": [
+   "OP_RETURN followed by data",
+   "A public key and OP_CHECKSIG",
+   "Any script longer than 40 bytes",
+   "A number 0 to 16 followed by 2 to 40 bytes of data"
+  ],
+  "answer": 3,
+  "why": "The number is the version and the data the witness program."
+ },
+ {
+  "concept": "WitnessProgram",
+  "level": "Apply",
+  "q": "Alice's first output script begins 51 20. What witness version and program length does it declare?",
+  "code": "s = bytes.fromhex('51203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068')\nprint((s[0] - 0x50, s[1]))",
+  "options": [
+   "(1, 32)",
+   "(0, 20)",
+   "(81, 32)",
+   "(1, 34)"
+  ],
+  "answer": 0,
+  "why": "0x51 is the number 1 and 0x20 is a push of 32 bytes."
+ },
+ {
+  "concept": "WitnessStructure",
+  "level": "Understand",
+  "q": "Where is the witness structure serialized?",
+  "options": [
+   "Before the version",
+   "After the outputs and before the lock time",
+   "Inside each input",
+   "In the block header"
+  ],
+  "answer": 1,
+  "why": "It holds one stack per input and is excluded from the txid."
+ },
+ {
+  "concept": "WitnessStructure",
+  "level": "Apply",
+  "q": "In the table of terms, what pair does segwit use for authorization and authentication?",
+  "code": "rows = [('whitepaper', 'public key', 'signature'), ('legacy', 'output script', 'input script'), ('segwit', 'witness program', 'witness structure')]\nprint(rows[2][1:])",
+  "options": [
+   "('output script', 'input script')",
+   "('public key', 'signature')",
+   "('witness program', 'witness structure')",
+   "('witness structure', 'witness program')"
+  ],
+  "answer": 2,
+  "why": "Witness program for authorization, witness structure for authentication."
+ },
+ {
+  "concept": "WitnessSerialization",
+  "level": "Understand",
+  "q": "Why has the witness structure no count of its own?",
+  "options": [
+   "Witnesses are never counted",
+   "The count is in the flag",
+   "The lock time holds the count",
+   "There is one witness stack for every input, so the input count implies it"
+  ],
+  "answer": 3,
+  "why": "A parser reuses the input count when it reaches the witness."
+ },
+ {
+  "concept": "WitnessStack",
+  "level": "Understand",
+  "q": "What does a witness stack begin with?",
+  "options": [
+   "A count of its items",
+   "A signature",
+   "The input's outpoint",
+   "A version byte"
+  ],
+  "answer": 0,
+  "why": "Each item is then prefixed by its own compactSize length."
+ },
+ {
+  "concept": "WitnessStack",
+  "level": "Apply",
+  "q": "What are the input count (byte 6) and the item count of the first witness stack (byte 123) of Alice's transaction?",
+  "code": "tx = bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')\nprint((tx[6], tx[123]))",
+  "options": [
+   "(1, 65)",
+   "(1, 1)",
+   "(2, 1)",
+   "(1, 0)"
+  ],
+  "answer": 1,
+  "why": "One input, one witness item."
+ },
+ {
+  "concept": "WitnessItem",
+  "level": "Understand",
+  "q": "How is a witness item delimited?",
+  "options": [
+   "By a terminating zero byte",
+   "By a fixed size of 65 bytes",
+   "By a compactSize length prefix",
+   "By the lock time"
+  ],
+  "answer": 2,
+  "why": "Items of any size are possible, each with its own prefix."
+ },
+ {
+  "concept": "WitnessItem",
+  "level": "Apply",
+  "q": "How long is Alice's single witness item, whose length byte is at offset 124?",
+  "code": "tx = bytes.fromhex('01000000000101eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a0100000000ffffffff02204e0000000000002251203b41daba4c9ace578369740f15e5ec880c28279ee7f51b07dca69c7061e07068f8240100000000001600147752c165ea7be772b2c0acb7f4d6047ae6f4768e0141cf5efe2d8ef13ed0af21d4f4cb82422d6252d70324f6f4576b727b7d918e521c00b51be739df2f899c49dc267c0ad280aca6dab0d2fa2b42a45182fc83e817130100000000')\nprint(tx[124])",
+  "options": [
+   "64",
+   "72",
+   "33",
+   "65"
+  ],
+  "answer": 3,
+  "why": "A 64-byte Schnorr signature plus a one-byte sighash flag."
+ },
+ {
+  "concept": "LegacyInputWitness",
+  "level": "Remember",
+  "q": "What is the witness stack of a legacy input in a segwit transaction?",
+  "options": [
+   "A single count byte of zero",
+   "Absent entirely",
+   "The input script copied",
+   "A count of one and an empty item"
+  ],
+  "answer": 0,
+  "why": "Legacy inputs have no witness items, so their stack is 0x00."
+ },
+ {
+  "concept": "LegacyInputWitness",
+  "level": "Apply",
+  "q": "Two stacks: one empty and one with a signature and a public key. What are their item counts?",
+  "code": "stacks = [[], ['signature', 'public key']]\nprint([len(s) for s in stacks])",
+  "options": [
+   "[1, 2]",
+   "[0, 2]",
+   "[0, 1]",
+   "[2, 0]"
+  ],
+  "answer": 1,
+  "why": "The legacy input's stack has zero items; the other has two."
+ },
+ {
+  "concept": "LockTimeAndCoinbase",
+  "level": "Understand",
+  "q": "What theme do the lock time and the coinbase share?",
+  "options": [
+   "Both carry the fee",
+   "Both are optional",
+   "Time and height as conditions on validity",
+   "Both are signed by the miner"
+  ],
+  "answer": 2,
+  "why": "A lock time says the earliest block; the maturity rule says how long coinbase outputs must wait."
+ },
+ {
+  "concept": "LockTime",
+  "level": "Understand",
+  "q": "Since when has the lock time been a consensus rule rather than a mining policy?",
+  "options": [
+   "Since segwit in 2017",
+   "Since BIP68",
+   "Since the genesis block",
+   "Since block 31,000, Bitcoin's earliest known soft fork"
+  ],
+  "answer": 3,
+  "why": "Before that height it was only enforced by the policy for choosing transactions to mine."
+ },
+ {
+  "concept": "LockTimeField",
+  "level": "Remember",
+  "q": "What does a lock time of zero mean?",
+  "options": [
+   "The transaction is eligible for inclusion in any block",
+   "The transaction is invalid",
+   "The transaction must wait one block",
+   "The transaction is a coinbase"
+  ],
+  "answer": 0,
+  "why": "Alice's transaction ends with four zero bytes."
+ },
+ {
+  "concept": "LockTimeField",
+  "level": "Apply",
+  "q": "What integer do the last four bytes 00000000 encode?",
+  "code": "print(int.from_bytes(bytes.fromhex('00000000'), 'little'))",
+  "options": [
+   "1",
+   "0",
+   "4",
+   "255"
+  ],
+  "answer": 1,
+  "why": "Zero: any block."
+ },
+ {
+  "concept": "HeightLock",
+  "level": "Understand",
+  "q": "A lock time of 123,456 allows inclusion from which block?",
+  "options": [
+   "Block 123,457 only",
+   "Any block before 123,456",
+   "Block 123,456 or any later block",
+   "Block 500,000,000"
+  ],
+  "answer": 2,
+  "why": "A value below 500,000,000 is a height, and the block's height must equal it or be higher."
+ },
+ {
+  "concept": "HeightLock",
+  "level": "Apply",
+  "q": "Is a lock time of 123,456 satisfied by block 123,456?",
+  "code": "lt, h = 123456, 123456\nprint(lt < 500_000_000 and h >= lt)",
+  "options": [
+   "False",
+   "123456",
+   "None",
+   "True"
+  ],
+  "answer": 3,
+  "why": "The height equals the lock time, which is allowed."
+ },
+ {
+  "concept": "TimeLock",
+  "level": "Understand",
+  "q": "How is a lock time of 500,000,000 or more read?",
+  "options": [
+   "As an epoch time, compared with the block's median time past",
+   "As a block height",
+   "As a number of satoshis",
+   "As a sequence value"
+  ],
+  "answer": 0,
+  "why": "Epoch time counts seconds since 1970-01-01 UTC."
+ },
+ {
+  "concept": "TimeLock",
+  "level": "Apply",
+  "q": "Is the lock time 1675559245 a height or a time?",
+  "code": "lt = 1675559245\nprint('epoch time' if lt >= 500_000_000 else 'block height')",
+  "options": [
+   "block height",
+   "epoch time",
+   "invalid",
+   "any block"
+  ],
+  "answer": 1,
+  "why": "It is above the 500,000,000 threshold."
+ },
+ {
+  "concept": "MedianTimePast",
+  "level": "Understand",
+  "q": "Why are time locks compared with the median time past rather than a block's own timestamp?",
+  "options": [
+   "The median is always earlier",
+   "Block timestamps are not stored",
+   "A single timestamp is chosen by one miner; the median of eleven is much harder to move",
+   "The median is the current time"
+  ],
+  "answer": 2,
+  "why": "BIP113 made the median the endpoint of lock-time calculations."
+ },
+ {
+  "concept": "MedianTimePast",
+  "level": "Apply",
+  "q": "What is the median of the eleven times 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11?",
+  "code": "print(sorted([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])[5])",
+  "options": [
+   "5",
+   "7",
+   "5.5",
+   "6"
+  ],
+  "answer": 3,
+  "why": "The sixth of eleven sorted values is the median."
+ },
+ {
+  "concept": "CoinbaseTransaction",
+  "level": "Understand",
+  "q": "Why are all the rules that limit creation of bitcoins rules about the coinbase?",
+  "options": [
+   "The coinbase is the only transaction that creates bitcoins",
+   "The coinbase pays the fees",
+   "The coinbase has no outputs",
+   "The coinbase is signed by every node"
+  ],
+  "answer": 0,
+  "why": "The subsidy schedule, the output sum and the maturity are all enforced on it."
+ },
+ {
+  "concept": "Coinbase",
+  "level": "Remember",
+  "q": "What did older documentation call the coinbase transaction?",
+  "options": [
+   "A setup transaction",
+   "A generation transaction",
+   "A refund transaction",
+   "A witness transaction"
+  ],
+  "answer": 1,
+  "why": "Not to be confused with the company of the same name."
+ },
+ {
+  "concept": "Coinbase",
+  "level": "Apply",
+  "q": "How many defining properties are listed: first in the block, created by the miner, claims fees and subsidy?",
+  "code": "print(len(['the first transaction in the block', 'created by the miner', 'claims the fees and the subsidy']))",
+  "options": [
+   "2",
+   "4",
+   "3",
+   "1"
+  ],
+  "answer": 2,
+  "why": "Three properties define the coinbase's role."
+ },
+ {
+  "concept": "NullOutpoint",
+  "level": "Remember",
+  "q": "What outpoint must a coinbase input carry?",
+  "options": [
+   "The previous block's hash and index 0",
+   "Any unspent output",
+   "Its own txid",
+   "A txid of all zeros and the output index 0xffffffff"
+  ],
+  "answer": 3,
+  "why": "The null outpoint prevents the coinbase from referencing a previous output."
+ },
+ {
+  "concept": "NullOutpoint",
+  "level": "Apply",
+  "q": "What is the maximal output index 0xffffffff in decimal?",
+  "code": "print(0xffffffff)",
+  "options": [
+   "4294967295",
+   "2147483647",
+   "65535",
+   "4294967296"
+  ],
+  "answer": 0,
+  "why": "Four bytes of 0xff."
+ },
+ {
+  "concept": "CoinbaseField",
+  "level": "Remember",
+  "q": "How long may the coinbase field be?",
+  "options": [
+   "Exactly 4 bytes",
+   "At least 2 and at most 100 bytes",
+   "Up to 10,000 bytes",
+   "Any length"
+  ],
+  "answer": 1,
+  "why": "Bitcoin Core refuses other lengths with bad-cb-length."
+ },
+ {
+  "concept": "CoinbaseField",
+  "level": "Apply",
+  "q": "A coinbase field begins 03 e0 e6 0b. What block height does the three-byte push encode?",
+  "code": "field = bytes.fromhex('03e0e60b')\nprint(int.from_bytes(field[1:4], 'little'))",
+  "options": [
+   "781008",
+   "3",
+   "780000",
+   "224"
+  ],
+  "answer": 2,
+  "why": "BIP34 puts the height first; e0e60b little-endian is 780,000."
+ },
+ {
+  "concept": "BlockSubsidy",
+  "level": "Understand",
+  "q": "How does the subsidy change over time?",
+  "options": [
+   "It grows with the fee rate",
+   "It is fixed at 6.25 BTC",
+   "It halves every block",
+   "It starts at 50 BTC and halves every 210,000 blocks, rounded down to the satoshi"
+  ],
+  "answer": 3,
+  "why": "Bitcoin Core shifts 50 times COIN right once per halving."
+ },
+ {
+  "concept": "BlockSubsidy",
+  "level": "Apply",
+  "q": "What is the subsidy at block 840,000, in bitcoins?",
+  "code": "print(((50 * 100_000_000) >> (840_000 // 210_000)) / 100_000_000)",
+  "options": [
+   "3.125",
+   "6.25",
+   "1.5625",
+   "12.5"
+  ],
+  "answer": 0,
+  "why": "The fourth halving leaves 3.125 bitcoins."
+ },
+ {
+  "concept": "BlockReward",
+  "level": "Understand",
+  "q": "What is the block reward?",
+  "options": [
+   "The subsidy alone",
+   "The fees of the block's transactions plus the subsidy, as a ceiling on the coinbase's outputs",
+   "The largest fee in the block",
+   "The sum of all outputs in the block"
+  ],
+  "answer": 1,
+  "why": "A miner may claim less, never more."
+ },
+ {
+  "concept": "BlockReward",
+  "level": "Apply",
+  "q": "Fees of 5,000, 12,000 and 3,000 satoshis plus a subsidy of 312,500,000. What is the reward?",
+  "code": "print(5000 + 12000 + 3000 + 312_500_000)",
+  "options": [
+   "312500000",
+   "20000",
+   "312520000",
+   "312520000000"
+  ],
+  "answer": 2,
+  "why": "The sum is 312,520,000 satoshis."
+ },
+ {
+  "concept": "MaturityRule",
+  "level": "Remember",
+  "q": "How many confirmations must a coinbase have before its outputs can be spent?",
+  "options": [
+   "6",
+   "1",
+   "210,000",
+   "100"
+  ],
+  "answer": 3,
+  "why": "Bitcoin Core's COINBASE_MATURITY is 100; younger outputs are immature."
+ },
+ {
+  "concept": "MaturityRule",
+  "level": "Apply",
+  "q": "A coinbase in block 9 is spent in block 170. How many blocks later, and is that mature?",
+  "code": "print((170 - 9, 170 - 9 >= 100))",
+  "options": [
+   "(161, True)",
+   "(161, False)",
+   "(100, True)",
+   "(179, True)"
+  ],
+  "answer": 0,
+  "why": "161 blocks is more than the 100 required."
+ },
+ {
+  "concept": "WeightAndFoundations",
+  "level": "Understand",
+  "q": "Why does weight rather than byte size decide what a transaction pays?",
+  "options": [
+   "Bytes are no longer counted",
+   "Blocks are filled by weight, and witness bytes weigh a quarter of other bytes",
+   "Weight equals the fee",
+   "Miners ignore size"
+  ],
+  "answer": 1,
+  "why": "The factors make spending a UTXO cheaper and creating one relatively dearer."
+ },
+ {
+  "concept": "WeightUnits",
+  "level": "Understand",
+  "q": "Why is the weighting uneven on purpose?",
+  "options": [
+   "To make old transactions invalid",
+   "To favour large blocks",
+   "To reduce the weight used when spending a UTXO and so discourage uneconomical outputs",
+   "To simplify parsing"
+  ],
+  "answer": 2,
+  "why": "A signature that spends is witness data at a factor of 1."
+ },
+ {
+  "concept": "Weight",
+  "level": "Remember",
+  "q": "How is a transaction's weight defined?",
+  "options": [
+   "Size in bytes times four",
+   "Size in bytes plus the witness",
+   "Number of inputs times 100",
+   "Legacy serialization size times three plus full serialization size"
+  ],
+  "answer": 3,
+  "why": "For Alice's transaction, 125 times 3 plus 194 is 569."
+ },
+ {
+  "concept": "Weight",
+  "level": "Apply",
+  "q": "Compute the weight of a transaction whose legacy size is 125 bytes and full size 194 bytes.",
+  "code": "print(125 * 3 + 194)",
+  "options": [
+   "569",
+   "776",
+   "319",
+   "500"
+  ],
+  "answer": 0,
+  "why": "569, the figure the book obtained from Bitcoin Core."
+ },
+ {
+  "concept": "Vbyte",
+  "level": "Understand",
+  "q": "How are vbytes computed from weight?",
+  "options": [
+   "Weight times four",
+   "Weight divided by four, rounded up",
+   "Weight minus the witness",
+   "Weight divided by three"
+  ],
+  "answer": 1,
+  "why": "569 weight is 143 vbytes."
+ },
+ {
+  "concept": "Vbyte",
+  "level": "Apply",
+  "q": "How many vbytes is a weight of 569, rounded up?",
+  "code": "print(-(-569 // 4))",
+  "options": [
+   "142",
+   "142.25",
+   "143",
+   "144"
+  ],
+  "answer": 2,
+  "why": "142.25 rounds up to 143."
+ },
+ {
+  "concept": "BlockWeightLimit",
+  "level": "Remember",
+  "q": "What is the block weight limit?",
+  "options": [
+   "1,000,000 bytes",
+   "2,000,000 weight",
+   "8,000,000 vbytes",
+   "4,000,000 weight"
+  ],
+  "answer": 3,
+  "why": "Bitcoin Core's MAX_BLOCK_WEIGHT, from BIP141."
+ },
+ {
+  "concept": "BlockWeightLimit",
+  "level": "Apply",
+  "q": "How many transactions of 569 weight would fill a 4,000,000-weight block?",
+  "code": "print(4_000_000 // 569)",
+  "options": [
+   "7029",
+   "7030",
+   "1000000",
+   "4000"
+  ],
+  "answer": 0,
+  "why": "Integer division gives 7,029."
+ },
+ {
+  "concept": "WeightFactor",
+  "level": "Remember",
+  "q": "Which fields carry a weight factor of 1?",
+  "options": [
+   "The version and the lock time",
+   "The marker, the flag and the witness structure",
+   "The outputs",
+   "The input scripts"
+  ],
+  "answer": 1,
+  "why": "Everything legacy nodes see weighs four per byte."
+ },
+ {
+  "concept": "WeightFactor",
+  "level": "Apply",
+  "q": "A 36-byte outpoint at factor 4 and a 65-byte witness item at factor 1: what do they weigh together?",
+  "code": "print(36 * 4 + 65 * 1)",
+  "options": [
+   "404",
+   "101",
+   "209",
+   "144"
+  ],
+  "answer": 2,
+  "why": "144 plus 65 is 209."
+ },
+ {
+  "concept": "Foundations",
+  "level": "Understand",
+  "q": "Why does the distinction between relay policy and consensus keep coming up?",
+  "options": [
+   "Because policy is written in BIPs",
+   "Because consensus changes every release",
+   "Because policy decides the subsidy",
+   "Half the rules met - dust, standardness, replacement, version 3 - are policy, which a node may choose, not validity"
+  ],
+  "answer": 3,
+  "why": "Only consensus decides which blocks are valid."
+ },
+ {
+  "concept": "HashFunction",
+  "level": "Understand",
+  "q": "Which two properties of a hash function do transaction identifiers rely on?",
+  "options": [
+   "A fixed-length output and unpredictable change when the input changes",
+   "Reversibility and speed",
+   "Compression and encryption",
+   "Randomness and a secret key"
+  ],
+  "answer": 0,
+  "why": "Fixed length lets a 32-byte txid stand for any transaction; sensitivity is why identifiers are trustworthy and malleability dangerous."
+ },
+ {
+  "concept": "HashFunction",
+  "level": "Apply",
+  "q": "What is the length of SHA-256 of an empty input, in bytes?",
+  "code": "import hashlib\nprint(len(hashlib.sha256(b'').digest()))",
+  "options": [
+   "0",
+   "32",
+   "64",
+   "20"
+  ],
+  "answer": 1,
+  "why": "The output length does not depend on the input."
+ },
+ {
+  "concept": "DoubleSha256",
+  "level": "Remember",
+  "q": "How is a transaction identifier computed?",
+  "options": [
+   "SHA-256 of the full serialization",
+   "RIPEMD-160 of the outputs",
+   "SHA-256 of SHA-256 of the legacy serialization, shown reversed",
+   "A checksum of the version"
+  ],
+  "answer": 2,
+  "why": "Bitcoin Core calls the construction hash256."
+ },
+ {
+  "concept": "DoubleSha256",
+  "level": "Apply",
+  "q": "Double-hash the bytes b'hello' and reverse the digest. What are the first four hexadecimal characters?",
+  "code": "import hashlib\nd = hashlib.sha256(hashlib.sha256(b'hello').digest()).digest()\nprint(d[::-1].hex()[:4])",
+  "options": [
+   "9595",
+   "2cf2",
+   "0000",
+   "503d"
+  ],
+  "answer": 3,
+  "why": "The reversed double SHA-256 of hello begins 503d."
+ },
+ {
+  "concept": "Txid",
+  "level": "Understand",
+  "q": "What does the txid of a segwit transaction exclude?",
+  "options": [
+   "The witness, so a change of witness leaves the txid unchanged",
+   "The outputs",
+   "The version",
+   "The inputs"
+  ],
+  "answer": 0,
+  "why": "That is the whole repair segregated witness makes."
+ },
+ {
+  "concept": "Txid",
+  "level": "Apply",
+  "q": "How many hexadecimal characters does a txid have?",
+  "code": "print(len('466200308696215bbc949d5141a49a4138ecdfdfaa2a8029c1f9bcecd1f96177'))",
+  "options": [
+   "32",
+   "64",
+   "128",
+   "40"
+  ],
+  "answer": 1,
+  "why": "32 bytes are 64 characters."
+ },
+ {
+  "concept": "Wtxid",
+  "level": "Understand",
+  "q": "Why does BIP141 add a second identifier?",
+  "options": [
+   "The txid was too short",
+   "To number the outputs",
+   "Something must commit to the witness, which the txid leaves out",
+   "To replace the merkle root"
+  ],
+  "answer": 2,
+  "why": "A block commits to wtxids through an output of its coinbase."
+ },
+ {
+  "concept": "Wtxid",
+  "level": "Apply",
+  "q": "Are Alice's txid 46620030... and wtxid f7cdbc7c... different?",
+  "code": "txid = '466200308696215bbc949d5141a49a4138ecdfdfaa2a8029c1f9bcecd1f96177'\nwtxid = 'f7cdbc7cf8b910d35cc69962e791138624e4eae7901010a6da4c02e7d238cdac'\nprint(txid != wtxid)",
+  "options": [
+   "False",
+   "None",
+   "0",
+   "True"
+  ],
+  "answer": 3,
+  "why": "A transaction with a witness has two different identifiers."
+ },
+ {
+  "concept": "RelayPolicy",
+  "level": "Understand",
+  "q": "What is relay policy?",
+  "options": [
+   "The rules a node applies to unconfirmed transactions it relays and keeps, chosen by the node",
+   "The rules every node must enforce identically",
+   "The subsidy schedule",
+   "The format of a block"
+  ],
+  "answer": 0,
+  "why": "A transaction that violates policy can still be mined and be valid."
+ },
+ {
+  "concept": "RelayPolicy",
+  "level": "Apply",
+  "q": "Sort the five policies met: dust limit, standard outputs, version 3 restrictions, replace-by-fee, reserved features. Which is first?",
+  "code": "print(sorted(['dust limit', 'standard outputs', 'version 3 restrictions', 'replace-by-fee', 'reserved features'])[0])",
+  "options": [
+   "replace-by-fee",
+   "dust limit",
+   "reserved features",
+   "standard outputs"
+  ],
+  "answer": 1,
+  "why": "In the default string order, dust limit sorts first."
+ },
+ {
+  "concept": "ConsensusRule",
+  "level": "Understand",
+  "q": "Which of these is a consensus rule rather than a policy?",
+  "options": [
+   "The dust limit",
+   "The standard output templates",
+   "The maturity of coinbase outputs",
+   "The version 3 topology restrictions"
+  ],
+  "answer": 2,
+  "why": "Maturity is checked by every node in block validation; the other three are relay policy."
+ },
+ {
+  "concept": "ConsensusRule",
+  "level": "Apply",
+  "q": "How many consensus rules are listed in the sorted list of eight?",
+  "code": "print(len(sorted(['at least one input and one output', 'amount range', 'no double spend', 'BIP68 sequence locks', 'lock time since block 31,000', 'subsidy and reward', 'coinbase maturity', 'block weight'])))",
+  "options": [
+   "7",
+   "6",
+   "9",
+   "8"
+  ],
+  "answer": 3,
+  "why": "Eight rules from this chapter."
+ }
+]

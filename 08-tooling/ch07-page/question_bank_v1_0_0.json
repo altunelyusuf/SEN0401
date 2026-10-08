@@ -1,0 +1,1851 @@
+[
+ {
+  "concept": "ScriptLanguage",
+  "level": "Understand",
+  "q": "What question does the idea of an authorization script answer when you receive bitcoins?",
+  "options": [
+   "Who may spend them later, and how that person must prove it",
+   "Which exchange holds them for you",
+   "How many confirmations the payment needs",
+   "What the next block reward will be"
+  ],
+  "answer": 0,
+  "why": "An output carries the conditions for spending it, and a later spend carries the proof that the conditions are met."
+ },
+ {
+  "concept": "ScriptModel",
+  "level": "Remember",
+  "q": "Which two things does Script describe, according to the definition of the language?",
+  "options": [
+   "The price of a coin and the fee for a spend",
+   "The conditions for spending an output and the proof that they are met",
+   "The blocks of a chain and their order",
+   "The wallets of two parties and their balance"
+  ],
+  "answer": 1,
+  "why": "Script is the stack-based language in which both the conditions and the proof are written."
+ },
+ {
+  "concept": "Script",
+  "level": "Remember",
+  "q": "What kind of language is Script?",
+  "options": [
+   "A compiled object-oriented language",
+   "A markup language like HTML",
+   "A Forth-like, stack-based language",
+   "A query language like SQL"
+  ],
+  "answer": 2,
+  "why": "Script reads left to right, pushes data and lets each operator pop its inputs and push its result."
+ },
+ {
+  "concept": "Script",
+  "level": "Apply",
+  "q": "A script is '2 3 ADD 5 EQUAL'. A tiny interpreter runs it. What does the stack hold at the end?",
+  "code": "st = []\nfor w in '2 3 ADD 5 EQUAL'.split():\n    if w == 'ADD':\n        b, a = st.pop(), st.pop()\n        st.append(a + b)\n    elif w == 'EQUAL':\n        b, a = st.pop(), st.pop()\n        st.append(int(a == b))\n    else:\n        st.append(int(w))\nprint(st)",
+  "options": [
+   "[5]",
+   "[2, 3, 5]",
+   "[]",
+   "[1]"
+  ],
+  "answer": 3,
+  "why": "ADD leaves 5, EQUAL compares it with the pushed 5 and leaves a true value, written 1."
+ },
+ {
+  "concept": "StackExecution",
+  "level": "Remember",
+  "q": "What happens to the operands of an operator such as ADD?",
+  "options": [
+   "It pops them and pushes the result",
+   "It reads them from a file and keeps them",
+   "It leaves them and pushes a copy of the result below",
+   "It pushes them again in reverse order"
+  ],
+  "answer": 0,
+  "why": "Each operator pops its inputs and pushes its result."
+ },
+ {
+  "concept": "StackExecution",
+  "level": "Apply",
+  "q": "A stack holds [1, 2]. The script runs SWAP and then DUP. What does the stack hold?",
+  "code": "st = [1, 2]\nst[-2:] = st[-1], st[-2]\nst.append(st[-1])\nprint(st)",
+  "options": [
+   "[1, 2, 2]",
+   "[2, 1, 1]",
+   "[2, 1]",
+   "[2, 2, 1]"
+  ],
+  "answer": 1,
+  "why": "SWAP exchanges the top two items, giving [2, 1], and DUP copies the top, giving [2, 1, 1]."
+ },
+ {
+  "concept": "TuringIncompleteness",
+  "level": "Understand",
+  "q": "Why is it an advantage that Script has no loops?",
+  "options": [
+   "Scripts become shorter than any loop",
+   "Nodes may skip checking the script",
+   "Every script ends, so its running time is predictable",
+   "Signatures no longer need to be valid"
+  ],
+  "answer": 2,
+  "why": "A loop-free language cannot run forever, which protects every node from a script that never ends."
+ },
+ {
+  "concept": "TuringIncompleteness",
+  "level": "Apply",
+  "q": "A script of four opcodes has no loops. At most how many opcodes does a node execute for it?",
+  "code": "ops = ['DUP', 'HASH160', 'EQUALVERIFY', 'CHECKSIG']\nsteps = 0\nfor op in ops:\n    steps += 1\nprint(steps)",
+  "options": [
+   "Unbounded",
+   "16",
+   "8",
+   "4"
+  ],
+  "answer": 3,
+  "why": "Without loops each opcode runs at most once, so the work is bounded by the length of the script."
+ },
+ {
+  "concept": "StatelessVerification",
+  "level": "Understand",
+  "q": "What does stateless verification mean for a script?",
+  "options": [
+   "Nothing is kept before or after it runs, so every node gets the same verdict",
+   "The script cannot read the stack",
+   "Only one node may verify each script",
+   "The script may depend on the time of the node's clock"
+  ],
+  "answer": 0,
+  "why": "The only inputs are the transaction and the scripts, so the result is the same on any system."
+ },
+ {
+  "concept": "StatelessVerification",
+  "level": "Apply",
+  "q": "A verifier takes only its inputs and keeps nothing. Do two runs on the same inputs give the same verdict?",
+  "code": "def verdict(script):\n    return sum(script) == 5\nprint(verdict([2, 3]) == verdict([2, 3]))",
+  "options": [
+   "False",
+   "True",
+   "None",
+   "5"
+  ],
+  "answer": 1,
+  "why": "A function of its inputs alone gives the same answer every time."
+ },
+ {
+  "concept": "ScriptLimits",
+  "level": "Remember",
+  "q": "What is the consensus limit on the size of an item that a script pushes?",
+  "options": [
+   "80 bytes",
+   "10,000 bytes",
+   "520 bytes",
+   "32 bytes"
+  ],
+  "answer": 2,
+  "why": "Elements are limited to 520 bytes, which also bounds a redeem script."
+ },
+ {
+  "concept": "ScriptLimits",
+  "level": "Apply",
+  "q": "A script may be 10,000 bytes long. How many pushes of 520 bytes (each takes a 3-byte header) fit in it?",
+  "code": "print(10000 // (520 + 3))",
+  "options": [
+   "20",
+   "19.2",
+   "24",
+   "19"
+  ],
+  "answer": 3,
+  "why": "Each push costs 523 bytes, and 19 of them take 9,937."
+ },
+ {
+  "concept": "ScriptExecution",
+  "level": "Understand",
+  "q": "How does a spend reach its verdict?",
+  "options": [
+   "The input script and the output script are run, and the result must be true",
+   "A miner votes on the script",
+   "The wallet signs a receipt for the node",
+   "The fee decides the verdict"
+  ],
+  "answer": 0,
+  "why": "A spend is valid when both scripts run without error and leave true on top of the stack."
+ },
+ {
+  "concept": "OutputScript",
+  "level": "Remember",
+  "q": "What is the name of the output script in Bitcoin Core's code?",
+  "options": [
+   "scriptSig",
+   "scriptPubKey",
+   "witnessScript",
+   "redeemScript"
+  ],
+  "answer": 1,
+  "why": "The output script states the conditions and is called scriptPubKey in the code."
+ },
+ {
+  "concept": "OutputScript",
+  "level": "Apply",
+  "q": "A pay to public key hash output script is 76a914<20 bytes>88ac. How long is it, what is its first byte and what is its last byte?",
+  "code": "spk = bytes.fromhex('76a914ab68025513c3dbd2f7b92a94e0581f5d50f654e788ac')\nprint(len(spk), spk[0], spk[-1])",
+  "options": [
+   "23 169 135",
+   "25 169 172",
+   "25 118 172",
+   "24 118 172"
+  ],
+  "answer": 2,
+  "why": "It is 25 bytes: OP_DUP (118), OP_HASH160, a 20-byte push, OP_EQUALVERIFY and OP_CHECKSIG (172)."
+ },
+ {
+  "concept": "InputScript",
+  "level": "Remember",
+  "q": "What does a legacy input script usually hold?",
+  "options": [
+   "The whole previous transaction",
+   "The recipient's name",
+   "A proof of work",
+   "A signature and a public key"
+  ],
+  "answer": 3,
+  "why": "The input script satisfies the output script; for a key hash it supplies the signature and the key."
+ },
+ {
+  "concept": "InputScript",
+  "level": "Apply",
+  "q": "An input script is a 71-byte push followed by a 33-byte push. What are the lengths of its pushes?",
+  "code": "ss = bytes([71]) + bytes(71) + bytes([33]) + bytes(33)\nitems, i = [], 0\nwhile i < len(ss):\n    n = ss[i]\n    items.append(n)\n    i += 1 + n\nprint(items)",
+  "options": [
+   "[71, 33]",
+   "[72, 34]",
+   "[71]",
+   "[104]"
+  ],
+  "answer": 0,
+  "why": "The loop reads a length byte, skips that many bytes and repeats."
+ },
+ {
+  "concept": "ScriptTruth",
+  "level": "Remember",
+  "q": "Which of these values makes a script fail when it is left on top of the stack?",
+  "options": [
+   "The number 1",
+   "Negative zero, written 0x80",
+   "The number 16",
+   "A 20-byte hash"
+  ],
+  "answer": 1,
+  "why": "Zero, negative zero, an empty item and an empty stack are false."
+ },
+ {
+  "concept": "ScriptTruth",
+  "level": "Apply",
+  "q": "Which of the items 00, 80, 01 and the empty item count as true?",
+  "code": "def true(b):\n    for i, x in enumerate(b):\n        if x != 0:\n            return not (i == len(b) - 1 and x == 0x80)\n    return False\nprint([true(b'\\x00'), true(b'\\x80'), true(b'\\x01'), true(b'')])",
+  "options": [
+   "[True, False, True, False]",
+   "[False, True, True, False]",
+   "[False, False, True, False]",
+   "[False, False, True, True]"
+  ],
+  "answer": 2,
+  "why": "Only the item 01 has a non-zero byte that is not a lone negative-zero marker."
+ },
+ {
+  "concept": "SeparateExecution",
+  "level": "Understand",
+  "q": "How are the input script and the output script run since 2010?",
+  "options": [
+   "Joined into a single script",
+   "In parallel on two stacks",
+   "Only the output script is run",
+   "One after the other, with the stack passed from the first to the second"
+  ],
+  "answer": 3,
+  "why": "Joining the two scripts allowed the OP_RETURN bug, so they are run separately."
+ },
+ {
+  "concept": "SeparateExecution",
+  "level": "Apply",
+  "q": "The input script pushes 1. The output script is '1 ADD 2 EQUAL'. The scripts run one after the other on one stack. What does the stack hold at the end?",
+  "code": "st = [1]\nst.append(1)\nb, a = st.pop(), st.pop()\nst.append(a + b)\nst.append(2)\nb, a = st.pop(), st.pop()\nst.append(int(a == b))\nprint(st)",
+  "options": [
+   "[1]",
+   "[2]",
+   "[1, 1]",
+   "[]"
+  ],
+  "answer": 0,
+  "why": "The output script starts with the input script's 1 on the stack: 1 plus 1 is 2, and EQUAL against 2 leaves a true value."
+ },
+ {
+  "concept": "OpReturnBug",
+  "level": "Understand",
+  "q": "Why could anyone spend any output in the first release?",
+  "options": [
+   "The signatures were never checked at all",
+   "OP_RETURN jumped to the end of the joined scripts, so a true value before it made the spend succeed",
+   "The output script was missing",
+   "Miners could rewrite every script"
+  ],
+  "answer": 1,
+  "why": "An input script of a true value and OP_RETURN skipped the output script."
+ },
+ {
+  "concept": "OpReturnBug",
+  "level": "Apply",
+  "q": "In a joined script OP_RETURN jumps to the end. In separate execution OP_RETURN fails the script. For input '1 RETURN' and output '0', what do the two models give?",
+  "code": "def joined(ins, outs):\n    st = []\n    for w in ins + outs:\n        if w == 'RETURN':\n            break\n        st.append(int(w))\n    return bool(st and st[-1])\ndef separate(ins, outs):\n    return 'RETURN' not in ins and 'RETURN' not in outs\nprint(joined(['1', 'RETURN'], ['0']), separate(['1', 'RETURN'], ['0']))",
+  "options": [
+   "False False",
+   "True True",
+   "True False",
+   "False True"
+  ],
+  "answer": 2,
+  "why": "The joined model stops with a true 1 on top; the separate model fails the script at once."
+ },
+ {
+  "concept": "KeyLocking",
+  "level": "Understand",
+  "q": "What do the three ways of locking to a key in this branch have in common?",
+  "options": [
+   "Each needs no signature",
+   "Each needs three signatures",
+   "Each hides the key from the spender forever",
+   "Each conditions the spend on a signature from a key, they differ in what the output reveals"
+  ],
+  "answer": 3,
+  "why": "Pay to public key, to its hash and the check of the signature all authenticate the spender with a key."
+ },
+ {
+  "concept": "PayToKey",
+  "level": "Understand",
+  "q": "How does pay to public key hash differ from pay to public key?",
+  "options": [
+   "The output holds a hash of the key, not the key",
+   "The output holds the private key",
+   "The output needs no signature",
+   "The output holds the signature"
+  ],
+  "answer": 0,
+  "why": "The key is shown only when the output is spent."
+ },
+ {
+  "concept": "PayToPublicKey",
+  "level": "Remember",
+  "q": "How long is a pay to public key output script with an uncompressed key?",
+  "options": [
+   "25 bytes",
+   "67 bytes",
+   "35 bytes",
+   "22 bytes"
+  ],
+  "answer": 1,
+  "why": "A 65-byte key, its push byte and OP_CHECKSIG make 67 bytes."
+ },
+ {
+  "concept": "PayToPublicKey",
+  "level": "Apply",
+  "q": "A pay to public key script pushes a 65-byte key and ends with OP_CHECKSIG (0xac). What are its length and last byte?",
+  "code": "spk = bytes([65]) + bytes(65) + bytes([0xac])\nprint(len(spk), hex(spk[-1]))",
+  "options": [
+   "25 0xac",
+   "66 0xac",
+   "67 0xac",
+   "67 0x88"
+  ],
+  "answer": 2,
+  "why": "One length byte, 65 key bytes and one opcode."
+ },
+ {
+  "concept": "PublicKeyHash",
+  "level": "Remember",
+  "q": "Which two hash functions make a public key hash?",
+  "options": [
+   "SHA-1 and MD5",
+   "Two rounds of SHA-512",
+   "Keccak-256 and then SHA-1",
+   "SHA-256 and then RIPEMD-160"
+  ],
+  "answer": 3,
+  "why": "The result is 20 bytes."
+ },
+ {
+  "concept": "PublicKeyHash",
+  "level": "Apply",
+  "q": "A legacy address is the Base58Check form of a 20-byte key hash with version 0. What is the first character of the address and the length of the hash?",
+  "code": "import hashlib\nA = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'\ndef b58check(version, payload):\n    d = bytes([version]) + payload\n    d += hashlib.sha256(hashlib.sha256(d).digest()).digest()[:4]\n    n, s = int.from_bytes(d, 'big'), ''\n    while n:\n        n, r = divmod(n, 58)\n        s = A[r] + s\n    return '1' * (len(d) - len(d.lstrip(b'\\0'))) + s\nh = bytes.fromhex('ab68025513c3dbd2f7b92a94e0581f5d50f654e7')\nprint(b58check(0, h)[0], len(h))",
+  "options": [
+   "1 20",
+   "3 20",
+   "1 32",
+   "b 20"
+  ],
+  "answer": 0,
+  "why": "Version 0 gives a leading 1; the hash is 20 bytes."
+ },
+ {
+  "concept": "PayToPublicKeyHash",
+  "level": "Understand",
+  "q": "What must the spender of a pay to public key hash output present?",
+  "options": [
+   "Only the hash",
+   "A public key that matches the hash and a signature from its private key",
+   "Only a signature",
+   "Two public keys"
+  ],
+  "answer": 1,
+  "why": "The script checks the hash and then the signature."
+ },
+ {
+  "concept": "PayToPublicKeyHash",
+  "level": "Apply",
+  "q": "Name the operations in the output script 76 a9 14<hash> 88 ac in order.",
+  "code": "spk = bytes.fromhex('76a914ab68025513c3dbd2f7b92a94e0581f5d50f654e788ac')\nnames = {0x76: 'DUP', 0xa9: 'HASH160', 0x88: 'EQUALVERIFY', 0xac: 'CHECKSIG'}\nprint([names.get(b, 'PUSH') for b in (spk[0], spk[1], spk[2], spk[23], spk[24])])",
+  "options": [
+   "['DUP', 'SHA256', 'PUSH', 'EQUAL', 'CHECKSIG']",
+   "['PUSH', 'DUP', 'HASH160', 'EQUALVERIFY', 'CHECKSIG']",
+   "['DUP', 'HASH160', 'PUSH', 'EQUALVERIFY', 'CHECKSIG']",
+   "['HASH160', 'PUSH', 'EQUAL']"
+  ],
+  "answer": 2,
+  "why": "The script duplicates the key, hashes it, compares the hashes and checks the signature."
+ },
+ {
+  "concept": "SignatureChecking",
+  "level": "Understand",
+  "q": "What does a node need to check a signature?",
+  "options": [
+   "The private key",
+   "The recipient's address book",
+   "The miner's approval",
+   "The public key, the signature and a hash of the spending transaction"
+  ],
+  "answer": 3,
+  "why": "The check needs no secret."
+ },
+ {
+  "concept": "OpChecksig",
+  "level": "Remember",
+  "q": "What does OP_CHECKSIG push when the signature is invalid?",
+  "options": [
+   "False",
+   "Nothing, the script fails at once",
+   "The public key",
+   "The transaction hash"
+  ],
+  "answer": 0,
+  "why": "OP_CHECKSIG pushes true or false."
+ },
+ {
+  "concept": "OpChecksig",
+  "level": "Apply",
+  "q": "A toy ECDSA signature is made with private key 7, nonce 11 and a message hash. Does it verify, and does it verify for a different message hash?",
+  "code": "import hashlib\nP = 2**256 - 2**32 - 977\nN = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141\nG = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8)\ndef add(a, b):\n    if a is None or b is None:\n        return a or b\n    if a[0] == b[0] and (a[1] + b[1]) % P == 0:\n        return None\n    m = (3 * a[0] * a[0] * pow(2 * a[1], -1, P) if a == b else (b[1] - a[1]) * pow(b[0] - a[0], -1, P)) % P\n    x = (m * m - a[0] - b[0]) % P\n    return x, (m * (a[0] - x) - a[1]) % P\ndef mul(k, p):\n    r = None\n    while k:\n        if k & 1:\n            r = add(r, p)\n        p, k = add(p, p), k >> 1\n    return r\ndef sign(d, z, k):\n    r = mul(k, G)[0] % N\n    return r, pow(k, -1, N) * (z + r * d) % N\ndef verify(q, z, r, s):\n    w = pow(s, -1, N)\n    pt = add(mul(z * w % N, G), mul(r * w % N, q))\n    return pt is not None and pt[0] % N == r\nq = mul(7, G)\nr, s = sign(7, 12345, 11)\nprint(verify(q, 12345, r, s), verify(q, 12346, r, s))",
+  "options": [
+   "True True",
+   "True False",
+   "False False",
+   "False True"
+  ],
+  "answer": 1,
+  "why": "The signature commits to the hash it was made for."
+ },
+ {
+  "concept": "SignatureHash",
+  "level": "Understand",
+  "q": "What does the hash type appended to a signature say?",
+  "options": [
+   "Which hash function the node must use",
+   "How many signatures follow",
+   "Which parts of the transaction the signature commits to",
+   "Which block the signature belongs to"
+  ],
+  "answer": 2,
+  "why": "ALL, NONE and SINGLE can be combined with ANYONECANPAY."
+ },
+ {
+  "concept": "SignatureHash",
+  "level": "Apply",
+  "q": "ANYONECANPAY is 0x80 and SINGLE is 3. What is the hash type byte SINGLE|ANYONECANPAY?",
+  "code": "print(hex(3 | 0x80))",
+  "options": [
+   "0x81",
+   "0x03",
+   "0x82",
+   "0x83"
+  ],
+  "answer": 3,
+  "why": "The two values are combined by setting bit 7 on top of 3."
+ },
+ {
+  "concept": "SignatureEncoding",
+  "level": "Remember",
+  "q": "Which encoding does Bitcoin use for an ECDSA signature?",
+  "options": [
+   "DER, followed by a hash-type byte",
+   "Base64",
+   "Plain 64-byte concatenation of r and s",
+   "ASCII hexadecimal"
+  ],
+  "answer": 0,
+  "why": "Strict DER is a consensus rule, and policy asks for the low s."
+ },
+ {
+  "concept": "SignatureEncoding",
+  "level": "Apply",
+  "q": "r = 2**255 + 5 and s = 1 are written in DER with the hash-type byte appended. How many bytes is the result?",
+  "code": "def num(x):\n    b = x.to_bytes((x.bit_length() + 7) // 8, 'big')\n    return b'\\x00' + b if b[0] & 0x80 else b\ndef der(r, s):\n    body = b'\\x02' + bytes([len(num(r))]) + num(r) + b'\\x02' + bytes([len(num(s))]) + num(s)\n    return b'\\x30' + bytes([len(body)]) + body\nprint(len(der(2**255 + 5, 1)) + 1)",
+  "options": [
+   "38",
+   "41",
+   "72",
+   "40"
+  ],
+  "answer": 1,
+  "why": "r needs a 0x00 prefix because its top bit is set, so it takes 33 bytes; with the headers, s and the hash type the total is 41."
+ },
+ {
+  "concept": "ScriptedMultisig",
+  "level": "Understand",
+  "q": "What is the main idea of a scripted multisignature?",
+  "options": [
+   "An output needs the same key to sign several times",
+   "An output is split among several blocks",
+   "An output names several keys and needs a number of valid signatures from them",
+   "An output needs several miners"
+  ],
+  "answer": 2,
+  "why": "The output lists k keys and requires t signatures."
+ },
+ {
+  "concept": "MultisigForm",
+  "level": "Understand",
+  "q": "What are t and k in a t-of-k multisignature script?",
+  "options": [
+   "t is the lock time, k the key hash",
+   "t is the fee, k the size",
+   "t is the version, k the sequence",
+   "t is the number of signatures required, k the number of keys listed"
+  ],
+  "answer": 3,
+  "why": "A 2-of-3 script lists three keys and needs two signatures."
+ },
+ {
+  "concept": "ScriptedMultisignature",
+  "level": "Understand",
+  "q": "In what order must the signatures be given?",
+  "options": [
+   "The same order as their keys in the script",
+   "Any order",
+   "Sorted by size",
+   "Newest first"
+  ],
+  "answer": 0,
+  "why": "The opcode walks the keys and signatures together and cannot go back."
+ },
+ {
+  "concept": "ScriptedMultisignature",
+  "level": "Apply",
+  "q": "Keys are A, B, C. Are the signature lists [A, C] and [C, A] accepted by an ordered scan?",
+  "code": "def ok(sigs, keys):\n    i = 0\n    for s in sigs:\n        while i < len(keys) and keys[i] != s:\n            i += 1\n        if i == len(keys):\n            return False\n        i += 1\n    return True\nprint(ok(['A', 'C'], ['A', 'B', 'C']), ok(['C', 'A'], ['A', 'B', 'C']))",
+  "options": [
+   "False False",
+   "True False",
+   "True True",
+   "False True"
+  ],
+  "answer": 1,
+  "why": "The second list needs a key that the scan already passed."
+ },
+ {
+  "concept": "MultisigLimits",
+  "level": "Remember",
+  "q": "How many keys can a script hash multisignature list?",
+  "options": [
+   "3",
+   "20",
+   "15",
+   "16"
+  ],
+  "answer": 2,
+  "why": "The 520-byte limit on a script element caps it at 15 compressed keys."
+ },
+ {
+  "concept": "MultisigLimits",
+  "level": "Apply",
+  "q": "A t-of-k script with compressed keys takes 3 + 34k bytes. What is the largest k whose script fits in 520 bytes?",
+  "code": "print(max(k for k in range(1, 40) if 3 + 34 * k <= 520))",
+  "options": [
+   "16",
+   "20",
+   "14",
+   "15"
+  ],
+  "answer": 3,
+  "why": "The 15-key script takes 513 bytes and the 16-key script takes 547."
+ },
+ {
+  "concept": "MultisigOddity",
+  "level": "Understand",
+  "q": "Which two quirks does this group describe?",
+  "options": [
+   "The extra stack element and the number of signature checks",
+   "The lock time and the sequence",
+   "The hash type and the encoding",
+   "The version and the marker"
+  ],
+  "answer": 0,
+  "why": "Both are consequences of how OP_CHECKMULTISIG was written."
+ },
+ {
+  "concept": "CheckmultisigDummy",
+  "level": "Remember",
+  "q": "What must the dummy element be since BIP147?",
+  "options": [
+   "The number 1",
+   "An empty byte array",
+   "The hash of the script",
+   "A signature"
+  ],
+  "answer": 1,
+  "why": "A non-empty dummy is rejected so that nobody can change it to alter the transaction identifier."
+ },
+ {
+  "concept": "CheckmultisigDummy",
+  "level": "Apply",
+  "q": "Which item does OP_CHECKMULTISIG pop last from ['', sigB, sigC, 2, pkA, pkB, pkC, 3]?",
+  "code": "st = ['', 'sigB', 'sigC', '2', 'pkA', 'pkB', 'pkC', '3']\nn = int(st.pop())\nkeys = [st.pop() for _ in range(n)]\nm = int(st.pop())\nsigs = [st.pop() for _ in range(m)]\ndummy = st.pop()\nprint(repr(dummy), st)",
+  "options": [
+   "'sigB' []",
+   "'3' ['']",
+   "'' []",
+   "'pkA' []"
+  ],
+  "answer": 2,
+  "why": "The extra item at the bottom is the dummy element."
+ },
+ {
+  "concept": "SignatureCheckCount",
+  "level": "Understand",
+  "q": "Why can one signature cost many checks?",
+  "options": [
+   "The signature is hashed many times",
+   "The block must be rescanned",
+   "The key is derived again",
+   "Each failed comparison against a key is another signature check"
+  ],
+  "answer": 3,
+  "why": "A matching key far from the start of the scan comes after many failures."
+ },
+ {
+  "concept": "SignatureCheckCount",
+  "level": "Apply",
+  "q": "The keys are k0 to k4 and the scan starts at the last key. How many checks does a signature from k0 take, and one from k4?",
+  "code": "keys = ['k0', 'k1', 'k2', 'k3', 'k4']\ndef checks(signer):\n    n = 0\n    for k in reversed(keys):\n        n += 1\n        if k == signer:\n            return n\nprint(checks('k0'), checks('k4'))",
+  "options": [
+   "5 1",
+   "1 5",
+   "5 5",
+   "2 4"
+  ],
+  "answer": 0,
+  "why": "The first key tried is the one at the top of the stack."
+ },
+ {
+  "concept": "PayToScriptHash",
+  "level": "Understand",
+  "q": "What problem does pay to script hash solve?",
+  "options": [
+   "Miners need to read the script",
+   "Long scripts burden the payer, so the output holds only a hash and the spender supplies the script",
+   "Signatures were too small",
+   "Addresses were not unique"
+  ],
+  "answer": 1,
+  "why": "The payer pays to a short address and the later spender stores the script."
+ },
+ {
+  "concept": "P2shMechanism",
+  "level": "Understand",
+  "q": "Where is the script revealed in a pay to script hash payment?",
+  "options": [
+   "In the output that is created",
+   "On a public website",
+   "In the input of the spend",
+   "In the block header"
+  ],
+  "answer": 2,
+  "why": "The output holds only a hash; the spender reveals the script."
+ },
+ {
+  "concept": "PayToScriptHashOutput",
+  "level": "Remember",
+  "q": "How long is a pay to script hash output script?",
+  "options": [
+   "25 bytes",
+   "34 bytes",
+   "20 bytes",
+   "23 bytes"
+  ],
+  "answer": 3,
+  "why": "OP_HASH160, a 20-byte push and OP_EQUAL make 23 bytes."
+ },
+ {
+  "concept": "PayToScriptHashOutput",
+  "level": "Apply",
+  "q": "The output script is OP_HASH160 (0xa9), a 20-byte push and OP_EQUAL (0x87). How many bytes is it?",
+  "code": "spk = bytes([0xa9, 20]) + bytes(20) + bytes([0x87])\nprint(len(spk))",
+  "options": [
+   "23",
+   "22",
+   "25",
+   "34"
+  ],
+  "answer": 0,
+  "why": "One opcode, one length byte, 20 bytes and one opcode."
+ },
+ {
+  "concept": "RedeemScript",
+  "level": "Understand",
+  "q": "Where does the redeem script appear in the input script?",
+  "options": [
+   "As its first item",
+   "As its last item",
+   "Nowhere, it is in the output",
+   "In the witness only"
+  ],
+  "answer": 1,
+  "why": "The node hashes the last item and compares it with the hash in the output."
+ },
+ {
+  "concept": "RedeemScript",
+  "level": "Apply",
+  "q": "An input script pushes an empty item, a 72-byte signature and a 105-byte script with PUSHDATA1. How long is the last item?",
+  "code": "ss = bytes([0]) + bytes([72]) + bytes(72) + bytes([0x4c, 105]) + bytes(105)\nitems, i = [], 0\nwhile i < len(ss):\n    op = ss[i]\n    i += 1\n    if op == 0:\n        items.append(b'')\n        continue\n    if op == 0x4c:\n        op = ss[i]\n        i += 1\n    items.append(ss[i:i + op])\n    i += op\nprint(len(items[-1]))",
+  "options": [
+   "72",
+   "0",
+   "105",
+   "107"
+  ],
+  "answer": 2,
+  "why": "The parser reads three pushes; the last is the redeem script."
+ },
+ {
+  "concept": "P2shAddress",
+  "level": "Remember",
+  "q": "With which character does a P2SH address begin?",
+  "options": [
+   "1",
+   "bc1",
+   "m",
+   "3"
+  ],
+  "answer": 3,
+  "why": "Version byte 5 gives a leading 3."
+ },
+ {
+  "concept": "P2shAddress",
+  "level": "Apply",
+  "q": "Encode a 20-byte script hash with version 5 in Base58Check. What are the first character and the length of the address?",
+  "code": "import hashlib\nA = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'\ndef b58check(version, payload):\n    d = bytes([version]) + payload\n    d += hashlib.sha256(hashlib.sha256(d).digest()).digest()[:4]\n    n, s = int.from_bytes(d, 'big'), ''\n    while n:\n        n, r = divmod(n, 58)\n        s = A[r] + s\n    return '1' * (len(d) - len(d.lstrip(b'\\0'))) + s\nh = bytes.fromhex('54c557e07dde5bb6cb791c7a540e0a4796f5e97e')\nad = b58check(5, h)\nprint(ad[0], len(ad))",
+  "options": [
+   "3 34",
+   "1 34",
+   "3 20",
+   "5 33"
+  ],
+  "answer": 0,
+  "why": "Version 5 gives an address of 34 characters starting with 3 for this hash."
+ },
+ {
+  "concept": "P2shConsequences",
+  "level": "Understand",
+  "q": "Who gains and who pays more with pay to script hash?",
+  "options": [
+   "The payer carries the long script",
+   "The payer gains a short address; the spender carries the long script",
+   "The miner pays the fee",
+   "Nobody changes"
+  ],
+  "answer": 1,
+  "why": "The storage and the fee move to the spender."
+ },
+ {
+  "concept": "P2shBenefits",
+  "level": "Understand",
+  "q": "Why does the payer of a P2SH output not need to know the script?",
+  "options": [
+   "The script is kept secret forever",
+   "The script is empty",
+   "The payer pays to the hash, which looks like any other address",
+   "The miner provides it"
+  ],
+  "answer": 2,
+  "why": "A complex payment becomes as easy as an ordinary one for the payer."
+ },
+ {
+  "concept": "P2shBenefits",
+  "level": "Apply",
+  "q": "A bare 3-of-5 multisignature output with compressed keys takes 3 + 34 * 5 bytes. How many bytes does a P2SH output of 23 bytes save in the payer's output?",
+  "code": "print((3 + 34 * 5) - 23)",
+  "options": [
+   "170",
+   "126",
+   "23",
+   "150"
+  ],
+  "answer": 3,
+  "why": "The 173-byte script becomes a 23-byte output; the 150 bytes move to the spender."
+ },
+ {
+  "concept": "P2shRules",
+  "level": "Understand",
+  "q": "Which rule applies to the input script of a P2SH spend?",
+  "options": [
+   "It may only push data",
+   "It may contain any opcode",
+   "It must be empty",
+   "It must contain OP_RETURN"
+  ],
+  "answer": 0,
+  "why": "Otherwise the script could change the redeem script's meaning."
+ },
+ {
+  "concept": "P2shRules",
+  "level": "Apply",
+  "q": "A 2-of-3 redeem script has its signature operations counted. How many does accurate counting give, and how many does the legacy count of 20 give?",
+  "code": "def sigops(words, accurate):\n    n, prev = 0, None\n    for w in words:\n        if w in ('CHECKSIG', 'CHECKSIGVERIFY'):\n            n += 1\n        elif w in ('CHECKMULTISIG', 'CHECKMULTISIGVERIFY'):\n            n += int(prev) if accurate and prev and prev.isdigit() and 1 <= int(prev) <= 16 else 20\n        prev = w\n    return n\nw = ['2', 'pkA', 'pkB', 'pkC', '3', 'CHECKMULTISIG']\nprint(sigops(w, True), sigops(w, False))",
+  "options": [
+   "2 20",
+   "3 20",
+   "20 3",
+   "3 3"
+  ],
+  "answer": 1,
+  "why": "With an OP_n before the operator the count is n, otherwise 20."
+ },
+ {
+  "concept": "DataAndTime",
+  "level": "Understand",
+  "q": "Which two subjects does this branch combine?",
+  "options": [
+   "Mining and fees",
+   "Wallets and seeds",
+   "Recording data in an output and locking a spend in time",
+   "Addresses and QR codes"
+  ],
+  "answer": 2,
+  "why": "OP_RETURN outputs and the absolute and relative timelocks."
+ },
+ {
+  "concept": "DataOutput",
+  "level": "Understand",
+  "q": "Why is data placed in an OP_RETURN output rather than a spendable one?",
+  "options": [
+   "It is encrypted there",
+   "It is free of fees",
+   "Miners refuse other outputs",
+   "Nodes need not keep it in the set of unspent outputs"
+  ],
+  "answer": 3,
+  "why": "It can never be spent, so it is not added to the UTXO set."
+ },
+ {
+  "concept": "OpReturnOutput",
+  "level": "Remember",
+  "q": "What can be spent from an OP_RETURN output?",
+  "options": [
+   "Nothing, it can never be spent",
+   "Everything after one block",
+   "Only the data",
+   "Only half of it"
+  ],
+  "answer": 0,
+  "why": "The output script fails whatever the input provides."
+ },
+ {
+  "concept": "OpReturnOutput",
+  "level": "Apply",
+  "q": "An OP_RETURN output carries the 5 bytes 'hello' after a length byte. How many bytes is the whole output with its 8-byte amount and 1-byte script length?",
+  "code": "data = b'hello'\nspk = bytes([0x6a, len(data)]) + data\nprint(8 + 1 + len(spk))",
+  "options": [
+   "14",
+   "16",
+   "17",
+   "13"
+  ],
+  "answer": 1,
+  "why": "The script is 7 bytes; with the amount and its length byte the output is 16."
+ },
+ {
+  "concept": "DataCarrierPolicy",
+  "level": "Remember",
+  "q": "Is the data carrier limit a consensus rule?",
+  "options": [
+   "Yes, every block checks it",
+   "Yes, but only for the first block",
+   "No, it is a relay policy that a node can change",
+   "No, it is a legal limit"
+  ],
+  "answer": 2,
+  "why": "A policy decides what a node relays, not what is valid."
+ },
+ {
+  "concept": "DataCarrierPolicy",
+  "level": "Apply",
+  "q": "A standard transaction weighs at most 400,000 weight units. How many virtual bytes is that?",
+  "code": "print(400000 // 4)",
+  "options": [
+   "400000",
+   "1000000",
+   "50000",
+   "100000"
+  ],
+  "answer": 3,
+  "why": "Four weight units make one virtual byte."
+ },
+ {
+  "concept": "AbsoluteTimelocks",
+  "level": "Understand",
+  "q": "What does an absolute timelock fix?",
+  "options": [
+   "A block height or a time before which a spend is not valid",
+   "The age of an output",
+   "The size of a signature",
+   "The number of keys"
+  ],
+  "answer": 0,
+  "why": "The lock time field and OP_CHECKLOCKTIMEVERIFY work with a point in time."
+ },
+ {
+  "concept": "LockTimeLimits",
+  "level": "Understand",
+  "q": "What does the lock time field of a transaction not prevent?",
+  "options": [
+   "Inclusion before the lock time",
+   "The signer spending the same inputs in another transaction without a lock time",
+   "A change of the amount",
+   "A signature"
+  ],
+  "answer": 1,
+  "why": "Only the locked transaction is held back, so it is a promise that can be cancelled by spending the output elsewhere."
+ },
+ {
+  "concept": "LockTimeLimits",
+  "level": "Apply",
+  "q": "A transaction has lock time 800000. Is it final in a block of height 800000, and in a block of height 800001?",
+  "code": "def final(lock, height):\n    return lock == 0 or lock < height\nprint(final(800000, 800000), final(800000, 800001))",
+  "options": [
+   "True True",
+   "False False",
+   "False True",
+   "True False"
+  ],
+  "answer": 2,
+  "why": "Core's rule is that the lock time must be less than the block height."
+ },
+ {
+  "concept": "CheckLockTimeVerify",
+  "level": "Understand",
+  "q": "Which condition makes OP_CHECKLOCKTIMEVERIFY fail?",
+  "options": [
+   "The transaction has two outputs",
+   "The key is compressed",
+   "The output is small",
+   "The input's sequence is final (0xffffffff)"
+  ],
+  "answer": 3,
+  "why": "A final input would make the lock time ineffective."
+ },
+ {
+  "concept": "CheckLockTimeVerify",
+  "level": "Apply",
+  "q": "OP_CHECKLOCKTIMEVERIFY with operand 800000: what does it give for lock time 800000 and sequence 0xfffffffe, 799999 and the same sequence, and 800000 with sequence 0xffffffff?",
+  "code": "def cltv(n, lock, seq):\n    if seq == 0xffffffff or (n < 500_000_000) != (lock < 500_000_000) or n > lock:\n        return False\n    return True\nprint(cltv(800000, 800000, 0xfffffffe), cltv(800000, 799999, 0xfffffffe), cltv(800000, 800000, 0xffffffff))",
+  "options": [
+   "True False False",
+   "True True False",
+   "True False True",
+   "False False False"
+  ],
+  "answer": 0,
+  "why": "Only the first call has an effective lock time of the same kind that is large enough."
+ },
+ {
+  "concept": "RelativeTimelocks",
+  "level": "Understand",
+  "q": "What does a relative timelock count from?",
+  "options": [
+   "The first block of the chain",
+   "The block in which the spent output was confirmed",
+   "The time of the signature",
+   "The moment the node starts"
+  ],
+  "answer": 1,
+  "why": "It measures the age of the output."
+ },
+ {
+  "concept": "RelativeTimelock",
+  "level": "Remember",
+  "q": "In which field of an input is a relative timelock encoded?",
+  "options": [
+   "The previous output index",
+   "The witness",
+   "The sequence field",
+   "The version"
+  ],
+  "answer": 2,
+  "why": "BIP68 gives the sequence field this meaning for version 2 transactions."
+ },
+ {
+  "concept": "RelativeTimelock",
+  "level": "Apply",
+  "q": "Decode the sequences 144 and 0x00400064 as BIP68 locks.",
+  "code": "def decode(seq):\n    if seq & (1 << 31):\n        return 'no relative lock'\n    n = seq & 0xffff\n    return str(n * 512) + ' seconds' if seq & (1 << 22) else str(n) + ' blocks'\nprint(decode(144), '|', decode(0x00400064))",
+  "options": [
+   "144 seconds | 100 blocks",
+   "144 blocks | 100 seconds",
+   "no relative lock | 51200 seconds",
+   "144 blocks | 51200 seconds"
+  ],
+  "answer": 3,
+  "why": "Bit 22 selects 512-second units, so 100 units are 51,200 seconds."
+ },
+ {
+  "concept": "CheckSequenceVerify",
+  "level": "Understand",
+  "q": "What is the minimum transaction version for OP_CHECKSEQUENCEVERIFY?",
+  "options": [
+   "2",
+   "1",
+   "3",
+   "0"
+  ],
+  "answer": 0,
+  "why": "Version 1 transactions do not enforce relative locks."
+ },
+ {
+  "concept": "CheckSequenceVerify",
+  "level": "Apply",
+  "q": "OP_CHECKSEQUENCEVERIFY needs version 2, a relative lock of the same kind and an operand no larger than the sequence. Which of (4320, 4320, v2), (4320, 4319, v2), (4320, 4320, v1) pass?",
+  "code": "def csv(n, seq, version):\n    return version >= 2 and not seq & (1 << 31) and (n & (1 << 22)) == (seq & (1 << 22)) and (n & 0xffff) <= (seq & 0xffff)\nprint([csv(4320, 4320, 2), csv(4320, 4319, 2), csv(4320, 4320, 1)])",
+  "options": [
+   "[True, True, False]",
+   "[True, False, False]",
+   "[False, False, False]",
+   "[True, False, True]"
+  ],
+  "answer": 1,
+  "why": "Only the first passes: the second is too young and the third has version 1."
+ },
+ {
+  "concept": "FlowControl",
+  "level": "Understand",
+  "q": "What can a script do with flow control that a simple key lock cannot?",
+  "options": [
+   "Run loops without end",
+   "Change the amount of the output",
+   "Offer several ways to spend, chosen by the spender",
+   "Skip the signature check"
+  ],
+  "answer": 2,
+  "why": "Conditionals let one output have several redemption paths."
+ },
+ {
+  "concept": "Conditionals",
+  "level": "Understand",
+  "q": "Which two ideas does this group combine?",
+  "options": [
+   "Loops and recursion",
+   "Hashes and keys",
+   "Fees and weights",
+   "Conditional clauses that choose a path and VERIFY opcodes that guard one"
+  ],
+  "answer": 3,
+  "why": "Both control whether the script continues."
+ },
+ {
+  "concept": "ConditionalClauses",
+  "level": "Remember",
+  "q": "What does OP_IF read to choose its path?",
+  "options": [
+   "The value on top of the stack",
+   "The next opcode",
+   "The block height",
+   "The sequence of the input"
+  ],
+  "answer": 0,
+  "why": "The input script pushes the value."
+ },
+ {
+  "concept": "ConditionalClauses",
+  "level": "Apply",
+  "q": "Run 'IF 2 ELSE 3 ENDIF' once with a stack [1] and once with [0]. What does the stack hold afterward?",
+  "code": "def run(ops, st):\n    ex = [True]\n    for w in ops:\n        if w == 'IF':\n            c = st.pop() if ex[-1] else 0\n            ex.append(ex[-1] and bool(c))\n        elif w == 'ELSE':\n            ex[-1] = all(ex[:-1]) and not ex[-1]\n        elif w == 'ENDIF':\n            ex.pop()\n        elif all(ex):\n            st.append(int(w))\n    return st\nprint(run('IF 2 ELSE 3 ENDIF'.split(), [1]), run('IF 2 ELSE 3 ENDIF'.split(), [0]))",
+  "options": [
+   "[3] [2]",
+   "[2] [3]",
+   "[2] [2]",
+   "[1, 2] [0, 3]"
+  ],
+  "answer": 1,
+  "why": "A true value runs the first path, a false one the ELSE path."
+ },
+ {
+  "concept": "VerifyGuard",
+  "level": "Understand",
+  "q": "What does EQUALVERIFY do that EQUAL does not?",
+  "options": [
+   "It pushes the larger of the two items",
+   "It always succeeds",
+   "It fails the script unless the items are equal and leaves nothing on the stack",
+   "It pushes the hash of the items"
+  ],
+  "answer": 2,
+  "why": "VERIFY variants are guard clauses."
+ },
+ {
+  "concept": "VerifyGuard",
+  "level": "Apply",
+  "q": "Compare EQUAL and EQUALVERIFY on a stack [5, 5]. What is left on the stack by each?",
+  "code": "def equal(st):\n    b, a = st.pop(), st.pop()\n    st.append(int(a == b))\n    return st\ndef equalverify(st):\n    b, a = st.pop(), st.pop()\n    if a != b:\n        raise ValueError('fails')\n    return st\nprint(equal([5, 5]), equalverify([5, 5]))",
+  "options": [
+   "[] [1]",
+   "[1] [1]",
+   "[5] []",
+   "[1] []"
+  ],
+  "answer": 3,
+  "why": "EQUAL leaves a result; EQUALVERIFY leaves nothing and continues."
+ },
+ {
+  "concept": "MultiPathScript",
+  "level": "Understand",
+  "q": "How does the input script choose a path of a nested script?",
+  "options": [
+   "By pushing a true or false value for each clause",
+   "By signing with a special key",
+   "By setting the lock time",
+   "By naming the path in the output"
+  ],
+  "answer": 0,
+  "why": "Each IF consumes one of the pushed values."
+ },
+ {
+  "concept": "MultiPathScript",
+  "level": "Apply",
+  "q": "A script is 'IF 10 ELSE IF 20 ELSE 30 ENDIF ENDIF'. What is left for the stacks [1], [1, 0] and [0, 0]?",
+  "code": "def run(ops, st):\n    ex = [True]\n    for w in ops:\n        if w == 'IF':\n            c = st.pop() if ex[-1] else 0\n            ex.append(ex[-1] and bool(c))\n        elif w == 'ELSE':\n            ex[-1] = all(ex[:-1]) and not ex[-1]\n        elif w == 'ENDIF':\n            ex.pop()\n        elif all(ex):\n            st.append(int(w))\n    return st\ns = 'IF 10 ELSE IF 20 ELSE 30 ENDIF ENDIF'.split()\nprint(run(s, [1]), run(s, [1, 0]), run(s, [0, 0]))",
+  "options": [
+   "[20] [10] [30]",
+   "[10] [20] [30]",
+   "[10] [30] [20]",
+   "[10] [10] [20]"
+  ],
+  "answer": 1,
+  "why": "The top value picks the outer clause and the next one picks the inner clause."
+ },
+ {
+  "concept": "ComplexScripts",
+  "level": "Understand",
+  "q": "What does the capital account example combine?",
+  "options": [
+   "Only one key",
+   "A hash of a preimage",
+   "Several signers with timelocks and several paths",
+   "A proof of work"
+  ],
+  "answer": 2,
+  "why": "It shows how script features compose."
+ },
+ {
+  "concept": "MohammedScript",
+  "level": "Understand",
+  "q": "Who can spend the capital account output after 90 days?",
+  "options": [
+   "Any one partner",
+   "Nobody",
+   "Two partners only",
+   "The lawyer alone"
+  ],
+  "answer": 3,
+  "why": "The third path unlocks after 90 days for the lawyer."
+ },
+ {
+  "concept": "MohammedScript",
+  "level": "Apply",
+  "q": "Test the three paths: ages 0, 10, 30, 89 and 90 days with signers {A,B}, {L,A}, {L,A}, {L}, {L}.",
+  "code": "def can(age, signers):\n    partners = len(signers & {'A', 'B', 'C'})\n    return partners >= 2 or ('L' in signers and partners >= 1 and age >= 30) or ('L' in signers and age >= 90)\nprint([can(0, {'A', 'B'}), can(10, {'L', 'A'}), can(30, {'L', 'A'}), can(89, {'L'}), can(90, {'L'})])",
+  "options": [
+   "[True, False, True, False, True]",
+   "[True, True, True, False, True]",
+   "[False, False, True, False, True]",
+   "[True, False, True, True, True]"
+  ],
+  "answer": 0,
+  "why": "The lawyer needs a partner until day 90."
+ },
+ {
+  "concept": "Miniscript",
+  "level": "Understand",
+  "q": "What does Miniscript make possible that arbitrary Script does not?",
+  "options": [
+   "Loops in scripts",
+   "A program can analyse the result and construct witnesses",
+   "Unlimited script size",
+   "Skipping signatures"
+  ],
+  "answer": 1,
+  "why": "Fragments with known behaviour are composed by rules."
+ },
+ {
+  "concept": "Miniscript",
+  "level": "Apply",
+  "q": "Compile or_i(pk(A), and_v(v:pk(B), older(144))) with the fragment rules used here.",
+  "code": "def script(m):\n    k = m[0]\n    if k == 'pk':\n        return [m[1], 'CHECKSIG']\n    if k == 'older':\n        return [str(m[1]), 'CHECKSEQUENCEVERIFY']\n    if k == 'v':\n        s = script(m[1])\n        ver = {'CHECKSIG': 'CHECKSIGVERIFY', 'EQUAL': 'EQUALVERIFY'}.get(s[-1])\n        return s[:-1] + [ver] if ver else s + ['VERIFY']\n    if k == 'and_v':\n        return script(m[1]) + script(m[2])\n    if k == 'or_i':\n        return ['IF'] + script(m[1]) + ['ELSE'] + script(m[2]) + ['ENDIF']\nprint(' '.join(script(('or_i', ('pk', 'A'), ('and_v', ('v', ('pk', 'B')), ('older', 144))))))",
+  "options": [
+   "A CHECKSIG IF B CHECKSIG 144 CHECKSEQUENCEVERIFY ENDIF",
+   "IF A CHECKSIG ELSE B CHECKSIG 144 CHECKSEQUENCEVERIFY ENDIF",
+   "IF A CHECKSIG ELSE B CHECKSIGVERIFY 144 CHECKSEQUENCEVERIFY ENDIF",
+   "IF A CHECKSIGVERIFY ELSE B CHECKSIG ENDIF"
+  ],
+  "answer": 2,
+  "why": "The v wrapper turns CHECKSIG into CHECKSIGVERIFY."
+ },
+ {
+  "concept": "SegwitScripts",
+  "level": "Understand",
+  "q": "What did segregated witness change about where the proof of a spend is kept?",
+  "options": [
+   "It deleted the proof",
+   "It put the proof in the block header",
+   "It made the proof optional",
+   "It moved the proof into a separate witness structure"
+  ],
+  "answer": 3,
+  "why": "The scripts' inputs live in the witness."
+ },
+ {
+  "concept": "WitnessPrograms",
+  "level": "Understand",
+  "q": "Which two things does this group describe?",
+  "options": [
+   "The witness program format and the address that encodes it",
+   "Fees and weights",
+   "Lock times and sequences",
+   "Seeds and keys"
+  ],
+  "answer": 0,
+  "why": "Program, P2WPKH, P2WSH and the bech32 address."
+ },
+ {
+  "concept": "WitnessProgram",
+  "level": "Remember",
+  "q": "Which version byte starts a taproot witness program?",
+  "options": [
+   "OP_0",
+   "OP_1",
+   "OP_16",
+   "OP_2"
+  ],
+  "answer": 1,
+  "why": "Version 0 is P2WPKH and P2WSH; version 1 is taproot."
+ },
+ {
+  "concept": "WitnessProgram",
+  "level": "Apply",
+  "q": "Classify the output scripts 0014<20 bytes> and 5120<32 bytes> by version and length.",
+  "code": "def kind(spk):\n    ver = 0 if spk[0] == 0 else spk[0] - 80\n    prog = spk[2:]\n    if ver == 0 and len(prog) == 20:\n        return 'P2WPKH'\n    if ver == 0 and len(prog) == 32:\n        return 'P2WSH'\n    return 'P2TR' if ver == 1 and len(prog) == 32 else 'other'\nprint(kind(bytes([0, 20]) + bytes(20)), kind(bytes([0x51, 32]) + bytes(32)))",
+  "options": [
+   "P2WSH P2TR",
+   "P2WPKH P2WSH",
+   "P2WPKH P2TR",
+   "P2TR P2WPKH"
+  ],
+  "answer": 2,
+  "why": "Version 0 with 20 bytes is a key hash; version 1 with 32 bytes is taproot."
+ },
+ {
+  "concept": "P2wpkh",
+  "level": "Remember",
+  "q": "What does the witness of a P2WPKH spend contain?",
+  "options": [
+   "A script and a signature",
+   "Only a signature",
+   "A 32-byte hash",
+   "A signature and a public key"
+  ],
+  "answer": 3,
+  "why": "The input script is empty."
+ },
+ {
+  "concept": "P2wpkh",
+  "level": "Apply",
+  "q": "How many bytes shorter is a P2WPKH output script (0014 plus 20 bytes) than a P2PKH one (25 bytes)?",
+  "code": "print(25 - len(bytes([0, 20]) + bytes(20)))",
+  "options": [
+   "3",
+   "5",
+   "1",
+   "25"
+  ],
+  "answer": 0,
+  "why": "A P2WPKH output is 22 bytes."
+ },
+ {
+  "concept": "P2wsh",
+  "level": "Remember",
+  "q": "Which hash does a P2WSH output hold?",
+  "options": [
+   "The 20-byte HASH160 of the script",
+   "The 32-byte SHA-256 of the script",
+   "The 32-byte SHA-256 of the key",
+   "The double SHA-256 of the output"
+  ],
+  "answer": 1,
+  "why": "One SHA-256 gives 32 bytes."
+ },
+ {
+  "concept": "P2wsh",
+  "level": "Apply",
+  "q": "The script OP_TRUE is the single byte 0x51. What is the length of its SHA-256 witness program and what are the first 8 hex digits?",
+  "code": "import hashlib\nh = hashlib.sha256(bytes([0x51])).digest()\nprint(len(h), h.hex()[:8])",
+  "options": [
+   "20 4bf5122f",
+   "32 e3b0c442",
+   "32 4ae81572",
+   "32 00000000"
+  ],
+  "answer": 2,
+  "why": "SHA-256 outputs 32 bytes."
+ },
+ {
+  "concept": "SegwitAddress",
+  "level": "Remember",
+  "q": "Which encoding does a version 1 witness address use?",
+  "options": [
+   "Base58Check",
+   "bech32 with a different prefix",
+   "Base64",
+   "bech32m"
+  ],
+  "answer": 3,
+  "why": "Version 0 uses bech32; later versions use bech32m with a different checksum constant."
+ },
+ {
+  "concept": "SegwitAddress",
+  "level": "Apply",
+  "q": "Build a mainnet address for the key hash of version 0 and for a 32-byte program of version 1. What are the first four characters of each?",
+  "code": "CH = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l'\ndef polymod(values):\n    gen = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]\n    chk = 1\n    for v in values:\n        top = chk >> 25\n        chk = (chk & 0x1ffffff) << 5 ^ v\n        for i in range(5):\n            chk ^= gen[i] if (top >> i) & 1 else 0\n    return chk\ndef address(hrp, version, program):\n    const = 1 if version == 0 else 0x2bc830a3\n    data, acc, bits = [version], 0, 0\n    for byte in program:\n        acc = (acc << 8) | byte\n        bits += 8\n        while bits >= 5:\n            bits -= 5\n            data.append((acc >> bits) & 31)\n    if bits:\n        data.append((acc << (5 - bits)) & 31)\n    values = [ord(x) >> 5 for x in hrp] + [0] + [ord(x) & 31 for x in hrp] + data\n    mod = polymod(values + [0] * 6) ^ const\n    checksum = [(mod >> 5 * (5 - i)) & 31 for i in range(6)]\n    return hrp + '1' + ''.join(CH[d] for d in data + checksum)\nprint(address('bc', 0, bytes(20))[:4], address('bc', 1, bytes(32))[:4])",
+  "options": [
+   "bc1q bc1p",
+   "bc1p bc1q",
+   "bc1q bc1q",
+   "bc1p bc1p"
+  ],
+  "answer": 0,
+  "why": "The data character after the separator is the version: q is 0 and p is 1."
+ },
+ {
+  "concept": "SegwitUpgrade",
+  "level": "Understand",
+  "q": "What are the two ways of putting segregated witness outputs to use?",
+  "options": [
+   "Hard fork and rollback",
+   "Native witness outputs and nested ones inside a script hash",
+   "Mining and relaying",
+   "Seeds and passwords"
+  ],
+  "answer": 1,
+  "why": "Nested outputs let old wallets pay a new kind of script."
+ },
+ {
+  "concept": "BackwardCompatibleUpgrade",
+  "level": "Understand",
+  "q": "How does an old node see a witness output?",
+  "options": [
+   "As an invalid script",
+   "As an OP_RETURN",
+   "As two pushes that anyone can spend",
+   "As a coinbase"
+  ],
+  "answer": 2,
+  "why": "That is why a soft fork works."
+ },
+ {
+  "concept": "BackwardCompatibleUpgrade",
+  "level": "Apply",
+  "q": "An old node sees a version 0 witness program as two pushes: an empty item, then 20 bytes of non-zero data. Does the old node count the top item as true?",
+  "code": "stack = [b'', bytes([17]) * 20]\ntop = stack[-1]\nprint(any(top))",
+  "options": [
+   "False",
+   "None",
+   "20",
+   "True"
+  ],
+  "answer": 3,
+  "why": "A non-empty item with a non-zero byte is true."
+ },
+ {
+  "concept": "NestedSegwit",
+  "level": "Understand",
+  "q": "What is the redeem script of a nested segwit output?",
+  "options": [
+   "A witness program",
+   "A public key",
+   "An OP_RETURN script",
+   "A multisignature script only"
+  ],
+  "answer": 0,
+  "why": "Old wallets pay to the 3 address and the receiver spends it with a witness."
+ },
+ {
+  "concept": "NestedSegwit",
+  "level": "Apply",
+  "q": "A nested P2WPKH redeem script is 0014 plus a 20-byte hash. How many bytes does the input script take when it pushes it, and what character does the address start with?",
+  "code": "import hashlib\nA = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'\ndef b58check(version, payload):\n    d = bytes([version]) + payload\n    d += hashlib.sha256(hashlib.sha256(d).digest()).digest()[:4]\n    n, s = int.from_bytes(d, 'big'), ''\n    while n:\n        n, r = divmod(n, 58)\n        s = A[r] + s\n    return '1' * (len(d) - len(d.lstrip(b'\\0'))) + s\nredeem = bytes([0, 20]) + bytes(20)\nprint(len(redeem) + 1, b58check(5, bytes(20))[0])",
+  "options": [
+   "22 1",
+   "23 3",
+   "22 3",
+   "34 3"
+  ],
+  "answer": 1,
+  "why": "One length byte plus 22 bytes, and a leading 3 for version 5."
+ },
+ {
+  "concept": "WitnessSighash",
+  "level": "Understand",
+  "q": "Why does BIP143 make the signature hash cheaper for large transactions?",
+  "options": [
+   "It drops the signature",
+   "It skips the outputs",
+   "It reuses three hashes for all inputs",
+   "It hashes only one byte"
+  ],
+  "answer": 2,
+  "why": "The work grows with the size of the transaction and not with its square."
+ },
+ {
+  "concept": "WitnessSighash",
+  "level": "Apply",
+  "q": "BIP143 hashes the value of the output being spent. Do two hashes of the same data with values 100000 and 100001 differ?",
+  "code": "import hashlib, struct\ndef h256(b):\n    return hashlib.sha256(hashlib.sha256(b).digest()).digest()\nprint(h256(b'tx' + struct.pack('<q', 100000)) != h256(b'tx' + struct.pack('<q', 100001)))",
+  "options": [
+   "False",
+   "None",
+   "1",
+   "True"
+  ],
+  "answer": 3,
+  "why": "Committing to the amount means a wrong amount breaks the signature."
+ },
+ {
+  "concept": "TreesAndTweaks",
+  "level": "Understand",
+  "q": "What do script trees and key tweaks have in common?",
+  "options": [
+   "Both commit to more than a key with a hash",
+   "Both use loops",
+   "Both need a miner's key",
+   "Both are only policy"
+  ],
+  "answer": 0,
+  "why": "A Merkle root or a tweak is hidden inside what looks like a key or hash."
+ },
+ {
+  "concept": "ScriptTrees",
+  "level": "Understand",
+  "q": "What is the benefit of putting alternative scripts in a Merkle tree?",
+  "options": [
+   "All scripts are revealed",
+   "Only the used script and a short proof are revealed",
+   "The scripts are shortened",
+   "No script is run"
+  ],
+  "answer": 1,
+  "why": "The cost grows with the depth of the tree."
+ },
+ {
+  "concept": "Mast",
+  "level": "Understand",
+  "q": "What does a spender reveal from a Merklized alternative script tree?",
+  "options": [
+   "Every script of the tree",
+   "The private key",
+   "The used script and the hashes that connect it to the root",
+   "The tree's depth only"
+  ],
+  "answer": 2,
+  "why": "One 32-byte hash per level."
+ },
+ {
+  "concept": "Mast",
+  "level": "Apply",
+  "q": "How many sibling hashes does a proof need for balanced trees of 3, 4, 8 and 1,024 scripts?",
+  "code": "print([(n - 1).bit_length() for n in (3, 4, 8, 1024)])",
+  "options": [
+   "[1, 2, 3, 10]",
+   "[2, 2, 3, 1024]",
+   "[2, 4, 8, 10]",
+   "[2, 2, 3, 10]"
+  ],
+  "answer": 3,
+  "why": "The proof length is the depth of the tree."
+ },
+ {
+  "concept": "MastVersusAst",
+  "level": "Analyze",
+  "q": "Which statement about the two meanings of MAST is correct?",
+  "options": [
+   "The alternative script tree commits to complete scripts and needs one hash per level",
+   "The abstract syntax tree is the one used in taproot",
+   "Both commit to every part of a program",
+   "Neither uses a Merkle root"
+  ],
+  "answer": 0,
+  "why": "Taproot uses the alternative script tree."
+ },
+ {
+  "concept": "MastVersusAst",
+  "level": "Apply",
+  "q": "A path to one of 1,000 alternative scripts shows the siblings plus the root. How many commitments is that?",
+  "code": "def commitments(n):\n    return (n - 1).bit_length() + 1\nprint(commitments(1000))",
+  "options": [
+   "10",
+   "11",
+   "1000",
+   "12"
+  ],
+  "answer": 1,
+  "why": "Ten siblings and the root."
+ },
+ {
+  "concept": "KeyTweaks",
+  "level": "Understand",
+  "q": "What does a key tweak add to a public key?",
+  "options": [
+   "A second signature",
+   "A timestamp",
+   "A number derived from a commitment, times the generator",
+   "A checksum"
+  ],
+  "answer": 2,
+  "why": "The tweaked key still looks like a key."
+ },
+ {
+  "concept": "PayToContract",
+  "level": "Understand",
+  "q": "What does the payee need to spend a pay-to-contract output?",
+  "options": [
+   "Only the description",
+   "Only the public key",
+   "A new address",
+   "The private key plus the same number as the tweak"
+  ],
+  "answer": 3,
+  "why": "Adding the tweak to the private key matches adding it to the public key."
+ },
+ {
+  "concept": "PayToContract",
+  "level": "Apply",
+  "q": "Pay to a key tweaked with the hash of 'one'. Is the key the same for the same description, and for the description 'two'?",
+  "code": "import hashlib\nP = 2**256 - 2**32 - 977\nN = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141\nG = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8)\ndef add(a, b):\n    if a is None or b is None:\n        return a or b\n    if a[0] == b[0] and (a[1] + b[1]) % P == 0:\n        return None\n    m = (3 * a[0] * a[0] * pow(2 * a[1], -1, P) if a == b else (b[1] - a[1]) * pow(b[0] - a[0], -1, P)) % P\n    x = (m * m - a[0] - b[0]) % P\n    return x, (m * (a[0] - x) - a[1]) % P\ndef mul(k, p):\n    r = None\n    while k:\n        if k & 1:\n            r = add(r, p)\n        p, k = add(p, p), k >> 1\n    return r\ndef key(d):\n    return add(mul(11, G), mul(int.from_bytes(hashlib.sha256(d).digest(), 'big') % N, G))\nprint(key(b'one') == key(b'one'), key(b'one') == key(b'two'))",
+  "options": [
+   "True False",
+   "True True",
+   "False False",
+   "False True"
+  ],
+  "answer": 0,
+  "why": "The tweak commits to the description."
+ },
+ {
+  "concept": "ScriptlessMultisignature",
+  "level": "Understand",
+  "q": "What disappears in a scriptless multisignature?",
+  "options": [
+   "The signature",
+   "The script that counts keys and signatures",
+   "The public key",
+   "The transaction"
+  ],
+  "answer": 1,
+  "why": "The result looks like a single signer."
+ },
+ {
+  "concept": "ScriptlessMultisignature",
+  "level": "Apply",
+  "q": "Two participants have private keys 5 and 6. Is the sum of their public keys the public key of 11?",
+  "code": "import hashlib\nP = 2**256 - 2**32 - 977\nN = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141\nG = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8)\ndef add(a, b):\n    if a is None or b is None:\n        return a or b\n    if a[0] == b[0] and (a[1] + b[1]) % P == 0:\n        return None\n    m = (3 * a[0] * a[0] * pow(2 * a[1], -1, P) if a == b else (b[1] - a[1]) * pow(b[0] - a[0], -1, P)) % P\n    x = (m * m - a[0] - b[0]) % P\n    return x, (m * (a[0] - x) - a[1]) % P\ndef mul(k, p):\n    r = None\n    while k:\n        if k & 1:\n            r = add(r, p)\n        p, k = add(p, p), k >> 1\n    return r\nprint(add(mul(5, G), mul(6, G)) == mul(11, G))",
+  "options": [
+   "False",
+   "None",
+   "True",
+   "11"
+  ],
+  "answer": 2,
+  "why": "Scalar multiplication distributes over addition of points."
+ },
+ {
+  "concept": "ThresholdSignature",
+  "level": "Analyze",
+  "q": "What is a drawback of a threshold signature for accountability?",
+  "options": [
+   "It needs more bytes",
+   "It cannot be verified",
+   "It reveals all keys",
+   "It does not show which participants signed"
+  ],
+  "answer": 3,
+  "why": "The signature looks ordinary."
+ },
+ {
+  "concept": "ThresholdSignature",
+  "level": "Apply",
+  "q": "A line f(x) = 777 + 4242x gives shares at x = 1, 2, 3. Interpolating at 0 from the shares at 2 and 3 gives what?",
+  "code": "N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141\nsecret, a1 = 777, 4242\nshares = {x: (secret + a1 * x) % N for x in (1, 2, 3)}\ni, j = 2, 3\nprint((j * pow(j - i, -1, N) * shares[i] + (-i) * pow(j - i, -1, N) * shares[j]) % N)",
+  "options": [
+   "777",
+   "4242",
+   "0",
+   "5019"
+  ],
+  "answer": 0,
+  "why": "Any two points of a line fix its value at x = 0."
+ },
+ {
+  "concept": "TaprootBranch",
+  "level": "Understand",
+  "q": "What are the two spending paths of a taproot output?",
+  "options": [
+   "Hash path and time path",
+   "Key path and script path",
+   "Native path and nested path",
+   "Fast path and slow path"
+  ],
+  "answer": 1,
+  "why": "The branch ends with tapscript, the language of the script path."
+ },
+ {
+  "concept": "TaprootOutputs",
+  "level": "Understand",
+  "q": "What does paying to a taproot output key also commit to?",
+  "options": [
+   "The amount",
+   "The fee",
+   "The scripts of the tree",
+   "The sender"
+  ],
+  "answer": 2,
+  "why": "The output key is the internal key tweaked by the tree's root."
+ },
+ {
+  "concept": "Taproot",
+  "level": "Remember",
+  "q": "How many bytes is the program of a taproot output?",
+  "options": [
+   "20",
+   "33",
+   "64",
+   "32"
+  ],
+  "answer": 3,
+  "why": "It is the x coordinate of the output key."
+ },
+ {
+  "concept": "Taproot",
+  "level": "Apply",
+  "q": "Tweak the generator's x coordinate with no script tree. Is the output key different from the internal key?",
+  "code": "import hashlib\nP = 2**256 - 2**32 - 977\nN = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141\nG = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8)\ndef add(a, b):\n    if a is None or b is None:\n        return a or b\n    if a[0] == b[0] and (a[1] + b[1]) % P == 0:\n        return None\n    m = (3 * a[0] * a[0] * pow(2 * a[1], -1, P) if a == b else (b[1] - a[1]) * pow(b[0] - a[0], -1, P)) % P\n    x = (m * m - a[0] - b[0]) % P\n    return x, (m * (a[0] - x) - a[1]) % P\ndef mul(k, p):\n    r = None\n    while k:\n        if k & 1:\n            r = add(r, p)\n        p, k = add(p, p), k >> 1\n    return r\ndef tagged(tag, data):\n    t = hashlib.sha256(tag.encode()).digest()\n    return hashlib.sha256(t + t + data).digest()\ndef leaf(script): return tagged('TapLeaf', bytes([0xc0, len(script)]) + script)\ndef branch(x, y): return tagged('TapBranch', min(x, y) + max(x, y))\ndef lift_x(x):\n    y = pow((pow(x, 3, P) + 7) % P, (P + 1) // 4, P)\n    return None if pow(y, 2, P) != (x ** 3 + 7) % P else (x, y if y % 2 == 0 else P - y)\ndef sign(d, msg, k):\n    pt = mul(d, G)\n    d = d if pt[1] % 2 == 0 else N - d\n    r_pt = mul(k, G)\n    k = k if r_pt[1] % 2 == 0 else N - k\n    e = int.from_bytes(tagged('BIP0340/challenge', r_pt[0].to_bytes(32, 'big') + pt[0].to_bytes(32, 'big') + msg), 'big') % N\n    return r_pt[0].to_bytes(32, 'big') + ((k + e * d) % N).to_bytes(32, 'big')\ndef verify(pub32, msg, sig):\n    pt, r, s = lift_x(int.from_bytes(pub32, 'big')), int.from_bytes(sig[:32], 'big'), int.from_bytes(sig[32:], 'big')\n    e = int.from_bytes(tagged('BIP0340/challenge', sig[:32] + pub32 + msg), 'big') % N\n    r_pt = add(mul(s, G), mul(N - e, pt))\n    return r_pt is not None and r_pt[1] % 2 == 0 and r_pt[0] == r\ninternal = G[0].to_bytes(32, 'big')\nt = int.from_bytes(tagged('TapTweak', internal), 'big')\nq = add(lift_x(G[0]), mul(t, G))\nprint(q[0].to_bytes(32, 'big') != internal)",
+  "options": [
+   "True",
+   "False",
+   "None",
+   "32"
+  ],
+  "answer": 0,
+  "why": "Even with no scripts, BIP341 tweaks the key."
+ },
+ {
+  "concept": "KeyPathSpending",
+  "level": "Understand",
+  "q": "What does a key path spend reveal about the scripts?",
+  "options": [
+   "All of them",
+   "Nothing",
+   "The first one",
+   "Their hashes"
+  ],
+  "answer": 1,
+  "why": "A single signature is all that appears."
+ },
+ {
+  "concept": "KeyPathSpending",
+  "level": "Apply",
+  "q": "Sign a message with a BIP340 signature and verify it. What do verification of the message and of another message give, and how long is the signature?",
+  "code": "import hashlib\nP = 2**256 - 2**32 - 977\nN = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141\nG = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8)\ndef add(a, b):\n    if a is None or b is None:\n        return a or b\n    if a[0] == b[0] and (a[1] + b[1]) % P == 0:\n        return None\n    m = (3 * a[0] * a[0] * pow(2 * a[1], -1, P) if a == b else (b[1] - a[1]) * pow(b[0] - a[0], -1, P)) % P\n    x = (m * m - a[0] - b[0]) % P\n    return x, (m * (a[0] - x) - a[1]) % P\ndef mul(k, p):\n    r = None\n    while k:\n        if k & 1:\n            r = add(r, p)\n        p, k = add(p, p), k >> 1\n    return r\ndef tagged(tag, data):\n    t = hashlib.sha256(tag.encode()).digest()\n    return hashlib.sha256(t + t + data).digest()\ndef leaf(script): return tagged('TapLeaf', bytes([0xc0, len(script)]) + script)\ndef branch(x, y): return tagged('TapBranch', min(x, y) + max(x, y))\ndef lift_x(x):\n    y = pow((pow(x, 3, P) + 7) % P, (P + 1) // 4, P)\n    return None if pow(y, 2, P) != (x ** 3 + 7) % P else (x, y if y % 2 == 0 else P - y)\ndef sign(d, msg, k):\n    pt = mul(d, G)\n    d = d if pt[1] % 2 == 0 else N - d\n    r_pt = mul(k, G)\n    k = k if r_pt[1] % 2 == 0 else N - k\n    e = int.from_bytes(tagged('BIP0340/challenge', r_pt[0].to_bytes(32, 'big') + pt[0].to_bytes(32, 'big') + msg), 'big') % N\n    return r_pt[0].to_bytes(32, 'big') + ((k + e * d) % N).to_bytes(32, 'big')\ndef verify(pub32, msg, sig):\n    pt, r, s = lift_x(int.from_bytes(pub32, 'big')), int.from_bytes(sig[:32], 'big'), int.from_bytes(sig[32:], 'big')\n    e = int.from_bytes(tagged('BIP0340/challenge', sig[:32] + pub32 + msg), 'big') % N\n    r_pt = add(mul(s, G), mul(N - e, pt))\n    return r_pt is not None and r_pt[1] % 2 == 0 and r_pt[0] == r\nd = 3\npub = mul(d, G)[0].to_bytes(32, 'big')\nmsg = hashlib.sha256(b'pay Bob').digest()\nsig = sign(d, msg, 5)\nprint(verify(pub, msg, sig), verify(pub, hashlib.sha256(b'pay Eve').digest(), sig), len(sig))",
+  "options": [
+   "True True 64",
+   "False False 64",
+   "True False 64",
+   "True False 65"
+  ],
+  "answer": 2,
+  "why": "A BIP340 signature is 64 bytes and commits to its message."
+ },
+ {
+  "concept": "ScriptPathSpending",
+  "level": "Understand",
+  "q": "What does a script path spend reveal?",
+  "options": [
+   "The whole tree",
+   "The private key",
+   "All the sibling scripts",
+   "One script, the control block and the data that satisfies it"
+  ],
+  "answer": 3,
+  "why": "Other scripts remain private."
+ },
+ {
+  "concept": "ScriptPathSpending",
+  "level": "Apply",
+  "q": "A tree of four scripts: fold the first leaf with its proof. Does it match the root, and how long is the control block?",
+  "code": "import hashlib\nP = 2**256 - 2**32 - 977\nN = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141\nG = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798, 0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8)\ndef add(a, b):\n    if a is None or b is None:\n        return a or b\n    if a[0] == b[0] and (a[1] + b[1]) % P == 0:\n        return None\n    m = (3 * a[0] * a[0] * pow(2 * a[1], -1, P) if a == b else (b[1] - a[1]) * pow(b[0] - a[0], -1, P)) % P\n    x = (m * m - a[0] - b[0]) % P\n    return x, (m * (a[0] - x) - a[1]) % P\ndef mul(k, p):\n    r = None\n    while k:\n        if k & 1:\n            r = add(r, p)\n        p, k = add(p, p), k >> 1\n    return r\ndef tagged(tag, data):\n    t = hashlib.sha256(tag.encode()).digest()\n    return hashlib.sha256(t + t + data).digest()\ndef leaf(script): return tagged('TapLeaf', bytes([0xc0, len(script)]) + script)\ndef branch(x, y): return tagged('TapBranch', min(x, y) + max(x, y))\ndef lift_x(x):\n    y = pow((pow(x, 3, P) + 7) % P, (P + 1) // 4, P)\n    return None if pow(y, 2, P) != (x ** 3 + 7) % P else (x, y if y % 2 == 0 else P - y)\ndef sign(d, msg, k):\n    pt = mul(d, G)\n    d = d if pt[1] % 2 == 0 else N - d\n    r_pt = mul(k, G)\n    k = k if r_pt[1] % 2 == 0 else N - k\n    e = int.from_bytes(tagged('BIP0340/challenge', r_pt[0].to_bytes(32, 'big') + pt[0].to_bytes(32, 'big') + msg), 'big') % N\n    return r_pt[0].to_bytes(32, 'big') + ((k + e * d) % N).to_bytes(32, 'big')\ndef verify(pub32, msg, sig):\n    pt, r, s = lift_x(int.from_bytes(pub32, 'big')), int.from_bytes(sig[:32], 'big'), int.from_bytes(sig[32:], 'big')\n    e = int.from_bytes(tagged('BIP0340/challenge', sig[:32] + pub32 + msg), 'big') % N\n    r_pt = add(mul(s, G), mul(N - e, pt))\n    return r_pt is not None and r_pt[1] % 2 == 0 and r_pt[0] == r\nl = [leaf(bytes([0x51 + i])) for i in range(4)]\nroot = branch(branch(l[0], l[1]), branch(l[2], l[3]))\nproof = [l[1], branch(l[2], l[3])]\nh = l[0]\nfor s in proof:\n    h = branch(h, s)\ncontrol = bytes([0xc0]) + bytes(32) + b''.join(proof)\nprint(h == root, len(control))",
+  "options": [
+   "True 97",
+   "True 65",
+   "False 97",
+   "True 129"
+  ],
+  "answer": 0,
+  "why": "Two siblings make a control block of 33 + 64 bytes."
+ },
+ {
+  "concept": "ControlBlock",
+  "level": "Remember",
+  "q": "What does the first byte of the control block hold?",
+  "options": [
+   "The number of scripts",
+   "The leaf version and the parity of the output key",
+   "The length of the proof",
+   "The hash type"
+  ],
+  "answer": 1,
+  "why": "The remaining bytes are the internal key and the sibling hashes."
+ },
+ {
+  "concept": "ControlBlock",
+  "level": "Apply",
+  "q": "Read the first byte 0xc1 of a control block with a 33-byte base and two hashes: version, parity and depth.",
+  "code": "control = bytes([0xc1]) + bytes(32) + bytes(64)\nprint(control[0] & 0xfe, control[0] & 1, (len(control) - 33) // 32)",
+  "options": [
+   "193 0 2",
+   "192 1 64",
+   "192 1 2",
+   "194 1 2"
+  ],
+  "answer": 2,
+  "why": "The low bit is the parity and the other bits are the version, 0xc0."
+ },
+ {
+  "concept": "Tapscript",
+  "level": "Understand",
+  "q": "Which kind of script runs in a script path spend?",
+  "options": [
+   "Legacy Script",
+   "Miniscript only",
+   "A Forth interpreter",
+   "Tapscript"
+  ],
+  "answer": 3,
+  "why": "Tapscript is the version 0xc0 script language."
+ },
+ {
+  "concept": "TapscriptChanges",
+  "level": "Remember",
+  "q": "Which signature scheme does every signature check use in tapscript?",
+  "options": [
+   "BIP340 Schnorr signatures",
+   "ECDSA",
+   "RSA",
+   "Lamport signatures"
+  ],
+  "answer": 0,
+  "why": "OP_CHECKMULTISIG is disabled too."
+ },
+ {
+  "concept": "TapscriptChanges",
+  "level": "Apply",
+  "q": "A 2-of-5 script is 3 + 34 * 5 bytes in legacy Script. In tapscript it is five 33-byte key pushes, one CHECKSIG, four CHECKSIGADD, OP_2 and NUMEQUAL. What are the two sizes?",
+  "code": "legacy = 3 + 34 * 5\ntap = 5 * 33 + 1 + 4 + 1 + 1\nprint(legacy, tap)",
+  "options": [
+   "173 173",
+   "173 172",
+   "172 173",
+   "173 171"
+  ],
+  "answer": 1,
+  "why": "One byte is saved by dropping the legacy opcode."
+ },
+ {
+  "concept": "ChecksigAdd",
+  "level": "Understand",
+  "q": "What does OP_CHECKSIGADD do with an empty signature?",
+  "options": [
+   "It fails the script",
+   "It adds one",
+   "It leaves the number unchanged",
+   "It pushes the key"
+  ],
+  "answer": 2,
+  "why": "Only a non-empty invalid signature fails."
+ },
+ {
+  "concept": "ChecksigAdd",
+  "level": "Apply",
+  "q": "Three signatures, the second empty and the others valid, are checked in a 2-of-3 chain. What is the final count?",
+  "code": "count = 0\nfor s in (b'a', b'', b'c'):\n    if s:\n        count += 1\nprint(count)",
+  "options": [
+   "3",
+   "1",
+   "0",
+   "2"
+  ],
+  "answer": 3,
+  "why": "The empty signature counts nothing."
+ },
+ {
+  "concept": "OpSuccess",
+  "level": "Understand",
+  "q": "What happens when a tapscript contains an OP_SUCCESS opcode?",
+  "options": [
+   "The script succeeds unconditionally",
+   "The script fails",
+   "The opcode is skipped",
+   "The script is slow"
+  ],
+  "answer": 0,
+  "why": "This lets a soft fork give the opcode a meaning later."
+ },
+ {
+  "concept": "OpSuccess",
+  "level": "Apply",
+  "q": "The OP_SUCCESS values include 80, 98, 126 to 129 and others. Is 0xac (OP_CHECKSIG) among them, and what is the smallest?",
+  "code": "success = {80, 98, *range(126, 130), *range(131, 135), 137, 138, 141, 142, *range(149, 154), *range(187, 255)}\nprint(0xac in success, min(success))",
+  "options": [
+   "True 80",
+   "False 80",
+   "False 126",
+   "True 187"
+  ],
+  "answer": 1,
+  "why": "OP_CHECKSIG is a real opcode, and 80 is the smallest."
+ }
+]

@@ -1,0 +1,250 @@
+{
+ "_version": "1.0.0",
+ "_note": "Built by 08-tooling/sen0401_ch07_visuals_gen_v1_0_0.py. Every result in a `facts` table was produced by executing the expression beside it under the interpreter named on that run's command line; the generator refuses to write a result it did not execute.",
+ "MastVersusAst": {
+  "kind": "facts",
+  "caption": "How many 32-byte commitments a spend needs: one for each level between the script and the root, plus the root. Doubling the number of scripts costs one commitment more.",
+  "facts": [
+   {
+    "label": "Commitments for 3 scripts, and the bytes they take",
+    "expr": "(lambda n: (n, 32 * n))((3 - 1).bit_length() + 1)",
+    "result": "(3, 96)"
+   },
+   {
+    "label": "Commitments for 4 scripts: the same as for 3",
+    "expr": "(4 - 1).bit_length() + 1",
+    "result": "3"
+   },
+   {
+    "label": "Commitments for 8 scripts: one more",
+    "expr": "(8 - 1).bit_length() + 1",
+    "result": "4"
+   },
+   {
+    "label": "Commitments for 1,024 scripts",
+    "expr": "(1024 - 1).bit_length() + 1",
+    "result": "11"
+   },
+   {
+    "label": "Commitments for 32,768 scripts, and the bytes they take",
+    "expr": "(lambda n: (n, 32 * n))((32768 - 1).bit_length() + 1)",
+    "result": "(16, 512)"
+   },
+   {
+    "label": "Commitments for 2 to the 127 scripts, the book's 'more than all computers could create'",
+    "expr": "(2 ** 127 - 1).bit_length() + 1",
+    "result": "128"
+   },
+   {
+    "label": "The same scripts in one legacy script of at most 10,000 bytes, at 34 bytes a branch",
+    "expr": "10000 // 34",
+    "result": "294"
+   }
+  ]
+ },
+ "ControlBlock": {
+  "kind": "facts",
+  "caption": "The control block of a taproot script path spend: one byte for the leaf version and the parity, 32 bytes for the internal key, and 32 bytes for each level of the tree.",
+  "facts": [
+   {
+    "label": "Depth 0: a tree of one leaf, like the inscription in block 775,072",
+    "expr": "33 + 32 * 0",
+    "result": "33"
+   },
+   {
+    "label": "Depth 1: two leaves",
+    "expr": "33 + 32 * 1",
+    "result": "65"
+   },
+   {
+    "label": "Depth 2: three or four leaves",
+    "expr": "33 + 32 * 2",
+    "result": "97"
+   },
+   {
+    "label": "Depth 7: up to 128 leaves",
+    "expr": "33 + 32 * 7",
+    "result": "257"
+   },
+   {
+    "label": "Depth 128, the largest the rules allow",
+    "expr": "33 + 32 * 128",
+    "result": "4129"
+   },
+   {
+    "label": "The first byte 0xc1: its leaf version and its parity bit",
+    "expr": "(0xc1 & 0xfe, 0xc1 & 1)",
+    "result": "(192, 1)"
+   },
+   {
+    "label": "A length that is not 33 plus a multiple of 32 is refused",
+    "expr": "[(n - 33) % 32 == 0 for n in (33, 65, 97, 98)]",
+    "result": "[True, True, True, False]"
+   }
+  ]
+ },
+ "MultisigLimits": {
+  "kind": "facts",
+  "caption": "The size of an m-of-n multisignature script with compressed keys is 34 bytes for each key plus 3: the count of signatures, the count of keys and the opcode.",
+  "facts": [
+   {
+    "label": "2-of-3: the script in the book",
+    "expr": "34 * 3 + 3",
+    "result": "105"
+   },
+   {
+    "label": "2-of-5: Mohammed's company",
+    "expr": "34 * 5 + 3",
+    "result": "173"
+   },
+   {
+    "label": "15 keys, the most that fits a script hash",
+    "expr": "34 * 15 + 3",
+    "result": "513"
+   },
+   {
+    "label": "16 keys, one too many: over the 520-byte limit of a redeem script",
+    "expr": "34 * 16 + 3",
+    "result": "547"
+   },
+   {
+    "label": "Is the 15-key script within 520 bytes, and the 16-key one?",
+    "expr": "(34 * 15 + 3 <= 520, 34 * 16 + 3 <= 520)",
+    "result": "(True, False)"
+   },
+   {
+    "label": "20 keys, the consensus limit for a witness script",
+    "expr": "34 * 20 + 3",
+    "result": "683"
+   },
+   {
+    "label": "The same 2-of-3 written for tapscript with OP_CHECKSIGADD",
+    "expr": "34 * 3 + 2",
+    "result": "104"
+   }
+  ]
+ },
+ "SignatureHash": {
+  "kind": "facts",
+  "caption": "The six hash types of a signature and their byte values: the low bits choose the outputs the signature covers and the high bit decides whether the other inputs are covered.",
+  "facts": [
+   {
+    "label": "SIGHASH_ALL",
+    "expr": "hex(0x01)",
+    "result": "'0x1'"
+   },
+   {
+    "label": "SIGHASH_NONE",
+    "expr": "hex(0x02)",
+    "result": "'0x2'"
+   },
+   {
+    "label": "SIGHASH_SINGLE",
+    "expr": "hex(0x03)",
+    "result": "'0x3'"
+   },
+   {
+    "label": "ALL with ANYONECANPAY",
+    "expr": "hex(0x01 | 0x80)",
+    "result": "'0x81'"
+   },
+   {
+    "label": "NONE with ANYONECANPAY",
+    "expr": "hex(0x02 | 0x80)",
+    "result": "'0x82'"
+   },
+   {
+    "label": "SINGLE with ANYONECANPAY",
+    "expr": "hex(0x03 | 0x80)",
+    "result": "'0x83'"
+   },
+   {
+    "label": "Taproot's default type, a signature of 64 bytes without the type byte",
+    "expr": "(64, 64 + 1)",
+    "result": "(64, 65)"
+   }
+  ]
+ },
+ "OpSuccess": {
+  "kind": "facts",
+  "caption": "The opcode values that make a tapscript succeed at once, from BIP342's list: 87 of the 256 possible byte values.",
+  "facts": [
+   {
+    "label": "Single values: 80 and 98",
+    "expr": "[80, 98]",
+    "result": "[80, 98]"
+   },
+   {
+    "label": "The range 126 to 129",
+    "expr": "list(range(126, 130))",
+    "result": "[126, 127, 128, 129]"
+   },
+   {
+    "label": "The range 131 to 134",
+    "expr": "list(range(131, 135))",
+    "result": "[131, 132, 133, 134]"
+   },
+   {
+    "label": "The values 137, 138, 141 and 142",
+    "expr": "[137, 138, 141, 142]",
+    "result": "[137, 138, 141, 142]"
+   },
+   {
+    "label": "The range 149 to 153: contains OP_LSHIFT, number 152, disabled in 2010",
+    "expr": "list(range(149, 154))",
+    "result": "[149, 150, 151, 152, 153]"
+   },
+   {
+    "label": "The range 187 to 254",
+    "expr": "(187, 254, 254 - 187 + 1)",
+    "result": "(187, 254, 68)"
+   },
+   {
+    "label": "How many values in all",
+    "expr": "2 + 4 + 4 + 4 + 5 + (254 - 187 + 1)",
+    "result": "87"
+   }
+  ]
+ },
+ "TapscriptChanges": {
+  "kind": "facts",
+  "caption": "The same policy written for the old and for the new language: m of n keys. The tapscript form is one byte shorter for every n: each key takes 34 bytes in both forms, and the legacy script needs one more byte for the count of keys.",
+  "facts": [
+   {
+    "label": "Legacy 2-of-3, bytes",
+    "expr": "34 * 3 + 3",
+    "result": "105"
+   },
+   {
+    "label": "Tapscript 2-of-3, bytes",
+    "expr": "33 * 3 + 3 + 1 + 1",
+    "result": "104"
+   },
+   {
+    "label": "Legacy 3-of-5, bytes",
+    "expr": "34 * 5 + 3",
+    "result": "173"
+   },
+   {
+    "label": "Tapscript 3-of-5, bytes",
+    "expr": "33 * 5 + 5 + 1 + 1",
+    "result": "172"
+   },
+   {
+    "label": "Legacy 11-of-15, bytes: the count 11 is still one byte",
+    "expr": "34 * 15 + 3",
+    "result": "513"
+   },
+   {
+    "label": "Tapscript 11-of-15, bytes",
+    "expr": "33 * 15 + 15 + 1 + 1",
+    "result": "512"
+   },
+   {
+    "label": "Signature checks needed with OP_CHECKSIGADD for a 2-of-3 spend: the empty value costs nothing",
+    "expr": "2",
+    "result": "2"
+   }
+  ]
+ }
+}

@@ -1,0 +1,304 @@
+{
+ "_version": "1.0.0",
+ "_python": "3.14.6",
+ "SerializedTransaction": [
+  [
+   "len(ALICE) // 2, tx['size']",
+   "(194, 194)"
+  ],
+  [
+   "tx['version'], tx['marker'], tx['flag'], tx['segwit']",
+   "(1, 0, 1, True)"
+  ],
+  [
+   "len(tx['inputs']), len(tx['outputs']), len(tx['witness'][0]), tx['locktime']",
+   "(1, 2, 1, 0)"
+  ]
+ ],
+ "ByteMap": [
+  [
+   "[s for s in tx['spans'] if s[0] in ('version', 'marker', 'flag', 'lock time')]",
+   "[('version', 0, 4), ('marker', 4, 1), ('flag', 5, 1), ('lock time', 190, 4)]"
+  ],
+  [
+   "sum(k for n, p, k in tx['spans'])",
+   "194"
+  ]
+ ],
+ "LegacyFormat": [
+  [
+   "len(legacy), len(bytes.fromhex(ALICE))",
+   "(125, 194)"
+  ],
+  [
+   "parse_tx(FIRST)['segwit'], FIRST_REC['status']['block_height']",
+   "(False, 170)"
+  ]
+ ],
+ "Outpoint": [
+  [
+   "i0 = tx['inputs'][0]",
+   ""
+  ],
+  [
+   "i0['txid_internal'][:16], i0['vout']",
+   "('eb3ae38f27191aa5', 1)"
+  ],
+  [
+   "internal_to_display(i0['txid_internal'])[:16]",
+   "'4ac5418026798669'"
+  ],
+  [
+   "PREV_REC['vout'][1]['value'], PREV_REC['status']['block_height']",
+   "(100000, 774958)"
+  ]
+ ],
+ "DisplayByteOrder": [
+  [
+   "d = 'eb3ae38f27191aa5f3850dc9cad00492b88b72404f9da135698679268041c54a'",
+   ""
+  ],
+  [
+   "''.join(reversed([d[i:i + 2] for i in range(0, 64, 2)]))[:16]",
+   "'4ac5418026798669'"
+  ],
+  [
+   "txid(PREV)[:16]",
+   "'4ac5418026798669'"
+  ]
+ ],
+ "InputCount": [
+  [
+   "p = parse_tx(PIZZA)",
+   ""
+  ],
+  [
+   "len(p['inputs']), bytes.fromhex(PIZZA)[4], len(p['outputs'])",
+   "(131, 131, 1)"
+  ],
+  [
+   "p['outputs'][0]['value'] // COIN, PIZZA_REC['fee'] / COIN",
+   "(10000, 0.99)"
+  ],
+  [
+   "txid(PIZZA)[:16], PIZZA_REC['status']['block_height']",
+   "('a1075db55d416d3c', 57043)"
+  ]
+ ],
+ "CompactSize": [
+  [
+   "[cs_encode(n).hex() for n in (1, 252, 253, 65535, 65536)]",
+   "['01', 'fc', 'fdfd00', 'fdffff', 'fe00000100']"
+  ],
+  [
+   "[len(cs_encode(n)) for n in (252, 253, 65536, 2 ** 32)]",
+   "[1, 3, 5, 9]"
+  ]
+ ],
+ "SequenceNumber": [
+  [
+   "hex(tx['inputs'][0]['sequence']), tx['inputs'][0]['sequence'] == SEQUENCE_FINAL",
+   "('0xffffffff', True)"
+  ]
+ ],
+ "Bip125Signal": [
+  [
+   "[(hex(s), sequence_decode(s)['rbf_signal']) for s in (0xffffffff, 0xfffffffe, 0xfffffffd)]",
+   "[('0xffffffff', False), ('0xfffffffe', False), ('0xfffffffd', True)]"
+  ]
+ ],
+ "Bip68Timelock": [
+  [
+   "sequence_decode(30)['relative_timelock'], earliest_block(774958, 30)",
+   "(('blocks', 30), 774988)"
+  ],
+  [
+   "s = sequence_for(seconds=3600)",
+   ""
+  ],
+  [
+   "hex(s), sequence_decode(s)['relative_timelock']",
+   "('0x400008', ('seconds', 4096))"
+  ],
+  [
+   "hex(SEQUENCE_LOCKTIME_TYPE_FLAG), hex(SEQUENCE_LOCKTIME_DISABLE_FLAG), hex(SEQUENCE_LOCKTIME_MASK)",
+   "('0x400000', '0x80000000', '0xffff')"
+  ]
+ ],
+ "LockTimeField": [
+  [
+   "tx['locktime'], parse_tx(PREV)['locktime'], PREV_REC['status']['block_height']",
+   "(0, 774957, 774958)"
+  ],
+  [
+   "locktime_decode(123456), locktime_decode(ALICE_REC['status']['block_time'])",
+   "(('block height', 123456), ('epoch time', 1675559245))"
+  ]
+ ],
+ "MedianTimePast": [
+  [
+   "times = [1675556500 + 100 * k for k in (15, 21, 5, 27, 24, 0, 26, 18, 12, 23, 25)]",
+   ""
+  ],
+  [
+   "median_time_past(times), max(times) - median_time_past(times)",
+   "(1675558600, 600)"
+  ]
+ ],
+ "AmountField": [
+  [
+   "[(o['value'], o['value'] / COIN) for o in tx['outputs']]",
+   "[(20000, 0.0002), (75000, 0.00075)]"
+  ],
+  [
+   "PREV_REC['vout'][1]['value'] - sum(o['value'] for o in tx['outputs']), ALICE_REC['fee']",
+   "(5000, 5000)"
+  ],
+  [
+   "MAX_MONEY, money_range(MAX_MONEY + 1)",
+   "(2100000000000000, False)"
+  ]
+ ],
+ "AmountRange": [
+  [
+   "big = 92_233_720_368_54277039",
+   ""
+  ],
+  [
+   "w = (2 * big) & 0xffffffffffffffff",
+   ""
+  ],
+  [
+   "big > MAX_MONEY, w - 2 ** 64 if w >= 2 ** 63 else w",
+   "(True, -997538)"
+  ],
+  [
+   "money_range(w - 2 ** 64), money_range(big), 50 * COIN - (w - 2 ** 64) > 50 * COIN",
+   "(False, False, True)"
+  ]
+ ],
+ "DustLimit": [
+  [
+   "P2PKH = '76a914' + '00' * 20 + '88ac'",
+   ""
+  ],
+  [
+   "P2WPKH, P2TR = '0014' + '00' * 20, '5120' + '00' * 32",
+   ""
+  ],
+  [
+   "RET = '6a04deadbeef'",
+   ""
+  ],
+  [
+   "[dust_threshold(s) for s in (P2PKH, P2WPKH, P2TR, RET)]",
+   "[546, 294, 330, 0]"
+  ],
+  [
+   "DUST_RELAY_TX_FEE, (34 + 148) * 3, (31 + 67) * 3",
+   "(3000, 546, 294)"
+  ]
+ ],
+ "OutputScript": [
+  [
+   "[(o['value'], len(bytes.fromhex(o['script'])), segwit_output_version(o['script'])[0]) for o in tx['outputs']]",
+   "[(20000, 34, 1), (75000, 22, 0)]"
+  ]
+ ],
+ "PushEncoding": [
+  [
+   "push_encodings(2)",
+   "{'OP_2': '52', 'OP_PUSH1 0x02': '0102', 'OP_PUSH2 0x0002': '020200', 'OP_PUSHDATA1 0x0102': '4c0102'}"
+  ],
+  [
+   "sorted({txid(with_input_script(FIRST, s))[:8] for s in push_encodings(2).values()})",
+   "['0423a53a', '18da36d1', '4d986cd8', 'b3485f99']"
+  ]
+ ],
+ "Segwit": [
+  [
+   "txid(ALICE)[:16], hash256(legacy)[::-1].hex()[:16]",
+   "('466200308696215b', '466200308696215b')"
+  ],
+  [
+   "mutated = with_witness_item(ALICE, '00' * 65)",
+   ""
+  ],
+  [
+   "txid(mutated) == txid(ALICE), wtxid(mutated) == wtxid(ALICE)",
+   "(True, False)"
+  ]
+ ],
+ "WitnessProgram": [
+  [
+   "segwit_output_version(tx['outputs'][0]['script'])[0], segwit_output_version(tx['outputs'][1]['script'])[0]",
+   "(1, 0)"
+  ],
+  [
+   "tx['inputs'][0]['script'] == '', len(bytes.fromhex(tx['witness'][0][0]))",
+   "(True, 65)"
+  ]
+ ],
+ "BlockSubsidy": [
+  [
+   "[block_subsidy(h * 210000) / COIN for h in range(9)]",
+   "[50.0, 25.0, 12.5, 6.25, 3.125, 1.5625, 0.78125, 0.390625, 0.1953125]"
+  ],
+  [
+   "[block_subsidy(h) for h in (6720000, 6929999, 6930000)]",
+   "[1, 1, 0]"
+  ],
+  [
+   "last_subsidy_height(), total_subsidy() / COIN",
+   "(6929999, 20999999.9769)"
+  ]
+ ],
+ "MaturityRule": [
+  [
+   "r = FIRST_REC",
+   ""
+  ],
+  [
+   "r['vin'][0]['txid'][:16], r['status']['block_height']",
+   "('0437cd7f8525ceed', 170)"
+  ],
+  [
+   "coinbase_mature(9, 170), 170 - 9, COINBASE_MATURITY",
+   "(True, 161, 100)"
+  ]
+ ],
+ "Weight": [
+  [
+   "len(legacy) * 3 + len(bytes.fromhex(ALICE)), weight(ALICE)",
+   "(569, 569)"
+  ],
+  [
+   "ALICE_REC['weight'], vbytes(ALICE)",
+   "(569, 143)"
+  ],
+  [
+   "weight(FIRST) == 4 * parse_tx(FIRST)['size']",
+   "True"
+  ]
+ ],
+ "WeightUnits": [
+  [
+   "W = {n: w for n, b, f, w in field_weights(ALICE)}",
+   ""
+  ],
+  [
+   "[W['version'], W['marker'] + W['flag'], W['input count'], W['input 0 txid'] + W['input 0 output index'], W['input 0 script length'] + W['input 0 script'], W['input 0 sequence'], W['output count'], W['output 0 amount'] + W['output 1 amount'], W['output 0 script length'] + W['output 0 script'] + W['output 1 script length'] + W['output 1 script'], W['witness 0 count'], W['witness 0 item 0 length'] + W['witness 0 item 0'], W['lock time']]",
+   "[16, 2, 4, 144, 4, 16, 4, 64, 232, 1, 66, 16]"
+  ]
+ ],
+ "WeightFactor": [
+  [
+   "[w for n, b, f, w in field_weights(ALICE) if f == 1]",
+   "[1, 1, 1, 1, 65]"
+  ],
+  [
+   "sum(w for n, b, f, w in field_weights(ALICE)), 80 * 3 + 80",
+   "(569, 320)"
+  ]
+ ]
+}
