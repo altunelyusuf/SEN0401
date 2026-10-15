@@ -1,0 +1,312 @@
+ 
+ 
+ 
+ 
+ Multi-signature - Bitcoin Wiki 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+  
+ 
+	  
+	  
+	 
+	 
+	  Multi-signature  
+	 
+		 From Bitcoin Wiki 
+		   (Redirected from  Multisignature )   
+		  
+		
+		  
+		 Jump to navigation 
+		 Jump to search 
+		   Multi-signature (multisig) refers to requiring multiple keys to authorize a Bitcoin  transaction , rather than a single signature from one key. It has a number of applications.
+ 
+  Dividing up responsibility for possession of bitcoins among multiple people. 
+ Avoiding a single-point of failure, making it substantially more difficult for the wallet to be compromised. 
+  m -of- n  backup where loss of a single seed doesn't lead to loss of the wallet.  
+    Contents      
+ 
+   1   Use as a joint account   
+   2   Use for increasing security   
+   3   Use as a backup   
+   4   Multi-signature application examples   
+   5   History and Origins   
+   6   Multi-signature wallets  
+ 
+   6.1   Creating a multi-signature address with Bitcoin-Qt   
+ 
+ 
+   7   Notable examples in practice   
+   8   References   
+ 
+ 
+
+  Use as a joint account  
+ Standard transactions on the Bitcoin network could be called "single-signature transactions" because transfers require only one signature — from the owner of the private key associated with the Bitcoin address. However, the Bitcoin network supports much more complicated transactions that require the signatures of multiple people before the funds can be transferred. These are often referred to as  m -of- n  transactions. The idea is that Bitcoins become "encumbered" by providing addresses of multiple parties, thus requiring cooperation of those parties in order to do anything with them. These parties can be people, institutions or programmed scripts.
+ 
+  Use for increasing security  
+ The private keys needed to spend from a wallet can be spread across multiple machines, eliminating any one of those machines as a single point of failure, with the rationale that malware and hackers are unlikely to infect all of them. The higher the number of keys required to spend the funds (i.e., the higher  m  is in  m -of- n ), the more difficult it would be for an attacker to successfully steal your funds, however the more cumbersome actually using that wallet becomes. 
+  The multisig wallet can be of the  m -of- n  type where any m private keys out of a possible n are required to move the money. For example a 2-of-3 multisig wallet might have your private keys spread across a desktop, laptop, and smartphone, any two of which are required to move the money, but the compromise of any one key cannot result in theft.
+  This can be used in conjunction with hardware wallets. By requiring that keys from multiple hardware wallets sign transactions, it can vastly reduce the likelihood that a malicious party that handled your hardware wallet could steal your funds, because in order for it to do that, the malicious party would have to compromise multiple hardware wallets. If each hardware wallet you use in a multisig wallet is made by a different company, it would be incredibly difficult for them to secretly conspire on an attack.
+ 
+  Use as a backup  
+ Storing multiple keys to an  m -of- n  wallet in different locations can serve as a backup. For example, in a 2-of-3 multisig wallet, the loss of one key does not result in loss of the wallet, since the other two keys can be used to recover the funds. The redundancy of the backup is the difference  n  minus  m , so for example a 3-of-5 multisig wallet (with no additional seed backups) has a redundancy of 2, meaning that the loss of any 2 keys can still be recovered from.
+ 
+  Multi-signature application examples  
+ See also:  Storing bitcoins § Multi-signature wallets  
+   1-of-2 : Husband and wife petty cash joint account — the signature of either spouse is sufficient to spend the funds.  
+   2-of-2 : Husband and wife savings account — both signatures are required to spend the funds, preventing one spouse from spending the money without the approval of the other.  
+   2-of-3 : Parents’ savings account for child — the kid can spend the money with the approval of either parent, and money cannot be taken away from the child unless both parents agree.  
+   2-of-2 : Two-factor authentication wallet — one private key is on your primary computer, the other on your smartphone — the funds cannot be spent without a signature from both devices. Thus, an attacker must gain access to both devices in order to steal your funds (much more difficult than one device).  
+   3-of-5 : Low-trust donation address — five trusted people from a project each hold a private key. Three people are required to actually spend the money but anybody can donate to the project's address. Reduces the risk of embezzlement, hacking/malware, or loss due to a single person losing interest in the project. Which private key was used in the final signature is visible on the blockchain which aids accountability.  
+   2-of-3 : Buyer-seller with trustless escrow — buyer commits money into a 2-of-3 address with the seller and a third-party arbitrator. If transaction goes smoothly, then both buyer and seller sign the transaction to forward the money to the seller. If something goes wrong, they can sign a transaction to refund the buyer. If they cannot agree, they both appeal to the third-party who will arbitrate and provide a second signature to the party that it deems deserves it. The arbitrator cannot steal the money as they have only one key.  
+   2-of-3 : A board of three directors maintaining funds for their organization — those funds cannot be spent unless any two of those directors agrees. Bigger multi-signature transactions are possible for bigger organizations, such as 3-of-5, 5-of-9, etc.  
+   2-of-3 : Improved  hot wallet  security for businesses — a bitcoin business such as an exchange holds one private key online and one private key as paper backup. A separate bitcoin security firm holds the third key online and will only sign transactions after checking certain conditions (blacklists, whitelists, not more than X withdrawn per time period, two-factor authentication, comply with regulatory environment, etc). If the bitcoin business or the security firm's hot wallets individually get hacked, the bitcoins cannot be stolen. If the bitcoin security firm disappears, the business can use the paper backup to access coins.  
+   2-of-3 : Decentralized  cold storage  vault — one of the keys is held in your home, the second in a bank safe deposit box, and copies of the third key are distributed to a close friend, a relative, and stored in the office. The home vault is not vulnerable to raiding or burglary because spending the money requires a visit to either the friend, relative, bank, or office. Losing the safe deposit box also doesn't result in loss.  
+   2-of-2 : Smart  contracts  building block such as TumbleBit, CoinSwap and  Lightning Network .  
+   1  or  3-of-4 : Distributed backup — the primary owner can use the wallet at will, but if that owner loses their private keys, they can recover with the help of 3 of the other 4 trusted friends/organizations. One key could be kept in a security deposit box at a bank, the other 3 could be distributed to friends. In the case of death of the owner, the security deposit box can be willed to one of the trusted friends or someone who can get the help of the trusted friends. More  complex  multisig wallets can be created if desired.  
+  History and Origins  
+ Multi-signature has been used for thousands of years to protect the security of crypts holding the most precious relics of saints. The superior of a monastery would give monks only partial keys for gaining access to the precious relics. Thus, no single monk could gain access to and possibly steal the relics.   [ 1 ]   
+  In modern times, research on multisignature schemes has increased with the rise of information security and public key cryptography. Techniques such as Shamir's Secret Sharing and Blakley's Scheme were invented in order to securely split secret keys among multiple participants. A full coverage of this topic is available on  Wikipedia .
+  In the case of Bitcoin, Multisig was introduced by BIP11, which described m-of-n standard transactions, allowing for up to 3 co-signers. These kind of scripts used P2SH addresses, starting with the character '3'. This format is considered obsolete with the introduction of Segwit, and has been superseded by P2WSH mutlsig addresses starting with "bc1q", which allows up to 20 co-signers.
+ 
+  Multi-signature wallets  
+ A number of wallets have implemented multisig:   [ 2 ]    
+ 
+   Armory  
+  CarbonWallet  
+  Copay  
+  Bitgo  
+  Blocktrail  
+  GreenAddress  
+  Casa  
+  Electrum  ( See tutorial. ) 
+  Xapo  
+  Coinkite  
+ Coinb.in  (See the warnings about  Javascript cryptography .)   
+  Creating a multi-signature address with Bitcoin-Qt  
+ A 2-of-3 multisig address can be created by following these steps:   [ 3 ]   
+ 
+  Gather (or generate) 3 bitcoin addresses, on whichever machines will be participating, using getnewaddress or getaccountaddress RPC commands (or copy and paste from the GUI). 
+ Get their public keys using the  validateaddress   RPC  command 3 times. 
+ Then create a 2-of-3 multisig address using addmultisigaddress; e.g.,
+ bitcoind addmultisigaddress 2 '["044322868cb17d64dcc22185ae2d4493111d73244c3668f8ac79ecc79c0ba8d30a6756d0fa20157 709af3281cc721c7f53321a8cabda29b77900b7e4fe0174b114","..second pubkey..","..third pubkey.."]' 
+  addmultisigaddress  returns the multi-signature address. Be a little careful, the public keys are raw hexadecimal and don't contain checksums like bitcoin addresses do. You can then send funds into that 2-of-3 transaction using the normal sendtoaddress/sendmany RPC commands, or the GUI (or anything that's been updated to recognize multisig addresses).   [ 4 ]   
+ 
+  
+ Gavin Andresen has an example of using multisig with bitcoin-qt  raw transactions :  https://gist.github.com/gavinandresen/3966071 
+ 
+  Notable examples in practice  
+  The cold storage wallet of the  Bitfinex  exchange is a single 3-of-6 multisig address  3D2oetdNuZUqQHPJmcMDDHYoqkyNVsFk9r  which as of December 2017 contains  BTC 141 177  ($1.5 billion). Presumably the keys are kept very safe by Bitfinex's operators.  
+  References  
+  
+   ↑     Monks at Mt. Athos continue to use "hard" "multisignature" security today.  
+ 
+   ↑     https://www.reddit.com/r/Bitcoin/comments/4eabpi/multisig_wallets_review_coinkite_alternatives_and/  
+ 
+   ↑     https://bitcoin.stackexchange.com/a/10593/4334  
+ 
+   ↑     https://bitcointalk.org/index.php?topic=82213.msg906833#msg906833  
+ 
+  
+   How To Create A Bitcoin Multisig Wallet  
+  Discussion of multi-sig on Bitcoin talk   
+ 
+ 
+
+ 
+ 
+ Retrieved from " https://en.bitcoin.it/w/index.php?title=Multi-signature&oldid=70044 "  
+		  
+	 
+ 
+
+ 
+	 Navigation menu 
+	 
+		
+ 
+	 
+		 Personal tools 
+	 
+	 
+		
+		 
+			
+			   Create account      Log in   
+		 
+		
+	 
+ 
+
+		 
+			
+ 
+	 
+		 Namespaces 
+	 
+	 
+		
+		 
+			
+			   Page      Discussion   
+		 
+		
+	 
+ 
+
+			
+ 
+	 
+	 
+		 English 
+	 
+	 
+		
+		 
+			
+			
+		 
+		
+	 
+ 
+
+		 
+		 
+			
+ 
+	 
+		 Views 
+	 
+	 
+		
+		 
+			
+			   Read      View source      View history   
+		 
+		
+	 
+ 
+
+			
+ 
+	 
+	 
+		 More 
+	 
+	 
+		
+		 
+			
+			
+		 
+		
+	 
+ 
+
+			
+ 
+	 Search 
+	 
+		 
+			 
+			 
+			 
+			 
+		 
+	 
+ 
+
+		 
+	 
+	
+ 
+	 
+		  
+	 
+	
+ 
+	 
+		 Navigation 
+	 
+	 
+		
+		 
+			
+			   Main page      Bitcoin FAQ      Editing help      Forums      Chatrooms      Recent changes      Page index   
+		 
+		
+	 
+ 
+
+	
+ 
+	 
+		 Tools 
+	 
+	 
+		
+		 
+			
+			   What links here      Related changes      Special pages      Printable version      Permanent link      Page information   
+		 
+		
+	 
+ 
+
+ 
+	 
+		 Sister projects 
+	 
+	 
+		
+		 
+			
+			   Essays      Source   
+		 
+		
+	 
+ 
+
+	
+ 
+
+ 
+
+ 
+	 
+	  This page was last edited on 2 February 2024, at 12:58. 
+	 Content is available under  Creative Commons Attribution 3.0  unless otherwise noted. 
+ 
+
+	 
+	  Privacy policy  
+	  About Bitcoin Wiki  
+	  Disclaimers  
+ 
+
+	 
+	     
+ 
+
+ 
+
+ 
+  
+ 

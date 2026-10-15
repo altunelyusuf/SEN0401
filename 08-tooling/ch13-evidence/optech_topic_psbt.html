@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Partially signed bitcoin transactions | Bitcoin Optech</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Partially signed bitcoin transactions" />
+<meta name="author" content="Bitcoin Optech" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Partially Signed Bitcoin Transactions (PSBTs) are a data format that allows wallets and other tools to exchange information about a Bitcoin transaction and the signatures necessary to complete it." />
+<meta property="og:description" content="Partially Signed Bitcoin Transactions (PSBTs) are a data format that allows wallets and other tools to exchange information about a Bitcoin transaction and the signatures necessary to complete it." />
+<link rel="canonical" href="https://bitcoinops.org/en/topics/psbt/" />
+<meta property="og:url" content="https://bitcoinops.org/en/topics/psbt/" />
+<meta property="og:site_name" content="Bitcoin Optech" />
+<meta property="og:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-10-15T03:53:42+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="twitter:title" content="Partially signed bitcoin transactions" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Bitcoin Optech"},"dateModified":"2026-10-15T03:53:42+00:00","datePublished":"2026-10-15T03:53:42+00:00","description":"Partially Signed Bitcoin Transactions (PSBTs) are a data format that allows wallets and other tools to exchange information about a Bitcoin transaction and the signatures necessary to complete it.","headline":"Partially signed bitcoin transactions","image":"https://bitcoinops.org/img/logos/optech-notext.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://bitcoinops.org/en/topics/psbt/"},"url":"https://bitcoinops.org/en/topics/psbt/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://bitcoinops.org/feed.xml" title="Bitcoin Optech" /></head>
+
+
+  <body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">
+      <img src="/img/logos/optech-horiz.png" alt="OpTech Logo">
+    </a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/en/about/">About</a>
+            <a class="page-link" href="/en/publications/">Publications</a>
+            <a class="page-link" href="/en/topics/">Topics</a>
+            <a class="page-link" href="/en/workshops/">Workshops</a>
+            <a class="page-link" href="/en/matrix/">Matrix</a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+
+
+<article class="post">
+  <header class="post-header">
+    
+    <p class="center">/ <a href="/">home</a> / <a href="/en/topics/">topics</a> / </p>
+
+
+    <h1 class="post-title">Partially signed bitcoin transactions</h1>
+    
+  </header>
+
+  <div class="post-content">
+    
+
+
+<!-- Actual page content -->
+
+<p class="center"><em>Also covering BIP174 and PSBT</em></p>
+
+<p><strong>Partially Signed Bitcoin Transactions (PSBTs)</strong> are a data format that allows wallets and other tools to exchange information about a Bitcoin transaction and the signatures necessary to complete it.</p>
+
+<p>A PSBT can be created that identifies a set of UTXOs to spend and a
+set of outputs to receive that spent value.  Then information about
+each UTXO that’s necessary to generate a signature for it can added,
+possibly by a separate tool, such as the UTXO’s script or its precise
+bitcoin value.</p>
+
+<p>The PSBT can then be copied by any means to a program that can sign it.  For
+multisig wallets or cases where different wallets control different
+inputs, this last step can be repeated multiple times by different
+programs on different copies of the PSBT.  Multiple PSBTs each with
+one or more necessary signatures can be integrated into a single
+PSBT later.  Finally, that fully signed PSBT can be converted into a
+complete ready-to-broadcast transaction.</p>
+
+<p>The basic details about PSBTs and a specification for the original
+version 0 PSBTs are published in <a href="https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki">BIP174</a>.  Version 2 PSBTs are
+described in <a href="https://github.com/bitcoin/bips/blob/master/bip-0370.mediawiki">BIP370</a>.  There are no version 1 PSBTs.</p>
+
+<h2 id="primary-code-and-documentation">Primary code and documentation</h2>
+
+<ul>
+  <li><a href="https://github.com/bitcoin/bips/blob/master/bip-0174.mediawiki">BIP174</a></li>
+  <li><a href="https://github.com/bitcoin/bips/blob/master/bip-0370.mediawiki">BIP370</a></li>
+</ul>
+
+<h2 id="optech-newsletter-and-website-mentions">Optech newsletter and website mentions</h2>
+
+<p><strong>2026</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2026/10/02/#proposal-for-wallet-label-synchronization">Discussion of broader inter-wallet communication spec covering PSBTs</a></li>
+  <li><a href="/en/newsletters/2026/09/18/#bitcoin-core-36076">Bitcoin Core #36076 preserves sighash type when combining PSBTs</a></li>
+  <li><a href="/en/newsletters/2026/08/07/#btcpay-server-7488">BTCPay Server #7488 improves PSBT signing compatibility with signing devices</a></li>
+  <li><a href="/en/newsletters/2026/07/31/#bitcoin-core-33014">Bitcoin Core #33014 verifies signatures before reporting a PSBT complete</a></li>
+  <li><a href="/en/newsletters/2026/07/24/#bips-2075">BIPs #2075 clarifies BIP174’s description of how PSBTs are combined</a></li>
+  <li><a href="/en/newsletters/2026/05/08/#bitcoin-core-21283">Bitcoin Core #21283 implements BIP370 PSBTv2 support</a></li>
+  <li><a href="/en/newsletters/2026/04/17/#bips-2089">BIPs #2089 publishes BIP376, defining new PSBTv2 fields for BIP352 tweak data</a></li>
+  <li><a href="/en/newsletters/2026/03/06/#extensions-to-standard-tooling-for-templatehash-csfs-ik-support">Extensions to tooling, including PSBTs, for TEMPLATEHASH-CSFS-IK support</a></li>
+</ul>
+
+<p><strong>2025</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2025/01/24/#psbtv2-integration-testing">PSBTv2 integration testing, merklized PSBTv2, and silent payments PSBTv2</a></li>
+  <li><a href="/en/newsletters/2025/01/17/#bips-1687">BIPs #1687 merges BIP375 to specify sending silent payments using PSBTs</a></li>
+  <li><a href="/en/newsletters/2025/01/17/#bips-1396">BIPs #1396 updates BIP78’s payjoin specification to align with BIP174’s PSBT specification</a></li>
+</ul>
+
+<p><strong>2024</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2024/10/25/#draft-bip-for-sending-silent-payments-with-psbts">Draft BIP for sending silent payments with PSBTs</a></li>
+  <li><a href="/en/newsletters/2024/09/06/#bips-1657">BIP353 adds a new standard field to PSBT outputs for DNSSEC proofs</a></li>
+  <li><a href="/en/newsletters/2024/07/05/#bips-1540">BIPs 328, 390, and 373 added with specifications for MuSig2 key derivation, descriptors, and PSBTs</a></li>
+  <li><a href="/en/newsletters/2024/06/21/#continued-discussion-of-psbts-for-silent-payments">Continued discussion about using PSBTs with silent payments</a></li>
+  <li><a href="/en/newsletters/2024/05/24/#discussion-about-psbts-for-silent-payments">Discussion about using PSBTs with silent payments</a></li>
+  <li><a href="/en/newsletters/2024/03/27/#btcpay-server-5852">BTCPay Server #5852 adds support for scanning BBQr animated QR codes</a></li>
+  <li><a href="/en/newsletters/2024/03/20/#rust-bitcoin-2458">Rust Bitcoin #2458 adds support for signing PSBTs that include taproot inputs</a></li>
+  <li><a href="/en/newsletters/2024/01/03/#descriptors-in-psbt-draft-bip">Proposed BIP specifying how to include descriptors in PSBTs</a></li>
+</ul>
+
+<p><strong>2023</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2023/12/13/#bbqr-encoding-scheme-announced">BBQr encoding scheme announced for encoding PSBTs and other data</a></li>
+  <li><a href="/en/newsletters/2023/10/18/#proposed-bip-for-musig2-fields-in-psbts">Proposed BIP for MuSig2 fields in PSBTs</a></li>
+  <li><a href="/en/newsletters/2023/05/31/#bitcoin-core-25796">Bitcoin Core #25796 adds a new <code class="language-plaintext highlighter-rouge">descriptorprocesspsbt</code> RPC for updating a PSBT</a></li>
+  <li><a href="/en/newsletters/2023/05/03/#bitcoin-core-25939">Bitcoin Core #25939 allows nodes with txindex enabled to add txs with <code class="language-plaintext highlighter-rouge">utxoupdatepsbt</code> RPC</a></li>
+</ul>
+
+<p><strong>2022</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2022/11/30/#lnd-7122">LND #7122 adds support for importing PSBTs from binary files</a></li>
+  <li><a href="/en/newsletters/2022/11/02/#rust-bitcoin-957">Rust Bitcoin #957 adds an API for signing PSBTs</a></li>
+  <li><a href="/en/newsletters/2022/10/05/#bips-1293">BIPs #1293 adds BIP372 for including Pay-to-contract tweak fields in a PSBT</a></li>
+  <li><a href="/en/newsletters/2022/07/06/#bitcoin-core-22558">Bitcoin Core #22558 adds support for BIP371’s additional PSBT fields</a></li>
+  <li><a href="/en/newsletters/2022/05/18/#lnd-6450">LND #6450 adds support for signing PSBTs that spend taproot outputs</a></li>
+  <li><a href="/en/newsletters/2022/02/09/#hwi-549">HWI #549 adds support for PSBT version 2</a></li>
+  <li><a href="/en/newsletters/2022/01/26/#bips-1270">BIPs #1270 updates the PSBT specification to discourage signature placeholders</a></li>
+  <li><a href="/en/newsletters/2022/01/19/#rust-bitcoin-669">Rust Bitcoin #669 improves partial signature support with discussion about nulldummy vectors</a></li>
+  <li><a href="/en/newsletters/2022/01/05/#rust-bitcoin-681">Rust Bitcoin #681 adds support for BIP371’s additional PSBT fields for taproot</a></li>
+  <li><a href="/en/newsletters/2022/01/05/#bitcoin-core-23718">Bitcoin Core #23718 adds support for displaying hashes and preimages contained in PSBTs</a></li>
+  <li><a href="/en/newsletters/2022/01/05/#bitcoin-core-17034">Bitcoin Core #17034 adds support for version 2 PSBTs and for preserving proprietary fields</a></li>
+</ul>
+
+<p><strong>2021</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2021/12/08/#bitcoin-core-22513">Bitcoin Core #22513 allows walletprocesspsbt to sign without finalizing</a></li>
+  <li><a href="/en/newsletters/2021/10/13/#lnd-5363">LND #5363 allows PSBTs to be finalized by external software</a></li>
+  <li><a href="/en/newsletters/2021/09/08/#bitcoin-related-mime-types">MIME type proposed for PSBTs</a></li>
+  <li><a href="/en/newsletters/2021/09/01/#bip174-org">BIP174.org simplifies decoding and modifying PSBTs</a></li>
+  <li><a href="/en/newsletters/2021/07/28/#bips-1139">BIPs #1139 adds BIP371 specifying new fields for using PSBTs with P2TR spends</a></li>
+  <li><a href="/en/newsletters/2021/06/30/#psbt-extensions-for-taproot">PSBT extensions for taproot</a></li>
+  <li><a href="/en/newsletters/2021/05/19/#lnd-5291">LND #5291 improves the way it ensures PSBTs use segwit inputs</a></li>
+  <li><a href="/en/newsletters/2021/05/19/#bluewallet-v6-1-0-released">BlueWallet v6.1.0 adds support for using PSBTs with watch-only wallets</a></li>
+  <li><a href="/en/newsletters/2021/03/24/#c-lightning-4428">C-Lightning #4428 switches an RPC to accepting PSBTs for enhance validation</a></li>
+  <li><a href="/en/newsletters/2021/03/24/#bips-1059">BIPs #1059 publishes the draft specification for v2 PSBTs as BIP370</a></li>
+  <li><a href="/en/newsletters/2021/02/10/#bips-988">BIPs #988 updates BIP174 to require output fields be initialized</a></li>
+  <li><a href="/en/newsletters/2021/02/10/#bips-1055">BIPs #1055 updatse BIP174 with new versioning information</a></li>
+  <li><a href="/en/newsletters/2021/01/27/#lnd-0-12-0-beta">LND 0.12.0-beta adds a new <code class="language-plaintext highlighter-rouge">psbt</code> wallet subcommand for PSBTs</a></li>
+</ul>
+
+<p><strong>2020</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2020/12/16/#psbt-toolkit-v0-1-2-released">New PSBT Toolkit software provides GUI for working with PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/12/16/#new-psbt-version-proposed">A new backwards-incompatible version of PSBT is proposed</a></li>
+  <li><a href="/en/newsletters/2020/10/07/#lnd-4389">LND #4389 adds a new <code class="language-plaintext highlighter-rouge">psbt</code> wallet subcommand for creating &amp; signing PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/09/23/#joinmarket-0-7-0-adds-bip78-psbt">Joinmarket 0.7.0 adds support for PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/08/26/#bips-955">BIPs #955 updates BIP174 PSBT to standardize supplying hash preimages</a></li>
+  <li><a href="/en/newsletters/2020/08/19/#bitcoin-core-18654">Bitcoin Core #18654 adds new RPC specifically for RBF fee bumping PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/08/05/#bips-948">BIP174 specification of PSBT updated in response to fee overpayment attack</a></li>
+  <li><a href="/en/newsletters/2020/07/29/#lnd-4455">LND #4455 makes it safe to batch open channels using PSBTs</a></li>
+  <li><a href="/en/river-descriptors-psbt/">Field Report: Using PSBT at River Financial</a></li>
+  <li><a href="/en/newsletters/2020/07/22/#lily-wallet-initial-release">Initial release of Lily Wallet supports PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/07/22/#electrum-adds-lightning-network-and-psbt-support">Electrum 4.0.1 replaces their partial transactions format with PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/07/08/#c-lightning-3775">C-Lightning #3775 adds RPCs for creating and using PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/07/08/#bitcoin-core-19215">Bitcoin Core #19215 adds additional data to PSBTs for segwit inputs</a></li>
+  <li><a href="/en/newsletters/2020/06/24/#bitcoin-core-18027">Bitcoin Core #18027 adds GUI support for signing &amp; broadcasting PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/05/27/#c-lightning-3738">C-Lightning #3738 adds initial support for creating PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/05/06/#lnd-0-10-0-beta">LND 0.10.0-beta released with support for funding channels using PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/05/06/#lnd-v0-10">LND 0.10 presentation: funding channels using PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/04/29/#bitcoin-core-17509">Bitcoin Core #17509 allows saving and loading PSBTs from files</a></li>
+  <li><a href="/en/newsletters/2020/04/08/#lnd-4079">LND #4079 adds support for funding channels with PSBTs</a></li>
+  <li><a href="/en/newsletters/2020/03/04/#bitcoin-core-17264">Bitcoin Core #17264 includes HD derivation path in PSBTs by default</a></li>
+  <li><a href="/en/newsletters/2020/02/19/#ckbunker-using-psbts-for-an-hsm">CKBunker using PSBTs for an HSM</a></li>
+  <li><a href="/en/newsletters/2020/01/29/#bitcoin-core-17492">Bitcoin Core #17492 allows the wallet GUI to place a PSBT in the clipboard</a></li>
+  <li><a href="/en/newsletters/2020/01/15/#bitcoin-core-16373">Bitcoin Core #16373 allows the bumpfee RPC used for RBF to return a PSBT</a></li>
+</ul>
+
+<p><strong>2019</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2019/11/13/#bips-849">Range of identifiers allocated to proprietary PSBT extensions</a></li>
+  <li><a href="/en/newsletters/2019/08/07/#bip174-extensibility">Modifying BIP174 for extensibility</a></li>
+  <li><a href="/en/newsletters/2019/07/10/#bitcoin-core-15427">Update to the utxoupdatepsbt RPC in Bitcoin Core</a></li>
+  <li><a href="/en/newsletters/2019/05/07/#more-psbt-tools-and-refinements">PSBT enhancements included in Bitcoin Core 0.18</a></li>
+  <li><a href="/en/newsletters/2019/03/12/#extension-fields-to-partially-signed-bitcoin-transactions-psbts">Discussion of PSBT extension fields</a></li>
+  <li><a href="/en/newsletters/2019/02/19/#bitcoin-core-13932">Three new Bitcoin Core RPCs for managing PSBTs</a></li>
+</ul>
+
+<p><strong>2018</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2018/07/24/#bip174-partially-signed-bitcoin-transaction-psbt-support-merged">New Bitcoin Core RPCs for initial PSBT support</a></li>
+  <li><a href="/en/newsletters/2018/07/10/#bip174">Features included in Bitcoin Core 0.17</a></li>
+  <li><a href="/en/newsletters/2018/07/03/#bip174-discussion">PSBT discussion</a></li>
+</ul>
+
+<h2 id="see-also">See also</h2>
+
+<ul>
+  <li><a href="/en/topics/output-script-descriptors/">Output Script Descriptors</a></li>
+  <li>
+    <p><a href="/en/topics/miniscript/">Miniscript</a></p>
+
+    <p><br /></p>
+  </li>
+</ul>
+
+<p class="float-left">
+
+<strong>Previous Topic:</strong><br /><a href="/en/topics/proof-of-reserves/">Proof of reserves</a>
+
+</p>
+<p class="float-right">
+
+<strong>Next Topic:</strong><br /><a href="/en/topics/ptlc/">Point Time Locked Contracts (PTLCs)</a>
+
+</p>
+
+<p class="center"><a href="https://github.com/bitcoinops/bitcoinops.github.io/edit/master/_topics/en/psbt.md">Edit page</a><br />
+  <a href="https://github.com/bitcoinops/bitcoinops.github.io/issues/new?body=Source file: _topics/en/psbt.md">Report Issue</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Bitcoin Optech</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Bitcoin Optech</li><li><a class="u-email" href="mailto:info@bitcoinops.org">info@bitcoinops.org</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/bitcoinops"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">bitcoinops</span></a></li><li><a href="https://www.twitter.com/bitcoinoptech"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">bitcoinoptech</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Helping Bitcoin-based businesses integrate scaling technology.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
