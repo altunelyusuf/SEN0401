@@ -1,0 +1,326 @@
+{
+ "_version": "1.0.0",
+ "_python": "3.14.6",
+ "Double": [
+  [
+   "d, n = R['c1']['double_spend'], R['c1']['non_expiration']",
+   ""
+  ],
+  [
+   "d['first_accepted'], d['second_lower_fee'].split(',')[0]",
+   "(True, 'error code: -26 error message: insufficient fee')"
+  ],
+  [
+   "d['second_higher_fee'], d['first_still_in_mempool'], d['first_after_block'].split(' ')[-1]",
+   "('replaced the first', False, 'bad-txns-inputs-missingorspent')"
+  ],
+  [
+   "R['c1']['outputs_exceed_inputs'], n['allowed'], n['tested_at_height'] - n['signed_at_height']",
+   "('bad-txns-in-belowout', True, 150)"
+  ],
+  [
+   "seen('core_relnotes_28.0.md', '-mempoolfullrbf` configuration option has been changed from 0 to 1')",
+   "True"
+  ]
+ ],
+ "Pledge": [
+  [
+   "p, l = R['c1']['proof_of_existence'], R['c1']['lighthouse']",
+   ""
+  ],
+  [
+   "p['contains_hash'], p['nulldata_asm'] == 'OP_RETURN ' + p['sha256'], len(p['sha256']) // 2, p['value']",
+   "(True, True, 32, 0.0)"
+  ],
+  [
+   "l['pledge_a_sat'] + l['pledge_b_sat'] - l['fee_sat'] == l['goal_sat'], l['only_a']['reason']",
+   "(True, 'bad-txns-in-belowout')"
+  ],
+  [
+   "l['both']['allowed'], l['output_changed']['reason'].split(' (')[0], l['a_signed_all_then_b_added']['allowed']",
+   "(True, 'mempool-script-verify-flag-failed', False)"
+  ]
+ ],
+ "Seals": [
+  [
+   "c, p = R['c2']['client_side_validation'], R['c2']['p2c']",
+   ""
+  ],
+  [
+   "c['spent_by_next'], len(c['tx_ids']), len({h['outpoint'] for h in c['history']})",
+   "([True, True], 2, 3)"
+  ],
+  [
+   "p['same_as_plain_p2wpkh'], p['reveal_check'], p['reveal_wrong_contract']",
+   "(False, True, False)"
+  ],
+  [
+   "p['spend_with_plain_key']['allowed'], p['spend_with_tweaked_key']['allowed']",
+   "(False, True)"
+  ],
+  [
+   "c['commitments_match'], c['forged_contract_matches'], c['tokens_visible_in_chain']",
+   "([True, True, True], False, False)"
+  ]
+ ],
+ "Emma": [
+  [
+   "c = R['c3']; k = 1000; cap = 36 * 100000",
+   ""
+  ],
+  [
+   "k * 3600, k * 3600 == cap, k * 600, cap - k * 600, c['capacity_sat'] == cap, c['settlement_outputs_sat'][0] // k",
+   "(3600000, True, 600000, 3000000, True, 6)"
+  ],
+  [
+   "c['emma_alone']['reason'].split(' (')[0], c['both_sign']['allowed'], c['funding_vsize']",
+   "('mempool-script-verify-flag-failed', True, 165)"
+  ],
+  [
+   "c['witness_script_hex'][:2], c['witness_script_hex'][-4:], c['witness_script_len']",
+   "('52', '52ae', 71)"
+  ]
+ ],
+ "Ladder": [
+  [
+   "c = R['c3']",
+   ""
+  ],
+  [
+   "c['locktimes'], c['at_start'].count('non-final')",
+   "([488, 487, 486, 485, 484, 483], 6)"
+  ],
+  [
+   "c['tip_l_minus_6']['c6']['reason'], c['tip_l_minus_5']['c6']['allowed']",
+   "('non-final', True)"
+  ],
+  [
+   "c['after_c6_mined']['c1_to_c5'], c['after_all_timelocks']['c1']",
+   "(['non-final', 'non-final', 'non-final', 'non-final', 'missing-inputs'], 'missing-inputs')"
+  ]
+ ],
+ "Commit": [
+  [
+   "c = R['c4']; a = c['to_local_script_asm'].split(' ')",
+   ""
+  ],
+  [
+   "a[0], a[3], a[4], a[-1], c['delay_at_999_confirmations']['reason']",
+   "('OP_IF', '1000', 'OP_CHECKSEQUENCEVERIFY', 'OP_CHECKSIG', 'non-BIP68-final')"
+  ],
+  [
+   "c['delay_at_1000_confirmations']['allowed'], c['commitment_vsize']",
+   "(True, 181)"
+  ],
+  [
+   "c['revoke_with_one_half']['reason'].split(' (')[0], c['revoke_with_both_halves']['allowed']",
+   "('mempool-script-verify-flag-failed', True)"
+  ],
+  [
+   "c['revoke_witness_items'], c['revoke_confirmed']",
+   "([72, 1, 77], True)"
+  ],
+  [
+   "c['delay_blocks'], R['l5']['state1']['csv_delay'], R['l2']['channels_after']['alice'][0]['csv_delay']",
+   "(1000, 2016, 2016)"
+  ]
+ ],
+ "Htlc": [
+  [
+   "h = R['c5']; a = lambda k: h[k]['allowed']; w = lambda k: h[k]['reason'].split(' (')[-1].rstrip(')')",
+   ""
+  ],
+  [
+   "a('claim_with_secret'), w('claim_with_wrong_secret'), a('claim_with_secret_but_payer_key')",
+   "(True, 'Script failed an OP_EQUALVERIFY operation', False)"
+  ],
+  [
+   "w('refund_before_timeout'), w('refund_at_tip_lock_minus_1'), a('refund_at_tip_lock')",
+   "('non-final', 'non-final', True)"
+  ],
+  [
+   "h['lock_height'] - h['height_at_funding'], h['hash160_is_ripemd160_of_sha256'], h['secret_len']",
+   "(19, True, 32)"
+  ]
+ ],
+ "Five": [
+  [
+   "h = R['l2']['htlcs'][0]; a = [int(x['amt_to_forward_msat']) // 1000 for x in h['hops']]",
+   ""
+  ],
+  [
+   "[x - 10 ** 8 for x in a], int(h['total_fees_msat']) // 1000",
+   "([200000, 100000, 0, 0], 300000)"
+  ],
+  [
+   "e = [x['expiry'] for x in h['hops']]",
+   ""
+  ],
+  [
+   "[p - q for p, q in zip(e, e[1:])], h['total_time_lock'] - e[0], R['l2']['invoice']['cltv_expiry']",
+   "([80, 80, 0], 80, '80')"
+  ]
+ ],
+ "Hold": [
+  [
+   "h = R['l3']; n = ['alice', 'bob', 'carol', 'diana', 'eric']; f = h['inflight']",
+   ""
+  ],
+  [
+   "sorted({p['amount'] for k in n for c in f[k] for p in c['pending']})",
+   "[10000000, 10100000, 10200000, 10300000]"
+  ],
+  [
+   "h['cancel']['balances_before'] == h['cancel']['balances_after'], [h['cancel']['pending_during'][k] for k in n]",
+   "(True, [1, 2, 2, 2, 1])"
+  ],
+  [
+   "h['settled_status']",
+   "'SUCCEEDED'"
+  ]
+ ],
+ "Wire": [
+  [
+   "b = L.bolt8(); mine, want, hops = L.onion()",
+   ""
+  ],
+  [
+   "b['act1'] == b['want_act1'], b['act3'] == b['want_act3'], b['sk'] == b['want_sk']",
+   "(True, True, True)"
+  ],
+  [
+   "(len(b['act1']) - 2) // 2, (len(b['act3']) - 2) // 2, L.bolt8_hello()[1]",
+   "(50, 66, 39)"
+  ],
+  [
+   "mine == want, len(mine) // 2, hops, [L.onion_size(n) for n in (1, 2, 5)]",
+   "(True, 1366, 5, [1366, 1366, 1366])"
+  ],
+  [
+   "L.onion_hmac_ok(mine), L.onion_hmac_ok(mine, 0), L.onion_hmac_ok(mine, 1299 * 8 + 7)",
+   "(True, False, False)"
+  ]
+ ],
+ "Invoice": [
+  [
+   "i = R['l2']['invoice']; p = L.C.bolt11(i['payment_request'])",
+   ""
+  ],
+  [
+   "p['hrp'], p['msat'], L.C.field_int(p['fields']['c'][0])",
+   "('lnbcrt1', 100000000000, 80)"
+  ],
+  [
+   "hashlib.sha256(bytes.fromhex(R['l2']['preimage'])).hexdigest() == i['payment_hash']",
+   "True"
+  ],
+  [
+   "v = L.invoice()",
+   ""
+  ],
+  [
+   "v['hrp'], v['msat'] // 1000, L.iso(v['timestamp']), len(v['sig'])",
+   "('lnbc2500u', 250000, '2017-06-01 10:57:38', 65)"
+  ]
+ ],
+ "Chain": [
+  [
+   "f, c, k = R['l4']['funding'], R['l4']['close'], R['l5']['revoked_commitment']",
+   ""
+  ],
+  [
+   "f['type'], f['value'], c['witness_script_asm'].split(' ')[4]",
+   "('witness_v0_scripthash', 4.0, 'OP_CHECKMULTISIG')"
+  ],
+  [
+   "hex(k['locktime'] >> 24), hex(k['sequence'] >> 24), len(k['outputs']), k['witness_items'], k['vsize']",
+   "('0x20', '0x80', 4, [0, 71, 72, 71], 279)"
+  ],
+  [
+   "c['locktime'], [o['type'] for o in c['outputs']], c['vsize'], R['l4']['onchain_transactions_in_lifetime']",
+   "(0, ['witness_v1_taproot', 'witness_v1_taproot'], 193, 2)"
+  ],
+  [
+   "L.bolt3_keys()",
+   "(True, True, True, True)"
+  ]
+ ],
+ "Breach": [
+  [
+   "l = R['l5']; j = l['justice']; c = R['c6']; r = c['package']['ok']['tx-results']",
+   ""
+  ],
+  [
+   "l['state2']['hitesh'], l['state2']['irene'], l['hitesh_closed'][0]['close_type'], len(j['inputs'])",
+   "(700000000, 299996530, 'BREACH_CLOSE', 2)"
+  ],
+  [
+   "[i['witness_items'] for i in j['inputs']], round(j['outputs'][0]['value'] * 1e8)",
+   "([[72, 37], [72, 1, 77]], 999990380)"
+  ],
+  [
+   "c['parent_alone']['reject-reason'], c['package_msg'], c['anchor_witness_len'], c['both_confirmed']",
+   "('min relay fee not met', 'success', 0, True)"
+  ],
+  [
+   "round(max(v['fees']['effective-feerate'] for v in r.values()) * 1e5, 1), c['parent_vsize'], c['child_vsize']",
+   "(10.9, 123, 151)"
+  ]
+ ],
+ "PizzaStory": [
+  [
+   "s = L.jload('mempool_lightning_statistics.json')['latest']",
+   ""
+  ],
+  [
+   "s['channel_count'], s['node_count'], round(s['total_capacity'] / 1e8, 1)",
+   "(32518, 16225, 3753.7)"
+  ],
+  [
+   "s['med_base_fee_mtokens'], s['med_fee_rate']",
+   "(500, 100)"
+  ]
+ ],
+ "SpillmanStory": [
+  [
+   "t = 'bitcoinwiki_payment_channels.html'",
+   ""
+  ],
+  [
+   "seen(t, 'Anti DoS for tx replacement'), seen(t, '20 April 2013')",
+   "(True, True)"
+  ],
+  [
+   "seen(t, 'An unrecorded open transaction can keep being replaced')",
+   "True"
+  ]
+ ],
+ "PaperStory": [
+  [
+   "seen('wikipedia_lightning_network.html', 'white paper in February 2015')",
+   "True"
+  ],
+  [
+   "(datetime.date(2016, 1, 14) - datetime.date(2015, 2, 28)).days",
+   "320"
+  ],
+  [
+   "seen('book_ch14_applications.adoc', 'is a proposed routed network')",
+   "True"
+  ]
+ ],
+ "TorchStory": [
+  [
+   "L.route_fees(10 ** 8, [10 ** 5] * 3)[0]",
+   "[100300000, 100200000, 100100000]"
+  ],
+  [
+   "L.route_fees(1000, [1, 1, 1])[0]",
+   "[1003, 1002, 1001]"
+  ],
+  [
+   "seen('wikipedia_lightning_network.html', 'added 10,000 satoshis')",
+   "True"
+  ]
+ ]
+}

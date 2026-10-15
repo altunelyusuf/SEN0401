@@ -1,0 +1,1603 @@
+{
+ "meta": {
+  "title": "Chapter 14: Second-Layer Apps",
+  "sub": "SEN0401, third-edition redesign",
+  "version": "1.0.0",
+  "python": "3.14.6",
+  "total": 0,
+  "redesign": "2026-10-16, first deck from the committed research package (commit f255770), to the CME look and feel; notes are short reader's prose",
+  "notes": "short reader's prose: 2-4 sentences, at most 100 words",
+  "honesty": {
+   "title": [
+    "Bitcoin Core 31.1",
+    "Recorded"
+   ],
+   "recorded": [
+    1,
+    6,
+    7,
+    8,
+    11,
+    12,
+    13,
+    14,
+    16,
+    17,
+    19,
+    20,
+    21
+   ],
+   "notExecuted": [
+    5,
+    8,
+    14,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+   ],
+   "standin": {
+    "5": [
+     "Stand-in picture"
+    ],
+    "10": [
+     "Stand-in picture"
+    ],
+    "22": [
+     "Stand-in picture"
+    ]
+   },
+   "vectors": [
+    5,
+    6,
+    10,
+    18,
+    22,
+    23
+   ]
+  },
+  "analogies": [
+   {
+    "concept": "double spend",
+    "analogy": "Like a cheque cashed once: the bank refuses a second copy",
+    "slide": 6
+   },
+   {
+    "concept": "proof of existence and crowdfund",
+    "analogy": "Like a street collection that pays out only when the whole target is raised",
+    "slide": 7
+   },
+   {
+    "concept": "single-use seal",
+    "analogy": "Like a ticket torn once: the contract printed on it stays in your pocket",
+    "slide": 8
+   },
+   {
+    "concept": "payment channel",
+    "analogy": "Like a tab at a cafe: you settle the running total at the end, not each cup",
+    "slide": 11
+   },
+   {
+    "concept": "refund timelock ladder",
+    "analogy": "Like cheques dated one day earlier each time: the newest is the first to cash",
+    "slide": 12
+   },
+   {
+    "concept": "revocable commitment",
+    "analogy": "Like a contract that hands the whole safe to the other party if you cheat",
+    "slide": 13
+   },
+   {
+    "concept": "hash time locked contract",
+    "analogy": "Like a locker: the code opens it today, and the owner reclaims it tomorrow",
+    "slide": 14
+   },
+   {
+    "concept": "multi-hop payment",
+    "analogy": "Like parcel relays: each courier takes a fee and has less time than the last",
+    "slide": 16
+   },
+   {
+    "concept": "hold invoice",
+    "analogy": "Like a courier who waits at the door until the recipient signs for the parcel",
+    "slide": 17
+   },
+   {
+    "concept": "onion packet",
+    "analogy": "Like a parcel wrapped in layers: each relay peels one and cannot see the rest",
+    "slide": 18
+   },
+   {
+    "concept": "invoice",
+    "analogy": "Like a bill with the payer reference printed on it: amount, hash and expiry",
+    "slide": 19
+   },
+   {
+    "concept": "channel transactions",
+    "analogy": "Like a joint account: both signatures to open it, one closing letter",
+    "slide": 20
+   },
+   {
+    "concept": "justice transaction",
+    "analogy": "Like a clerk who spots an old cheque and gives the whole account to its victim",
+    "slide": 21
+   }
+  ]
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 14: Second-Layer Apps",
+   "sub": "What the chain guarantees, how a payment channel is built and how Lightning routes payments. Bitcoin Core 31.1 and lnd 0.21.3-beta results are Recorded.",
+   "items": [],
+   "notes": "This deck explains what is built on top of Bitcoin: the guarantees of the chain, colored coins, payment channels and the Lightning Network. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1 and five lnd 0.21.3-beta nodes were run on private test chains, so their answers are Recorded and only read back here. The research package for chapter 14 holds the sources, the claims and the list of what was not run.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "The questions, then three parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 6.3,
+     "h": 3.4,
+     "fs": 12.0,
+     "items": [
+      "The chapter's questions  (slides 3-3)",
+      "What the chain guarantees  (slides 4-8)",
+      "Payment channels  (slides 9-14)",
+      "The Lightning Network  (slides 15-26)"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.5,
+     "w": 2.45,
+     "h": 3.4,
+     "vert": true,
+     "items": [
+      {
+       "n": "26",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "4",
+       "label": "true stories, each with WHO / WHERE / WHEN / READ"
+      },
+      {
+       "n": "17",
+       "label": "live-run consoles, each shown with its result"
+      }
+     ]
+    }
+   ],
+   "notes": "The route has three parts after the questions: what the chain guarantees, with the first bitcoin purchase, no double spend, proofs, pledges and colored coins; payment channels, with the first channels, Emma and Fabian, falling lock times, the penalty and the hash-locked contract; and the Lightning Network, with a five-node payment, hold invoices, the wire formats, the chain side and two stories. Each part carries true stories and corrections of the book that a reader can check on the slide.",
+   "take": "Three parts, four true stories, and a list of what was not run",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions, and the numbers behind the answers",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 1.7,
+     "fs": 13,
+     "items": [
+      "Which claims of the chapter can be checked by computation, and what does the computation give?",
+      "What in the chapter has changed since the book went to print, and on what source?"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 0.5,
+     "y": 3.3,
+     "w": 9.0,
+     "h": 1.6,
+     "items": [
+      {
+       "n": "83",
+       "label": "sources, opened and read on 2026-10-15"
+      },
+      {
+       "n": "55",
+       "label": "claims, each recomputed by running code"
+      },
+      {
+       "n": "27",
+       "label": "findings, several of them corrections of the book"
+      }
+     ]
+    }
+   ],
+   "notes": "The chapter asks two questions that this deck answers by computation: which of its statements can be checked, and what has changed since print. The three numbers are counted from the research package, which holds 83 sources, 27 findings and 55 executed claims. Each slide that follows shows the computation behind one claim.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "What the chain guarantees",
+   "sub": "No double spend, proofs, pledges and colored coins.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Pizza for bitcoins"
+      },
+      {
+       "label": "No double spend"
+      },
+      {
+       "label": "Proof and pledge"
+      },
+      {
+       "label": "Single-use seals"
+      }
+     ]
+    }
+   ],
+   "notes": "This part asks what the base chain gives to anything built on it. A spent output stays spent, a hash in a transaction proves that a document existed, pledges can be pooled into one payment, and a spent output can serve as a seal for colored coins. The story is the first purchase made with bitcoin.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Two pizzas for 10,000 bitcoins",
+   "sub": "The story of 22 May 2010: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch14/assets/papa_johns_jacksonville.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Papa Johns Jacksonville - Sanjev Rajaram, CC0 1.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 18 May 2010 by the forum clock (17 May on the Wiki) Laszlo Hanyecz offers 10,000 bitcoins for pizzas",
+      "On 22 May 2010 Jeremy Sturdivant, 19, orders two pizzas to Jacksonville and receives the coins",
+      "Rows 2 and 3: today 32,518 channels, 3,753.7 BTC, fee 100 ppm. NOT EXECUTED: gossip on mainnet"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "s = L.jload('mempool_lightning_statistics.json')['latest']",
+       ""
+      ],
+      [
+       "s['channel_count'], s['node_count'], round(s['total_capacity'] / 1e8, 1)",
+       "(32518, 16225, 3753.7)"
+      ],
+      [
+       "s['med_base_fee_mtokens'], s['med_fee_rate']",
+       "(500, 100)"
+      ]
+     ],
+     "fs": 8.6,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the mempool.space statistics, saved on 2026-10-15"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Laszlo Hanyecz, a programmer who posted the offer and had contributed to Bitcoin's source code, and Jeremy Sturdivant",
+     "where": "Jacksonville, Florida, USA, where the pizzas were delivered, and the Bitcoin Forum, where the offer was posted",
+     "when": "2010-05-22",
+     "link": "https://bitcointalk.org/index.php?topic=137.0",
+     "linkText": "bitcointalk.org"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: a Papa Johns shop in Florida, not the 2010 order."
+    }
+   ],
+   "notes": "On 22 May 2010 a 19-year-old in California ordered two pizzas for Laszlo Hanyecz in Jacksonville and received 10,000 bitcoins, the first notable retail purchase with bitcoin. That payment settled on the chain, as every payment then did. The Lightning Network now holds 32,518 channels with 3,753.7 bitcoin on a public statistics page, but only the page was read here and no gossip was observed.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "No double spend, no expiry",
+   "sub": "Like a cheque cashed once: the bank refuses a second copy",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.8,
+     "rows": [
+      [
+       "d, n = R['c1']['double_spend'], R['c1']['non_expiration']",
+       ""
+      ],
+      [
+       "d['first_accepted'], d['second_lower_fee'].split(',')[0]",
+       "(True, 'error code: -26 error message: insufficient fee')"
+      ],
+      [
+       "d['second_higher_fee'], d['first_still_in_mempool'], d['first_after_block'].split(' ')[-1]",
+       "('replaced the first', False, 'bad-txns-inputs-missingorspent')"
+      ],
+      [
+       "R['c1']['outputs_exceed_inputs'], n['allowed'], n['tested_at_height'] - n['signed_at_height']",
+       "('bad-txns-in-belowout', True, 150)"
+      ],
+      [
+       "seen('core_relnotes_28.0.md', '-mempoolfullrbf` configuration option has been changed from 0 to 1')",
+       "True"
+      ]
+     ],
+     "fs": 9.2,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; the release notes are saved"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.85,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 10,
+     "items": [
+      "Row 2: a second spend with a lower fee is refused as an insufficient fee; the first spend was accepted (True)",
+      "Row 3: with a higher fee it replaces the first; after a block the loser is refused",
+      "Rows 4 and 5: more out than in is refused; a payment kept 150 blocks still passes; full RBF is default"
+     ]
+    }
+   ],
+   "notes": "Bitcoin's most basic guarantee is that an output is spent once. On the test chain a second spend with a lower fee was refused, one with a higher fee replaced the first in the memory pool, and once a block had confirmed one of them the other was refused. A payment that spent more than it held was refused, and a payment signed at height 301 was still accepted at 451. Since release 28.0 full replace-by-fee is the default.",
+   "bg": "light",
+   "take": "A spent output stays spent, and a signed payment never expires"
+  },
+  {
+   "kind": "content",
+   "title": "Proof of existence and a crowdfund",
+   "sub": "Like a street collection that pays out only when the whole target is raised",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.5,
+     "rows": [
+      [
+       "p, l = R['c1']['proof_of_existence'], R['c1']['lighthouse']",
+       ""
+      ],
+      [
+       "p['contains_hash'], p['nulldata_asm'] == 'OP_RETURN ' + p['sha256'], len(p['sha256']) // 2, p['value']",
+       "(True, True, 32, 0.0)"
+      ],
+      [
+       "l['pledge_a_sat'] + l['pledge_b_sat'] - l['fee_sat'] == l['goal_sat'], l['only_a']['reason']",
+       "(True, 'bad-txns-in-belowout')"
+      ],
+      [
+       "l['both']['allowed'], l['output_changed']['reason'].split(' (')[0], l['a_signed_all_then_b_added']['allowed']",
+       "(True, 'mempool-script-verify-flag-failed', False)"
+      ]
+     ],
+     "fs": 9.0,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.6,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 10,
+     "items": [
+      "Row 2: a 32-byte SHA-256 sits in an OP_RETURN output of value zero, so the document existed by that block",
+      "Row 3: two pledges minus the fee reach the goal; one pledge alone is refused (bad-txns-in-belowout)",
+      "Row 4: both pledges pass (True); a changed output fails; signing everything first fails (False)"
+     ]
+    }
+   ],
+   "notes": "A document can be timestamped by writing only its hash: a 32-byte SHA-256 in an output of value zero was confirmed in a block, so the document existed no later than that block. A crowdfunding transaction in the style of Lighthouse joins two pledges, each signed only for its own input and the one fixed output. With one pledge the node refused it for lack of value, with both it accepted it, and a changed output broke the signatures.",
+   "bg": "light",
+   "take": "A hash proves existence; pledges join only when the goal is met"
+  },
+  {
+   "kind": "content",
+   "title": "Single-use seals and client validation",
+   "sub": "Like a ticket torn once: the contract printed on it stays in your pocket",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.8,
+     "rows": [
+      [
+       "c, p = R['c2']['client_side_validation'], R['c2']['p2c']",
+       ""
+      ],
+      [
+       "c['spent_by_next'], len(c['tx_ids']), len({h['outpoint'] for h in c['history']})",
+       "([True, True], 2, 3)"
+      ],
+      [
+       "p['same_as_plain_p2wpkh'], p['reveal_check'], p['reveal_wrong_contract']",
+       "(False, True, False)"
+      ],
+      [
+       "p['spend_with_plain_key']['allowed'], p['spend_with_tweaked_key']['allowed']",
+       "(False, True)"
+      ],
+      [
+       "c['commitments_match'], c['forged_contract_matches'], c['tokens_visible_in_chain']",
+       "([True, True, True], False, False)"
+      ]
+     ],
+     "fs": 9.2,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.85,
+     "w": 9.0,
+     "h": 0.62,
+     "fs": 10,
+     "items": [
+      "Row 2: three seals are three different outpoints; each earlier output was spent by the next transaction",
+      "Rows 3 and 4: a key tweaked by a contract hash is a new address (False); only the tweaked key spends it",
+      "Row 5: the history validates, a forged contract does not, and no token shows on the chain (False)"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.58,
+     "w": 9.0,
+     "h": 0.28,
+     "fs": 10,
+     "body": "NOT EXECUTED: Taproot Assets and RGB; only the seal, the tweak and the validation were built by hand."
+    }
+   ],
+   "notes": "A single-use seal is something that can be closed once, and an unspent output is exactly that. In the test a chain of three seals was three different outpoints, each spent by the next transaction. A public key tweaked by the hash of a contract made a new address, only the tweaked key could spend from it, and the contract itself never appeared on the chain. A forged contract failed the check, so the validation stays between the parties.",
+   "bg": "light",
+   "take": "A spent output can seal a contract that never touches the chain"
+  },
+  {
+   "kind": "section",
+   "title": "Payment channels",
+   "sub": "A shared output, signed refunds and a promise that punishes cheating.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "First channels"
+      },
+      {
+       "label": "Emma and Fabian"
+      },
+      {
+       "label": "Falling lock times"
+      },
+      {
+       "label": "Penalty"
+      },
+      {
+       "label": "HTLC"
+      }
+     ]
+    }
+   ],
+   "notes": "This part builds a payment channel. Two parties fund a shared output and exchange signed transactions, refunds carry falling lock times so the newest wins, the commitment of one side can be punished if an old one is published, and a hash-locked contract lets a payment pass through a third party. The story is where channels were first proposed.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The first payment channels",
+   "sub": "The story of 20 April 2013: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch14/assets/micropayment_channel_construction.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Micropayment channel - Burchert, Decker, Wattenhofer, CC BY 4.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 17 April 2013 Mike Hearn posts Anti DoS for tx replacement; on 20 April Jeremy Spillman replies (row 2)",
+      "The Wiki traces the idea to an open transaction replaced until its lock time (row 3)",
+      "The one-way channel needs a refund signed before the funding, as in the Emma and Fabian test"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "t = 'bitcoinwiki_payment_channels.html'",
+       ""
+      ],
+      [
+       "seen(t, 'Anti DoS for tx replacement'), seen(t, '20 April 2013')",
+       "(True, True)"
+      ],
+      [
+       "seen(t, 'An unrecorded open transaction can keep being replaced')",
+       "True"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the Bitcoin Wiki page on channels, saved on 2026-10-15"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Mike Hearn, who posted Anti DoS for tx replacement on 17 April 2013, Jeremy Spillman, who answered on 20 April 2013, and Matt Corallo",
+     "where": "the bitcoin-development mailing list, BitcoinTalk.org and the bitcoinj library",
+     "when": "2013-04-20",
+     "link": "https://en.bitcoin.it/wiki/Payment_channels",
+     "linkText": "en.bitcoin.it"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: a 2018 diagram of a channel, not the 2013 thread."
+    }
+   ],
+   "notes": "The Bitcoin Wiki traces payment channels to the first Bitcoin code, where an unrecorded open transaction could keep being replaced until its lock time. On 17 April 2013 Mike Hearn posted Anti DoS for tx replacement to the bitcoin-development list, and on 20 April Jeremy Spillman replied with the one-way design that the book calls Spillman-style. The refund had to be signed before the funding was sent.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Emma and Fabian: a channel in numbers",
+   "sub": "Like a tab at a cafe: you settle the running total at the end, not each cup",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.5,
+     "rows": [
+      [
+       "c = R['c3']; k = 1000; cap = 36 * 100000",
+       ""
+      ],
+      [
+       "k * 3600, k * 3600 == cap, k * 600, cap - k * 600, c['capacity_sat'] == cap, c['settlement_outputs_sat'][0] // k",
+       "(3600000, True, 600000, 3000000, True, 6)"
+      ],
+      [
+       "c['emma_alone']['reason'].split(' (')[0], c['both_sign']['allowed'], c['funding_vsize']",
+       "('mempool-script-verify-flag-failed', True, 165)"
+      ],
+      [
+       "c['witness_script_hex'][:2], c['witness_script_hex'][-4:], c['witness_script_len']",
+       "('52', '52ae', 71)"
+      ]
+     ],
+     "fs": 8.8,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.6,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 10,
+     "items": [
+      "Row 2: at 1,000 satoshis a second an hour uses all 3,600,000; after 600 seconds Emma keeps 3,000,000 (True)",
+      "Row 3: Emma alone cannot spend the funding output (script verify failed); both can; 165 virtual bytes",
+      "Row 4: the funding script starts 52 (2) and ends 52ae (2, CHECKMULTISIG), 71 bytes long"
+     ]
+    }
+   ],
+   "notes": "In the book Emma pays Fabian one thousand satoshis for each second of video, from a channel funded with 3,600,000 satoshis, enough for one hour. The funding output needs two keys: on the test chain Emma's signature alone was refused and both signatures were accepted. The 71-byte script starts with 2 and ends with 2 and CHECKMULTISIG, and the recorded settlement paid Fabian for 6 seconds.",
+   "bg": "light",
+   "take": "A channel is a two-key output and a running total of signed settlements"
+  },
+  {
+   "kind": "content",
+   "title": "Refunds with falling lock times",
+   "sub": "Like cheques dated one day earlier each time: the newest is the first to cash",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10,
+     "items": [
+      "Row 2: six refunds carry lock heights 488 down to 483; all six are non-final at the start",
+      "Row 3: refund 6, the lowest lock, is refused until its block, then accepted (non-final, True)",
+      "Row 4: once refund 6 is mined the funding output is spent; the rest end as missing-inputs"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Lock height of each refund",
+     "dataLabels": true,
+     "dlFmt": "0",
+     "dlFs": 9,
+     "labels": [
+      "refund 1",
+      "refund 2",
+      "refund 3",
+      "refund 4",
+      "refund 5",
+      "refund 6"
+     ],
+     "series": [
+      {
+       "name": "height",
+       "data": [
+        488,
+        487,
+        486,
+        485,
+        484,
+        483
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "c = R['c3']",
+       ""
+      ],
+      [
+       "c['locktimes'], c['at_start'].count('non-final')",
+       "([488, 487, 486, 485, 484, 483], 6)"
+      ],
+      [
+       "c['tip_l_minus_6']['c6']['reason'], c['tip_l_minus_5']['c6']['allowed']",
+       "('non-final', True)"
+      ],
+      [
+       "c['after_c6_mined']['c1_to_c5'], c['after_all_timelocks']['c1']",
+       "(['non-final', 'non-final', 'non-final', 'non-final', 'missing-inputs'], 'missing-inputs')"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    }
+   ],
+   "notes": "To let a channel be replaced, each new refund carries an earlier lock time than the one before, so the newest refund can be mined first. On the test chain six refunds carried the lock heights 488 down to 483 and all six were refused at the start. The refund with the lowest lock was accepted at its height, and once it spent the funding output the older refunds failed with missing inputs.",
+   "bg": "light",
+   "take": "The newest refund has the earliest lock and wins the race"
+  },
+  {
+   "kind": "content",
+   "title": "A commitment that punishes cheating",
+   "sub": "Like a contract that hands the whole safe to the other party if you cheat",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 2.1,
+     "rows": [
+      [
+       "c = R['c4']; a = c['to_local_script_asm'].split(' ')",
+       ""
+      ],
+      [
+       "a[0], a[3], a[4], a[-1], c['delay_at_999_confirmations']['reason']",
+       "('OP_IF', '1000', 'OP_CHECKSEQUENCEVERIFY', 'OP_CHECKSIG', 'non-BIP68-final')"
+      ],
+      [
+       "c['delay_at_1000_confirmations']['allowed'], c['commitment_vsize']",
+       "(True, 181)"
+      ],
+      [
+       "c['revoke_with_one_half']['reason'].split(' (')[0], c['revoke_with_both_halves']['allowed']",
+       "('mempool-script-verify-flag-failed', True)"
+      ],
+      [
+       "c['revoke_witness_items'], c['revoke_confirmed']",
+       "([72, 1, 77], True)"
+      ],
+      [
+       "c['delay_blocks'], R['l5']['state1']['csv_delay'], R['l2']['channels_after']['alice'][0]['csv_delay']",
+       "(1000, 2016, 2016)"
+      ]
+     ],
+     "fs": 9.1,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: lnd 0.21.3-beta and Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.15,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: pay-to-self waits 1000 blocks (CSV): refused at 999 confirmations, accepted at 1000",
+      "Rows 4 and 5: the revocation key needs both halves of its secret; with both, the penalty spend confirms",
+      "Row 6: 1000 blocks is the book's teaching value; lnd 0.21.3-beta used 2016 (14 days)"
+     ]
+    }
+   ],
+   "notes": "Each side holds a commitment whose own output waits a number of blocks, while the other side can take it at once with a revocation key. On the test chain a spend after 999 confirmations was refused and after 1000 was accepted. The revocation key needed both halves of its secret, and with both the penalty spend confirmed. The book's 1000 blocks is a teaching value, since lnd 0.21.3-beta set 2016.",
+   "bg": "light",
+   "take": "A published old state can be taken whole by the other side"
+  },
+  {
+   "kind": "content",
+   "title": "HTLC: a secret opens it, time reclaims it",
+   "sub": "Like a locker: the code opens it today, and the owner reclaims it tomorrow",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.5,
+     "rows": [
+      [
+       "h = R['c5']; a = lambda k: h[k]['allowed']; w = lambda k: h[k]['reason'].split(' (')[-1].rstrip(')')",
+       ""
+      ],
+      [
+       "a('claim_with_secret'), w('claim_with_wrong_secret'), a('claim_with_secret_but_payer_key')",
+       "(True, 'Script failed an OP_EQUALVERIFY operation', False)"
+      ],
+      [
+       "w('refund_before_timeout'), w('refund_at_tip_lock_minus_1'), a('refund_at_tip_lock')",
+       "('non-final', 'non-final', True)"
+      ],
+      [
+       "h['lock_height'] - h['height_at_funding'], h['hash160_is_ripemd160_of_sha256'], h['secret_len']",
+       "(19, True, 32)"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.6,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 10,
+     "items": [
+      "Row 2: the secret opens the output (True); a wrong secret fails OP_EQUALVERIFY; the payer's key alone fails",
+      "Row 3: before the timeout the refund is non-final, one block early too; at the locked height it passes",
+      "Row 4: the refund came 19 blocks after funding; HASH160 is RIPEMD160 of SHA256; the secret has 32 bytes"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.4,
+     "w": 9.0,
+     "h": 0.28,
+     "fs": 10,
+     "body": "NOT EXECUTED: an HTLC left to time out on the chain in lnd; the timeout ran in the hand-built contract only."
+    }
+   ],
+   "notes": "A hash-time-locked contract has two ways out. Whoever knows the secret behind the hash can claim the output, and a wrong secret or the payer's key alone failed. After the lock height the payer can take it back, and the refund was refused one block early. The book writes HASH160 for the hash, which is the RIPEMD160 of the SHA256, while the Lightning payment hash itself is a plain 32-byte SHA256.",
+   "bg": "light",
+   "take": "A secret opens it before the deadline, the refund after it"
+  },
+  {
+   "kind": "section",
+   "title": "The Lightning Network",
+   "sub": "Routing, fees, invoices, the wire formats and the chain side.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "A paper, a torch"
+      },
+      {
+       "label": "Five-node payment"
+      },
+      {
+       "label": "Hold invoice"
+      },
+      {
+       "label": "Wire formats"
+      },
+      {
+       "label": "Breach and fees"
+      }
+     ]
+    }
+   ],
+   "notes": "This part runs the network. Five lnd nodes pass one payment of one bitcoin along a line with fees and falling timelocks, a hold invoice keeps it in flight, the handshake and the onion packet are checked against the published vectors, and the channel's own transactions show how cheating is punished and fees are bumped. The stories are the paper that proposed the network and the torch that passed along it.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Five nodes, one payment of 1 BTC",
+   "sub": "Like parcel relays: each courier takes a fee and has less time than the last",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10,
+     "items": [
+      "Row 2: each hop forwards less: 200,000, 100,000, 0 and 0 satoshis above 1 BTC; the fee is 300,000",
+      "Row 4: each hop's expiry steps down by 80 blocks, as set by lnd; the final delta is 80 too",
+      "The total of 300,000 satoshis is 0.3% of 1 BTC, the book's fee",
+      "NOT EXECUTED: a payment on the public network; its fees and failures are not shown"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Satoshis above 1 BTC in the HTLC at each node",
+     "dataLabels": true,
+     "dlFmt": "#,##0",
+     "dlFs": 8,
+     "labels": [
+      "Bob",
+      "Carol",
+      "Diana",
+      "Eric"
+     ],
+     "series": [
+      {
+       "name": "satoshi",
+       "data": [
+        200000,
+        100000,
+        0,
+        0
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "h = R['l2']['htlcs'][0]; a = [int(x['amt_to_forward_msat']) // 1000 for x in h['hops']]",
+       ""
+      ],
+      [
+       "[x - 10 ** 8 for x in a], int(h['total_fees_msat']) // 1000",
+       "([200000, 100000, 0, 0], 300000)"
+      ],
+      [
+       "e = [x['expiry'] for x in h['hops']]",
+       ""
+      ],
+      [
+       "[p - q for p, q in zip(e, e[1:])], h['total_time_lock'] - e[0], R['l2']['invoice']['cltv_expiry']",
+       "([80, 80, 0], 80, '80')"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: lnd 0.21.3-beta, five nodes on regtest"
+    }
+   ],
+   "notes": "Alice paid one bitcoin to Eric through Bob, Carol and Diana on five lnd nodes. Each hop forwarded a little less than it received, keeping a fee, so 300,000 satoshis went to the three middle nodes, which is 0.3 percent. The expiry of the payment fell by 80 blocks at each hop, so a node always has time to claim from the one before it. Nothing was paid on the public network.",
+   "bg": "light",
+   "take": "Each hop keeps a fee and gets less time than the hop before"
+  },
+  {
+   "kind": "content",
+   "title": "A hold invoice keeps a payment in flight",
+   "sub": "Like a courier who waits at the door until the recipient signs for the parcel",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10,
+     "items": [
+      "Row 2: while held, the HTLCs along the line carried 10,000,000 to 10,300,000 satoshis",
+      "Row 3: cancelling left every balance as before (True); pending HTLCs per node were 1, 2, 2, 2, 1",
+      "Row 4: after the secret was released the payment status was SUCCEEDED",
+      "NOT EXECUTED: multipath, trampoline routing and BOLT 12 offers; the line has one path"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "HTLCs pending at each node while held",
+     "dataLabels": true,
+     "dlFmt": "0",
+     "dlFs": 9,
+     "labels": [
+      "Alice",
+      "Bob",
+      "Carol",
+      "Diana",
+      "Eric"
+     ],
+     "series": [
+      {
+       "name": "pending",
+       "data": [
+        1,
+        2,
+        2,
+        2,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "h = R['l3']; n = ['alice', 'bob', 'carol', 'diana', 'eric']; f = h['inflight']",
+       ""
+      ],
+      [
+       "sorted({p['amount'] for k in n for c in f[k] for p in c['pending']})",
+       "[10000000, 10100000, 10200000, 10300000]"
+      ],
+      [
+       "h['cancel']['balances_before'] == h['cancel']['balances_after'], [h['cancel']['pending_during'][k] for k in n]",
+       "(True, [1, 2, 2, 2, 1])"
+      ],
+      [
+       "h['settled_status']",
+       "'SUCCEEDED'"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: lnd 0.21.3-beta, five nodes on regtest"
+    }
+   ],
+   "notes": "A hold invoice lets the receiver delay the release of the secret. While the invoice was held every node on the line kept the payment in flight, the end nodes with one pending payment and the middle ones with two. Cancelling the invoice returned every balance to what it was, and releasing the secret settled the payment. Only one path existed, so multipath payments were not tried.",
+   "bg": "light",
+   "take": "A payment can wait in flight, and then settle or unwind"
+  },
+  {
+   "kind": "content",
+   "title": "Handshake and onion, checked on vectors",
+   "sub": "Like a parcel wrapped in layers: each relay peels one and cannot see the rest",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.8,
+     "rows": [
+      [
+       "b = L.bolt8(); mine, want, hops = L.onion()",
+       ""
+      ],
+      [
+       "b['act1'] == b['want_act1'], b['act3'] == b['want_act3'], b['sk'] == b['want_sk']",
+       "(True, True, True)"
+      ],
+      [
+       "(len(b['act1']) - 2) // 2, (len(b['act3']) - 2) // 2, L.bolt8_hello()[1]",
+       "(50, 66, 39)"
+      ],
+      [
+       "mine == want, len(mine) // 2, hops, [L.onion_size(n) for n in (1, 2, 5)]",
+       "(True, 1366, 5, [1366, 1366, 1366])"
+      ],
+      [
+       "L.onion_hmac_ok(mine), L.onion_hmac_ok(mine, 0), L.onion_hmac_ok(mine, 1299 * 8 + 7)",
+       "(True, False, False)"
+      ]
+     ],
+     "fs": 9.2,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the BOLT 8 and BOLT 4 vectors, saved on 2026-10-15"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.85,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 10,
+     "items": [
+      "Row 2: the BOLT 8 acts and the session key match the published vector (True, True, True)",
+      "Rows 3 and 4: acts of 50 and 66 bytes; the onion matches the vector, 1,366 bytes for 1, 2 or 5 hops",
+      "Row 5: the HMAC of the onion holds (True); a flipped bit breaks it (False, False)"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.58,
+     "w": 9.0,
+     "h": 0.28,
+     "fs": 10,
+     "body": "NOT EXECUTED: the handshake between two lnd nodes on the wire; the vector was recomputed in Python."
+    }
+   ],
+   "notes": "Two published test vectors were recomputed in Python. The BOLT 8 handshake gave the expected first and third acts, of 50 and 66 bytes, and the same session key. The BOLT 4 onion packet for five hops matched the vector at 1,366 bytes, and the size stays the same for one, two or five hops so that a relay cannot tell its place on the path. Flipping a single bit of the onion made its HMAC fail.",
+   "bg": "light",
+   "take": "A relay sees only its own layer, and every onion has one size"
+  },
+  {
+   "kind": "content",
+   "title": "An invoice carries the payment hash",
+   "sub": "Like a bill with the payer reference printed on it: amount, hash and expiry",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.8,
+     "rows": [
+      [
+       "i = R['l2']['invoice']; p = L.C.bolt11(i['payment_request'])",
+       ""
+      ],
+      [
+       "p['hrp'], p['msat'], L.C.field_int(p['fields']['c'][0])",
+       "('lnbcrt1', 100000000000, 80)"
+      ],
+      [
+       "hashlib.sha256(bytes.fromhex(R['l2']['preimage'])).hexdigest() == i['payment_hash']",
+       "True"
+      ],
+      [
+       "v = L.invoice()",
+       ""
+      ],
+      [
+       "v['hrp'], v['msat'] // 1000, L.iso(v['timestamp']), len(v['sig'])",
+       "('lnbc2500u', 250000, '2017-06-01 10:57:38', 65)"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: lnd 0.21.3-beta regtest; the BOLT 11 example is computed"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.85,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 10,
+     "items": [
+      "Row 2: lnd's invoice is for the regtest network (lnbcrt1), 100,000,000,000 msat, final delta 80",
+      "Row 3: the SHA-256 of the payment secret equals the payment hash in the invoice (True)",
+      "Row 5: the BOLT 11 example (lnbc2500u) asks 250,000 satoshis, stamped 2017-06-01 10:57:38, 65-byte signature"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.58,
+     "w": 9.0,
+     "h": 0.28,
+     "fs": 10,
+     "body": "NOT EXECUTED: other implementations; Core Lightning, Eclair and LDK were read, not run."
+    }
+   ],
+   "notes": "A Lightning invoice is a bech32 string that holds the network, the amount, the payment hash, an expiry and a signature. The invoice made by lnd named the regtest network, asked for one bitcoin in millisatoshis and set a final delta of 80 blocks. Hashing the secret gave the payment hash printed in it, and the BOLT 11 example decoded to 250,000 satoshis. Only lnd was run.",
+   "bg": "light",
+   "take": "An invoice is a signed promise that names the hash to be paid"
+  },
+  {
+   "kind": "content",
+   "title": "Channel transactions on the chain",
+   "sub": "Like a joint account: both signatures to open it, one closing letter",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.8,
+     "rows": [
+      [
+       "f, c, k = R['l4']['funding'], R['l4']['close'], R['l5']['revoked_commitment']",
+       ""
+      ],
+      [
+       "f['type'], f['value'], c['witness_script_asm'].split(' ')[4]",
+       "('witness_v0_scripthash', 4.0, 'OP_CHECKMULTISIG')"
+      ],
+      [
+       "hex(k['locktime'] >> 24), hex(k['sequence'] >> 24), len(k['outputs']), k['witness_items'], k['vsize']",
+       "('0x20', '0x80', 4, [0, 71, 72, 71], 279)"
+      ],
+      [
+       "c['locktime'], [o['type'] for o in c['outputs']], c['vsize'], R['l4']['onchain_transactions_in_lifetime']",
+       "(0, ['witness_v1_taproot', 'witness_v1_taproot'], 193, 2)"
+      ],
+      [
+       "L.bolt3_keys()",
+       "(True, True, True, True)"
+      ]
+     ],
+     "fs": 9.2,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: lnd 0.21.3-beta regtest; the BOLT 3 vector is computed"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.85,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 10,
+     "items": [
+      "Row 2: the funding output is a script hash for a 2-of-2 multisig script and holds 4.0 BTC",
+      "Row 3: the state number hides in locktime (0x20) and sequence (0x80); four outputs, 279 virtual bytes",
+      "Rows 4 and 5: a close is one transaction, 2 in the channel's life; the BOLT 3 key vectors match"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.58,
+     "w": 9.0,
+     "h": 0.28,
+     "fs": 10,
+     "body": "NOT EXECUTED: the lnd manifest signature (file not served, HTTP 404); only the archive hash was compared."
+    }
+   ],
+   "notes": "On the chain a channel is two transactions, the funding output that needs both keys and a cooperative close. The commitment transaction hides a 48-bit state number in its lock time and sequence fields, which lets both sides number their states. A cooperative close was one transaction with lock time zero, so the channel's whole life used two on-chain transactions. The BOLT 3 key derivation vectors matched.",
+   "bg": "light",
+   "take": "A channel's whole life can be two transactions on the chain"
+  },
+  {
+   "kind": "content",
+   "title": "Breach, justice and fee bumping",
+   "sub": "Like a clerk who spots an old cheque and gives the whole account to its victim",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.8,
+     "rows": [
+      [
+       "l = R['l5']; j = l['justice']; c = R['c6']; r = c['package']['ok']['tx-results']",
+       ""
+      ],
+      [
+       "l['state2']['hitesh'], l['state2']['irene'], l['hitesh_closed'][0]['close_type'], len(j['inputs'])",
+       "(700000000, 299996530, 'BREACH_CLOSE', 2)"
+      ],
+      [
+       "[i['witness_items'] for i in j['inputs']], round(j['outputs'][0]['value'] * 1e8)",
+       "([[72, 37], [72, 1, 77]], 999990380)"
+      ],
+      [
+       "c['parent_alone']['reject-reason'], c['package_msg'], c['anchor_witness_len'], c['both_confirmed']",
+       "('min relay fee not met', 'success', 0, True)"
+      ],
+      [
+       "round(max(v['fees']['effective-feerate'] for v in r.values()) * 1e5, 1), c['parent_vsize'], c['child_vsize']",
+       "(10.9, 123, 151)"
+      ]
+     ],
+     "fs": 9.1,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: lnd 0.21.3-beta and Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.85,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 10,
+     "items": [
+      "Row 2: in the newest state Hitesh held 700,000,000 satoshis, Irene 299,996,530; Irene broadcast an older one",
+      "Row 3: the justice transaction spends 2 outputs and pays Hitesh 999,990,380 satoshis",
+      "Rows 4 and 5: a zero-fee parent is refused alone but accepted with its child, at 10.9 sat/vB"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.58,
+     "w": 9.0,
+     "h": 0.28,
+     "fs": 10,
+     "body": "NOT EXECUTED: a watchtower, and a close with HTLCs pending; the victim's own node answered the breach."
+    }
+   ],
+   "notes": "When Irene broadcast an old state, Hitesh's node saw the revoked commitment and spent both of its outputs in a justice transaction. He received 999,990,380 satoshis of the 1,000,000,000 in the channel, and the rest went to the fee. A second test showed fee bumping: a zero-fee parent was refused alone and accepted as a package with a child that paid for both, at 10.9 satoshis per virtual byte.",
+   "bg": "light",
+   "take": "Cheating with an old state loses the whole channel"
+  },
+  {
+   "kind": "content",
+   "title": "A paper that became a network",
+   "sub": "The story of 28 February 2015: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch14/assets/lightning_cut_nodes.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Lightning cut nodes - FrankAndProust, CC0 1.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "Joseph Poon and Thaddeus Dryja publish a white paper in February 2015; a copy was archived on 28 February 2015 (row 1)",
+      "The draft kept at lightning.network is version 0.5.9.2 of 14 January 2016, 320 days later (row 2)",
+      "The book still calls the network proposed; Lightning Labs launched it in 2018 (row 3)"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "seen('wikipedia_lightning_network.html', 'white paper in February 2015')",
+       "True"
+      ],
+      [
+       "(datetime.date(2016, 1, 14) - datetime.date(2015, 2, 28)).days",
+       "320"
+      ],
+      [
+       "seen('book_ch14_applications.adoc', 'is a proposed routed network')",
+       "True"
+      ]
+     ],
+     "fs": 8.6,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the Wikipedia page and the book, saved on 2026-10-15"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Joseph Poon and Thaddeus Dryja, the authors of the Lightning Network paper, and Lightning Labs, which launched the network in 2018",
+     "where": "the website lightning.network, where the paper is kept, and the open specification repository of the BOLTs",
+     "when": "2015-02-28",
+     "link": "https://lightning.network/lightning-network-paper.pdf",
+     "linkText": "lightning.network"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: a chart of cut nodes, not the authors."
+    }
+   ],
+   "notes": "Joseph Poon and Thaddeus Dryja published a Lightning Network white paper in February 2015, and Wikipedia cites a copy archived on 28 February 2015. The draft that lightning.network keeps is version 0.5.9.2 of 14 January 2016, 320 days later. Lightning Labs launched the network in 2018, so the book's word proposed no longer holds, while its date for the first description, February 2015, does.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Satoshis passed from hand to hand",
+   "sub": "The story of 19 January 2019: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch14/assets/jack_dorsey_2009.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Jack Dorsey 2009 - Brian Solis, CC BY 2.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 19 January 2019 hodlonaut starts the torch with 100,000 satoshis; each holder adds 10,000 (row 3)",
+      "Well-known people such as Jack Dorsey and Elizabeth Stark pass it on",
+      "Rows 1 and 2: three hops of fees; 1,000 satoshis delivered cost the sender 1,003"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "L.route_fees(10 ** 8, [10 ** 5] * 3)[0]",
+       "[100300000, 100200000, 100100000]"
+      ],
+      [
+       "L.route_fees(1000, [1, 1, 1])[0]",
+       "[1003, 1002, 1001]"
+      ],
+      [
+       "seen('wikipedia_lightning_network.html', 'added 10,000 satoshis')",
+       "True"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the fee code and the Wikipedia page, saved on 2026-10-15"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "hodlonaut, a pseudonymous Twitter user who began the game, and the recipients who passed it on, among them Jack Dorsey, Charlie Lee",
+     "where": "Twitter, and the Lightning Network, where each payment was sent",
+     "when": "2019-01-19",
+     "link": "https://en.wikipedia.org/wiki/Lightning_Network",
+     "linkText": "en.wikipedia.org"
+    }
+   ],
+   "notes": "On 19 January 2019 the pseudonymous Twitter user hodlonaut began a promotional test of the Lightning Network by sending 100,000 satoshis to a trusted recipient. Each recipient added 10,000 satoshis and sent the sum on, so it reached well-known people such as Jack Dorsey and Elizabeth Stark. Each hand-over was an ordinary Lightning payment, and the fee arithmetic of the book predicts what stays after each hop.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per idea, each one provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 9.0,
+     "h": 3.4,
+     "fs": 12.5,
+     "items": [
+      "A spent output stays spent, a signed payment never expires, and a hash proves a document existed",
+      "Single-use seals and tweaked keys let colored coins keep their contract off the chain",
+      "A channel is a two-key output, refunds with falling locks and a commitment that can be punished",
+      "A hash-locked contract moves a payment through a line of nodes, each keeping a fee and less time",
+      "The wire formats are fixed-size and checked by vectors; cheating with an old state loses the channel"
+     ]
+    }
+   ],
+   "notes": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "bg": "light",
+   "take": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Opened on 2026-10-15; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.45,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "Optech topic, hash time locked contracts",
+         "https://bitcoinops.org/en/topics/htlc/"
+        ],
+        [
+         "Optech topic, anchor outputs",
+         "https://bitcoinops.org/en/topics/anchor-outputs/"
+        ],
+        [
+         "Optech topic, watchtowers",
+         "https://bitcoinops.org/en/topics/watchtowers/"
+        ]
+       ]
+      },
+      {
+       "head": "Standards and papers",
+       "rows": [
+        [
+         "BOLT 3, transaction and script formats",
+         "https://raw.githubusercontent.com/lightning/bolts/master/03-transactions.md"
+        ],
+        [
+         "BIP 112, CHECKSEQUENCEVERIFY",
+         "https://bips.dev/112/"
+        ],
+        [
+         "Poon and Dryja, the Lightning paper (draft 0.5.9.2)",
+         "https://lightning.network/lightning-network-paper.pdf"
+        ]
+       ]
+      },
+      {
+       "head": "Watch",
+       "rows": [
+        [
+         "CuriousInventor: how Lightning works (video)",
+         "https://www.youtube.com/embed/yKdK-7AtAMQ"
+        ],
+        [
+         "Poon and Dryja at Coinbase (video)",
+         "https://www.youtube.com/embed/KN7Z5dGWcRY"
+        ]
+       ]
+      },
+      {
+       "head": "Community",
+       "rows": [
+        [
+         "mempool.space, the Lightning explorer",
+         "https://mempool.space/lightning"
+        ],
+        [
+         "Bitcoin Optech newsletters",
+         "https://bitcoinops.org/en/newsletters/"
+        ],
+        [
+         "Delving Bitcoin, research forum",
+         "https://delvingbitcoin.org/"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the CuriousInventor video, then the Optech topic on hash time locked contracts next to the chapter. The research package for chapter 14 lists all 83 sources with the passages used.",
+   "bg": "light",
+   "take": "Watch the first video, then read the Optech topic beside the chapter"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "What the chain guarantees, and what colored coins add",
+      "How a payment channel is funded, refunded and punished",
+      "How a payment crosses five nodes with fees and timelocks",
+      "Why cheating with an old state loses the channel"
+     ]
+    }
+   ],
+   "notes": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 14 holds the sources and the test records behind them.",
+   "bg": "dark"
+  }
+ ]
+}
