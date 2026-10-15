@@ -1,0 +1,1556 @@
+ 
+  
+	 
+	 
+	 
+	 
+	 
+	 
+	 Alt chains and atomic transfers   
+	 
+	   -->
+	  
+	  
+	  
+
+
+
+	 
+	 
+	 
+	 
+	 
+	 
+	  
+ 
+
+	 
+		  
+ 
+	 
+		 
+			 
+				 
+					 Bitcoin Forum 
+				 
+				 
+					 
+				 
+			 
+		 
+		 
+			 
+				 
+					 October 15, 2026, 05:26:44 PM 
+					   
+				 
+			 
+			 
+				 
+					 
+						 
+							  Welcome,  Guest . Please  login  or  register .				 
+							 
+						 
+					 
+				 
+			 
+		 
+		 
+			 
+				 
+					  News :   Serious possible issue involving Ledger hardware wallets and CryptoBilis   
+				 
+				 
+					 
+						   
+						  
+						 
+						 
+						 
+					 
+				 
+			 
+		 
+	 
+			 
+				 
+					      
+				 
+					 Home 
+				    
+				 
+					 Help 
+				 
+				 
+					 Search 
+				 
+				 
+					 Login 
+				 
+				 
+					 Register 
+				 
+				 
+					 More 
+				 
+				   
+			 
+		 
+	 
+  
+  
+    Bitcoin Forum   >   Bitcoin   >   Development & Technical Discussion   >   Alt chains and atomic transfers    
+ 
+	 
+		 Pages:  [ 1 ]  2   3    »     All   
+		 
+			   « previous topic   next topic »  
+			 
+				 
+					
+		   
+		  Print  
+		   
+				 
+			 
+		 
+	 
+ 
+ 
+		 
+				 
+					 
+				 
+				  Author 
+				 
+						Topic: Alt chains and atomic transfers  (Read 27451 times)
+				 
+		 
+ 
+ 
+   
+		 
+			  
+				 
+					 
+								 
+							  TierNolan    (OP) 
+							 
+								Legendary 
+								  
+								   
+								Activity: 1246 
+								Merit: 1159  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Alt chains and atomic transfers  
+												 May 02, 2013, 10:35:53 AM  
+										     � #1 
+		  
+								 
+							  
+									  
+							 One of the big benefits of colored coins is that the transactions are atomic.  You can buy 10 shares in a company for 20 BTC and either the transaction happens or it doesn't.  You don't get into a situation where you pay (or give the shares) and then the other transaction is reversed for some reason.  One way of doing it would be to verify that the other transaction was buried in a second chain.  This could involve checking that a token was in a merkle tree.   Step 1: verify that the token matches the desired token   OP_DUP [target-token] OP_EQUALVERIFY   Step 2: build up merkle tree (fixed depth)  [3] OP_ROLL OP_IF OP_SWAP OP_ENDIF OP_CAT OP_HASH256  It is assumed the input is  [true/false] [child1] [child2]  If true, then child1 and child2 are swapped and then the hash is computed.  OP_CAT is currently disabled.  The output is [parent]  The spend would be  [true/false] [merkle-node] [true/false] [merkle-node] .... [true/false] [merkle-node] [token]  When this step is finished, then the merkle root would be on the stack.   Step 3: scan the alt-chain headers   OP_SWAP would be needed before starting to move the merkle root back one.  The alt-chain is assumed to have only 3 fields in its header.  The input is [nonce] [merkle-root] [previous-hash]  OP_CAT OP_CAT OP_HASH256 OP_DUP OP_LESS_THAN [target] OP_VERIFY [2] OP_PICK OP_EQUALVERIFY  This computes the hash and checks that it meets difficulty.  It then checks that the "previous-hash" for the next header matches the hash of this header.  This would be repeated for as many blocks as required.  The effect of all of these steps is that it is a script that is released if the token is buried in another chain at least a certain number of blocks deep.  To spend, you have to provide the merkle path to the root and then the nonce and merkle root for the headers which build on this one.  Depending on the value of the transactions more confirming blocks would be required.  The OP_CAT opcode is currently disabled.  It isn't really clear what a disabled opcode means.  If it isn't accepted, then it effectively doesn't exist. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 1LxbG5cKXzTwZg9mjL3gaRE835uNQEteWF 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  iddo  
+							 
+								Sr. Member 
+								     
+								   
+								Activity: 360 
+								Merit: 254  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 May 07, 2013, 10:23:49 AM  
+										     � #2 
+		  
+								 
+							  
+									  
+							 I'm not completely sure whether I understood your objective here, and I also didn't I understand some of the specifics.  If the objective is to trade (colored) coins between two chains (e.g. Bitcoin and Litecoin) where the trade is atomic, in the sense that either both parties received the coins that they wanted, or neither party did, then I think that we can use this simple protocol:  1) Alice has n1 bitcoins, Bob has n2 litecoins, and they want to trade them.  2) Bob selects a random password X and broadcasts to the Litecoin network a transaction that spends his n2 litecoins to a script that requires the usual OP_CHECKSIG for Alice's Litecoin address as well as "OP_SHA256 Y OP_EQUAL" where Y=SHA256(X), meaning that Alice (and only Alice) can spend those n2 litecoins, but only if she knew an X that satisfies Y==SHA256(X). This transaction is public, so Alice and everyone else see it on the Litecoin blockchain.  3) Alice now broadcasts to the Bitcoin network a similar transaction that allows Bob to spend her n1 bitcoins only if he reveals an X that gives Y==SHA256(X), i.e. a transaction with OP_CHECKSIG for Bob's Bitcoin address and "OP_SHA256 Y OP_EQUAL".  4) If Bob spends the n1 bitcoins (e.g. by sending them to another Bitcoin address of his) then he necessarily reveals X, so now Alice can do the same and spend the n2 litecoins.  5) To avoid extortion, we can use nlocktime (similarly to how it's used in the Contracts wiki page), so for example the transaction on the Litecoin network in step (2) expires after 2 days (meaning that Bob could spend the coins back to himself after 2 days), and the transaction on the Bitcoin network in step (3) expires after 1 day. This implies that if Bob spends the n1 bitcoins then we can be sure that Alice will be able to spend the n2 litecoins, and if either Alice or Bob abort at any stage then no harm is done. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  Sergio_Demian_Lerner  
+							 
+								Hero Member 
+								      
+  
+								   
+								Activity: 555 
+								Merit: 693  
+								
+								
+								
+								 
+								   
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 May 07, 2013, 12:43:36 PM  
+										     � #3 
+		  
+								 
+							  
+									  
+							 Check this thread. I think is similar to what you say.  P2PTradeX: P2P Trading between cryptocurrencies ( https://bitcointalk.org/index.php?topic=91843.0 ) 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  TierNolan    (OP) 
+							 
+								Legendary 
+								  
+								   
+								Activity: 1246 
+								Merit: 1159  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 May 07, 2013, 12:59:34 PM  
+										     � #4 
+		  
+								 
+							  
+									  
+							   Quote from: iddo on May 07, 2013, 10:23:49 AM   I'm not completely sure whether I understood your objective here, and I also didn't I understand some of the specifics.   Basically, it is a script that verifies that a hash has been included in an alt chain's merkle tree to a certain depth.   Quote  5) To avoid extortion, we can use nlocktime (similarly to how it's used in the Contracts wiki page), so for example the transaction on the Litecoin network in step (2) expires after 2 days (meaning that Bob could spend the coins back to himself after 2 days), and the transaction on the Bitcoin network in step (3) expires after 1 day. This implies that if Bob spends the n1 bitcoins then we can be sure that Alice will be able to spend the n2 litecoins, and if either Alice or Bob abort at any stage then no harm is done.   That isn't how locktime works.  Locktime means that the transaction can't be included into the chain until the given time.  Ideally, for an atomic system, it must be possible for it to be cancelled at any stage.  This is what the block chain does, in order to establish ordering of transactions.  Step 1: Bob sends coin unlocked by Alice's public key and X for sha(X)  If the transaction ends here, Bob loses his money  Step 2: Alice sends coins unlocked by Bob's public key and X for sha(X)  If the transaction ends here, Alice loses her money.  Bob can spend his at some later time.  Step 3: Bob sends X for sha(X) to Alice or to block chain  Transaction is completed.  What is needed is something like  Step 1: Bob sends coin unlocked by [Alice's public key and Proof step 3 happened] or [Proof step 3 didn't happen]  If the transaction ends here, Bob loses his money  Step 2: Alice sends coins unlocked by [Bob's public key and Proof step 3 happened] or [Proof step 3 didn't happen]  If the transaction ends here, Alice loses her money.  Bob can spend his at some later time.  Step 3: Bob sends X for sha(X) to Alice or to block chain  Transaction completed.  What you want is an alt chain that gives the proof.  You could have a time-stamping chain.  You can submit X to the chain and then it blocks sha(X) being added and vice versa.  The script in the OP was a way to say that the proof must be buried deep in some alt chain. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 1LxbG5cKXzTwZg9mjL3gaRE835uNQEteWF 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  TierNolan    (OP) 
+							 
+								Legendary 
+								  
+								   
+								Activity: 1246 
+								Merit: 1159  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 May 07, 2013, 01:00:41 PM  
+										     � #5 
+		  
+								 
+							  
+									  
+							   Quote from: Sergio_Demian_Lerner on May 07, 2013, 12:43:36 PM   P2PTradeX: P2P Trading between cryptocurrencies ( https://bitcointalk.org/index.php?topic=91843.0 )   Yeah.  In fact, having the alt-chain support the system is better than trying for BTC script. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 1LxbG5cKXzTwZg9mjL3gaRE835uNQEteWF 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  iddo  
+							 
+								Sr. Member 
+								     
+								   
+								Activity: 360 
+								Merit: 254  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 May 07, 2013, 02:09:23 PM  
+										     � #6 
+		  
+								 
+							  
+									  
+							   Quote from: TierNolan on May 07, 2013, 12:59:34 PM    Quote  5) To avoid extortion, we can use nlocktime (similarly to how it's used in the Contracts wiki page), so for example the transaction on the Litecoin network in step (2) expires after 2 days (meaning that Bob could spend the coins back to himself after 2 days), and the transaction on the Bitcoin network in step (3) expires after 1 day. This implies that if Bob spends the n1 bitcoins then we can be sure that Alice will be able to spend the n2 litecoins, and if either Alice or Bob abort at any stage then no harm is done.   That isn't how locktime works.  Locktime means that the transaction can't be included into the chain until the given time.   I meant something similar to what gmaxwell described  here : "You first create the  ZKP  payment transaction which requires (Password+Their_signature) OR (Their signature plus Your signature). You keep this transaction private. You then write a new transaction, the refund transaction, which spends the payment back to you but has an nlocktime set in the future (e.g. 1000 blocks from now). You sign it, and give it to the other party to sign. He is able to sign it without actually seeing the payment transaction (he only sees its hash). When he returns it, you then release the payment transaction. If he does not redeem the payment transaction before the locktime expires you transmit the refund and recover it yourself. Because of the locktime you are unable to steal the payment back right after sending it to him."  Do you agree that the simple protocol that I described gives atomic trade across chains with no possibilities for extortion? 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  ripper234  
+							 
+								Legendary 
+								  
+								   
+								Activity: 1358 
+								Merit: 1005  
+								    
+								Ron Gross 
+								 
+								
+								
+								
+								 
+								   
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 May 21, 2013, 08:25:59 AM  
+										     � #7 
+		  
+								 
+							  
+									  
+							 I had some difficulty Googling for a clear explanation of atomic cross-chain trading, so I gathered my findings into  this wiki page .  I must admit I do not fully understand  Mike Hearns' explanation  as presented, I suggest we use the wiki page to develop and clarify the solution as needed. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 Please do not pm me, use  ron@bitcoin.org.il  instead  Mastercoin  Executive Director Co-founder of the Israeli Bitcoin Association 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  TierNolan    (OP) 
+							 
+								Legendary 
+								  
+								   
+								Activity: 1246 
+								Merit: 1159  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 May 21, 2013, 01:31:21 PM  
+										     � #8 
+		  
+								 
+							  
+									  
+							   Quote from: ripper234 on May 21, 2013, 08:25:59 AM   I must admit I do not fully understand  Mike Hearns' explanation  as presented, I suggest we use the wiki page to develop and clarify the solution as needed.   This basically works by sending the 2 coins to a script that can only be spent if you have the recipient's public key and the x for a matching H(x).  Step 1 A generates H(x) A sends coins to <B's public key> and x for H(x)  Step 2 B knows that A has sent his coins, so  B sends coins to <A's public key> and x for H(x)  Step 3 A sends x to B.  The can now both spend the coins they received.  If A refuses to perform step 3, when A spends the coins B sent, he has to provide x to the chain.  At that point B can spend his coins.  The worst A can do is defect and refuse to unlock the coins he sent B, until he wants to spend the coins he received.  This is potentially a problem. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 1LxbG5cKXzTwZg9mjL3gaRE835uNQEteWF 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  iddo  
+							 
+								Sr. Member 
+								     
+								   
+								Activity: 360 
+								Merit: 254  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 May 21, 2013, 03:36:50 PM  
+										     � #9 
+		  
+								 
+							  
+									  
+							   Quote from: TierNolan on May 21, 2013, 01:31:21 PM   The worst A can do is defect and refuse to unlock the coins he sent B, until he wants to spend the coins he received.  This is potentially a problem.   No it's not. I assume that you mean that the problem is that B's coins will remain locked until A agrees to unlock, but this is solved with locktime as described by gmaxwell, see also  here . 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+						 
+					 
+				 
+			  
+		 
+	    
+		    
+		 
+			  
+				 
+					 
+								 
+							  TierNolan    (OP) 
+							 
+								Legendary 
+								  
+								   
+								Activity: 1246 
+								Merit: 1159  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  ⇾   Re: Alt chains and atomic transfers  
+												  May 21, 2013, 05:31:26 PM   Last edit: December 13, 2013, 04:36:36 PM by TierNolan     Merited  by  d5000  (49)   
+										     � #10 
+		  
+								 
+							  
+									  
+							   Quote from: iddo on May 21, 2013, 03:36:50 PM   No it's not. I assume that you mean that the problem is that B's coins will remain locked until A agrees to unlock, but this is solved with locktime as described by gmaxwell, see also  here .   Sounds reasonable.  A picks a random number x  A creates TX1: "Pay w BTC to <B's public key> if (x for H(x) known and signed by B) or (signed by A & B)"  A creates TX2: "Pay w BTC from TX1 to <A's public key>, locked 48 hours in the future , signed by A "  A sends TX2 to B  B signs TX2 and returns to A  1) A submits TX1 to the network  B creates TX3: "Pay v alt-coins to <A-public-key> if (x for H(x) known and signed by A) or (signed by A & B)"  B creates TX4: "Pay v alt-coins from TX3 to <B's public key>, locked 24 hours in the future , signed by B "  B sends TX4 to A  A signs TX4 and sends back to B  2) B submits TX3 to the network  3) A spends TX3 giving x  4) B spends TX1 using x  This is atomic (with timeout).  If the process is halted, it can be reversed no matter when it is stopped.  Before 1: Nothing public has been broadcast, so nothing happens Between 1 & 2: A can use refund transaction after 48 hours to get his money back Between 2 & 3: B can get refund after 24 hours.  A has 24 more hours to get his refund After 3: Transaction is completed by 2 - A must spend his new coin within 24 hours or B can claim the refund and keep his coins - B must spend his new coin within 48 hours or A can claim the refund and keep his coins  For safety, both should complete the process with lots of time until the deadlines. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 1LxbG5cKXzTwZg9mjL3gaRE835uNQEteWF 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  ripper234  
+							 
+								Legendary 
+								  
+								   
+								Activity: 1358 
+								Merit: 1005  
+								    
+								Ron Gross 
+								 
+								
+								
+								
+								 
+								   
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 May 25, 2013, 09:17:53 PM  
+										     � #11 
+		  
+								 
+							  
+									  
+							 Thanks for the great explanation, now it's all clear. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 Please do not pm me, use  ron@bitcoin.org.il  instead  Mastercoin  Executive Director Co-founder of the Israeli Bitcoin Association 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  TierNolan    (OP) 
+							 
+								Legendary 
+								  
+								   
+								Activity: 1246 
+								Merit: 1159  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 August 02, 2013, 08:25:13 PM  
+										     � #12 
+		  
+								 
+							  
+									  
+							 I was thinking of trying this out.  Does anyone know if there is a pool like Eligius for Litecoin that accepts non-standard transactions? 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 1LxbG5cKXzTwZg9mjL3gaRE835uNQEteWF 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  jl2012  
+							 
+								Legendary 
+								  
+								   
+								Activity: 1792 
+								Merit: 1162  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 August 03, 2013, 04:19:56 AM  
+										     � #13 
+		  
+								 
+							  
+									  
+							   Quote from: TierNolan on August 02, 2013, 08:25:13 PM   I was thinking of trying this out.  Does anyone know if there is a pool like Eligius for Litecoin that accepts non-standard transactions?   Maybe do it on testnet 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 Donation address: 374iXxS4BuqFHsEwwxUuH3nvJ69Y7Hqur3 (Bitcoin ONLY) LRDGENPLYrcTRssGoZrsCT1hngaH3BVkM4 (LTC) PGP: D3CC 1772 8600 5BB8 FF67 3294 C524 2A1A B393 6517 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  TierNolan    (OP) 
+							 
+								Legendary 
+								  
+								   
+								Activity: 1246 
+								Merit: 1159  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 August 03, 2013, 08:15:41 AM  
+										     � #14 
+		  
+								 
+							  
+									  
+							   Quote from: jl2012 on August 03, 2013, 04:19:56 AM   Maybe do it on testnet   Does litecoin have a testnet, I guess that would work?  Anyway, I was thinking that the feature could be achieved using channels.  Both traders would open a channel to handle the trade.  This can be done with standard multi-sig transactions.  LTC fees are 0.1 LTC which is pretty high.  If nodes created channels to 8 other nodes, then you could get a distributed exchange.  Each node would act as market maker between the peers it was connected to.  It would tell the other nodes what its bid/ask price was.  Persistent nodes could potentially generate profit for their operators. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 1LxbG5cKXzTwZg9mjL3gaRE835uNQEteWF 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  socrates1024  
+							 
+								Full Member 
+								    
+								   
+								Activity: 126 
+								Merit: 112  
+								    
+								Andrew Miller 
+								 
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												  October 10, 2013, 07:31:03 PM   Last edit: August 15, 2014, 06:59:54 PM by socrates1024   
+										     � #15 
+		  
+								 
+							  
+									  
+							 I've been skeptical of atomic cross-chain trades for a while now. In particular I edited the Contracts wiki page to explain that the proposed technique (the "luxgladius" protocol) has a fatal race condition. But now I'm convinced that solution proposed here works and has no race condition. And it's simpler than P2PTradeX, which is good (although P2PTradeX may still be useful for other things). So, here's my writeup of how this works. Unless I realize I missed something, I want to revise the Contracts wiki page to point to TierNolan's description by default one, and remove the disclaimer that cross-trades don't work!  https://en.bitcoin.it/wiki/Contracts    Quote  This is an explanation of TierNolan's atomic cross transaction technique. It's similar to one by luxgladius, except this protocol avoids a race condition by using asymmetry - only Alice has a secret, and the timeout on one chain is much longer than the other.  https://bitcointalk.org/index.php?topic=193281.msg2224949#msg2224949   Alice has 1btc (Bitcoin) and Bob has 1atc (Altcoin). They would like to conduct an atomic exchange, so that after a finite time, either Alice has 1atc and Bob has 1btc, or the transaction was aborted and their positions are both unchanged. We assume that both the Bitcoin and Altcoin chains are loosely synchronized to eachother, such that neither chain gets more than 12 hours ahead of the other.   Phase 1: Alice bails in   Alice draws a random secret x. Alice constructs TX1 to bail in a bitcoin. TX1 has a single txout with 1 btc, containing the following scriptPubkey:  Code:  OP_IF  	 // Refund for A  	 2 <pubkeyA> <pubkeyB> 2 OP_CHECKMULTISIGVERIFY OP_ELSE   	 // Ordinary claim for B  	 OP_HASH160 <H(x)> OP_EQUAL <pubkeyB> OP_CHECKSIGVERIFY OP_ENDIF  Alice signs TX1 but does not yet publish it. She creates TX2, her refund transaction, which has a locktime of +48 hours. It contains TX1[0] as a txin, and the txout is a standard spend to A. The scriptSig for this txin looks like  Code:  <sigB2> <sigA2> 1 which proceeds through the main branch of the IF. Alice signs TX2, obtaining sigA2.  Alice transmits TX2 to Bob, and requests that Bob signs and returns it. Once Alice receives Bob�s signature sigB2, then Alice publishes TX1, knowing that she will be able to claim her refund after 48 hours, as long as she does not reveal x. Alice is now bailed in.    Phase 2: Bob bails in   Bob received TX2 in the first phase, and therefore knows H(x). Bob also signed Alice�s refund transaction, but that will not be active until after 48 hours. If Bob is honest, he�ll get what he wants within 24 hours in any case. Bob has also seen that TX1 has been published.  Bob creates TX3, which bails in an Altcoin. TX3 is symmetric with TX1, and has a single txout with 1atc, containing the following scriptPubkey:  Code:  OP_IF  	 // Refund for B  	 2 <pubkeyA> <pubkeyB> 2 OP_CHECKMULTISIGVERIFY OP_ELSE  	 // Ordinary claim for A  	 OP_HASH160 <H(x)> OP_EQUAL <pubkeyA> OP_CHECKSIGVERIFY OP_ENDIF  Bob also creates TX4, which is his own Altcoin refund. TX4 is timelocked for only 24 hours, uses TX3[0] as a txin, and the scriptSig looks like  Code:  <sigB4> <sigA4> 1 which proceeds through the main branch of the if. Bob signs TX4, obtaining sigB, and transmits TX4 to Alice, asking her to sign it. When Bob receives sigA4, he can safely publish TX3, knowing that he will be able to abort and reclaim his coin after 24 hours. Bob is now bailed in.    Phase 3: Alice reveals x and triggers both transactions.   Alice has 24 hours to claim the Altcoin, using the following scriptSig:  Code:  <sigA4�> <x> 0 which triggers the ELSE branch of the conditional. However in doing so, she must necessarily reveal x. If Alice reveals x within 24 hours, then Bob can also claim his Bitcoin before 48 hours:  Code:  <sigB2�> <x> 0 .   This is atomic because:    a) each party *bails in* their coins only after receiving a *refund signature* from the other party.    b) the refund delay is significantly larger on the Bitcoin chain than on the Altcoin chain, and Alice, who initially knows x, bails in her coin first.   
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 amiller on freenode / 19G6VFcV1qZJxe3Swn28xz3F8gDKTznwEM  [my twitter]   [research@umd]  I study  Merkle trees , credit networks, and  Byzantine Consensus algorithms . 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  Sergio_Demian_Lerner  
+							 
+								Hero Member 
+								      
+  
+								   
+								Activity: 555 
+								Merit: 693  
+								
+								
+								
+								 
+								   
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 October 10, 2013, 08:36:59 PM  
+										     � #16 
+		  
+								 
+							  
+									  
+							 This socrates1024 protocol seems to be much better than some others I saw. I can't find any drawback.   
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  Sukrim  
+							 
+								Legendary 
+								  
+								   
+								Activity: 2618 
+								Merit: 1014  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 October 10, 2013, 10:14:24 PM  
+										     � #17 
+		  
+								 
+							  
+									  
+							 As far as I understand, Alice cannot put out a general offer though, she can only trade with Bob and vice versa. This might be a potential drawback. On the other hand this is about atomic transfers, not cross chain trade offers...  What if Alice (because she likes to do arbitrage and is speculating on shifting values) reveals her x very late (after 23:59h and 59 seconds)? This would lead to the case that she doesn't get her altcoin but bob can still claim the Bitcoin, right? Also might it be the case that this leads to some issues in the altcoin network, if half of the nodes see her revealing X thus granting her the altcoin and the other half believe that the time is over and the altcoin should return to Bob? 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							   https://www.coinlend.org   <-- automated lending at various exchanges.   https://www.bitfinex.com   <-- Trade BTC for other currencies and vice versa. 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  socrates1024  
+							 
+								Full Member 
+								    
+								   
+								Activity: 126 
+								Merit: 112  
+								    
+								Andrew Miller 
+								 
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 October 10, 2013, 10:19:34 PM  
+										     � #18 
+		  
+								 
+							  
+									  
+							   Quote from: Sukrim on October 10, 2013, 10:14:24 PM   What if Alice (because she likes to do arbitrage and is speculating on shifting values) reveals her x very late (after 23:59h and 59 seconds)? This would lead to the case that she doesn't get her altcoin but bob can still claim the Bitcoin, right?  Alice can only harm herself by waiting so close to the deadline. This is OK. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							 amiller on freenode / 19G6VFcV1qZJxe3Swn28xz3F8gDKTznwEM  [my twitter]   [research@umd]  I study  Merkle trees , credit networks, and  Byzantine Consensus algorithms . 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  Sukrim  
+							 
+								Legendary 
+								  
+								   
+								Activity: 2618 
+								Merit: 1014  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												 October 11, 2013, 07:36:19 AM  
+										     � #19 
+		  
+								 
+							  
+									  
+							 Well, then there's still the issue with altcoins being (far) less secure than Bitcoin:  Alice reveals X, Bob 51% attacks Altcoin to undo/prevent Alice's transaction for the remaining n hours, Bob redeems Bitcoin. Are Altcoins just viewed as "secure" in this scenario and is this a reasonable assumption in reality? This again might be seen as not relevant, as not the protocol but the chain is attacked.  Still it would be nice to allow Alice to trade with anyone, not just a certain Bob. 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+							 
+							   https://www.coinlend.org   <-- automated lending at various exchanges.   https://www.bitfinex.com   <-- Trade BTC for other currencies and vice versa. 
+						 
+					 
+				 
+			  
+		 
+	    
+		  
+		 
+			  
+				 
+					 
+								 
+							  agorism  
+							 
+								Jr. Member 
+								  
+								   
+								Activity: 45 
+								Merit: 2  
+								
+								
+								
+								 
+								    
+							 
+						 
+								 
+							  
+								     
+								 
+												  Re: Alt chains and atomic transfers  
+												  November 25, 2013, 12:48:05 AM   Last edit: November 26, 2013, 12:37:00 AM by agorism   
+										     � #20 
+		  
+								 
+							  
+									  
+							  Socrates1024, I have never written any forth code, but I am pretty sure that how you are using "op_if" is incorrect. See links for details:  http://bitcoin.stackexchange.com/questions/2317/script-op-if-etc-clarifications   This also talks about if statments in forth:  http://theforthsource.com/guide10.html   This is my attempt to re-write it.  //I am assuming that if <x> is known, that it is already on the stack.  //The first "2" is because of bitcoin's bug. The second "2" is an input for op_checkmultisig 2 <pubkeyMine> <pubkeyOther> 2 OP_CHECKMULTISIG OP_DUP //OP_DUP (duplicate top of stack) is here                                                                                                 //because OP_NOTIF pops an item off the stack. //If checkmultisig worked, then we want to skip to the end and verify. if checkmultisig did not work,  //then we still have another chance OP_NOTIF         OP_DROP //This gets rid of the 0 that OP_checkmultisig gave us. Now <x> should be on top.         OP_HASH160 <H(x)> OP_EQUAL //If the hash of x is <H(x)>, then this will leave a 1 on top. otherwise, it leaves a 0.         <pubkeyOther> OP_CHECKSIG  //If B has signed, put a 1 on top         1 OP_EQUAL OP_EQUAL //If the top 2 items were (1, 1) then, delete them and put a 1 on top. Otherwise delete them                                                 // and put a 0 on top. T OP_ENDIF         OP_VERIFY  Now I understand what you were doing Socrates1024 
+						 
+					 
+					 
+						 
+							  
+								 
+								 
+							  
+								 
+								 
+								 
+									 
+								 
+							  
+						 
+					 
+				 
+			  
+		 
+	  
+	    
+ 
+  
+ 
+	 
+		 Pages:  [ 1 ]  2   3    »     All   
+		 
+			 
+				 
+					
+		   
+		  Print  
+		   
+				 
+			 
+		 
+	 
+ 
+ 
+ 
+ 
+		 
+				    Bitcoin Forum   >   Bitcoin   >   Development & Technical Discussion   >   Alt chains and atomic transfers     
+				   « previous topic   next topic »  
+		 
+ 
+	 
+		 
+			   
+		 
+	 
+ 
+  
+	 
+		 Jump to: 
+		  0 && this.options[this.selectedIndex].value) window.location.href = smf_scripturl + this.options[this.selectedIndex].value.substr(smf_scripturl.indexOf('?') == -1 || this.options[this.selectedIndex].value.substr(0, 1) != '?' ? 0 : 1);">
+			 Please select a destination: 
+			 ----------------------------- 
+			 Bitcoin 
+			 ----------------------------- 
+			  => Bitcoin Discussion 
+			  ===> Legal 
+			  ===> Press 
+			  ===> Meetups 
+			  ===> Important Announcements 
+			  => Development & Technical Discussion 
+			  ===> Wallet software 
+			  =====> Electrum 
+			  =====> Bitcoin Wallet for Android 
+			  =====> BitcoinJ 
+			  =====> Armory 
+			  =====> Mycelium 
+			  =====> Hardware wallets 
+			  => Mining 
+			  ===> Mining support 
+			  ===> Pools 
+			  ===> Mining software (miners) 
+			  ===> Hardware 
+			  =====> Group buys 
+			  ===> Mining speculation 
+			  => Bitcoin Technical Support 
+			  => Project Development 
+			 ----------------------------- 
+			 Economy 
+			 ----------------------------- 
+			  => Economics 
+			  ===> Speculation 
+			  => Marketplace 
+			  ===> Goods 
+			  =====> Computer hardware 
+			  =====> Digital goods 
+			  =======> Invites & Accounts 
+			  =====> Collectibles 
+			  ===> Services 
+			  ===> Currency exchange 
+			  ===> Gambling 
+			  =====> Games and rounds 
+			  =====> Investor-based games 
+			  =====> Gambling discussion 
+			  ===> Lending 
+			  =====> Long-term offers 
+			  ===> Securities 
+			  ===> Auctions 
+			  ===> Service Announcements 
+			  =====> Micro Earnings 
+			  ===> Service Discussion 
+			  =====> Web Wallets 
+			  =====> Exchanges 
+			  => Trading Discussion 
+			  ===> Scam Accusations 
+			  ===> Reputation 
+			 ----------------------------- 
+			 Other 
+			 ----------------------------- 
+			  => Meta 
+			  ===> Bitcoin Wiki 
+			  => Politics & Society 
+			  => Beginners & Help 
+			  => Off-topic 
+			  => Serious discussion 
+			  ===> Ivory Tower 
+			  => Archival 
+			  ===> New forum software 
+			  ===> Корзина 
+			  ===> CPU/GPU Bitcoin mining hardware 
+			  ===> Chinese students 
+			  ===> Obsolete (buying) 
+			  ===> Obsolete (selling) 
+			  ===> MultiBit 
+			 ----------------------------- 
+			 Alternate cryptocurrencies 
+			 ----------------------------- 
+			  => Altcoin Discussion 
+			  => Announcements (Altcoins) 
+			  ===> Tokens (Altcoins) 
+			  => Mining (Altcoins) 
+			  ===> Pools (Altcoins) 
+			  => Marketplace (Altcoins) 
+			  ===> Service Announcements (Altcoins) 
+			  ===> Service Discussion (Altcoins) 
+			  ===> Bounties (Altcoins) 
+			  => Speculation (Altcoins) 
+			 ----------------------------- 
+			 Local 
+			 ----------------------------- 
+			  => العربية (Arabic) 
+			  ===> العملات البديلة (Altcoins) 
+			  =====> النقاشات 
+			  ===> إستفسارات و أسئلة المبتدئين 
+			  ===> التعدين 
+			  ===> النقاشات الأخرى 
+			  ===> منصات التبادل 
+			  => Bahasa Indonesia (Indonesian) 
+			  ===> Marketplace (Bahasa Indonesia) 
+			  ===> Mining (Bahasa Indonesia) 
+			  ===> Altcoins (Bahasa Indonesia) 
+			  ===> Trading dan Spekulasi 
+			  ===> Ekonomi, Politik, dan Budaya 
+			  ===> Topik Lainnya 
+			  => Espa�ol (Spanish) 
+			  ===> Mercado y Econom�a 
+			  =====> Servicios 
+			  =====> Trading y especulaci�n 
+			  ===> Hardware y Miner�a 
+			  ===> Esquina Libre 
+			  ===> Mercadillo 
+			  =====> Mexico 
+			  =====> Argentina 
+			  =====> Espa�a 
+			  =====> Centroamerica y Caribe 
+			  ===> Primeros pasos y ayuda 
+			  ===> Altcoins (criptomonedas alternativas) 
+			  =====> Miner�a de altcoins 
+			  =====> Servicios 
+			  =====> Tokens (Espa�ol) 
+			  => 中文 (Chinese) 
+			  ===> 跳蚤市场 
+			  ===> 山寨币 
+			  ===> 媒体 
+			  ===> 挖矿 
+			  ===> 离题万里 
+			  => Hrvatski (Croatian) 
+			  ===> Trgovina 
+			  ===> Altcoins (Hrvatski) 
+			  =====> Announcements (Hrvatski) 
+			  ===> Off-topic (Hrvatski) 
+			  => Deutsch (German) 
+			  ===> Anf�nger und Hilfe 
+			  ===> Mining (Deutsch) 
+			  ===> Trading und Spekulation 
+			  ===> Projektentwicklung 
+			  ===> Off-Topic (Deutsch) 
+			  ===> Treffen 
+			  ===> Presse  
+			  ===> Altcoins (Deutsch) 
+			  =====> Announcements (Deutsch) 
+			  ===> Marktplatz 
+			  =====> Auktionen 
+			  =====> Suche 
+			  =====> Biete 
+			  => Ελληνικά (Greek) 
+			  ===> Αγορά 
+			  ===> Mining Discussion (Ελληνικά) 
+			  ===> Altcoins (Ελληνικά) 
+			  =====> Altcoin Announcements (Ελληνικά) 
+			  =====> Altcoin Mining (Ελληνικά) 
+			  => עברית (Hebrew) 
+			  => Fran�ais 
+			  ===> Actualit� et News 
+			  ===> D�butants 
+			  ===> Discussions g�n�rales et utilisation du Bitcoin 
+			  ===> Mining et Hardware 
+			  ===> �conomie et sp�culation 
+			  ===> Place de march� 
+			  =====> �changes 
+			  =====> Produits et services 
+			  =====> Petites annonces 
+			  ===> Le Bitcoin et la loi 
+			  ===> Wiki, documentation et traduction 
+			  ===> D�veloppement et technique 
+			  ===> Vos sites et projets 
+			  ===> Hors-sujet 
+			  ===> Altcoins (Fran�ais) 
+			  =====> Annonces 
+			  => India 
+			  ===> Mining (India) 
+			  ===> Marketplace (India) 
+			  ===> Regional Languages (India) 
+			  ===> Press & News from India 
+			  ===> Alt Coins (India) 
+			  ===> Buyer/ Seller Reputations (India) 
+			  ===> Off-Topic (India) 
+			  => Italiano (Italian) 
+			  ===> Guide (Italiano) 
+			  ===> Progetti 
+			  ===> Discussioni avanzate e sviluppo 
+			  ===> Trading, analisi e speculazione 
+			  ===> Mercato 
+			  =====> Mercato valute 
+			  =====> Beni 
+			  =====> Servizi 
+			  =====> Esercizi commerciali 
+			  =====> Hardware/Mining (Italiano) 
+			  =====> Gambling (Italiano) 
+			  ===> Accuse scam/truffe 
+			  ===> Mining (Italiano) 
+			  ===> Alt-Currencies (Italiano) 
+			  =====> Annunci 
+			  ===> Raduni/Meeting (Italiano) 
+			  ===> Crittografia e decentralizzazione 
+			  ===> Off-Topic (Italiano) 
+			  => 日本語 (Japanese) 
+			  ===> アルトコイン 
+			  => Nederlands (Dutch) 
+			  ===> Markt 
+			  ===> Gokken/lotterijen 
+			  ===> Mining (Nederlands) 
+			  ===> Beurzen 
+			  ===> Alt Coins (Nederlands) 
+			  ===> Off-topic (Nederlands) 
+			  ===> Meetings (Nederlands) 
+			  => Nigeria (Naija) 
+			  ===> Politics and society (Naija) 
+			  ===> Off-topic (Naija) 
+			  => 한국어 (Korean) 
+			  ===> 대체코인 Alt Coins (한국어) 
+			  => Pilipinas 
+			  ===> Altcoins (Pilipinas) 
+			  =====> Altcoin Announcements (Pilipinas) 
+			  ===> Pamilihan 
+			  ===> Others (Pilipinas) 
+			  => Polski 
+			  ===> Tablica ogłoszeń 
+			  ===> Alternatywne kryptowaluty 
+			  =====> Nowe kryptowaluty i tokeny 
+			  =====> Tablica ogłoszeń (altcoiny) 
+			  => Portugu�s (Portuguese) 
+			  ===> Primeiros Passos (Iniciantes) 
+			  ===> Economia & Mercado 
+			  ===> Minera��o em Geral 
+			  ===> Desenvolvimento & Discuss�es T�cnicas 
+			  ===> Criptomoedas Alternativas 
+			  ===> Brasil 
+			  ===> Portugal 
+			  => Русский (Russian) 
+			  ===> Новички 
+			  ===> Cepвиcы 
+			  =====> Барахолка 
+			  =====> Обменники 
+			  ===> Идеи 
+			  ===> Кодеры 
+			  ===> Майнеры 
+			  ===> Политика 
+			  ===> Трейдеры 
+			  ===> Альтернативные криптовалюты 
+			  =====> Токены 
+			  =====> Бayнти и aиpдpoпы 
+			  ===> Хайпы 
+			  ===> Работа 
+			  ===> Разное 
+			  ===> Oбcyждeниe Bitcoin 
+			  =====> Новости 
+			  =====> Юристы 
+			  => Rom�nă (Romanian) 
+			  ===> Anunturi importante 
+			  ===> Offtopic 
+			  ===> Market 
+			  =====> Discutii Servicii 
+			  ===> Minerit 
+			  ===> Tutoriale 
+			  ===> Bine ai venit! 
+			  ===> Presa 
+			  ===> Altcoins (Monede Alternative) 
+			  =====> Anunturi Monede Alternative 
+			  => Skandinavisk 
+			  => T�rk�e (Turkish) 
+			  ===> Bitcoin Haberleri 
+			  ===> Pazar Alanı 
+			  ===> Madencilik 
+			  ===> Ekonomi 
+			  ===> Servisler 
+			  =====> Fonlar 
+			  ===> Proje Geliştirme 
+			  ===> Alternatif Kripto-Paralar 
+			  =====> Madencilik (Alternatif Kripto-Paralar) 
+			  =====> Duyurular (Alternatif Kripto-Paralar) 
+			  ===> Konu Dışı 
+			  ===> Yeni Başlayanlar & Yardım 
+			  ===> Buluşmalar 
+			  => Other languages/locations 
+		  
+		 
+	 
+   
+	  
+
+	 
+		 
+		 
+			 
+				 
+					   
+					   
+				 
+				 
+					
+		  Powered by SMF 1.1.19  | 
+ SMF © 2006-2009, Simple Machines 
+		 
+				 
+				 
+					   
+					   
+				 
+			 
+		 
+	 
+	 Loading... 
+  

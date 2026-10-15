@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Hash Time Locked Contract (HTLC) | Bitcoin Optech</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Hash Time Locked Contract (HTLC)" />
+<meta name="author" content="Bitcoin Optech" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Hash Time Locked Contracts (HTLCs) are conditional payments used in LN payment channels, cross-chain atomic swaps, same-chain coinswaps, zero-knowledge contingent payments, and other contract protocols." />
+<meta property="og:description" content="Hash Time Locked Contracts (HTLCs) are conditional payments used in LN payment channels, cross-chain atomic swaps, same-chain coinswaps, zero-knowledge contingent payments, and other contract protocols." />
+<link rel="canonical" href="https://bitcoinops.org/en/topics/htlc/" />
+<meta property="og:url" content="https://bitcoinops.org/en/topics/htlc/" />
+<meta property="og:site_name" content="Bitcoin Optech" />
+<meta property="og:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-10-15T03:53:42+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="twitter:title" content="Hash Time Locked Contract (HTLC)" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Bitcoin Optech"},"dateModified":"2026-10-15T03:53:42+00:00","datePublished":"2026-10-15T03:53:42+00:00","description":"Hash Time Locked Contracts (HTLCs) are conditional payments used in LN payment channels, cross-chain atomic swaps, same-chain coinswaps, zero-knowledge contingent payments, and other contract protocols.","headline":"Hash Time Locked Contract (HTLC)","image":"https://bitcoinops.org/img/logos/optech-notext.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://bitcoinops.org/en/topics/htlc/"},"url":"https://bitcoinops.org/en/topics/htlc/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://bitcoinops.org/feed.xml" title="Bitcoin Optech" /></head>
+
+
+  <body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">
+      <img src="/img/logos/optech-horiz.png" alt="OpTech Logo">
+    </a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/en/about/">About</a>
+            <a class="page-link" href="/en/publications/">Publications</a>
+            <a class="page-link" href="/en/topics/">Topics</a>
+            <a class="page-link" href="/en/workshops/">Workshops</a>
+            <a class="page-link" href="/en/matrix/">Matrix</a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+
+
+<article class="post">
+  <header class="post-header">
+    
+    <p class="center">/ <a href="/">home</a> / <a href="/en/topics/">topics</a> / </p>
+
+
+    <h1 class="post-title">Hash Time Locked Contract (HTLC)</h1>
+    
+  </header>
+
+  <div class="post-content">
+    
+
+
+<!-- Actual page content -->
+
+<p><strong>Hash Time Locked Contracts (HTLCs)</strong> are conditional payments used in LN payment channels, cross-chain atomic swaps, same-chain coinswaps, zero-knowledge contingent payments, and other contract protocols.</p>
+
+<p>HTLCs have two fundamental clauses: a payment clause secured with a
+<em>hash lock</em> and a refund clause secured with a <em>time lock</em>.  To open a
+hash lock and claim a payment, the receiver needs to reveal the
+preimage to a hash digest encoded in the contract.  To open a time
+lock and receive a refund, the spender needs to wait until after a
+certain time encoded in the contract.</p>
+
+<p>Because revealed preimages and past times don’t uniquely identify the
+person who should receive either the payment, HTLCs are only secure if
+they also require a unique signature matching the public key of either
+the spender (refundee) or the intended receiver.  That makes the
+minimal HTLC look something <a href="https://min.sc/#c=%28pk%28Receiver%29%20%26%26%20sha256%28H%29%29%20%7C%7C%20%28pk%28Refundee%29%20%26%26%20older%2810%29%29">like this</a> in the
+<a href="https://min.sc/">Minsc</a> scripting language:</p>
+
+<div class="language-hack highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="nf">pk</span><span class="p">(</span><span class="nc">Receiver</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nf">sha256</span><span class="p">(</span><span class="nc">H</span><span class="p">))</span> <span class="o">||</span> <span class="p">(</span><span class="nf">pk</span><span class="p">(</span><span class="nc">Refundee</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nf">older</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+</code></pre></div></div>
+
+<h3 id="history">History</h3>
+
+<p>Hash locks and time locks as independent features were clearly
+designed into the original version of Bitcoin.  As far as we’re aware,
+the earliest description combining the two to create a conditional
+payment—what’d we now call an HTLC—is a set of posts (<a href="https://bitcointalk.org/index.php?topic=91843.msg1011956#msg1011956">1</a>, <a href="https://bitcointalk.org/index.php?topic=91843.msg1011980#msg1011980">2</a>) from July 2012. However, it’s
+possible that a <a href="https://bitcointalk.org/index.php?topic=1790.msg28917#msg28917">December 2010 post</a> was
+alluding to the same basic idea when mentioning a “cryptographically
+[…] risk free trade”.</p>
+
+<h3 id="future">Future</h3>
+
+<p><a href="/en/topics/ptlc/">Point Time Lock Contracts</a> (PTLCs) perform the same
+function as HTLCs but can provide better privacy, use less block
+space, and prevent routing interception.  As a downside, they depend
+on <a href="/en/topics/adaptor-signatures/">signature adaptors</a> which can only
+implemented using Bitcoin’s existing ECDSA signatures either with
+particularly slow algorithms, by making additional security
+assumptions, or by using an <code class="language-plaintext highlighter-rouge">OP_CHECKMULTISIG</code>
+construction that doesn’t save as much block space as is possible with
+the extra security assumptions.  This conflict between security and
+space savings will be resolved if <a href="/en/topics/schnorr-signatures/">schnorr signatures</a> are added to Bitcoin.  If that happens, it’s expected that
+protocols which only require Bitcoin support may migrate from using
+HTLCs to PTLCs.  Other protocols that bridge Bitcoin and other
+cryptocurrencies will likely continue using HTLCs due to widespread
+support for standardized hash functions such as SHA256.</p>
+
+<h2 id="optech-newsletter-and-website-mentions">Optech newsletter and website mentions</h2>
+
+<p><strong>2026</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2026/08/07/#input-triggered-transaction-expiry">Input-triggered transaction expiry</a></li>
+</ul>
+
+<p><strong>2025</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2025/03/21/#bolts-1233">BOLTs #1233 adds recommendation to never fail an HTLC upstream if the node knows the preimage</a></li>
+  <li><a href="/en/newsletters/2025/02/07/#ldk-3556">LDK #3556 proactively fails HTLCs backwards near expiration even before upstream confirmation</a></li>
+</ul>
+
+<p><strong>2024</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2024/05/17/#core-lightning-7190">Core Lightning #7190 introduces <code class="language-plaintext highlighter-rouge">chainlag</code> to allow safely sending payments during block sync</a></li>
+</ul>
+
+<p><strong>2023</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2023/11/08/#htlc-aggregation-with-covenants">HTLC aggregation with covenants</a></li>
+  <li><a href="/en/newsletters/2023/10/25/#replacement-cycling-vulnerability-against-htlcs">Replacement cycle attacks on HTLCs</a></li>
+  <li><a href="/en/newsletters/2023/10/25/#op-expire">OP_EXPIRE opcode proposed that may help mitigate transaction pinning of HTLCs</a></li>
+</ul>
+
+<p><strong>2021</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2021/09/01/#preparing-for-taproot-11-ln-with-taproot">Updating LN for taproot: from HTLCs to PTLCs</a></li>
+  <li><a href="/en/newsletters/2021/08/25/#privacy-problems-with-htlcs">Privacy problems with HTLCs</a></li>
+  <li><a href="/en/newsletters/2021/03/31/#eclair-1738">Eclair #1738 combines multiple HTLC enforcements into a single transaction</a></li>
+</ul>
+
+<p><strong>2020</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2020/12/23/#ptlcs">2020 year in review: switching LN from HTLCs to PTLCs</a></li>
+  <li><a href="/en/newsletters/2020/12/23/#concern-about-htlc-mining-incentives">2020 year in review: HTLC mining incentives</a></li>
+  <li><a href="/en/newsletters/2020/10/28/#cve-2020-26896-improper-preimage-revelation">CVE-2020-26896: premature preimage revelation in LND</a></li>
+  <li><a href="/en/newsletters/2020/09/16/#stealing-onchain-fees-from-ln-htlcs">Stealing fees included in HTLCs created using <code class="language-plaintext highlighter-rouge">SIGHASH_SINGLE</code></a></li>
+  <li><a href="/en/newsletters/2020/09/02/#lnd-4527">LND #4527 allows users to limit the maximum number of pending HTLCs</a></li>
+  <li><a href="/en/newsletters/2020/07/01/#discussion-of-htlc-mining-incentives">Discussion about the incentives to mine HTLCs</a></li>
+  <li><a href="/en/newsletters/2020/06/24/#ln-fee-ransom-attack">LN fee ransom attack against channels that accept too many HTLCs</a></li>
+  <li><a href="/en/newsletters/2020/04/29/#new-attack-against-ln-payment-atomicity">Using inconsistencies in node mempools to attack HTLC atomicity</a></li>
+</ul>
+
+<p><strong>2019</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2019/12/18/#discussion-of-eclipse-attacks-on-ln-nodes">Using eclipse attacks against nodes to prevent correct HTLC processing</a></li>
+  <li><a href="/en/newsletters/2019/08/14/#c-lightning-2858">C-Lightning #2858 limits the maximum number of pending HTLCs to limit costs</a></li>
+  <li><a href="/en/newsletters/2019/07/03/#stuckless-payments">Stuckless Payments: idea for HTLCs that can be revoked prior to acceptance</a></li>
+  <li><a href="/en/newsletters/2019/05/14/#complex-spending-with-taproot">Example of using taproot/tapscript with HTLCs</a></li>
+  <li><a href="/en/newsletters/2019/04/30/#do-htlcs-work-for-micropayments">Question about whether HTLCs are cost effective for micropayments</a></li>
+  <li><a href="/en/newsletters/2019/03/26/#loop-announced">Lightning Loop: new tool using HTLCs for onchain/offchain swaps</a></li>
+</ul>
+
+<h2 id="see-also">See also</h2>
+
+<ul>
+  <li><a href="https://en.bitcoin.it/wiki/Hash_Time_Locked_Contracts">Hash Time Locked Contracts from Bitcoin Wiki</a></li>
+  <li><a href="https://github.com/bitcoin/bips/blob/master/bip-0199.mediawiki">BIP199</a></li>
+  <li>
+    <p><a href="/en/topics/ptlc/">Point Time Locked Contract (PTLC)</a></p>
+
+    <p><br /></p>
+  </li>
+</ul>
+
+<p class="float-left">
+
+<strong>Previous Topic:</strong><br /><a href="/en/topics/htlc-endorsement/">HTLC endorsement</a>
+
+</p>
+<p class="float-right">
+
+<strong>Next Topic:</strong><br /><a href="/en/topics/hwi/">Hardware wallet interface (HWI)</a>
+
+</p>
+
+<p class="center"><a href="https://github.com/bitcoinops/bitcoinops.github.io/edit/master/_topics/en/htlc.md">Edit page</a><br />
+  <a href="https://github.com/bitcoinops/bitcoinops.github.io/issues/new?body=Source file: _topics/en/htlc.md">Report Issue</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Bitcoin Optech</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Bitcoin Optech</li><li><a class="u-email" href="mailto:info@bitcoinops.org">info@bitcoinops.org</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/bitcoinops"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">bitcoinops</span></a></li><li><a href="https://www.twitter.com/bitcoinoptech"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">bitcoinoptech</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Helping Bitcoin-based businesses integrate scaling technology.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

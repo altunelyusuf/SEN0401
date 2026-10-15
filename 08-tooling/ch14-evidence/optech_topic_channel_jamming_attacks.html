@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Channel jamming attacks | Bitcoin Optech</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Channel jamming attacks" />
+<meta name="author" content="Bitcoin Optech" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Channel jamming attacks are Denial of Service (DoS) attacks where an attacker can prevent a series of channels up to 20 hops away from being able to use part or all of their funds for a prolonged period of time." />
+<meta property="og:description" content="Channel jamming attacks are Denial of Service (DoS) attacks where an attacker can prevent a series of channels up to 20 hops away from being able to use part or all of their funds for a prolonged period of time." />
+<link rel="canonical" href="https://bitcoinops.org/en/topics/channel-jamming-attacks/" />
+<meta property="og:url" content="https://bitcoinops.org/en/topics/channel-jamming-attacks/" />
+<meta property="og:site_name" content="Bitcoin Optech" />
+<meta property="og:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-10-15T03:53:42+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="twitter:title" content="Channel jamming attacks" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Bitcoin Optech"},"dateModified":"2026-10-15T03:53:42+00:00","datePublished":"2026-10-15T03:53:42+00:00","description":"Channel jamming attacks are Denial of Service (DoS) attacks where an attacker can prevent a series of channels up to 20 hops away from being able to use part or all of their funds for a prolonged period of time.","headline":"Channel jamming attacks","image":"https://bitcoinops.org/img/logos/optech-notext.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://bitcoinops.org/en/topics/channel-jamming-attacks/"},"url":"https://bitcoinops.org/en/topics/channel-jamming-attacks/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://bitcoinops.org/feed.xml" title="Bitcoin Optech" /></head>
+
+
+  <body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">
+      <img src="/img/logos/optech-horiz.png" alt="OpTech Logo">
+    </a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/en/about/">About</a>
+            <a class="page-link" href="/en/publications/">Publications</a>
+            <a class="page-link" href="/en/topics/">Topics</a>
+            <a class="page-link" href="/en/workshops/">Workshops</a>
+            <a class="page-link" href="/en/matrix/">Matrix</a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+
+
+<article class="post">
+  <header class="post-header">
+    
+    <p class="center">/ <a href="/">home</a> / <a href="/en/topics/">topics</a> / </p>
+
+
+    <h1 class="post-title">Channel jamming attacks</h1>
+    
+  </header>
+
+  <div class="post-content">
+    
+
+
+<!-- Actual page content -->
+
+<p><strong>Channel jamming attacks</strong> are Denial of Service (DoS) attacks where an attacker can prevent a series of channels up to 20 hops away from being able to use part or all of their funds for a prolonged period of time.</p>
+
+<p>An LN node can route a payment to itself across a path of 20 or more
+hops. This creates two possible avenues for channel jamming attacks:</p>
+
+<ul>
+  <li id="liquidity-jamming-attack" class="anchor-list">
+    <p><a href="#liquidity-jamming-attack" class="anchor-list-link">●</a> <em>Liquidity jamming attack</em> (originally called the <a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/lightning-dev/2015-August/000135.html">loop attack</a> in 2015) is where an attacker with <code class="language-plaintext highlighter-rouge">x</code> amount of money (e.g. 1 BTC) sends
+it to themselves across 20 other channels but delays either settling
+or rejecting the payment, temporarily locking up a total of <code class="language-plaintext highlighter-rouge">20x</code>
+funds belonging to other users (e.g. 20 BTC). After several hours of locking other
+users’ money, the attacker can cancel the payment and receive a
+complete refund on their fees, making the attack essentially free.</p>
+  </li>
+  <li id="htlc-jamming-attack" class="anchor-list">
+    <p><a href="#htlc-jamming-attack" class="anchor-list-link">●</a> <em>HTLC jamming attack</em> is where an attacker sends 483 small payments
+(<a href="/en/topics/htlc/">HTLCs</a>) through the series of 20 channels, where 483
+is the maximum number of pending payments a channel may contain. In
+this case, an attacker with two channels, each with 483 slots, can
+jam over 10,000 honest HTLC slots—again without paying any fees.</p>
+  </li>
+</ul>
+
+<p><img src="/img/posts/2020-12-ln-jamming-attacks.png" alt="Illustration of LN liquidity and HTLC jamming attacks" /></p>
+
+<p>A variety of possible solutions have been
+discussed, including <em>forward upfront fees</em> paid from the spender to
+each node along the path, <a href="/en/newsletters/2020/02/26/#reverse-up-front-payments">backwards upfront fees</a> paid from each payment hop to the previous hop, a
+<a href="/en/newsletters/2020/11/04/#bi-directional-upfront-fees-for-ln">combination</a> of both forward and backwards fees,
+<a href="/en/newsletters/2020/10/14/#incremental-routing">nested incremental routing</a>, and <a href="/en/newsletters/2020/12/02/#fidelity-bonds-for-ln-routing">fidelity
+bonds</a>.  As of April 2021, no solution has
+gained widespread support and developers continue to discuss the issue.</p>
+
+<h2 id="primary-code-and-documentation">Primary code and documentation</h2>
+
+<ul>
+  <li><a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/lightning-dev/2015-August/000135.html">Loop attack (original description)</a></li>
+  <li><a href="https://github.com/t-bast/lightning-docs/blob/master/spam-prevention.md">LN spam prevention</a></li>
+  <li><a href="https://raw.githubusercontent.com/s-tikhomirov/ln-jamming-simulator/master/unjamming-lightning.pdf">Unjamming Lightning: A Systematic Approach</a></li>
+  <li><a href="https://github.com/lightningequipment/circuitbreaker">Circuit Breaker: software to protect nodes from being flooded with htlcs</a></li>
+</ul>
+
+<h2 id="optech-newsletter-and-website-mentions">Optech newsletter and website mentions</h2>
+
+<p><strong>2026</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2026/08/14/#conditional-message-transfer-contract-to-solve-jamming">Conditional message transfer contract to solve channel jamming</a></li>
+  <li><a href="/en/newsletters/2026/07/10/#eclair-3323">Eclair #3323 fails incoming HTLCs with a CLTV expiry more than 2016 blocks in the future</a></li>
+</ul>
+
+<p><strong>2025</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2025/03/28/#ln-upfront-and-hold-fees-using-burnable-outputs">Protocol proposed for upfront and hold fees to address channel jamming</a></li>
+</ul>
+
+<p><strong>2024</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2024/09/27/#hybrid-jamming-mitigation-testing-and-changes">Testing of hybrid jamming mitigation and addition of bidirectional reputation</a></li>
+</ul>
+
+<p><strong>2023</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2023/08/09/#denial-of-service-dos-protection-design-philosophy">DoS protection design philosophy and example of forward commitment fees and reverse hold fees</a></li>
+  <li><a href="/en/newsletters/2023/07/26/#channel-jamming-mitigation-proposals">LN developer discussion about channel jamming attacks</a></li>
+  <li><a href="/en/newsletters/2023/06/28/#lnd-7710">LND #7710 allows retrieving extra data about an HTLC in support of jamming countermeasures</a></li>
+  <li><a href="/en/newsletters/2023/06/28/#eclair-2701">Eclair #2701 now records HTLC receive and settlement times to help with channel jamming mitigation</a></li>
+  <li><a href="/en/newsletters/2023/05/17/#testing-htlc-endorsement">Testing HTLC endorsement for preventing channel jamming attacks</a></li>
+  <li><a href="/en/newsletters/2023/02/22/#feedback-requested-on-ln-good-neighbor-scoring">Feedback requested on LN good neighbor scoring for local reputation to mitigate jamming</a></li>
+  <li><a href="/en/newsletters/2023/02/08/#summary-of-call-about-mitigating-ln-jamming">Summary of call about mitigating LN jamming</a></li>
+</ul>
+
+<p><strong>2022</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2022/12/21/#jamming">2022 year-in-review: channel jamming</a></li>
+  <li><a href="/en/newsletters/2022/12/14/#local-jamming-to-prevent-remote-jamming">CircuitBreaker add-on software to partly mitigate jamming attacks without protocol changes</a></li>
+  <li><a href="/en/newsletters/2022/11/30/#reputation-credentials-proposal-to-mitigate-ln-jamming-attacks">Reputation credentials proposal to mitigate LN jamming attacks</a></li>
+  <li><a href="/en/newsletters/2022/11/16/#paper-about-channel-jamming-attacks">Paper suggesting solutions to jamming attacks based on local reputation and upfront fees</a></li>
+  <li><a href="/en/newsletters/2022/08/24/#overview-of-channel-jamming-attacks-and-mitigations">Guide to channel jamming attacks and proposed solutions</a></li>
+</ul>
+
+<p><strong>2021</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2021/12/22/#jamming">2021 year-in-review: channel jamming</a></li>
+  <li><a href="/en/newsletters/2021/11/10/#ln-summit-2021-notes">Summary of LN developer conference, including discussion of channel jamming attacks</a></li>
+  <li><a href="/en/newsletters/2021/10/20/#lowering-the-cost-of-probing-to-make-attacks-more-expensive">Making jamming attacks more expensive by lowering the cost of probing</a></li>
+  <li><a href="/en/newsletters/2021/02/17/#renewed-discussion-about-bidirectional-upfront-ln-fees">Renewed discussion about bidirectional upfront LN fees</a></li>
+</ul>
+
+<p><strong>2020</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2020/12/23/#jamming">2020 year-in-review: LN channel jamming attacks</a></li>
+  <li><a href="/en/newsletters/2020/12/02/#fidelity-bonds-for-ln-routing">Fidelity bonds to prevent channel jamming attacks</a></li>
+  <li><a href="/en/newsletters/2020/11/04/#bi-directional-upfront-fees-for-ln">Bi-directional upfront fees to mitigate jamming attacks</a></li>
+  <li><a href="/en/newsletters/2020/10/21/#more-ln-upfront-fees-discussion">More upfront fees discussion</a></li>
+  <li><a href="/en/newsletters/2020/10/14/#trusted-upfront-payment">Trusted upfront fees to mitigate jamming attacks</a></li>
+  <li><a href="/en/newsletters/2020/10/14/#incremental-routing">Incremental routing as an alternative to upfront fees</a></li>
+  <li><a href="/en/newsletters/2020/10/07/#eclair-1539">Eclair #1539 implements a simple measure to reduce channel jamming attacks</a></li>
+  <li><a href="/en/newsletters/2020/02/26/#reverse-up-front-payments">Reverse upfront fees to mitigate jamming</a></li>
+</ul>
+
+<p><strong>2019</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2019/11/13/#ln-up-front-payments">Hashcash and refund-based upfront fees to mitigate jamming</a></li>
+</ul>
+
+<h2 id="see-also">See also</h2>
+
+<ul>
+  <li><a href="/en/topics/htlc/">HTLCs</a></li>
+  <li>
+    <p><a href="/en/topics/htlc-endorsement/">HTLC endorsement</a></p>
+
+    <p><br /></p>
+  </li>
+</ul>
+
+<p class="float-left">
+
+<strong>Previous Topic:</strong><br /><a href="/en/topics/channel-factories/">Channel factories</a>
+
+</p>
+<p class="float-right">
+
+<strong>Next Topic:</strong><br /><a href="/en/topics/client-side-validation/">Client-side validation</a>
+
+</p>
+
+<p class="center"><a href="https://github.com/bitcoinops/bitcoinops.github.io/edit/master/_topics/en/channel-jamming-attacks.md">Edit page</a><br />
+  <a href="https://github.com/bitcoinops/bitcoinops.github.io/issues/new?body=Source file: _topics/en/channel-jamming-attacks.md">Report Issue</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Bitcoin Optech</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Bitcoin Optech</li><li><a class="u-email" href="mailto:info@bitcoinops.org">info@bitcoinops.org</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/bitcoinops"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">bitcoinops</span></a></li><li><a href="https://www.twitter.com/bitcoinoptech"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">bitcoinoptech</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Helping Bitcoin-based businesses integrate scaling technology.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

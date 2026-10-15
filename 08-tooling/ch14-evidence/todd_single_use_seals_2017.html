@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Scalable Semi-Trustless Asset Transfer via Single-Use-Seals and Proof-of-Publication</title>
+  <meta name="description" content="Previously published on the bitcoin-dev mailing list.">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="canonical" href="https://petertodd.org/2017/scalable-single-use-seal-asset-transfer">
+  <link rel="alternate" type="application/rss+xml" title="Peter Todd" href="https://petertodd.org/feed.xml">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Peter Todd</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+        
+          
+        
+          
+        
+          
+        
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Scalable Semi-Trustless Asset Transfer via Single-Use-Seals and Proof-of-Publication</h1>
+    <p class="post-meta"><time datetime="2017-12-05T00:00:00-05:00" itemprop="datePublished">Dec 5, 2017</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p><em><a href="https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2017-December/015350.html">Previously published on the bitcoin-dev mailing list.</a></em></p>
+
+<p>tl;dr: We can do trustless with respect to validity, trusted with respect to
+censorship resistance, indivisible asset transfer with less than 5MB/year/token
+of proof data, assuming token ownership is updated every two hours, at a rate
+of ~500,000 transfers per second. The scalability of this scheme is linear with
+respect to update interval, and logarithmic with respect to overall transfer
+rate.</p>
+
+<div class="post-toc">
+  <h1 class="no_toc" id="contents">Contents</h1>
+<ol id="markdown-toc">
+  <li><a href="#single-use-seal-definition" id="markdown-toc-single-use-seal-definition">Single-Use-Seal Definition</a></li>
+  <li><a href="#indivisible-token-transfer" id="markdown-toc-indivisible-token-transfer">Indivisible Token Transfer</a></li>
+  <li><a href="#divisible-asset-transfer" id="markdown-toc-divisible-asset-transfer">Divisible Asset Transfer</a></li>
+  <li><a href="#single-use-seal-implementation" id="markdown-toc-single-use-seal-implementation">Single-Use-Seal Implementation</a>    <ol>
+      <li><a href="#proof-of-publication-ledger" id="markdown-toc-proof-of-publication-ledger">Proof-of-Publication Ledger</a></li>
+    </ol>
+  </li>
+  <li><a href="#performance-figures" id="markdown-toc-performance-figures">Performance Figures</a></li>
+</ol>
+
+</div>
+
+<h2 id="single-use-seal-definition">Single-Use-Seal Definition</h2>
+
+<p>Analogous to the real-world, physical, single-use-seals used to secure shipping
+containers, a single-use-seal primitive is a unique object that can be closed
+over a message exactly once. In short, a single-use-seal is an abstract
+mechanism to prevent double-spends.</p>
+
+<p>A single-use-seal implementation supports two fundamental operations:</p>
+
+<ul>
+  <li>\(\operatorname{Close}(l,m) \to w_l\) — Close seal \(l\) over message \(m\), producing a witness \(w_l\).</li>
+  <li>\(\operatorname{Verify}(l,w_l,m) \to \operatorname{bool}\) — Verify that the seal \(l\) was closed over message \(m\).</li>
+</ul>
+
+<p>A single-use-seal implementation is secure if it is impossible for an attacker
+to cause the Verify function to return true for two distinct messages \(m_1\), \(m_2\),
+when applied to the same seal (it <em>is</em> acceptable, although non-ideal, for
+there to exist multiple witnesses for the same seal/message pair).</p>
+
+<p>Practical single-use-seal implementations will also obviously require some way
+of generating new single-use-seals. Secondly, authentication is generally
+useful. Thus we have:</p>
+
+<ul>
+  <li>\(\operatorname{Gen}(p) \to l\) — Generate a new seal bound to pubkey \(p\).</li>
+  <li>\(\operatorname{Close}(l,m,s) \to w_l\) — Close seal \(l\) over message \(m\), authenticated by signature \(s\) valid for pubkey \(p\).</li>
+</ul>
+
+<p>Obviously, in the above, pubkey can be replaced by any cryptographic identity
+scheme, such as a Bitcoin-style predicate script, zero-knowledge proof, etc.</p>
+
+<p>Finally, <em>some</em> single-use-seal implementations may support the ability to
+prove that a seal is <em>open</em>, e.g. as of a given block height or point in time.
+This however is optional, and as it can be difficult to implement, it is
+suggested that seal-using protocols avoid depending on this functionality
+existing.</p>
+
+<h2 id="indivisible-token-transfer">Indivisible Token Transfer</h2>
+
+<p>With a secure single-use-seal primitive we can build a indivisible token
+transfer system, allowing the secure transfer of a token from one party to
+another, with the seals preventing double-spends of that indivisible token.</p>
+
+<p>Each token is identified by its genesis seal \(l_0\). To transfer a token, the most
+recent seal \(l_n\) is closed over a message committing to a new seal, \(l_{n+1}\),
+producing a witness \(w_{l_n}\) attesting to that transfer. This allows a recipient
+to securely verify that they have received the desired token as follows:</p>
+
+<ol>
+  <li>Generate a fresh, open, seal \(l_{n+1}\) that only they can close.</li>
+  <li>Ask the sender to close their seal, \(l_n\), over the seal \(l_{n+1}\)</li>
+  <li>Verify that there exist a set of valid witnesses \(w_0 .. w_n\), and seals
+\(l_0 .. l_n\), such that for each seal \(l_i\) in \(i = 0 .. n\), \(\operatorname{Verify}(l_i, w_i, l_{i+1})\)
+returns true.</li>
+</ol>
+
+<p>Since a secure single-use-seal protocol prohibits the closure of a single seal
+over multiple messages, the above protocol ensures that the token can not be
+double-spent. Secondly, by ensuring that seal \(l_{n+1}\) can be closed by the
+recipient and only the recipient, the receipient of the token knows that they
+and they alone have the ability to send that token to the next owner.</p>
+
+<h2 id="divisible-asset-transfer">Divisible Asset Transfer</h2>
+
+<p>In the case of a divisible asset, rather than transferring a single, unique,
+token we want to transfer a <em>quantity</em> of an asset. We can accomplish this in a
+manner similar how Bitcoin’s UTXO-based transactions, in which one or more
+inputs are combined in a single transaction, then split amongst zero or more
+outputs.</p>
+
+<p>We define the concept of an <em>output</em>. Each output \(x\) is associated with a seal \(l\)
+and value \(v\). For each asset we define a set of <em>genesis outputs</em>, \(X_G\), whose
+validity is assumed.</p>
+
+<p>To transfer divisible assets we further define the concepts of a <em>spend</em> and a
+<em>split</em>. A spend, \(D\), is a commitment to a set of outputs \(x_i .. x_j\); the value
+of a spend is simply the sum of the values of all outputs in the spend. A split
+commitments to a set of zero or seal/value, \((l_i,v_i)\), tuples, with the sum
+value of the split being the sum of a values in the split.</p>
+
+<p>Spends and splits are used to define a <em>split output</em>. While a genesis output
+is simply assumed valid, a split output \(x\) is then the tuple \((D,V,i)\), committing
+to a spend \(D\), split \(V\), and within that split, a particular output \(i\).</p>
+
+<p>A split output is valid if:</p>
+
+<ol>
+  <li>Each output in the spend set \(D\) is a valid output.</li>
+  <li>The sum value of the spend set \(D\) is \(\ge\) the sum value of the split \(V\).</li>
+  <li>\(i\) corresponds to a valid output in the split.</li>
+  <li>There exists a set of witnesses \(w_i .. w_j\), such that each seal in the spend
+set closed over the message \((D,V)\) (the spend and split).</li>
+</ol>
+
+<p>As with the indivisible asset transfer, a recipient can verify that an asset
+has been securely transferred to them by generating a fresh seal, asking the
+sender to create a new split output for that seal and requested output amount,
+and verifying that the newly created split output is in fact valid. As with
+Bitcoin transactions, in most transfers will also result in a change output.</p>
+
+<p>Note how an actual implementation can usefully use a merkle-sum-tree to commit
+to the split set, allowing outputs to be proven to the recipient by giving only
+a single branch of the tree, with other outputs pruned. This can have both
+efficiency and privacy advantages.</p>
+
+<h2 id="single-use-seal-implementation">Single-Use-Seal Implementation</h2>
+
+<p>An obvious single-use-seal implementation is to simply have a trusted notary,
+with each seal committing to that notary’s identity, and witnesses being
+cryptographic signatures produced by that notary. A further obvious refinement
+is to use disposable keys, with a unique private key being generated by the
+notary for each seal, and the private key being securely destroyed when the
+seal is closed.</p>
+
+<p>Secondly Bitcoin (or similar) transaction outputs can implement
+single-use-seals, with each seal being uniquely identified by outpoint
+<code class="language-plaintext highlighter-rouge">(txid:n)</code>, and witnesses being transactions spending that outpoint in a
+specified way (e.g. the first output being an <code class="language-plaintext highlighter-rouge">OP_RETURN</code> committing to the
+message).</p>
+
+<h3 id="proof-of-publication-ledger">Proof-of-Publication Ledger</h3>
+
+<p>For a scalable, trust-minimized, single-use-seal implementation we can use a
+proof-of-publication ledger, where consensus over the state of the ledger is
+achieved with a second single-use-seal implementation (e.g. Bitcoin).</p>
+
+<p>Such a ledger is associated with a genesis seal, \(L_0\), with each entry \(M_i\) in
+the ledger being committed by closing the most recent seal over that entry,
+producing \(W_i\) such that \(\operatorname{Verify}(L_i, (L_{i+1}, M_i), W_i)\) returns true.
+Thus we achieve consensus over the state of the ledger as we can prove the
+contents of the ledger.</p>
+
+<p>Specifically, given starting point \(L_i\) we can prove that the subsequent ledger
+entries \(M_i .. M_j\) are valid with witnesses \(W_i .. W_j\) and seals \(L_{i+1} .. L_{j+1}\).</p>
+
+<p>A proof-of-publication-based seal can then be constructed via the tuple \((L_i, p)\),
+where \(L_i\) is one of the ledger’s seals, and \(p\) is a pubkey (or similar). To
+close a proof-of-publication ledger seal a valid signature for that pubkey and
+message m is published in the ledger in entry \(M_j\).</p>
+
+<p>Thus the seal witness is proof that:</p>
+
+<ol>
+  <li>Entry \(M_j\) contained a valid signature by pubkey \(p\), for message m.</li>
+  <li>All prior entries \(M_i .. M_{j-1}\) (possibly an empty set) did <em>not</em> contain
+valid signatures.</li>
+</ol>
+
+<p>Finally, for the purpose of scalability, instead of each ledger entry \(M_i\)
+consisting of a unstructured message, we can instead commit to a merkelized
+key:value tree, with each key being a pubkey \(p\), and each value being an
+alleged signature (possibly invalid). Now the non-publication condition is
+proven by showing that either:</p>
+
+<ol>
+  <li>Tree \(M_i\) does not contain key \(p\).</li>
+  <li>Tree \(M_i\) does contain key \(p\), but alleged signature \(s\) is invalid.</li>
+</ol>
+
+<p>The publication condition is proven by showing that tree \(M_j\) does contain key
+\(p\), and that key is associated with valid signature \(s\).</p>
+
+<p>A merkelized key:value tree can prove both statements with a \(\log_2(n)\) sized
+proof, and thus we achieve \(\log_2(n)\) size scalability, with the constant factor
+growing by the age of the seals, the ledger update frequency, the rate at which
+seals are closed, and the maximum size allowed for signatures.</p>
+
+<p>Note how a number of simple optimizations are possible, such as preventing the
+creation of “spam” invalid signatures by blinding the actual pubkey with a
+nonce, ensuring only valid signatures are published, etc. Also note how it is
+<em>not</em> necessary to validate all entries in the ledger form a chain: the
+single-use-seals guarantees that a particular range of ledger entries will be
+unique, regardless of whether all ledger history was unique.</p>
+
+<p>Proof-of-Publication ledgers are trustless with regard to false seal witnesses:
+the ledger maintainer(s) are unable to falsify a witness because they are
+unable to produce a valid signature. They are however trusted with regard to
+censorship: the ledger maintainer can prevent the publication of a signature
+and/or or withhold data necessary to prove the state of the seal.</p>
+
+<h1 id="performance-figures">Performance Figures</h1>
+
+<p>Assume a indivisible token transfer via a PoP ledger using Bitcoin-based
+single-use-seals, with the ledger updated 12 times a day (every two hours).
+Assume each ledger update corresponds to \(2^{32}\), 4 billion, transfers.</p>
+
+<p>The data required to prove publication/non-publication for a given ledger
+update is less than:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>lite-client BTC tx proof:                            = ~1KB
+merkle path down k/v tree: 32 levels * 32bytes/level =  1KB
+key/value: 32 bytes predicate hash + 1KB script sig  = ~1KB
+                                               Total = ~3KB/ledger update
+
+    * 356 days/year * 12 updates/day = 13MB/year
+</code></pre></div></div>
+
+<p>Now, those are <em>absolute worst case</em> numbers, and there’s a number of ways that
+they can be substantially reduced such as only publishing valid signatures, or
+just assuming you’re not being attacked constantly… Also, note how for a
+client with multiple tokens, much of the data can be shared amongst each token.
+But even then, being able to prove the ownership status of a token, in a
+trustless fashion, with just 13MB/year of data is an excellent result for many
+use-cases.</p>
+
+<p>With these optimizations, the marginal cost per token after the first one is
+just 1KB/ledger update, 4.4MB/year.</p>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Peter Todd</h2>
+
+      <div class="footer-col footer-col-1">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/petertodd"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">petertodd</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/peterktodd"><span class="icon icon--twitter"><svg viewBox="0 0 16 16"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">peterktodd</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+</footer>
+
+
+  </body>
+
+</html>

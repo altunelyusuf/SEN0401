@@ -1,0 +1,232 @@
+ 
+
+  
+   
+   
+    
+ Hash Time Locked Contract (HTLC) | Bitcoin Optech 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+
+
+   
+ 
+
+    
+       
+      
+         
+         
+           
+             
+               
+             
+           
+         
+
+         
+             About 
+             Publications 
+             Topics 
+             Workshops 
+             Matrix 
+         
+        
+ 
+ 
+       
+         
+
+
+
+ 
+   
+    
+     /  home  /  topics  /  
+
+
+     Hash Time Locked Contract (HTLC) 
+    
+   
+
+   
+    
+
+
+ 
+
+  Hash Time Locked Contracts (HTLCs)  are conditional payments used in LN payment channels, cross-chain atomic swaps, same-chain coinswaps, zero-knowledge contingent payments, and other contract protocols. 
+
+ HTLCs have two fundamental clauses: a payment clause secured with a
+ hash lock  and a refund clause secured with a  time lock .  To open a
+hash lock and claim a payment, the receiver needs to reveal the
+preimage to a hash digest encoded in the contract.  To open a time
+lock and receive a refund, the spender needs to wait until after a
+certain time encoded in the contract. 
+
+ Because revealed preimages and past times don’t uniquely identify the
+person who should receive either the payment, HTLCs are only secure if
+they also require a unique signature matching the public key of either
+the spender (refundee) or the intended receiver.  That makes the
+minimal HTLC look something  like this  in the
+ Minsc  scripting language: 
+
+     (  pk  (  Receiver  )   &&   sha256  (  H  ))   ||   (  pk  (  Refundee  )   &&   older  (  10  )) 
+    
+
+ History 
+
+ Hash locks and time locks as independent features were clearly
+designed into the original version of Bitcoin.  As far as we’re aware,
+the earliest description combining the two to create a conditional
+payment—what’d we now call an HTLC—is a set of posts ( 1 ,  2 ) from July 2012. However, it’s
+possible that a  December 2010 post  was
+alluding to the same basic idea when mentioning a “cryptographically
+[…] risk free trade”. 
+
+ Future 
+
+  Point Time Lock Contracts  (PTLCs) perform the same
+function as HTLCs but can provide better privacy, use less block
+space, and prevent routing interception.  As a downside, they depend
+on  signature adaptors  which can only
+implemented using Bitcoin’s existing ECDSA signatures either with
+particularly slow algorithms, by making additional security
+assumptions, or by using an  OP_CHECKMULTISIG 
+construction that doesn’t save as much block space as is possible with
+the extra security assumptions.  This conflict between security and
+space savings will be resolved if  schnorr signatures  are added to Bitcoin.  If that happens, it’s expected that
+protocols which only require Bitcoin support may migrate from using
+HTLCs to PTLCs.  Other protocols that bridge Bitcoin and other
+cryptocurrencies will likely continue using HTLCs due to widespread
+support for standardized hash functions such as SHA256. 
+
+ Optech newsletter and website mentions 
+
+  2026  
+ 
+    Input-triggered transaction expiry  
+ 
+
+  2025  
+ 
+    BOLTs #1233 adds recommendation to never fail an HTLC upstream if the node knows the preimage  
+    LDK #3556 proactively fails HTLCs backwards near expiration even before upstream confirmation  
+ 
+
+  2024  
+ 
+    Core Lightning #7190 introduces  chainlag  to allow safely sending payments during block sync  
+ 
+
+  2023  
+ 
+    HTLC aggregation with covenants  
+    Replacement cycle attacks on HTLCs  
+    OP_EXPIRE opcode proposed that may help mitigate transaction pinning of HTLCs  
+ 
+
+  2021  
+ 
+    Updating LN for taproot: from HTLCs to PTLCs  
+    Privacy problems with HTLCs  
+    Eclair #1738 combines multiple HTLC enforcements into a single transaction  
+ 
+
+  2020  
+ 
+    2020 year in review: switching LN from HTLCs to PTLCs  
+    2020 year in review: HTLC mining incentives  
+    CVE-2020-26896: premature preimage revelation in LND  
+    Stealing fees included in HTLCs created using  SIGHASH_SINGLE   
+    LND #4527 allows users to limit the maximum number of pending HTLCs  
+    Discussion about the incentives to mine HTLCs  
+    LN fee ransom attack against channels that accept too many HTLCs  
+    Using inconsistencies in node mempools to attack HTLC atomicity  
+ 
+
+  2019  
+ 
+    Using eclipse attacks against nodes to prevent correct HTLC processing  
+    C-Lightning #2858 limits the maximum number of pending HTLCs to limit costs  
+    Stuckless Payments: idea for HTLCs that can be revoked prior to acceptance  
+    Example of using taproot/tapscript with HTLCs  
+    Question about whether HTLCs are cost effective for micropayments  
+    Lightning Loop: new tool using HTLCs for onchain/offchain swaps  
+ 
+
+ See also 
+
+ 
+    Hash Time Locked Contracts from Bitcoin Wiki  
+    BIP199  
+   
+      Point Time Locked Contract (PTLC)  
+
+       
+   
+ 
+
+ 
+
+ Previous Topic:   HTLC endorsement 
+
+ 
+ 
+
+ Next Topic:   Hardware wallet interface (HWI) 
+
+ 
+
+  Edit page  
+   Report Issue  
+
+
+   
+
+ 
+
+       
+      
+    
+
+   
+
+     Bitcoin Optech 
+
+     
+       
+         
+           Bitcoin Optech   info@bitcoinops.org   
+       
+
+                bitcoinops           bitcoinoptech    
+ 
+
+       
+         Helping Bitcoin-based businesses integrate scaling technology. 
+       
+     
+
+   
+
+ 
+ 
+
+ 

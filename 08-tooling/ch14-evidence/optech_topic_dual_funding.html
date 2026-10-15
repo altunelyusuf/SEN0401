@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Dual funding | Bitcoin Optech</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Dual funding" />
+<meta name="author" content="Bitcoin Optech" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Dual funding is creating a payment channel for LN where both parties can contribute funds. The underlying protocol, called the version 2 channel establishment protocol, may also be used for negotiated opening of single-funded channels, but its motivating purpose is providing support for dual funding." />
+<meta property="og:description" content="Dual funding is creating a payment channel for LN where both parties can contribute funds. The underlying protocol, called the version 2 channel establishment protocol, may also be used for negotiated opening of single-funded channels, but its motivating purpose is providing support for dual funding." />
+<link rel="canonical" href="https://bitcoinops.org/en/topics/dual-funding/" />
+<meta property="og:url" content="https://bitcoinops.org/en/topics/dual-funding/" />
+<meta property="og:site_name" content="Bitcoin Optech" />
+<meta property="og:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-10-15T03:53:42+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="twitter:title" content="Dual funding" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Bitcoin Optech"},"dateModified":"2026-10-15T03:53:42+00:00","datePublished":"2026-10-15T03:53:42+00:00","description":"Dual funding is creating a payment channel for LN where both parties can contribute funds. The underlying protocol, called the version 2 channel establishment protocol, may also be used for negotiated opening of single-funded channels, but its motivating purpose is providing support for dual funding.","headline":"Dual funding","image":"https://bitcoinops.org/img/logos/optech-notext.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://bitcoinops.org/en/topics/dual-funding/"},"url":"https://bitcoinops.org/en/topics/dual-funding/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://bitcoinops.org/feed.xml" title="Bitcoin Optech" /></head>
+
+
+  <body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">
+      <img src="/img/logos/optech-horiz.png" alt="OpTech Logo">
+    </a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/en/about/">About</a>
+            <a class="page-link" href="/en/publications/">Publications</a>
+            <a class="page-link" href="/en/topics/">Topics</a>
+            <a class="page-link" href="/en/workshops/">Workshops</a>
+            <a class="page-link" href="/en/matrix/">Matrix</a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+
+
+<article class="post">
+  <header class="post-header">
+    
+    <p class="center">/ <a href="/">home</a> / <a href="/en/topics/">topics</a> / </p>
+
+
+    <h1 class="post-title">Dual funding</h1>
+    
+  </header>
+
+  <div class="post-content">
+    
+
+
+<!-- Actual page content -->
+
+<p class="center"><em>Also covering Interactive funding protocol</em></p>
+
+<p><strong>Dual funding</strong> is creating a payment channel for LN where both parties can contribute funds.  The underlying protocol, called the <em>version 2 channel establishment protocol</em>, may also be used for negotiated opening of single-funded channels, but its motivating purpose is providing support for dual funding.</p>
+
+<p><a href="https://docs.google.com/presentation/d/1G4xchDGcO37DJ2lPC_XYyZIUkJc2khnLrCaZXgvDN0U/edit?pref=2&amp;pli=1#slide=id.g85f425098_0_2">Early analysis</a> of LN determined that it would be
+significantly easier to build software where the user requesting to
+open the payment channel contributed all funds to that channel and
+paid all of its onchain fees, called <em>single funded channels</em>.  This
+prevented attackers from freely or cheaply opening new channels,
+locking up their counterparty’s funds, and then making those victims
+pay onchain fees to get their money back.</p>
+
+<p>For spenders, single funded channels work great.  As soon as a channel
+finishes opening, the user can start spending their funds with all of
+the speed, efficiency, and privacy benefits of LN.  But receivers who
+open a new single funded channel can’t use it to receive funds until
+they’ve spent funds.  This creates problems for merchants who want to
+accept payments over LN but who aren’t yet in a position to pay an
+equal amount of their costs over LN.</p>
+
+<p>One solution to this problem is to allow channels to be dual funded,
+immediately allowing spending in either direction once the channel
+opens.  Dual funded channels don’t need to start with the same amount
+of funding on both sides, so a merchant who wants to be able to
+receive a significant amount of bitcoins may only need to contribute a
+small part of the total channel capacity.</p>
+
+<p>The dual funded protocol may also be used to open new single-funded
+channels.  This may have advantages when the participating parties
+want to use the protocol’s ability to communicate node preferences and
+find mutually acceptable values for various channel parameters.</p>
+
+<p>After dual funding is available, it may be used in combination with
+new <a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/lightning-dev/2018-November/001532.html">proposed node announcements</a> that
+could help buyers and sellers of inbound capacity find each other in a
+decentralized fashion.</p>
+
+<p>Dual funding does require each party reveal ownership of one of their
+UTXOs to the other party.  Like other protocols where this is
+required (such as <a href="/en/topics/coinjoin/">coinjoin</a> and <a href="/en/topics/payjoin/">payjoin</a>), this can be abused by an attacker to learn information
+about who owns which UTXO.  Several <a href="/en/newsletters/2020/02/05/#podle">approaches</a> to
+<a href="/en/newsletters/2020/02/19/#using-podle-in-ln">limiting</a> this <a href="/en/newsletters/2021/01/13/#ln-dual-funding-anti-utxo-probing">problem</a> have been discussed.</p>
+
+<h2 id="primary-code-and-documentation">Primary code and documentation</h2>
+
+<ul>
+  <li><a href="https://github.com/lightningnetwork/lightning-rfc/pull/851">Dual funding</a></li>
+</ul>
+
+<h2 id="optech-newsletter-and-website-mentions">Optech newsletter and website mentions</h2>
+
+<p><strong>2026</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2026/10/09/#eclair-3390">Eclair #3390 and #3388 add fee protections for dual funding and splicing</a></li>
+</ul>
+
+<p><strong>2025</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2025/08/22/#eclair-3103">Eclair #3103 adds support for dual funding and splicing in simple taproot channels</a></li>
+</ul>
+
+<p><strong>2024</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2024/11/29/#core-lightning-7719">LDK #3137 adds support for accepting peer-initiated dual-funded channels</a></li>
+  <li><a href="/en/newsletters/2024/10/04/#eclair-2861">Eclair #2861 implements on-the-fly funding using liquidity ads with either dual-funding or splicing</a></li>
+  <li><a href="/en/newsletters/2024/03/27/#ldk-2419">LDK #2419 adds a state machine for handling interactive transaction construction</a></li>
+  <li><a href="/en/newsletters/2024/03/06/#eclair-2829">Eclair #2829 allows plugins to set a policy for contributing funds in a dual-funded channel open</a></li>
+  <li><a href="/en/newsletters/2024/02/28/#ldk-2770">LDK #2770 begins preparing to later add support for dual-funded channels</a></li>
+  <li><a href="/en/newsletters/2024/02/21/#bolts-851">BOLTs #851 adds support for dual funding and interactive tx construction to the LN specification</a></li>
+  <li><a href="/en/newsletters/2024/02/07/#requirement-to-verify-inputs-use-segwit-in-protocols-vulnerable-to-txid-malleability">Requirement to verify external inputs use segwit in dual funding and related protocols</a></li>
+</ul>
+
+<p><strong>2023</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2023/11/08/#core-lightning-6824">Core Lightning #6824 updates the implementation of the interactive funding protocol</a></li>
+  <li><a href="/en/newsletters/2023/06/28/#ldk-2077">LDK #2077 refactors code to make it easier later to add support for dual funded channels</a></li>
+  <li><a href="/en/newsletters/2023/05/17/#ldk-1794">LDK #1794 begins adding support for dual funding</a></li>
+  <li><a href="/en/newsletters/2023/05/17/#challenges-with-zero-conf-channels-when-dual-funding">Challenges with zero-conf channels when dual funding</a></li>
+  <li><a href="/en/newsletters/2023/02/22/#eclair-2596">Eclair #2596 limits the number of RBF fee bumps in a dual funded channel open</a></li>
+  <li><a href="/en/newsletters/2023/02/15/#core-lightning-5670">Core Lightning #5670 and #5956 make various updates to its implementation of dual funding</a></li>
+</ul>
+
+<p><strong>2022</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2022/12/21/#dual-funding">2022 year-in-review: interactive and dual funding</a></li>
+  <li><a href="/en/newsletters/2022/10/26/#eclair-2463">Eclair #2463 and #2461 increase robustness of RBF fee bumping interactive funding</a></li>
+  <li><a href="/en/newsletters/2022/09/14/#eclair-2406">Eclair #2406 allows requiring confirmed inputs in the interactive funding protocol</a></li>
+  <li><a href="/en/newsletters/2022/08/31/#eclair-2275">Eclair #2275 completes experimental support for the dual funding protocol</a></li>
+  <li><a href="/en/newsletters/2022/08/17/#eclair-2273">Eclair #2273 implements the proposed interactive funding protocol</a></li>
+</ul>
+
+<p><strong>2021</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2021/12/22/#liq-ads">2021 year-in-review: liquidity advertisements</a></li>
+  <li><a href="/en/newsletters/2021/12/22/#dual-funding">2021 year-in-review: dual-funded channels</a></li>
+  <li><a href="/en/newsletters/2021/08/11/#c-lightning-0-10-1">C-Lightning 0.10.1 updates the experimental implementation of dual funding</a></li>
+  <li><a href="/en/newsletters/2021/07/28/#c-lightning-4639">C-Lightning #4639 adds experimental support for liquidity advertisments based on dual funding</a></li>
+  <li><a href="/en/newsletters/2021/05/12/#c-lightning-4489">C-Lightning #4489 adds plugin for configuring dual-funding behavior</a></li>
+  <li><a href="/en/newsletters/2021/04/28/#draft-specification-for-ln-splicing">Dual funding’s interactive construction used in splicing proposal</a></li>
+  <li><a href="/en/newsletters/2021/04/07/#c-lightning-0-10-0">C-Lightning 0.10.0 includes experimental support for dual funding</a></li>
+  <li><a href="/en/newsletters/2021/03/17/#c-lightning-4410">C-Lightning #4410 updates experimental implementation dual funding</a></li>
+  <li><a href="/en/newsletters/2021/01/13/#ln-dual-funding-anti-utxo-probing">Preventing UTXO probing in dual funded channels; PoDLE tradeoffs</a></li>
+</ul>
+
+<p><strong>2020</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2020/12/23/#dual-interactive-funding">2020 year-in-review: LN dual funding and interactive funding</a></li>
+  <li><a href="/en/newsletters/2020/09/16/#c-lightning-3973">C-Lightning #3973 adds the accepter side of dual-funded channels</a></li>
+  <li><a href="/en/newsletters/2020/08/26/#c-lightning-3954">C-Lightning #3954 adds locktime support to PSBT RPCs for dual funding</a></li>
+  <li><a href="/en/newsletters/2020/06/03/#sydney-meetup-discussion">Sydney meetup discussion about LN, including dual funding</a></li>
+  <li><a href="/en/newsletters/2020/05/27/#c-lightning-3738">C-Lightning #3738 adds initial support for PSBTs, part of dual funding</a></li>
+  <li><a href="/en/newsletters/2020/02/19/#using-podle-in-ln">Using PoDLE in LN for dual funding privacy protection</a></li>
+  <li><a href="/en/newsletters/2020/02/05/#interactive-construction-of-ln-funding-transactions">Interactive construction of funding transactions</a></li>
+</ul>
+
+<p><strong>2018</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2018/11/20/#dual-funded-channels">LN protocol specification 1.1 goals: dual funding</a></li>
+</ul>
+
+<h2 id="see-also">See also</h2>
+
+<ul>
+  <li><a href="/en/topics/liquidity-advertisements/">Liquidity advertisements</a></li>
+  <li><a href="/en/topics/psbt/">PSBT (dependency of dual funding)</a></li>
+  <li><a href="/en/topics/submarine-swaps/">Submarine swaps</a></li>
+  <li>
+    <p><a href="/en/topics/splicing/">Splicing</a></p>
+
+    <p><br /></p>
+  </li>
+</ul>
+
+<p class="float-left">
+
+<strong>Previous Topic:</strong><br /><a href="/en/topics/discrete-log-equivalency/">Discrete log equivalency (DLEQ)</a>
+
+</p>
+<p class="float-right">
+
+<strong>Next Topic:</strong><br /><a href="/en/topics/duplex-micropayment-channels/">Duplex micropayment channels</a>
+
+</p>
+
+<p class="center"><a href="https://github.com/bitcoinops/bitcoinops.github.io/edit/master/_topics/en/dual-funding.md">Edit page</a><br />
+  <a href="https://github.com/bitcoinops/bitcoinops.github.io/issues/new?body=Source file: _topics/en/dual-funding.md">Report Issue</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Bitcoin Optech</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Bitcoin Optech</li><li><a class="u-email" href="mailto:info@bitcoinops.org">info@bitcoinops.org</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/bitcoinops"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">bitcoinops</span></a></li><li><a href="https://www.twitter.com/bitcoinoptech"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">bitcoinoptech</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Helping Bitcoin-based businesses integrate scaling technology.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

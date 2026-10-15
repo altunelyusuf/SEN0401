@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Splicing | Bitcoin Optech</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Splicing" />
+<meta name="author" content="Bitcoin Optech" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Splicing is the act of transferring funds from onchain outputs into a payment channel, or from a payment channel to independent onchain outputs, without the channel participants having to wait for a confirmation delay to spend the channel’s other funds." />
+<meta property="og:description" content="Splicing is the act of transferring funds from onchain outputs into a payment channel, or from a payment channel to independent onchain outputs, without the channel participants having to wait for a confirmation delay to spend the channel’s other funds." />
+<link rel="canonical" href="https://bitcoinops.org/en/topics/splicing/" />
+<meta property="og:url" content="https://bitcoinops.org/en/topics/splicing/" />
+<meta property="og:site_name" content="Bitcoin Optech" />
+<meta property="og:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-10-15T03:53:42+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="twitter:title" content="Splicing" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Bitcoin Optech"},"dateModified":"2026-10-15T03:53:42+00:00","datePublished":"2026-10-15T03:53:42+00:00","description":"Splicing is the act of transferring funds from onchain outputs into a payment channel, or from a payment channel to independent onchain outputs, without the channel participants having to wait for a confirmation delay to spend the channel’s other funds.","headline":"Splicing","image":"https://bitcoinops.org/img/logos/optech-notext.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://bitcoinops.org/en/topics/splicing/"},"url":"https://bitcoinops.org/en/topics/splicing/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://bitcoinops.org/feed.xml" title="Bitcoin Optech" /></head>
+
+
+  <body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">
+      <img src="/img/logos/optech-horiz.png" alt="OpTech Logo">
+    </a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/en/about/">About</a>
+            <a class="page-link" href="/en/publications/">Publications</a>
+            <a class="page-link" href="/en/topics/">Topics</a>
+            <a class="page-link" href="/en/workshops/">Workshops</a>
+            <a class="page-link" href="/en/matrix/">Matrix</a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+
+
+<article class="post">
+  <header class="post-header">
+    
+    <p class="center">/ <a href="/">home</a> / <a href="/en/topics/">topics</a> / </p>
+
+
+    <h1 class="post-title">Splicing</h1>
+    
+  </header>
+
+  <div class="post-content">
+    
+
+
+<!-- Actual page content -->
+
+<p><strong>Splicing</strong> is the act of transferring funds from onchain outputs into a payment channel, or from a payment channel to independent onchain outputs, without the channel participants having to wait for a confirmation delay to spend the channel’s other funds.</p>
+
+<p>Splicing comes in two varieties:</p>
+
+<ul>
+  <li id="splice-in" class="anchor-list">
+    <p><a href="#splice-in" class="anchor-list-link">●</a> <strong>Splice in</strong> means adding funds to a channel.  In this case, a
+cooperative close of the channel is arranged between the involved
+parties that spends the old channel funds to a new channel along
+with the new deposit.  Because the new channel open is based on the
+security of the old channel close, the channel participants can
+safely spend the old funds within the channel while waiting for the
+close and open transactions to confirm.</p>
+  </li>
+  <li id="splice-out" class="anchor-list">
+    <p><a href="#splice-out" class="anchor-list-link">●</a> <strong>Splice out</strong> means removing funds from a channel to an
+independent onchain output.  Similar to splice-in, the channel is
+closed and a new channel is opened, with the remaining funds being
+secured by the old channel’s security until the new channel has
+fully confirmed.</p>
+  </li>
+</ul>
+
+<p>Splicing is different from <a href="/en/topics/submarine-swaps/">submarine swaps</a> (such as those
+implemented by <a href="https://blog.lightning.engineering/posts/2019/03/20/loop.html">Lightning Loop</a>) where funds are transferred
+between users in exchange for onchain transactions—in submarine
+swaps, the overall balance of the channel stays the same; in
+splicing, the overall balance of the channel changes.</p>
+
+<h2 id="primary-code-and-documentation">Primary code and documentation</h2>
+
+<ul>
+  <li><a href="https://github.com/lightning/bolts/pull/863">Splicing specification (draft)</a></li>
+  <li><a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/lightning-dev/2018-October/001434.html">Splice proposal (Rusty Russell)</a></li>
+  <li><a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/lightning-dev/2018-October/001437.html">Splice proposal (Rene Pickhardt)</a></li>
+</ul>
+
+<h2 id="optech-newsletter-and-website-mentions">Optech newsletter and website mentions</h2>
+
+<p><strong>2026</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2026/09/25/#core-lightning-9508">Core Lightning #9508 monitors pending splice funding outputs, force-closes on tx_abort after signing</a></li>
+  <li><a href="/en/newsletters/2026/05/08/#eclair-2887">Eclair #2887 adds support for the official splicing protocol</a></li>
+  <li><a href="/en/newsletters/2026/03/27/#core-lightning-8856">Core Lightning #8856 and #8857 add splicein and spliceout RPC commands</a></li>
+  <li><a href="/en/newsletters/2026/03/27/#core-lightning-8450">Core Lightning #8450 extends CLN’s splice script to handle multi-channel splices</a></li>
+  <li><a href="/en/newsletters/2026/03/20/#ldk-4427">LDK #4427 adds RBF of negotiated splice funding transactions that are not yet locked</a></li>
+  <li><a href="/en/newsletters/2026/03/20/#core-lightning-8817">Core Lightning #8817 fixes splice interoperability issues with Eclair</a></li>
+</ul>
+
+<p><strong>2025</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2025/08/29/#ldk-3979">LDK #3979 adds splice-out support, completing LDK’s splicing support</a></li>
+  <li><a href="/en/newsletters/2025/08/22/#eclair-3103">Eclair #3103 adds support for dual funding and splicing in simple taproot channels</a></li>
+  <li><a href="/en/newsletters/2025/05/23/#core-lightning-8021">Core Lightning #8021 finalizes splicing interoperability with Eclair</a></li>
+  <li><a href="/en/newsletters/2025/03/14/#ldk-3624">LDK #3624 enables funding key rotation after successful channel splices</a></li>
+  <li><a href="/en/newsletters/2025/02/07/#eclair-2968">Eclair #2968 adds support for splicing on public channels</a></li>
+  <li><a href="/en/newsletters/2025/01/17/#eclair-2936">Eclair #2936 begins tracking splices created by third-parties</a></li>
+</ul>
+
+<p><strong>2024</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2024/12/06/#lnd-8270">LND #8270 implements the channel quiescence protocol designed in part for splicing</a></li>
+  <li><a href="/en/newsletters/2024/11/29/#core-lightning-7719">Core Lightning #7719 achieves interoperability with Eclair for splicing</a></li>
+  <li><a href="/en/newsletters/2024/10/25/#eclair-2925">Eclair #2925 introduces support for using RBF with splicing transactions</a></li>
+  <li><a href="/en/newsletters/2024/10/04/#eclair-2861">Eclair #2861 implements on-the-fly funding using liquidity ads with either dual-funding or splicing</a></li>
+  <li><a href="/en/newsletters/2024/03/20/#phoenix-wallet-v2-2-0-released">Phoenix Wallet v2.2.0 adds support for splicing using the quiescence protocol</a></li>
+  <li><a href="/en/newsletters/2024/02/07/#securely-opening-zero-conf-channels-with-v3-transactions">Challenges with splicing and zero-conf channels when using v3 transaction topology</a></li>
+</ul>
+
+<p><strong>2023</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2023/08/09/#core-lightning-6253">Core Lightning #6253 and #5675 add an experimental implementation of splicing</a></li>
+  <li><a href="/en/newsletters/2023/08/02/#eclair-2680">Eclair #2680 adds quiescence negotiation for splicing</a></li>
+  <li><a href="/en/newsletters/2023/07/19/#phoenix-wallet-adds-splicing-support">Phoenix wallet adds splicing support</a></li>
+  <li><a href="/en/newsletters/2023/04/19/#eclair-2584">Eclair #2584 adds support for both splice-in and splice-out</a></li>
+  <li><a href="/en/newsletters/2023/04/12/#splicing-specification-discussions">Splicing specification discussion about relative amounts and minimizing redundant data</a></li>
+  <li><a href="/en/newsletters/2023/02/22/#eclair-2595">Eclair #2595 continues the project’s work on adding support for splicing</a></li>
+  <li><a href="/en/newsletters/2023/02/01/#eclair-2540">Eclair #2540 makes backend preparations for splicing</a></li>
+</ul>
+
+<p><strong>2022</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2022/08/24/#bolts-1004">BOLTs #1004 makes recommendations to support future detection of splices</a></li>
+  <li><a href="/en/newsletters/2022/07/06/#announcing-splices">Discussion about the best way to gossip channel splices</a></li>
+</ul>
+
+<p><strong>2021</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2021/04/28/#draft-specification-for-ln-splicing">Draft specification for LN splicing based on interactive funding protocol</a></li>
+</ul>
+
+<p><strong>2018</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2018/12/28/#splicing">2018 year-in-review: splicing</a></li>
+  <li><a href="/en/newsletters/2018/11/20/#splicing">LN 1.1 protocol goals</a></li>
+  <li><a href="/en/newsletters/2018/10/16/#proposal-for-lightning-network-payment-channel-splicing">Proposals for LN splicing</a></li>
+</ul>
+
+<h2 id="see-also">See also</h2>
+
+<ul>
+  <li><a href="/en/topics/dual-funding/">Interactive transaction construction protocol</a></li>
+  <li>
+    <p><a href="/en/topics/submarine-swaps/">Submarine swaps</a></p>
+
+    <p><br /></p>
+  </li>
+</ul>
+
+<p class="float-left">
+
+<strong>Previous Topic:</strong><br /><a href="/en/topics/soft-fork-activation/">Soft fork activation</a>
+
+</p>
+<p class="float-right">
+
+<strong>Next Topic:</strong><br /><a href="/en/topics/spontaneous-payments/">Spontaneous payments</a>
+
+</p>
+
+<p class="center"><a href="https://github.com/bitcoinops/bitcoinops.github.io/edit/master/_topics/en/splicing.md">Edit page</a><br />
+  <a href="https://github.com/bitcoinops/bitcoinops.github.io/issues/new?body=Source file: _topics/en/splicing.md">Report Issue</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Bitcoin Optech</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Bitcoin Optech</li><li><a class="u-email" href="mailto:info@bitcoinops.org">info@bitcoinops.org</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/bitcoinops"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">bitcoinops</span></a></li><li><a href="https://www.twitter.com/bitcoinoptech"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">bitcoinoptech</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Helping Bitcoin-based businesses integrate scaling technology.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

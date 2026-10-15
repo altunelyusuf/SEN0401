@@ -1,0 +1,436 @@
+ 
+ 
+ 
+ 
+ Colored Coins - Bitcoin Wiki 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+  
+ 
+	  
+	  
+	 
+	 
+	  Colored Coins  
+	 
+		 From Bitcoin Wiki 
+		    
+		  
+		
+		  
+		 Jump to navigation 
+		 Jump to search 
+		   The term "Colored Coins" loosely describes a class of methods for representing and managing  real world assets  on top of the  Bitcoin Blockchain .
+  While originally designed to be a currency,  Bitcoin's   scripting language  allows to store small amounts of metadata on the blockchain, which can be used to  represent  asset manipulation instructions. For example, we can encode in a Bitcoin transaction that 100 units of a new asset were issued and are now credited to a given  bitcoin address . A  colored coins wallet  can create a Bitcoin transaction that encodes sending 50 units of an asset from one address to a new address, and so on.
+  Real world  Value  is attached to those units (or "digital tokens") by the asset issuer's promise to  redeem  them for some goods or services. For example, a 100 seat movie theater can issue 100 units of a "watch movie X at time Y" asset and promise to redeem each unit for a right to enter a certain screening of a movie.
+  The advantage of using Bitcoin's blockchain as the backbone leverages Bitcoin's strengths, such as immutability, non-counterfeitability, ease of transfer, robustness and transparency thus allowing asset manipulation with unprecedented security and ease.
+  In principle one can represent asset manipulation data on other blockchains. The term "Colored Coins" is usually associated with implementations that 
+ 
+  Use the  Bitcoin  blockchain 
+ Do not issue an auxiliary coin  
+ Note that the term  Colored Coins  stuck from older implementations such as the  EPOBC  protocol where an asset was actually associated with  satoshis  (thus "coloring" them). Other implementations use   other  ways to encode assets on the blockchain, mostly using the  OP_RETURN  scripting code, so it is  no longer the only case  that individual satoshis are "colored".
+ 
+    Contents      
+ 
+   1   Use Cases  
+ 
+   1.1   Issuing shares   
+   1.2   Smart property   
+   1.3   Coupon   
+   1.4   Community Money   
+   1.5   Digital collectibles   
+   1.6   Access and Subscription   
+ 
+ 
+   2   Bitcoin 2.0  
+ 
+   2.1   Using the power of Bitcoin Blockchain technology for new use-cases other than currency   
+ 
+ 
+   3   Open Assets Block Explorer   
+   4   Colu's ColoredCoins.org Block Explorer   
+   5   The EPOBC protocol  
+ 
+   5.1   Types of transactions   
+   5.2   Transaction tags   
+   5.3   Current projects/companies which are leveraging EPOBC   
+ 
+ 
+   6   Open Assets  
+ 
+   6.1   Example of an Open Assets OP_RETURN marker output   
+   6.2   Current projects leveraging Open Assets   
+ 
+ 
+   7   CoinSpark   
+   8   Colu Colored Coins Implementation  
+ 
+   8.1   Main Features  
+ 
+   8.1.1   Smarts Contracts capabilities   
+   8.1.2   Using Torrents for Metadata storage   
+   8.1.3   Flexible metadata handling   
+   8.1.4   Coherent Issuance Policy   
+   8.1.5   Support for thin (SPV) wallets   
+   8.1.6   Efficiency and Low Cost   
+   8.1.7   Support for Zero Confirmations   
+ 
+ 
+   8.2   Resources   
+ 
+ 
+ 
+ 
+
+  Use Cases  
+ There are many interesting applications to colored coin.
+ 
+  Issuing shares  
+ A company can issue shares using colored coins, taking advantage of the Bitcoin infrastructure for activities such as
+ 
+  Trading 
+ Voting 
+ Paying dividends  
+  Smart property  
+ Suppose there is a car rental company. The company can release one colored coin to represent each car, and then configure the car to turn on only if it receives a message signed with the private key that currently owns the colored coin. It can then release a smartphone app that anyone can use to broadcast a message signed with their private key, and put up the colored coins on a trading platform. Anyone will be able to then purchase a colored coin, use the car for whatever period of time using the smartphone app as a "car key", and sell the coin again at their leisure.
+ 
+  Coupon  
+ A company may wish to issue coupons, such as Air Miles rewards points
+ 
+  Community Money  
+ A community. e.g. a town, can issue it's own Currency.
+ 
+  Digital collectibles  
+ Decentralized management of digital assets. Just like art collectors buy and sell original copies of famous paintings for millions of dollars today, colored coins allow us to do the same with purely digital objects, such as songs, movies, e-books and software, as well, by storing the current ownership of the work as a colored coin on the blockchain.
+ 
+  Access and Subscription  
+ Using colored coins to trade and manage access and subscription services. For example, a museum, a subway or an online service like Netflix may issue passes as colored coins and release a smartphone app that can be used to make a signature proving ownership of a pass in person, allowing these passes to be simultaneously transferable, fully digital and securely uncopyable.
+ 
+  Bitcoin 2.0  
+  Using the power of Bitcoin Blockchain technology for new use-cases other than currency  
+  The next generation of bitcoin developments 
+ Utilizing the power of Bitcoin Blockchain for new use-cases other than currency and extending its flexibility 
+ Wider range of digital transactions 
+ A complete multi asset economy  
+  
+ 
+  Open Assets Block Explorer  
+  Coinprism  offers a colored coin  Bitcoin blockchain  explorer.
+ 
+    Colu's ColoredCoins.org Block Explorer  
+  ColoredCoins.org  offers a public  search engine  for digital assets, all open source based on the Colu Coloredcoins implementation
+ 
+  The EPOBC protocol  
+  EPOBC  is the  first Coloredcoins implementation  which was created By  ChromaWay . EPOBC  doesn't use op_return to store metadata on the blockchain
+ 
+  Types of transactions  
+ EPOBC introduces two types of transactions:
+•	genesis transactions create new colored coins (of a new color); they are used for issuance
+•	transfer transactions transfers existing colored coins
+If colored coins are used as inputs in a transaction which isn't a transfer transaction, their value is lost, it is not transferred to outputs of this or other transaction. Also the value of colored coins might be lost in a malformed transaction.
+ 
+  Transaction tags  
+ EPOBC-encoded colored coin transactions are marked in a special way to distinguish them from normal Bitcoin transactions. This is done by putting a certain tag value into a nSequence field of transaction's first input. nSequence is always present, but is otherwise unused, which means that this way of marking has zero overhead (unlike OP_RETURN-based which increases the size of the transaction).
+nSequence is a 32-bit integer, and 6 of its least-significant bits encode the tag. Transfer transactions and genesis transactions have different tags:
+•	bit sequence 110011 is a tag of a transfer transaction. Its hexadecimal value is 0x33.
+•	bit sequence 100101 is a tag of a genesis transaction. Its hexadecimal value is 0x25.
+Code which distinguishes transfer and genesis transaction:
+ 
+  get nSequence of the first input  
+ tag_nSequence = transaction.inputs[0].nSequence
+ 
+  extract its lowest 6 bits  
+ tag = tag_nSequence & 0x3F
+if tag == 0x25:
+ 
+    transaction_type = 'genesis'
+ 
+ elif tag == 0x33:
+ 
+    transaction_type = 'transfer'
+ 
+ else:
+ 
+    transaction_type = 'none'
+ 
+ Further treatment depends on transaction type. However, both transfer and genesis transactions have padding.
+EPOBC is the first Coloredcoins protocol to have support for thin SPV clients.
+ 
+    Current projects/companies which are leveraging EPOBC  
+   ChromaWallet  Desktop Coloredcoins wallet 
+  Cuber  Mobile and Android wallets backed by LHV bank in Estonia 
+  LHV  Issued 100 000 EUR worth of cryptographically protected claims against bank into bitcoin blockchain 
+  Funderbeam   innovators launch syndicated startup investment market  
+  JavaScript open-source Colored Coins library  
+  a prototype open-source Coloredcoins webwallet   
+  Open Assets  
+  Open Assets  is a Colored Coin implementation based on the  OP_RETURN  operator. Metadata is linked from the Blockchain and stored on the web.
+ 
+  Example of an Open Assets OP_RETURN marker output  
+ This example illustrates how a marker output is decoded. Assuming the marker output is output 1:
+ 
+    Data in the marker output      Description
+   -----------------------------  -------------------------------------------------------------------
+   0x6a                           The OP_RETURN opcode.
+   0x10                           The marker output is 16 bytes long.
+   0x4f 0x41                      The Open Assets Protocol tag.
+   0x01 0x00                      Version 1 of the protocol.
+   0x03                           There are 3 items in the asset quantity list.
+   0xac 0x02 0x00 0xe5 0x8e 0x26  The asset quantity list:
+                                  - '0xac 0x02' means output 0 has an asset quantity of 300.
+                                  - Output 1 is skipped and has an asset quantity of 0
+                                    because it is the marker output.
+                                  - '0x00' means output 2 has an asset quantity of 0.
+                                  - '0xe5 0x8e 0x26' means output 3 has an asset quantity of 624,485.
+                                  - Outputs after output 3 (if any) have an asset quantity of 0.
+   0x04                           The metadata is 4 bytes long.
+   0x12 0x34 0x56 0x78            Some arbitrary metadata.
+ 
+  Current projects leveraging Open Assets  
+         Coinprism  colored coins web wallet 
+  Coinprism  colored coins Android app 
+  Reference implementation  on GitHub 
+  Colorcore : Open source wallet for Open Assets 
+  Coinprism.info  colored coins blockchain explorer 
+  Coinprism Assets directory  
+  openassets Python library  
+  .NET Bitcoin library NBitcoin   
+  CoinSpark  
+  CoinSpark  is a Colored Coin implementation that uses a lightweight (SPV) desktop wallet for Windows, Mac or Linux. In CoinSpark, contracts are hosted on the issuer's website and notarized on the blockchain. Like Open Assets, it uses  OP_RETURNs  to store metadata, with a highly efficient encoding scheme that allows multiple transfers of different assets to be encoded in a single transaction. CoinSpark  software libraries  are available for C/C++, Java, Javascript, PHP and Python, and there's a detailed  developers guide  with examples.
+ 
+  Colu Colored Coins Implementation  
+ A new Colored Coins implementation was developed by  Colu  and fully  open sourced  on June 2015. The new implementation is based on attaching data to transactions using the OP_RETURN field. Colu's  coloring scheme  uses high data compression, can associate unlimited amounts of metadata with bitcoin transactions through the use of publicly available torrent files and supports smart contract functionalities. 
+   
+ 
+  Main Features  
+  Smarts Contracts capabilities  
+ A  Rule Engine  for issuing digital assets with various capabilities: expiration dates, restricted access, additional fees (supporting  affiliate marketing ), limitations on further issuance, etc. 
+ 
+  Using Torrents for Metadata storage  
+  Metadata  is stored in publicly available  torrent files , only a reference is stored directly on the blockchain. This allows for
+ 
+   Maximal Decentralization  
+  Unlimited Size  - Since metadata is not stored directly on the blockchain it's size is unlimited and can contain information like: track record, history, description, validity or any information the issuer finds relevant.  
+  Flexible metadata handling  
+ Adding  metadata  on every transaction, supporting the addition of relevant metadata that was not yet available during issuance (e.g. mentioning a specific seat number on a movie theater token). 
+ 
+  Coherent Issuance Policy  
+ Enforcing a coherent issuance policy by supporting two types of assets,  locked and unlocked . 
+ 
+   Locked Assets  - A fixed amount is defined during issuance. No one can issue more units of the asset, not even the issuer. 
+  Unlocked Assets  - The issuer can keep issuing more units.  
+    Support for thin (SPV) wallets  
+ The new colu implementation supports  SPV clients  - nodes that can ***verify colored transactions*** without running a  full Bitcoin node .
+ 
+  Efficiency and Low Cost  
+   Data compression  - high level of data compression using a  precision encoding scheme  for encoding asset issuance and transfer amounts. 
+ Sending  Multiple Assets in Single Transaction  
+  Minimal Blockchain Bloat   
+  Support for Zero Confirmations  
+ The new architecture supports asset  issuance and transfer in zero confirmations  (even  within the same transaction) - the Asset ID references only the first UTXO in the transaction and makes no reference to a block.
+ 
+  Resources  
+         Colu  
+        A presentation about Colored Coins  
+        Colu's ColoredCoins.org  
+        Colu's ColoredCoins Block Explorer  
+        Colu's ColoredCoins API  
+        Colu's ColoredCoins Protocol Specification  
+        Colu's Implementation open source code   
+ 
+ 
+
+ 
+ 
+ Retrieved from " https://en.bitcoin.it/w/index.php?title=Colored_Coins&oldid=67477 "  
+		   Categories :    Financial    Colored Coins    Digital currencies    FinTech    Bitcoin 2.0    Blockchain Technology     
+	 
+ 
+
+ 
+	 Navigation menu 
+	 
+		
+ 
+	 
+		 Personal tools 
+	 
+	 
+		
+		 
+			
+			   Create account      Log in   
+		 
+		
+	 
+ 
+
+		 
+			
+ 
+	 
+		 Namespaces 
+	 
+	 
+		
+		 
+			
+			   Page      Discussion   
+		 
+		
+	 
+ 
+
+			
+ 
+	 
+	 
+		 English 
+	 
+	 
+		
+		 
+			
+			
+		 
+		
+	 
+ 
+
+		 
+		 
+			
+ 
+	 
+		 Views 
+	 
+	 
+		
+		 
+			
+			   Read      View source      View history   
+		 
+		
+	 
+ 
+
+			
+ 
+	 
+	 
+		 More 
+	 
+	 
+		
+		 
+			
+			
+		 
+		
+	 
+ 
+
+			
+ 
+	 Search 
+	 
+		 
+			 
+			 
+			 
+			 
+		 
+	 
+ 
+
+		 
+	 
+	
+ 
+	 
+		  
+	 
+	
+ 
+	 
+		 Navigation 
+	 
+	 
+		
+		 
+			
+			   Main page      Bitcoin FAQ      Editing help      Forums      Chatrooms      Recent changes      Page index   
+		 
+		
+	 
+ 
+
+	
+ 
+	 
+		 Tools 
+	 
+	 
+		
+		 
+			
+			   What links here      Related changes      Special pages      Printable version      Permanent link      Page information   
+		 
+		
+	 
+ 
+
+ 
+	 
+		 Sister projects 
+	 
+	 
+		
+		 
+			
+			   Essays      Source   
+		 
+		
+	 
+ 
+
+	
+ 
+
+ 
+
+ 
+	 
+	  This page was last edited on 13 May 2020, at 01:44. 
+	 Content is available under  Creative Commons Attribution 3.0  unless otherwise noted. 
+ 
+
+	 
+	  Privacy policy  
+	  About Bitcoin Wiki  
+	  Disclaimers  
+ 
+
+	 
+	     
+ 
+
+ 
+
+ 
+  
+ 

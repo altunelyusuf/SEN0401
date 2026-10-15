@@ -1,0 +1,841 @@
+                   Sphinx: A Compact and Provably Secure Mix Format
+
+
+                      George Danezis                                    Ian Goldberg
+                     Microsoft Research                             University of Waterloo
+                      Cambridge, UK                                 Waterloo, ON, Canada
+                  gdane@microsoft.com                             iang@cs.uwaterloo.ca
+
+                       Abstract                              format. The cryptographic mechanism is to some ex-
+                                                             tent independent from other traffic analysis protections
+   Sphinx is a cryptographic message format used to          offered by the mix network, as long as they guarantee
+relay anonymized messages within a mix network. It           that some aspects of the routing information, such as
+is more compact than any comparable scheme, and              path length or position in the path, are not leaked [4].
+supports a full set of security features: indistinguish-        The minimum overhead introduced by the crypto-
+able replies, hiding the path length and relay position,     graphic packet format impacts the types of traffic that
+as well as providing unlinkability for each leg of the       can realistically be anonymized. Previous work, like
+message’s journey over the network. We prove the             Mixminion [8] and Minx [9] added an overhead of
+full cryptographic security of Sphinx in the random          at least a full RSA ciphertext (at least 256 additional
+oracle model, and we describe how it can be used as          bytes for modern 128-bit security levels). Provable
+an efficient drop-in replacement in deployed remailer        designs, such as the ones proposed by Möller [15], Ca-
+systems.                                                     menish and Lysyanskaya [5] or Shimshock et al. [21],
+                                                             use multiple RSA-sized ciphertexts to relay informa-
+1. Introduction                                              tion for each stage of the mixing, making the header
+                                                             necessary for anonymization many kilobytes long.
+   Mix networks were proposed by David Chaum [7]             Such formats may be acceptable for relaying large
+in 1981 as an efficient means to achieve anonymous           email messages, but add a significant overhead to short
+communications. A mix (or a mix node) is simply              messages, the length of Instant Messaging or SMS
+a message relay that accepts a batch of encrypted            messages (that are up to 160 characters.) It is therefore
+messages, decrypts them and sends them on their              of great importance to devise cryptographic schemes
+way. An observer of a mix node should be unable to           that are compact to efficiently anonymize those classes
+link incoming and outgoing messages; this provides           of traffic. Furthermore, anonymous replies rely on
+anonymity to the users of the network. A number of           cryptographic addresses that are of similar size to the
+theoretical [12], [15], [9], [5], [21] as well as deployed   headers required to route messages thought the net-
+systems [16], [8] have been proposed that further            work. Compact packet formats directly lead to compact
+develop the idea of mixes. The Mixmaster network [16]        addresses and thus to cheaper receiver anonymity.
+is currently composed of about 25 reliable remailers,           Traditionally, cryptographic packet formats have
+while the newer Mixminion [8], adding the ability to         been based on heuristic security arguments. From early
+reply anonymously to messages, is composed of about          on it became apparent that these complex crypto-
+20 reliable nodes.                                           graphic systems are difficult to get right: the original
+   Anonymizing messages through a mix network                scheme by Chaum [7] was shown to have crypto-
+comes at a cost: the messages are batched and therefore      graphic weaknesses by Pfitzmann and Pfitzmann [18]
+delayed, as well as padded to a standard length to           and Minx [9] leaked information which theoretically
+prevent traffic analysis. Furthermore, multiple encryp-      allowed an adversary to extract the full plaintext of
+tion layers have to be used to encapsulate the routing       messages [21]. As a result several authors proposed
+information necessary to relay the message through a         provably secure packet formats. Some of them only
+sequence of mixes. The cryptographic mechanism used          provide the bare minimum functionality [15], [5], and
+to deliver this routing information to each intermediate     in particular no provision for anonymous replies, while
+mix, as well as to transform the message as it travels       others suffer a significant transmission overhead [21].
+through the network, is called the cryptographic packet      It has so far been an open problem to devise a compact
+and provably secure packet format.                          of the cryptographic format and the associated proofs
+  Our key contribution is Sphinx: a cryptographic           of security respectively. In section 5 we discuss the
+packet format that can be used to route messages over       efficiency of the scheme and compare it with other pro-
+a mix network. Sphinx provides all features expected        posals. Finally we provide some concluding remarks in
+by modern remailer applications:                            section 6.
+  • It provides bitwise unlinkability, making it cryp-
+    tographically difficult to link incoming and out-       2. Design overview
+    going messages from a mix. This is the basic
+                                                               Mix networks achieve anonymity by relaying mes-
+    property all packet formats provide.
+                                                            sages over a sequence of mixes, called the path. The
+  • It allows for paths up to an arbitrary maximum
+                                                            sender cryptographically encodes a message, which is
+    length, while hiding the number of hops a mes-
+                                                            partially decoded by each mix along the path. As long
+    sage has travelled so far, as well as the actual
+                                                            as a single mix in the path is honest, meaning that
+    number of mixes on the path of a message.
+                                                            it does not share its secrets with an adversary, the
+    These are hidden even from the mixes that are
+                                                            message will benefit from some anonymity.
+    processing the messages.
+  • The processing of reply messages is indistinguish-
+    able from the processing of normal “forward”
+                                                            2.1. Threat Model & Requirements
+    messages. The anonymity sets of both types of
+                                                               It is traditional to consider the security of crypto-
+    traffic are therefore confounded, providing greater
+                                                            graphic packet formats against an active adversary that
+    protection for both.
+                                                            is able to observe all traffic in the network, as well as
+  • It resists any active tagging attacks, where the
+                                                            to intercept and inject arbitrary messages. Furthermore,
+    adversary modifies and re-injects messages to
+                                                            we assume that some, but not all, of the mixes in the
+    extract information about their destinations or
+                                                            path of a relayed message are corrupt; i.e., under the
+    content.
+                                                            direct control of an adversary that knows all their keys,
+  • It is compact: for 128-bit security, the overhead
+                                                            and other secrets, and is able to fully control their
+    is only 32 bytes plus a single group element
+                                                            functioning. The principal aim of the adversary is to
+    (not one per hop) plus 32 bytes of routing and
+                                                            extract some information about the ultimate destination
+    integrity protection information per hop. The size
+                                                            of mixed messages through inferring the final address
+    of the group element can be as small as 32 bytes
+                                                            or some of their contents. The security properties of
+    using Dan Bernstein’s Curve25519 elliptic curve
+                                                            cryptographic mix packet formats prevent or tightly
+    library [3]; the element is the x-coordinate (in
+                                                            control any such information leakage.
+    GF (2255 −19)) of a point on an elliptic curve. For
+                                                               Specifically, Sphinx needs to ensure that if multiple
+    example, the header of a Sphinx message with a
+                                                            messages enter an honest mix and are batched together,
+    maximum path length of 5 mixes can be encoded
+                                                            it is not feasible to link an output message to any
+    in as little as 224 bytes.
+                                                            input message with probability significantly higher
+From a systems perspective, Sphinx is designed as           than uniform. This is the fundamental requirement of
+a drop-in replacement for the Mixminion packet for-         any packet format. Yet modern packet formats also
+mat [8]. It makes the same systems and security             control the amount of information leaked to mixes
+assumptions as Mixminion, but is more compact and           (including dishonest mixes) along the path. A dishonest
+cryptographically provably secure. This means that          mix should not be able to infer either the full length
+Sphinx can be easily integrated with the Mixminion          of the path of a particular message, or its own position
+software to take advantage of the thousands of lines of     on that path. Simple traffic analysis detects if a mix is
+robust client and server code. Our reference implemen-      first or last on the path, so we do not consider this a
+tation of Sphinx, which provides all of the functionality   compromise.
+needed for clients, mix nodes, and the nymserver, and          An advantage of mix networks is that they pro-
+which works either over a 2048-bit prime field or           vide a unified mechanism for both sender and re-
+Curve25519, is less than 600 lines of Python code           ceiver anonymity. Alice may encode a single-use reply
+(including simple tests).                                   block [8] and attach it to an anonymous message
+   Our description of Sphinx will proceed in the fol-       destined to Bob. Bob cannot know that the originator
+lowing fashion: section 2 provides an overview of           of the message is Alice, but can use the reply block
+the threat model, requirements and design rationale of      contained in the message as an address to send a reply.
+Sphinx; sections 3 and 4 provide a formal definition        The reply is then routed through the network until
+it reaches Alice. In both cases Alice benefits from         channel to each of the mixes on a message’s path. This
+anonymity properties, first as the sender of the message    requires keys to be shared, or distributed, securely to
+(sender anonymity) and the second time as the anony-        each of the mixes on the path, in order that they may
+mous receiver of a message (receiver anonymity).            decode the routing information, as well as other parts
+Nymservers [14] have been developed as services that        of the message. Traditionally, this has been done with
+make use of anonymous replies to bridge the world           RSA [19] encryption, while Sphinx instead uses Diffie-
+of mix networks with traditional email. Users can           Hellman [10].
+send normal email to pseudonymous email addresses,             At the heart of the Sphinx key distribution strategy
+which are then routed through the mix network using         lies a single element of a cyclic group of prime order
+anonymous reply blocks. We note that the network            satisfying the decisional Diffie-Hellman assumption.
+does not attempt to keep it a secret that Bob is talking    This element is used by each mix on the path to derive
+to some particular pseudonym; we assume Bob’s email         a secret that is shared with the original sender of the
+communication is likely to be unencrypted (though           message—a set of keys that can be used for encryption,
+orthogonal end-to-end encryption mechanisms can of          integrity protection, etc. are further extracted from this
+course also be used). What it does protect is the fact      shared secret. The element used for key derivation
+that that pseudonym belongs to Alice.                       cannot be transported unaltered throughout the path,
+   To increase the security of both sender- and receiver-   however, as this would lead to linkable messages. To
+anonymous messages, the two kinds of messages               avoid this, the element is blinded at each mixing step
+should use the same network and the same relay              to make it indistinguishable from any other output
+mechanisms. Hence it is a requirement of the crypto-        element. The blinding factors are extracted from the
+graphic packet format that forward and reply messages       shared secrets, and so both senders and mixes can
+be cryptographically indistinguishable; this makes the      perform all operations necessary to extract keys used
+task of engineering packet formats more difficult. Tra-     at each hop of the mix message processing. There
+ditional methods for achieving non-malleability (such       are many possible choices for the cyclic group; two
+as providing a MAC over the full header and body of         common ones are a subgroup of the multiplicative
+the relayed message) are not readily available, as the      group of a prime field, and an elliptic curve group. The
+reply message body is unknown at the time the reply         latter in particular leads to a very compact design, since
+block is created.                                           for 128-bit security, group elements can be expressed
+   Finally, Sphinx is required to be resistant to active    in just 32 bytes, as opposed to 256–384 bytes for a
+attacks: an adversary can use any corrupt node to inject    prime field of similar strength.
+arbitrary messages into honest nodes in an attempt             Besides extracting the shared key, each mix has to
+to extract information. Sphinx protects against replay      be provided with authentic and confidential routing
+attacks—where the adversary reinjects a previously          information to direct the message to the subsequent
+seen message verbatim—and tagging attacks—where             mix, or to its final destination. We achieve this by
+the adversary modifies a message before reinjecting it      a simple encrypt-then-MAC mechanism. A secure
+into the network. In neither event will Sphinx allow        stream cipher or AES in counter mode is used for
+the adversary to learn any information about the final      encryption, and a secure MAC (with some strong but
+destination of the message or its contents. Other denial-   standard properties) is used to ensure no part of the
+of-service and flooding attacks (n − 1 attacks) [20] are    message header containing routing information has
+not considered in the threat model, since they are not      been modified. Some padding has to be added at each
+cryptographic in nature and are handled by orthogonal       mix stage, in order to keep the length of the message
+mechanisms [12], [13]. Similarly, active traffic analysis   invariant at each hop.
+attacks, such as those based on dropping messages or           The steps involved in decoding and routing the
+flooding links and nodes to perform remote network          message at each mix are rather simple. Their full
+measurements, cannot be fixed by the cryptographic          technical description is provided in section 3.6 and is
+format alone, and must be dealt with by the high-level      illustrated in the corresponding Figure 3. In summary:
+mix strategies.                                                1) The mix receives the message and, using the
+                                                                   element from the cyclic group and its private key,
+2.2. Design Rationale                                              extracts a set of shared session keys.
+                                                               2) The MAC of the message is checked to ensure
+   Sphinx is based on the idea that a mix packet format            that the header has not been modified.
+should encapsulate enough information to cryptograph-          3) Some padding (of all zeros) is added at the end
+ically secure a confidential and integrity-protected               of the message to keep the length invariant.
+   4) The header of the message is decrypted (in-              G: A prime-order cyclic group satisfying the De-
+       cluding the newly added padding), the element        cisional Diffie-Hellman Assumption. G ∗ is the set
+       blinded and the payload of the message de-           of non-identity elements of G. The element g is a
+       crypted.                                             generator of G, and q is the (prime) order of G, with
+   5) The routing information and next MAC are ex-          q ≈ 22κ .
+       tracted from the decrypted header, and the result-      A number of hash functions, which we model by
+       ing message is forwarded to the next destination.    random oracles:
+   Senders encode a message by deriving all session           • hμ : G ∗ → {0, 1}κ, used to key μ, below
+                                                                      ∗          κ
+keys, wrapping the message in multiple layers of              • hρ : G → {0, 1} , used to key ρ, below
+                                                                       ∗         κ
+encryption, and calculating the correct message authen-       • hπ : G → {0, 1} , used to key π, below
+                                                                        ∗         2κ
+tication codes for each stage of the journey. Calculating     • hτ : G → {0, 1} , used to identify previously
+the correct MACs is not a trivial task: the successive          seen elements of G ∗
+                                                                        ∗   ∗        ∗
+layers of padding that are encrypted at each stage of         • hb : G × G → Zq , used to compute blinding
+the mixing have to be included in the integrity check.          factors
+The MACs ensure that a modified header is detected
+                                                            We implement these functions with appropriately trun-
+immediately.
+                                                            cated SHA-256 hash functions.
+   The payload of the message is kept separate from the
+                                                               μ : {0, 1}κ × {0, 1}∗ → {0, 1}κ: a Message
+mix header used to perform the routing. It is decrypted
+                                                            Authentication Code (MAC). We normally model μ
+at each stage of mixing using a block cipher with
+                                                            as a pseudo-random function (PRF). However, in one
+a large block size (the size of the entire message),
+                                                            part of the proof (section 4.2), the adversary gets to
+such as LIONESS [1]. In case the adversary modifies
+                                                            know the key to the MAC. In this case, simply being
+the payload in transit, any information contained in
+                                                            a PRF guarantees nothing, whereas we still want μ
+it becomes irrecoverable. Sender-anonymous messages
+                                                            with a known key to behave like a hash function. For
+contain the final address of the message, as well as
+                                                            this reason, we model μ as a random oracle in that
+the message itself as part of the payload, and so any
+                                                            section (which of course is stronger than a PRF). In a
+modification destroys this information.
+                                                            realistic implementation, we would use a MAC based
+   Anonymous replies are equally simple to construct:
+                                                            on a hash function, such as SHA256-HMAC-128.
+the intended receiver of the reply (who will benefit
+                                                               ρ : {0, 1}κ → {0, 1}(2r+3)κ: a pseudo-random
+from the anonymity properties) builds a mix header
+                                                            generator (PRG). A PRG is the basis for any stream
+addressed back to herself with no payload. This header
+                                                            cipher: the key is fed as an input to the PRG, which
+acts as an anonymous reply address, and can be
+                                                            outputs a long pseudorandom string. This string is
+included in a message to give anyone the ability to
+                                                            XORed with the plaintext to yield the ciphertext, or
+reply. Some additional information, such as the address
+                                                            with the ciphertext to recover the plaintext. As above,
+of the first mix hop, is also needed.
+                                                            in section 4.2 the adversary will be able to know the
+   A reply is built by attaching a message to the reply
+                                                            input to the PRG, which removes all of the PRG’s
+address and routing it through the mix network. The
+                                                            security properties. So again, for that section, we
+processing of the reply message is identical to the
+                                                            model ρ as a random oracle. We can implement ρ with
+processing of forward messages, leading to simplicity
+                                                            any secure stream cipher, or any secure block cipher
+of implementation and larger anonymity sets.
+                                                            in counter mode, which operates in the same way.
+                                                               π : {0, 1}κ × {0, 1}π → {0, 1}π : a family of
+3. Formal protocol description                              pseudo-random permutations (PRPs). π will be the
+                                                            size of the message bodies that can be transmitted
+3.1. Notation                                               over Sphinx (plus κ bits of overhead). Given any
+                                                            (k, x) ∈ {0, 1}κ ×{0, 1}π , both π(k, x) and π −1 (k, x)
+  Let κ be a security parameter. An adversary will          should be easy to compute. (The latter is the unique
+have to do about 2κ work to break the security of           value y ∈ {0, 1}π such that π(k, y) = x.) π −1 should
+Sphinx with nonnegligible probability. We suggest           also be a family of pseudo-random permutations. We
+using κ = 128.                                              use the LIONESS [1] PRP to implement π.
+  Let r be the maximum number of nodes that a                  N ⊂ {0, 1}κ: a set of mix node identifiers. Each
+Sphinx mix message will traverse before being deliv-        node n ∈ N has a private key xn ∈R Z∗q and a public
+ered to its destination. We suggest r = 5.                  key yn = g xn ∈ G ∗ . We assume the presence of a PKI
+  Define the following:                                     that publishes an authenticated list of all (n, yn ) pairs.
+Figure 1. Construction of the filler strings φi for
+ν = r = 4. Here, ρi is the final 2(i + 1)κ bits of
+ρ(hρ (si )).
+
+
+   D ⊂ {0, 1}≤2rκ: a set of destination addresses,
+usually normal email addresses. It must be the case
+that N ∩ D = ∅ and that N ∪ D is prefix-free. Note
+that N ∩ D = ∅ does not imply that end users of
+Sphinx cannot themselves run Sphinx nodes; it is just
+that the identifier for their node (in N ) will be different
+from their email address. One of the elements ∗ ∈ D
+is distinguished.
+   The notation 0a means the string of 0 bits of length
+a, x[a..b] means the substring of x consisting of bits
+a through b, inclusive (the leftmost bit of x is bit 0),
+   denotes concatenation, |s| is the length of string s,
+                                                                    Figure 2. Construction of (β0 , γ0 ) for a Sphinx mix
+and  is the empty string.
+                                                                    header, with ν = r = 4. The construction of φ3 from
+                                                                    Figure 1 ensures that the truncated part of βi+1
+3.2. Creating a mix header                                          equals the truncated part of ρ(hρ (si )), indicated by
+                                                                    the dotted lines and shading, for each 0 ≤ i < ν.
+    This section describes the procedure to create a
+Sphinx mix message header. It is used as a subrou-
+                                                                                                                xb b ···bν−2
+tine for the procedures to create forward messages                    •   αν−1 = g xb0 b1 ···bν−2 , sν−1 = ynν−1
+                                                                                                              0 1
+                                                                                                                               ,
+and single-use reply blocks in sections 3.3 and 3.4,                      bν−1 = hb (αν−1 , sν−1 )
+respectively.                                                          The αi are the group elements, the si are the Diffie-
+    Input: a destination address Δ ∈ D, an iden-                    Hellman shared secrets, and the bi are the blinding
+tifier I ∈ {0, 1}κ and a sequence of mix nodes                      factors.
+{n0 , n1 , . . . , nν−1 } with ν ≤ r. It must also be the              Compute the filler strings φ0 , . . . , φν−1 :
+case that |Δ| ≤ (2(r − ν) + 2)κ.
+    Pick a random x ∈R Z∗q .                                          •   φ0 = 
+    Compute             a    sequence         of     ν     tuples     •    0 < i < ν, φi = {φ
+                                                                          For                                    i−1 02κ } ⊕
+
+(α0 , s0 , b0 ), . . . , (αν−1 , sν−1 , bν−1 ) as follows:                 ρ(hρ (si−1 ))[(2(r−i)+3)κ..(2r+3)κ−1]
+                 x           x                                      Note that |φi | = 2iκ. This step is illustrated in
+    • α0 = g , s0 = yn0 , b0 = hb (α0 , s0 )
+                 xb             xb
+    • α1 = g 0 , s1 = yn10 , b1 = hb (α1 , s1 )                     Figure 1.
+    • ...                                                             Compute      a  sequence   of    mix     headers
+Mν−1 , Mν−2 , . . . , M0 as follows: Mi = (αi , βi , γi ) ∈        3.5. Using a single-use reply block
+G ∗ × {0, 1}(2r+1)κ × {0, 1}κ where:
+                                                                   When the nymserver receives a message m destined
+   • βν−1        =          Δ I 0(2(r−ν)+2)κ−|Δ|          ⊕
+                                                                for a pseudonym, it will look up a previously unused
+       ρ(hρ (sν−1 ))[0..(2(r−ν)+3)κ−1]      φν−1                   (n0 , M0 , k̃) tuple indexed by that pseudonym. It will
+                                                    
+   • βi     =         ni+1 γi+1 βi+1 [0..(2r−1)κ−1]       ⊕        then send (M0 , π(k̃, 0κ m)) to n0 and remove the
+     ρ(hρ (si ))[0..(2r+1)κ−1] for 0 ≤ i < ν − 1                   tuple from its index.
+   • γi = μ(hμ (si ), βi ) for 0 ≤ i ≤ ν − 1
+                                                                   3.6. Message processing by mix nodes
+  The above step is illustrated in Figure 2.
+  Output: the mix header M0 and the sequence of                        Messages received by mix nodes are of the form
+shared secrets s0 , . . . , sν−1 .                                 (M, δ) = ((α, β, γ), δ) ∈ G ∗ × {0, 1}(2r+1)κ ×
+                                                                   {0, 1}κ × {0, 1}π . (The node should ensure that the
+3.3. Creating a forward message                                    message is in this form; in particular, that α ∈ G ∗ .)
+                                                                   When mix node n, with private key xn , receives such
+                                                                   a message, it proceeds as follows:
+   This section gives the procedure used to create                     Compute the shared secret s = αxn . If hτ (s) is
+a forward message to be sent through the Sphinx                    already in this node’s table of seen message tags,
+network.                                                           discard the message. (Note that this table can be
+   Input: a message m, a destination address Δ and a               flushed whenever the node rotates its private key.)
+sequence of mix nodes {n0 , n1 , . . . , nν−1 } with ν ≤ r.        Otherwise, continue by comparing γ to μ(hμ (s), β).
+   Compute the mix header M0 and the sequence                      If they do not match, discard the message. Otherwise,
+of shared secrets s0 , . . . , sν−1 as above, passing the          store hτ (s) in the table of seen message tag, and
+distinguished element ∗ ∈ D as the destination address             continue by decrypting the suitably padded β (as a
+and 0κ as I. Compute:                                              stream cipher, XORing the output of the PRG ρ) to
+  •   δν−1 = π(hπ (sν−1 ), 0κ Δ m)                                 get B = {β 02κ } ⊕ ρ(hρ (s)).
+  •   δi = π(hπ (si ), δi+1 ) for i = ν − 2, . . . , 0                 Use the prefix-freeness of N ∪ D to uniquely parse
+                                                                   a prefix of B as n ∈ N ∪ D. (If this is not possible,
+  Output: the pair (M0 , δ0 )                                      the message is discarded.)
+  The forward message is this pair (M0 , δ0 ), and                     If n ∈ N is found: This message is destined
+should be sent to n0 .                                             for another Sphinx node. Compute the blinding factor
+                                                                   b = hb (α, s), and let α = αb . Let γ  = B[κ..2κ−1] ,
+3.4. Creating a single-use reply block                             β  = B[2κ..(2r+3)κ−1] , and δ  = π −1 (hπ (s), δ). Send
+                                                                   ((α , β  , γ  ), δ  ) to n. Figure 3 illustrates the processing
+                                                                   steps involved in this case, as an example of how the
+   This procedure is used to create a single-use reply             decoding process works.
+block.                                                                 If n = ∗ is found: The current node is the exit
+   Input: a destination address Δ and a sequence of                node for a forward message. Let δ  = π −1 (hπ (s), δ).
+mix nodes {n0 , n1 , . . . , nν−1 } with ν ≤ r. Δ should           If δ  [0..κ−1] = 0κ , parse δ  [κ..π −1] as Δ m for Δ ∈ D
+be the user’s own address.                                         using the prefix-freeness of D. If this is successful,
+   Pick a random identifier I ∈R {0, 1}κ and compute               m should be a plaintext message, and is sent to Δ.
+the mix header M0 and the sequence of shared secrets               Otherwise, the message has been tampered with and is
+s0 , . . . , sν−1 as above.                                        discarded.
+   Pick a random key k̃ ∈R {0, 1}κ.                                    Otherwise, if n ∈ D\{∗} is found: The current
+   Output: I, the tuple (k̃, hπ (s0 ), . . . , hπ (sν−1 )), and    node is the exit node for a reply message, and n is the
+the tuple (n0 , M0 , k̃).                                          owner of a pseudonym. Let I = B[|n|..|n|+κ−1] and
+   Store the tuple (k̃, hπ (s0 ), . . . , hπ (sν−1 )) in a local   δ  = π −1 (hπ (s), δ). Send (I, δ  ) to n.
+table indexed by I. Send (n0 , M0 , k̃) to the nymserver
+over a secure channel, to be indexed under the user’s              3.7. Reply message processing by pseudonym
+pseudonym. This can be done, for example, by encrypt-              owners
+ing it with the nymserver’s public key, signing it with
+the pseudonym’s private key, and sending the message                 Upon receiving (I, δ), a pseudonym owner looks
+to the nymserver using the Sphinx forward channel.                 up (and subsequently removes) (k̃, k0 , . . . , kν−1 )
+           Figure 3. The processing of a Sphinx message ((α, β, γ), δ) into ((α , β  , γ  ), δ  ) at Mix n.
+
+
+in its table indexed by I, and computes                 δ =   deliverable to arbitrary parties on the Internet who
+  −1
+π      k̃, π (k0 , π (k1 , · · · π (kν−1 , δ) · · ·)) and m =    have no special software installed; on the other hand,
+δ [κ..π −1] . If δ  [0..κ−1] = 0κ then accept m as the
+                                                                outgoing reply messages to the pseudonym owner are
+received message.                                                encrypted. Entry nodes also receive forward messages
+                                                                 from arbitrary end users, but receive reply messages
+                                                                 from the nymserver (the forward and reply messages
+4. Proof of security                                             are cryptographically indistinguishable, however). But
+                                                                 between the entry and the exit, nodes should be unable
+   From a cryptographic point of view, mix protocols             to distinguish the two cases.
+like Sphinx share many properties with onion routing                Formally, under the assumptions on the components
+protocols. At a minimum, we desire our mix protocol              given in section 3.1, Sphinx realizes ideal onion routing
+to have all of the security properties of onion routing.         functionality in the Universal Composability model (as
+   In [5], Camenisch and Lysyanskaya give four prop-             defined in [5]), and also makes forward and reply
+erties of an onion routing protocol: correctness, in-            messages indistinguishable to middle mix nodes. We
+tegrity, wrap-resistence, and security, all detailed be-         prove this result in the following four sections.
+low. They show that any onion routing protocol having
+all of these properties realizes ideal onion routing func-
+tionality in the Universal Composability model [6].
+                                                                 4.1. Correctness
+This means that an adversary against a protocol with
+these four properties has no better chance of success               It is straightforward by inspection that the protocol
+than an adversary against an ideal protocol; that is, at         works correctly in the absence of an adversary; that
+a high level, one in which adversaries (even ones that           is, it processes the mix messages correctly, sends the
+control some of the mix nodes) have no access to the             right intermediate mix messages to the right mixes, and
+underlying cryptographic implementation, but rather              finally sends the right message to the right destination.
+can observe only opaque identifiers for messages.
+   For our mix network, we would like, in addition to            4.2. Integrity
+the above properties, that adversaries in the middle of a
+path should be unable to distinguish forward messages               The second requirement of [5] is that an adversary
+from replies (unlike the situation in [5]). It is clear          cannot construct a mix message that will travel through
+that adversary nodes at the edges of the network—                a path of more than N honest nodes, for some fixed
+that is, nodes that deliver messages to users who are            bound N , except with negligible probability. We show
+not themselves nodes—are necessarily able to distin-             that Sphinx satisfies this requirement, with N = r + 1,
+guish forward from reply messages: outgoing forward              even if we allow the adversary to know all private keys
+messages are in plaintext, since messages should be              xn in the system. (Note that the adversary knows the
+nodes’ private keys, but the nodes still behave honestly,       only a negligible chance of solving problem P if he
+according to the protocol.) This last adversarial power         performs significantly less than 2κ work.
+is what necessitates modelling μ and ρ as something                 Proof: For each i ∈ {0, 1}m, let ri be the number of
+stronger than the usual PRF and PRG notions. Again,             times the adversary called ρ0 and had it output i, and
+for the purposes of this section, we treat them as              let Fi be the number of times he called fi . (We can
+random oracles.                                                 assume the adversary never calls ρ̂ on an input unless
+   Note that although the Sphinx protocol specifies that        he also calls ρ0 on that input.) Then the adversary has
+no more than r node identifiers get embedded into a                 i ri Fi chances to solve problem P, and each chance
+Sphinx header, it is in fact possible to embed up to r+1        is successful with probability 2−κ . Let A be the total
+such identifiers, as long as the embedded Δ = ∗ and is          number of calls the adversary makes to ρ0 , and let
+very short (less than κ bits). This means an adversary          i∗ be the most common output, occurring A∗ of the A
+can indeed construct a mix message that will have path          times. To maximize i ri Fi while holding i (ri +Fi )
+length r + 1. This is not a problem for our proof, since        constant, the adversary should only query fi∗ , and not
+the proof only requires that there is some upper bound          any of the other fi . Suppose he does so B times. Then
+                                                                                                                            ∗
+on the path length. We show that an adversary cannot            his probability of success is bounded above by A2κ·B ,
+construct a mix message that results in a path length           having done A + B work.
+                                                                    If A = B ≈ 2κ(1− w ) for some w, then we expect to
+                                                                                           1
+greater than N = r + 1, and that is sufficient.
+   We assume the adversary does significantly less than         find w-collisions in the A outputs of ρ0 , but not w + 1-
+2κ work, and show that the probability of producing a           collisions [17], so we expect A∗ = w. Then the success
+                                                                                                           ∗               κ
+requisite mix message is negligible.                            probability is bounded above by A2κ·B = w · 2− w . If
+                                                                                                    κ
+   Let a mix message constructed by the adversary               A = B ≈ 2m , then w = κ−m              , and this probability
+be ((α0 , β0 , γ0 ), δ0 ), and sent to node n0 . That node                     κ
+                                                                bound is κ−m · 2     m−κ
+                                                                                            , as required.
+processes it to produce ((α1 , β1 , γ1 ), δ1 ), which is sent       Note the difference between this problem and a
+to n1 , etc.                                                    standard collision problem (such as ρ̂(x) = f (y)),
+   Node ni will successfully process a message and              which would have success probability 22m−κ for doing
+send it on to the next node if and only if the following        2m work, and to a standard search problem (such as
+all hold:                                                       ρ̂(x) = f (x, y)), which would have success probability
+   • ni has never before (during the life of its current        2m−κ for doing 2m work.                                        
+      private key xni ) processed a mix message with the            Now suppose an adversary can construct a mix mes-
+                                             xn
+      same αi (since the map αi → αi i is bijective             sage ((α0 , β0 , γ0 ), δ0 ) which is successfully processed
+      and hτ is collision-resistant)
+                        xn                                     by mix nodes n0 , n1 , . . . , nN , whose private keys xi
+   • γi = μ hμ αi i , βi                                        are known to the adversary. We will show that this
+                                                       xni
+   • there is a prefix of Bi = {βi 02κ } ⊕ ρ(hρ (αi ))          means that the adversary can solve the above problem
+      which is in N ∪ D; this will be ni+1 if it is in          P.
+      N.                                                            Given such a message, the adversary can pro-
+   If these hold, then the first κ bits of Bi will be ni+1      cess it in the manner of each mix node in turn,
+itself, the next κ bits will be γi+1 , and the remaining        to generate ((α1 , β1 , γ1 ), δ1 ), ((α2 , β2 , γ2 ), δ2 ), . . . ,
+(2r                                                             ((αN , βN , γN ), δN ). Now since node nN successfully
+ + 1)κ bits will be βi+1 . Note that βi+1             =
+                                  xni                           processes this last message, it must be the case that
+  βi                     ⊕ ρ(hρ (αi ))[2κ..(2r+1)κ−1]
+ [2κ..(2r+1)κ−1]                                              γN = μ(hμ (αxNN ), βN ).
+              xni
+  ρ(hρ (αi ))[(2r+1)κ..(2r+3)κ−1] . In particular, the              For notational convenience, for 0 ≤ i ≤ r, de-
+leftmost 2κ bits of βi are used to construct ni+1 and           fine ρi (x) to be ρ(x)[(2(r−i)+2)κ..(2r+3)κ−1] 02(r−i)κ ;
+the MAC γi+1 ; the remaining (2r − 1)κ bits of βi are           that is, the last (2i + 1)κ bits of ρ(x), followed
+shifted left to form (after decryption by XORing with           by 2(r − i)κ bits of zeros. Also define ρ̂i (x) to be
+a substring of an output of ρ) the leftmost (2r − 1)κ           ρ(x)[(2(r−i)+1)κ..(2(r−i)+2)κ−1] ; that is, the block of κ
+bits of βi+1 ; the rightmost 2κ bits of βi+1 are simply         bits of ρ(x) immediately preceding the bits selected
+a substring of an output of ρ.                                  for ρi (x). Finally, for 1 ≤ i ≤ r + 1, define ρ̃i (x) to
+   Consider the following problem P: Let                        be ρ(x)[(2i−1)κ..(2i+1)κ−1] .
+f0 , f1 , . . . , f2κ −1 be a family of random oracles              A careful, but straightforward, calculation shows
+with range {0, 1}κ. Let ρ̂ and ρ0 be other random               that γN = a0 ⊕ a1 ⊕ · · · ⊕ aN −1 , where aj =
+                                                                           x
+oracles with range {0, 1}κ. (The domains do not                 ρ̂j (hρ (αj j )).
+matter.) The problem is to find x and y such that                   Similarly, βN = b0 ⊕ b1 ⊕ · · · ⊕ bN −1 , where bj =
+                                                                           x
+ρ̂(x) = fρ0 (x) (y). We claim that an adversary has             ρj (hρ (αj j )).
+    Now                       consider               the              function   is proven.
+g(p 0 , k 1 , k 2  , . .  . , k N 
+                                   −1 , k μ )                             =        It is instructive to note where this proof relies
+                                         N −1                                    on the fact that N > r. The key is that for
+μ kμ , (p0 02rκ ) ⊕                      i=1 ρi (ki )       . We claim
+that the adversary who does less than 2κ work                                    i ≤ r, the computation of γi contains bits from            
+                                                                                                                      r−1              xj
+cannot distinguish this g from a truly random                                    β0 . For example, γr =               j=0 ρ̂j+1 (hρ (αj )) ⊕
+function which takes the same inputs. Why is this?                               β0 [(2r+1)κ..(2r+2)κ] . [Compare this to γN , above,
+Since μ is a random oracle, the only way the                                                             N −1          xj
+                                                                                 which equalled          j=0 ρ̂j (hρ (αj )), with no compo-
+adversary could distinguish the situations is if it could                        nent from β0 .]
+generate a pair of inputs (p0 , k1 , k2 , . . . , kN −1 , kμ )                       Since the computation of βr does not involve
+and (p0 , k1 , k2 , . . . , kN              
+                                          −1 , kμ )   which cause the            these bits of β0 , it is easy to find αx0 0 , . . . , αr−1
+                                                                                                                                            xr−1
+
+corresponding arguments of the call to μ to be equal.                            and β0 that satisfy γr = μ(hμ (αr ), βr ). Justxr
+Clearly we must have kμ = kμ .                                                  pick any αx0 0 , . . . , αr−1
+                                                                                                               xr−1
+                                                                                                                    , compute βr , and
+                                                                
+    Let B = (p0 02rκ) ⊕
+                                                  N −1
+                                                       ρ i (ki  )   and B  =    let
+                                                                                       β 0 [(2r+1)κ..(2r+2)κ]
+                                                                                                                  =      μ(hμ (αxr r ), βr ) ⊕
+                                               i=1                                 r−1             xj
+(p0 02rκ ) ⊕                   N −1                                                j=0 ρ̂j+1 (hρ (αj ))    .
+                                i=1 ρi (ki ) . Note that the last 2κ
+bits of B are just ρ̃N −1 (kN −1 ), the last 2κ bits.
+of ρ(kN −1 ). If B = B  , then ρ̃N −1 (kN −1 ) =                                4.3. Wrap-resistence
+             
+ρ̃N −1 (kN      −1 ). Since the adversary has done less than
+  κ
+2 work, he has only a negligible chance of finding                                   We need to show that given a mix message
+kN −1 = kN       
+                      −1 with the last 2κ bits of ρ(kN −1 ) and                  ((α , β  , γ  ), δ  ), an adversary is unable to wrap it;
+     
+ρ(kN −1 ) equal. Thus, except with negligible probabil-                          that is, the adversary cannot produce a mix message
+                                                                                ((α, β, γ), δ) such that a mix node (even one whose
+ity, kN −1 = kN              −1 .
+    Now consider the block of 2κ bits before the final                           private key x the adversary can select) processing
+block of 2κ bits of B. This is just ρ̃N −2 (kN −1 ) ⊕                            ((α, β, γ), δ) will yield ((α , β  , γ  ), δ  ).
+ρ̃N −1 (kN −2 ). So if B = B  , and kN −1 = kN                           
+                                                                            −1
+                                                                                     In order for the adversary to succeed, it is necessary
+as above, then we must have that ρ̃N −1 (kN −2 ) =                               that αhb (α,s) = α where s = αx . We will show that an
+ρ̃N −1 (kN   
+                −2 ), and as above, kN −2 = kN −2 . Continu-
+                                                                                adversary which makes c queries to the random oracle
+ing in this way, we get that (k1 , k2 , . . . , kN −1 , kμ ) =                   hb can find such an (α, x) pair with probability at most
+                                                                                   c                                                  κ
+(k1 , k2 , . . . , kN                                                          q−1 ; for an adversary that does less than 2 work, this
+                                  
+                            −1 , kμ ) except with negligible proba-
+bility.                                                                          is negligible.
+    Note that this logic would not have extended to k0 ,                             The proof is simple: if the adversary outputs a
+had it been included, since only κ, and not 2κ, bits of                          correct (α, x) pair, then she must have queried the
+ρ(hρ (αx0 0 )) are included in βN .                                              random oracle with (α, αx ). But each (α, s) query to
+    Finally, if B = B  and (k1 , k2 , . . . , kN −1 , kμ ) =                    the oracle yields a random value b ∈R Z∗q . Since α is
+(k1 , k2 , . . . , kN
+                                                                             a generator of G ∗ , the probability that αb equals the
+                            −1 , kμ ), then clearly p0 = p0 .                                         1
+    Let k = (k1 , . . . , kN −1 , kμ ). Then we just showed                      given α is q−1           , and the result follows.
+that the function g(p0 , k) is indistinguishable from a
+true random oracle with less than 2κ work. Now let                               4.4. Security and Indistinguishability of For-
+fp0 (k) = g(p0 , k)⊕ ρ̂1 (k1 )⊕· · ·⊕ ρ̂N −1 (kN −1 ). Since                     ward and Reply Messages
+the ρ̂i do not call the random oracle μ, this is also
+indistinguishable from a true random oracle.                                        We need to show that an adversary controlling all
+    But if the adversary constructed a mix message                               nodes except one particular node, N, cannot distinguish
+which was successfully processed by n0 , . . . , nN ,                            mix messages entering node N, where each contains a
+then he has a solution to ρ̂0 (k0 ) = fρ0 (k0 ) (k),                            (Δ, m) pair of the adversary’s choice, each has a path
+where ρ0 (x) = ρ(x)[(2r+2)κ..(2r+3)κ−1] ; namely, ki =                          following node N of the adversary’s choice, and the
+hρ (αxi i ) and kμ = hμ (αxNN ). But this is just problem                        messages can each be either forward or reply messages,
+P.                                                                               as the adversary likes. Additionally, the adversary can
+    Therefore, since he has only a negligible probability                        see how N reacts to any mix message except one with
+of finding a solution to problem P with considerably                             a header matching the challenge message.
+less than 2κ work, he also has only a negligible                                    In particular, this would not only prove that the
+chance of constructing a mix message which will be                               security property of [5] is satisfied, but also that
+successfully processed by N + 1 nodes, and the result                            forward and reply messages are indistinguishable to
+any party that does not know the exit node’s private                    (αj , βj , γj ). Here, as in [5, §4.2], we only care about
+key.                                                                    uniqueness of the header, not of the message body.
+   Formally: consider the following game G. The ad-                        We will show that the adversary cannot determine
+versary selects a sequence of mix nodes n0 , . . . , nν−1               the value of b with significantly better chance than
+with ν ≤ r. One of these, nj , is the challenge node N.                 random guessing. Once we have proven this, we note
+The adversary can select the private keys xni ∈ Z∗q                     that the ability of the adversary to individually select
+for all i = j, but does not know xnj (he does                          whether each of the two messages is a forward message
+know the public key ynj ). The adversary also selects a                 or a reply message also implies our desired property
+destination address Δ ∈ D\{∗}, a message m, and a                       that the adversary cannot distinguish forward messages
+bit f that indicates whether this message should be a                   from replies. This holds so long as there is even a
+forward message (f = 1) or a reply message (f = 0).                     single node yet to process the message whose private
+   The adversary then selects a second set                              key the adversary does not know.
+n0 , . . . , nν  −1 with ν  ≤ r, and Δ ∈ D\{∗},                       The advantage of the adversary is the difference
+m , and f  . It must be the case that                                 between 1/2 and the probability the adversary guesses
+(n0 , n1 , . . . , nj ) = (n0 , n1 , . . . , nj ), but it need       b correctly. We wish to show that the advantage for an
+not be the case that the list of subsequent nodes                       adversary that does significantly less than 2κ work is
+after nj = nj = N is the same (or even of the same                     negligible.
+length).                                                                   We use the usual method of hybrid games. We first
+   The challenger randomly chooses a bit b and con-                     note that since the adversary can select the private
+structs one of two mix messages as follows:                             keys xn0 , . . . , xnj−1 , without loss of generality, we can
+   If b=0 and f=0: The challenger passes Δ and                          assume that j = 0.
+{n0 , . . . , nν−1 } to the procedure of section 3.4 to                    Game G1 is the same as G except that s0 (in the
+create a single-use reply block. There is no need to                    procedure of section 3.2, called from section 3.3 in the
+store values in the local table, or to send (n0 , M0 , k̃)              case of a forward message or section 3.4 in the case of
+to the nymserver. However, M0 and k̃ are used, along                    a reply message) is selected uniformly at random from
+with m, in the procedure of section 3.5 to construct the                G ∗ , as opposed to being calulated as s0 = ynx0 . An
+mix message ((α0 , β0 , γ0 ), δ0 ) which it would send to               adversary that can distinguish game G from G1 can
+n0 . 1                                                                  easily be used to distinguish (yn0 , α0 = g x , s0 = ynx0 )
+   If b=0 and f=1: The challenger passes Δ, m, and                      from (yn0 , α0 , z) for a random z ∈R G ∗ , thus solving
+{n0 , . . . , nν−1 } to the procedure of section 3.3. This              the DDH problem in G ∗ , contrary to our choice of
+procedure returns the mix message ((α0 , β0 , γ0 ), δ0 ).               G ∗ . Here it is important that the adversary should not
+   If b=1: The challenger performs the same actions as                  be allowed to query N with the challenge (α0 , β0 , γ0 )
+above, but uses the primed values n0 , . . . , nν  −1 , Δ ,         header, since N would not be able to process it. That
+                                                                                                                        x
+m and f  instead of their unprimed counterparts.                      γ must be a MAC on β with key hμ (α0 n0 ) ensures
+   ((α0 , β0 , γ0 ), δ0 ) is given to the adversary, whose              that (α0 , β, γ) = (α0 , β0 , γ0 ) will be rejected by N
+job it is to determine b. The adversary can also give                   except with negligible probability. If any (α, β, γ) is
+any mix message ((α , β  , γ  ), δ  ) to the challenge node         submitted to N with α = α0 such that N successfully
+nj to see how it reacts, so long as (α , β  , γ  ) =                processes the message, then the success of the MAC
+                                                                        ensures that, again except with negligible probability,
+                                                                                                                      x
+   1. Following section 3.5, we assume for simplicity that all reply    the adversary knew the MAC key hμ (α0 n0 ). Since hμ
+messages are delivered using the nymserver. However, this assump-       is a random oracle, the adversary must have queried it
+tion is not essential. If Alice wishes to send a reply block directly           x
+to Bob, for Bob’s use in replying to her, she just modifies the
+                                                                        with α0 n0 . But if the adversary knows that last value,
+procedure of section 3.4 to send him (n0 , M0 ), omits k̃ from          he can process the message just as well as N can, and
+the tuple in her local table, and omits the π −1 (k̃, ·) step from      the ability to query N does not help him.
+the procedure of section 3.7. The proof then need only have one            Game G2 is the same as G1 except that β0 , γ0 ,
+additional part: to show that an adversary cannot cryptographically
+distinguish replies output by the nymserver from replies output by a    and δ0 are selected uniformly at random from their
+first node n0 whose private key the adversary does not know. (Here,     respective domains. If the adversary can distinguish
+“cryptographically distinguish” excludes distinuguishing based on       games G1 and G2 , then he can distinguish (with less
+traffic analysis; that is, observing the origin of the message.) The
+remaining path in the two reply blocks should be the same, and the      work than 2κ ) the output of ρ with a random input from
+adversary is allowed to know all other nodes’ private keys. This is     a random string, or μ with a random key from a random
+straightforward: the only salient difference between the messages is    function, or π with a random key (hπ (s0 )—with s0
+that the payload in the nymserver message is π(k̃, 0κ m) and in the
+other is π −1 (hπ (sn0 ), 0κ m). Both of these are indistinguishable   being the randomly selected value from game G1 —in
+from a random string to an adversary that knows neither k̃ nor sn0 .    the case of forward messages, or k̃ in the case of reply
+messages) from a random permutation, which he can             The main cryptographic shortcoming of the format is
+do with only negligible probability, by our choice of         the lack of support for anonymous replies. The now-
+ρ, μ, and π.                                                  aging design uses 1024-bit RSA for the asymmetric
+   In game G2 , since α0 is independent of the bit b,         encryption part, encapsulating routing information and
+and β0 , γ0 , and δ0 are all random (and independent of       a 3-DES key to be used in CBC mode (with a changing
+b), it is clear the adversary’s advantage is 0. Since each    IV). Integrity is ensured through the use of an MD5
+game is indistinguishable from the one before to the          hash. The standard supports relaying messages over 20
+adversary, except with negligible probability, we see         hops—each hop adding a fixed 512 bytes of overhead.
+that the adversary’s advantage in the original game G         In total the equivalent of the routing header occu-
+is negligible, as required.                                   pies 10240 bytes. Abstracting away from the concrete
+                                                              cryptographic mechanisms employed the length of a
+5. Performance and Space Efficiency                           mixmaster header is (1 + p + 8 + 8s + 31)r + s bytes
+                                                              (including a version number, an IV and padding). The
+   In this section we give a brief overview of es-            Sphinx header is shorter since it does not require a
+tablished cryptographic packet formats, and compare           public key element for each hop, and does not require
+them to Sphinx both in terms of functionality as well         an IV, since each key is used only once.
+as message size overhead. Throughout this section                The first provable cryptographic packet format was
+p denotes the size of any public key element in a             proposed by Möller [15] and provided very simi-
+packet format, s denotes the size of the symmetric            lar functionality to the Mixmaster format—it sup-
+key elements (per hop), and r denotes the maximum             ports sender-anonymous messages but not replies.
+number of hops that messages can be routed through            The scheme makes use of multiple layers of
+(all sizes are in bytes). When comparing overhead             DHAES/DSIES encryption. This requires an element
+sizes, we will attempt to match the 128-bit security          of a cyclic group on which the Decisional Diffie-
+offered by Sphinx. Some older designs only supplied           Hellman problem is hard, and a message authentication
+80-bit security, using 1024-bit RSA keys, for example.        code per hop of mixing. To achieve a similar level
+We will be generous to the competing formats and              of security to Sphinx this introduces an overhead of
+stipulate that an RSA or Diffie-Hellman modulus of            272 bytes (256 bytes for the group element and 16
+2048 bits (256 bytes) is sufficient to offer 128-bit          bytes for the MAC) per hop in addition to any routing
+security, even though NIST [2] suggests that 3072-bit         information. The length of a packet header can be
+moduli are more appropriate for that security level.          abstracted as (p + s)r. As for Mixmaster the format
+In the elliptic curve setting, we use the usual figure        length suffers from the fact that a separate public key
+of 256-bit (32-byte) elements (assuming only the x-           element has to be included for each stage of mixing.
+coordinate of the elliptic curve point is required, or           Camenisch and Lysyanskaya [5] provided formal
+point compression is used) in order to achieve 128-bit        definitions in the Universal Composability model, and
+security.                                                     a concrete, provably secure, packet format for mixing
+   The Sphinx packet format relies on a single public         forward messages, which we call the CL05 format. The
+key element, blinded at each stage of mixing, and for         CL05 scheme separates the messages into a header and
+each hop a message authentication code and the appro-         a payload. The header is composed of asymmetrically
+priate routing information. The cryptographic overhead        encrypted ciphertexts containing the address of the
+sums to p + (2r + 1)s bytes in total for the header,          next hop. They rely on a CCA2-secure encryption
+and an additional s bytes for integrity of the payload.       scheme with tags, and the bulk of the encryption is
+The most costly operations involved in building a             performed using a pseudorandom permutation (that is,
+packet are the 2r public key operations. Relaying a           a block cipher). The length of the header in the CL05
+Sphinx message requires only two public key oper-             scheme is rp + (r + 1)s—unsurprisingly very similar
+ations (the Diffie-Hellman and blinding operations),          to Möller [15], given the shared design philosophy. It
+plus the check that α ∈ G ∗ , for some choices of G ∗ . (In   is worth noting that the CL05 scheme does support
+Curve25519, for example, this check does not involve          replies, with a very similar cost, but those are distin-
+a public-key operation, but in Z∗p , it does.)                guishable from sender anonymous messages.
+   Mixmaster [16] is an established remailer infrastruc-         Mixminion [8] was the first packet format to propose
+ture, with about 25 nodes with over 90% reliability           indistinguishable anonymous replies. Its cryptographic
+according to Echolot statistics2 as of November 2008.         design is based on two headers which are swapped
+                                                              midway along the path. The headers are constructed
+  2. http://www.palfrader.org/echolot/                        using layers of asymmetric encryption (2048-bit RSA-
+      Scheme            Overhead Length               Indistin.    Security           Z∗n                  ECC
+                                                      Replies                  (p=256, s=16, r=5)    (p=32, s=16, r=5)
+      Mixmaster [16]    (1 + p + 8 + 8s + 31)r + s       no        heuristic         2136                 11761
+      Möller [15]      (p + s)r                         no        provable          1360                  4001
+      Mixminion [8]     2[p + (2s + 2s)(r − 1)] + s     yes        heuristic         1040                  8481
+      CL05 [5]          rp + (r + 1)s                    no        provable          1376                  4161
+      Minx [9]          p + (s + 2)(r − 1)              yes         broken            328                  2321
+      SSH08 [21]        pr                              yes        provable          1280                  1602
+      Sphinx            p + (2r + 2)s                   yes        provable           448                   224
+
+Table 1. Comparison between the lengths of different cryptographic packet formats in bytes. RSA schemes
+  superscripted with (1 ) have been converted to use elliptic curve Elgamal (hence p = 2p), while schemes
+ superscripted with (2 ) were modified to use a simple Diffie-Hellman over EC. The parameter p denotes the
+length of asymmetric elements, s is the length of symmetric elements, while r is the maximum path length.
+
+
+
+OAEP) and AES in CBC mode. Instead of appending                   to contain the (8-bit) identifier of the desired hop i + 1.
+the RSA ciphertexts to each other, Mixminion com-                 This requires, on average, about 256 RSA encryptions
+presses the headers by including parts of the next                per hop to construct the message. This design choice
+RSA ciphertext in the plaintext of the previous one.              makes the packet format quite compact, and easily
+This means that the 2048 bytes of each sub-header                 portable to elliptic curves, at the cost of flexibility.
+can encode information for more than 8 hops. Given                The sender can only communicate a very small amount
+that the OAEP overhead is about 2s and that a hash                of information to each mix, since it would have to
+and a key is contained in each layer of the header                find—using brute force—an element that decodes to
+(again 2s) the cost of both headers of Mixminion is               the desired information.
+2[p + (2s + 2s)(r − 1)] + s bytes. There exist no known              Table 1 summarises the overhead lengths and other
+attacks against this format, but at the same time it only         properties of each cryptographic packet format and
+comes with heuristic security arguments.                          compares them to Sphinx. Concrete lengths are illus-
+   Minx [9] was the first attempt to achieve a very               trated through the choice of two sets of parameters, in
+compact mix packet format. It uses raw RSA, and                   each case for a message that is capable of travelling
+AES in IGE and bi-IGE modes, without any additional               on paths up to length r = 5. First the length of the
+overhead for integrity checking. Instead it relies on the         header is calculated for cryptosystems based on the
+fragility and error propagation characteristics of bi-IGE         hardness of the discrete logarithm and RSA problems
+to ensure no information is recoverable from tagging              over number fields. To achieve 128-bit security we
+attacks. Like Mixminion, it encapsulates parts of RSA             require p = 256 byte (2048-bit) asymmetric elements,
+ciphertexts into previous plaintexts, making the headers          and s = 16 byte symmetric elements. We can see that
+quite small. Its abstract length is p + (s + 1)(r − 1)            in this context Sphinx outperforms all other secure pro-
+bytes (assuming only a single byte of routing data).              posals (note that Minx is not considered secure [21]).
+The security argument underlying Minx is heuristic,                   A second comparison is made between Sphinx
+however, and recent work [21] shows that there is                 and other schemes when they are implemented using
+indeed a polynomial-time attack against it, taking                asymmetric primitives based on elliptic curves. In that
+advantage of the naive use of raw RSA encryption.                 context we substitute RSA encryption, used by most
+   Shimshock et al. [21] proposed a fix for Minx, which           other schemes, with an EC-based version of Elgamal.
+we denote SSH08. The SSH08 format encodes only                    This requires two asymmetric elements of total length
+keys in separate RSA headers destined to each mix,                p = 2p. Sphinx and SSH08 on the other hand do
+and for technical reasons does not use the compression            not encrypt anything, and the asymmetric part of the
+technique employed by Mixminion and Minx. This                    header is only required to perform key derivation.
+leads to a cost of pr bytes. It is also worth noting              As such they only use a single element of length
+that the encoding of a message relies on making one               p = 32 bytes, the size necessary to achieve 128-bit
+byte of the hash of the RSA plaintext collide with the            security. The SSH08 scheme is more compact than
+one byte destination of the packet. That is, there is no          Minx only because it is capable of transmitting very
+way of telling hop i which node should be hop i + 1               little information from the sender to the intermediate
+short of constructing a message whose hash happens                mixes (about 8 bits of information, at the cost of
+about 28 public key operations per mix). Sphinx can          Acknowledgements
+carry much more information to intermediate mixes,
+supporting more complex mixing strategies, and at a             The design of Sphinx has greatly benefitted from
+much lower computational cost to the sender.                 discussions with Anna Lysyanskaya, at the 2005 Dagh-
+   Finally, we note that Sphinx messages are com-            stul school on anonymous communications. Steven
+putationally cheap to process: they require a single         Murdoch, Greg Zaverucha and Emilia Käsper provided
+public key operation (an exponentiation in Z∗n or            very useful early feedback on the ideas as well as a
+multiplication in ECC) to derive a key, followed by          draft of the paper. We would like to thank the Natural
+fast symmetric-key operations.                               Sciences and Engineering Research Council of Canada
+                                                             and the Mathematics of Information Technology and
+6. Conclusions                                               Complex Systems Network of Centres of Excellence
+                                                             for supporting this work. We would also like to thank
+                                                             the anonymous reviewers for making suggestions to
+   Sphinx is a compact and provably secure mix packet        improve this paper.
+format, designed as a drop-in replacement for existing
+remailers.
+                                                             References
+   Sphinx is flexible in two important ways: first, it al-
+lows the system designer to chose their preferred fam-
+ily of cryptographic primitives. With Diffie-Hellman          [1] Ross J. Anderson and Eli Biham. Two Practical and
+                                                                  Provably Secure Block Ciphers: BEARS and LION. In
+over prime fields, Sphinx is the most compact format,             Dieter Gollmann, editor, FSE, volume 1039 of Lecture
+with an overhead of 448 bytes to route through 5                  Notes in Computer Science, pages 113–120. Springer,
+mixes. The use of ECC makes it even more compact,                 1996.
+with a header length of only 224 bytes. The com-
+pactness of the format allows novel applications of           [2] Elaine Barker, William Barker, William Burr, William
+                                                                  Polk, and Miles Smid. Recommendation for Key
+anonymity to flourish: short messages can be cheaply              Management—Part 1: General (Revised). National In-
+routed, supporting privacy for services like micro-               stitute of Standards and Technology Special Publication
+blogging with a low cryptographic overhead.                       800-57, May 2006.
+   Second, Sphinx can be trivially extended to act as
+a general-purpose secure transport between senders            [3] Daniel J. Bernstein. Curve25519: New Diffie-Hellman
+                                                                  Speed Records. In Public Key Cryptography 2006,
+of messages and the intermediate mixes on a path.                 pages 207–228, 2006.
+This means that system designers are free to choose
+any mix strategies, including those that rely on the          [4] Oliver Berthold, Andreas Pfitzmann, and Ronny
+sender providing detailed information to mixes about              Standtke. The disadvantages of free MIX routes and
+the processing of messages. Such strategies are cru-              how to overcome them. In H. Federrath, editor, Pro-
+                                                                  ceedings of Designing Privacy Enhancing Technolo-
+cial for blending high-and-low latency traffic [11], or
+                                                                  gies: Workshop on Design Issues in Anonymity and
+preventing flooding attacks [13].                                 Unobservability, pages 30–45. Springer-Verlag, LNCS
+   The security guarantees associated with Sphinx are             2009, July 2000.
+very strong, and backed by reduction proofs to well-
+studied cryptographic primitives. Hence, we can say           [5] Jan Camenisch and Anna Lysyanskaya. A formal
+                                                                  treatment of onion routing. In Victor Shoup, edi-
+with high confidence that the short length of the                 tor, Proceedings of CRYPTO 2005, pages 169–187.
+packets does not lead to any reduction in security.               Springer-Verlag, LNCS 3621, August 2005.
+   The line of research up to this state-of-the-art Sphinx
+design demonstrates that the cryptographic aspects of         [6] Ran Canetti. Universally composable security: A new
+anonymous communications are now well understood                  paradigm for cryptographic protocols. In FOCS, pages
+                                                                  136–145, 2001.
+and mature. Off-the-shelf packet formats are now
+available to route messages through any system, al-           [7] David Chaum. Untraceable electronic mail, return
+lowing designers of anonymity systems to concentrate              addresses, and digital pseudonyms. Communications
+on preventing traffic analysis and sorting out denial-            of the ACM, 4(2), February 1981.
+of-service problems, as well as implementing robust
+business models around anonymous communications.              [8] George Danezis, Roger Dingledine, and Nick Math-
+                                                                  ewson. Mixminion: Design of a Type III Anonymous
+Sphinx can act as a transport layer for any of these              Remailer Protocol. In Proceedings of the 2003 IEEE
+applications, ensuring that the cryptography of the               Symposium on Security and Privacy, pages 2–15, May
+anonymous transport is no longer a security worry.                2003.
+ [9] George Danezis and Ben Laurie. Minx: A simple and           [21] Eric Shimshock, Matt Staats, and Nick Hopper. Break-
+     efficient anonymous packet format. In Proceedings                ing and Provably Fixing Minx. In Nikita Borisov and
+     of the Workshop on Privacy in the Electronic Society             Ian Goldberg, editors, Proceedings of the Eighth Inter-
+     (WPES 2004), Washington, DC, USA, October 2004.                  national Symposium on Privacy Enhancing Technolo-
+                                                                      gies (PETS 2008), pages 99–114, Leuven, Belgium,
+[10] Whitfield Diffie and Martin E. Hellman. New directions           July 2008. Springer.
+     in cryptography. IEEE Transactions on Information
+     Theory, IT-22(6):644–654, 1976.
+
+[11] Roger Dingledine, Andrei Serjantov, and Paul Syver-
+     son. Blending different latency traffic with alpha-
+     mixing. In George Danezis and Philippe Golle, ed-
+     itors, Proceedings of the Sixth Workshop on Privacy
+     Enhancing Technologies (PET 2006), pages 245–257,
+     Cambridge, UK, June 2006. Springer.
+
+[12] Ceki Gülcü and Gene Tsudik. Mixing E-mail with
+     Babel. In Proceedings of the Network and Distributed
+     Security Symposium - NDSS ’96, pages 2–16. IEEE,
+     1996.
+
+[13] Dogan Kesdogan, Jan Egner, and Roland Büschkes.
+     Stop-and-go MIXes: Providing probabilistic anonymity
+     in an open system. In Proceedings of Information
+     Hiding Workshop (IH 1998). Springer-Verlag, LNCS
+     1525, 1998.
+
+[14] David Mazières and M. Frans Kaashoek. The Design,
+     Implementation and Operation of an Email Pseudonym
+     Server. In Proceedings of the 5th ACM Conference on
+     Computer and Communications Security (CCS 1998).
+     ACM Press, 1998.
+
+[15] Bodo Möller. Provably secure public-key encryption
+     for length-preserving chaumian mixes. In Proceedings
+     of CT-RSA 2003. Springer-Verlag, LNCS 2612, 2003.
+
+[16] Ulf Möller, Lance Cottrell, Peter Palfrader, and Len
+     Sassaman. Mixmaster Protocol — Version 2. IETF
+     Internet Draft, 2003.
+
+[17] Mridul Nandi and Douglas R. Stinson. Multicolli-
+     sion Attacks on Some Generalized Sequential Hash
+     Functions. IEEE Transactions on Information Theory,
+     53(2):759–767, February 2007.
+
+[18] Birgit Pfitzmann and Andreas Pfitzmann. How to
+     break the direct RSA-implementation of MIXes. In
+     Proceedings of EUROCRYPT 1989. Springer-Verlag,
+     LNCS 434, 1990.
+
+[19] Ronald L. Rivest, Adi Shamir, and Leonard M. Adle-
+     man. A method for obtaining digital signatures and
+     public-key cryptosystems. Commun. ACM, 21(2):120–
+     126, 1978.
+
+[20] Andrei Serjantov, Roger Dingledine, and Paul Syver-
+     son. From a trickle to a flood: Active attacks on several
+     mix types. In Fabien Petitcolas, editor, Proceedings
+     of Information Hiding Workshop (IH 2002). Springer-
+     Verlag, LNCS 2578, October 2002.
+

@@ -1,0 +1,262 @@
+ 
+
+  
+   
+   
+    
+ Anchor outputs | Bitcoin Optech 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+
+
+   
+ 
+
+    
+       
+      
+         
+         
+           
+             
+               
+             
+           
+         
+
+         
+             About 
+             Publications 
+             Topics 
+             Workshops 
+             Matrix 
+         
+        
+ 
+ 
+       
+         
+
+
+
+ 
+   
+    
+     /  home  /  topics  /  
+
+
+     Anchor outputs 
+    
+   
+
+   
+    
+
+
+ 
+
+  Also covering Simplified commitments  
+
+  Anchor outputs  are special outputs in LN commitment transactions that are designed to allow the transaction to be fee bumped.  An earlier name for the proposal was  simplified commitments.  
+
+ Each time the balance changes in an LN channel, a  commitment
+transaction  is created and signed by the participating parties.  The
+transaction is only broadcast if one party decides to
+unilaterally close the channel (e.g. because the other party has
+become unresponsive).  Because the broadcast of the commitment
+transaction may occur a long time after it was created, the commitment
+transaction may pay too much or too little in transaction fees.
+Paying a too-low feerate may prevent the commitment transaction from
+confirming before any timelocks contained within it expire, allowing
+funds to be stolen. 
+
+ The solution to this is for the commitment transaction to pay a
+minimal amount of fees and then to allow either channel participant to fee
+bump the transaction.  Early designs to accomplish this using  Replace-by-Fee
+(RBF)  fee bumping ran into problems with  transaction
+pinning .  Later designs used
+ Child Pays For Parent (CPFP)  fee bumping and came to
+depend on  CPFP carve-out  to circumvent the
+pinning problem. 
+
+ As of this writing, the most recent versions of the design add two
+outputs to the commitment transaction—one for each LN party—and
+require all other outputs in the commitment transaction to have their
+scripts encumbered by a  1 OP_CHECKSEQUENCEVERIFY  (CSV) condition
+that prevents them from being spent for at least one block. 
+
+ To be fully effective, the protocol also depends on Bitcoin full nodes
+implementing  package relay  so that there’s a
+way to CPFP fee bump commitment transactions even if their feerates
+are below a node’s minimum relay fee.  But until package relay is
+available, it’s possible for LN nodes to just pay a somewhat higher
+feerate on their commitment transactions to ensure that they’ll be
+accepted by nodes. 
+
+ Primary code and documentation 
+
+ 
+    Anchor outputs  
+    Zero HTLC fee anchor outputs  
+ 
+
+ Optech newsletter and website mentions 
+
+  2025  
+ 
+    LDK #3608 doubles the expected max blocks required to confirm an HTLC due to  1 CSV  delay  
+ 
+
+  2024  
+ 
+    Eclair v0.11.0 stops accepting new non-anchor channels  
+    Core Lightning #7832 spends from anchor outputs even when not urgent  
+    Core Lightning #7388 removes the ability to create old non-zero-fee anchor-style channels  
+    Research about historic use of anchor outputs for possibly imbuing them with v3 properties  
+    Eclair #2816 allows the node operator to choose the max fee for an anchor output  
+    Core Lightning #6785 makes anchor-style channels the default  
+    Discussion about LN anchors and v3 transaction relay proposal  
+ 
+
+  2023  
+ 
+    Core Lightning #6334 updates and expands CLN’s experimental support for anchor outputs  
+    LDK #2368 allows manually accepting new channels created by a peer that use anchor outputs  
+    LDK #1841 implements a solution for the fee-stealing attack described in BOLTs #824  
+    LDK #1860 adds support for channels using anchor outputs  
+ 
+
+  2022  
+ 
+    Implementation of ephemeral anchors built on v3 transactions  
+    Proposal to use multiple pre-committed fees to avoid needing anchor outputs in many cases  
+    Proposed relay of v3 transactions attempts to improve on anchor outputs  
+    Eclair #2134 enables anchor outputs by default  
+ 
+
+  2021  
+ 
+    Rust-Lightning #1176 adds initial support for anchor outputs-style fee bumping  
+    Complications for HD wallet recovery in zero HTLC fee anchor outputs protocol  
+    Eclair #1932 implements the zero HTLC fee anchor outputs protocol  
+    BOLTs #824 adds a variation on the anchor outputs protocol that prevents a fee-stealing attack  
+    LND 0.13.0-beta begins using anchor outputs by default for all new channels  
+    LND #5274 limits the maximum funds reserved for fee bumping anchor outputs  
+    Request for feedback on using anchor outputs by default in LND  
+    Eclair 0.5.1 adds and updates features preparing for anchor outputs  
+    LND 0.12.0-beta adds watchtower support for channels using anchor outputs  
+    LND #4908 reserves a balance for fee bumping when using anchor outputs  
+ 
+
+  2020  
+ 
+    2020 year in review: anchor outputs  
+    LND #4779 allows sweeping HTLCs from anchor outputs  
+    BOLT5 updated to prevent a pinning attack against anchor outputs  
+    LND #4782 adds watchtower client support for channels using anchor outputs  
+    Eclair 0.4.2 adds experimental support for anchor outputs  
+    Why do anchor outputs need to enforce an nSequence of 1?  
+    LND #4576 starts adding support for anchor outputs to LND’s watchtower  
+    Eclair #1501 adds support for unilateral closes of channels using anchors  
+    LND #4606 & #4592 improve LND’s effectiveness at fee bumping anchor outputs  
+    Vulnerability disclosed against experimenal anchor outputs proposal  
+    LND #4558 updates LND to the latest anchor outputs specification  
+    BOLTs #688 adds support for anchor outputs to the LN protocol  
+    C-Lightning #3830 adds experimental support for anchor outputs  
+    Eclair #1491 adds support for anchor outputs  
+    Discussion of solutions for attacks against LN, including anchor outputs  
+    Eclair #1484 adds basic support for anchor outputs  
+    Anchor outputs may help mitigate LN fee ransom attack  
+    LND 0.10 presentation: anchor outputs  
+    Using anchor outputs to ensure HTLC sends can be fee bumped  
+    LND #3821 adds draft anchor commitments support  
+    LND #3829 updates code & documentation to simplify adding anchor outputs  
+ 
+
+  2019  
+ 
+    2019 year-in-review: anchor outputs  
+    Continued discussion of LN anchor outputs  
+    LN simplified commitments discussion  
+ 
+
+  2018  
+ 
+    Simplified fee bumping for LN  
+ 
+
+ See also 
+
+ 
+    CPFP carve-out  
+    Package relay  
+   
+      Ephemeral anchors  
+
+       
+   
+ 
+
+ 
+
+ Previous Topic:   Addr v2 
+
+ 
+ 
+
+ Next Topic:   Annex 
+
+ 
+
+  Edit page  
+   Report Issue  
+
+
+   
+
+ 
+
+       
+      
+    
+
+   
+
+     Bitcoin Optech 
+
+     
+       
+         
+           Bitcoin Optech   info@bitcoinops.org   
+       
+
+                bitcoinops           bitcoinoptech    
+ 
+
+       
+         Helping Bitcoin-based businesses integrate scaling technology. 
+       
+     
+
+   
+
+ 
+ 
+
+ 
