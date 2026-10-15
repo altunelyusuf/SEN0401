@@ -1,0 +1,701 @@
+      Trends, Tips, Tolls: A Longitudinal Study
+             of Bitcoin Transaction Fees
+
+                          Malte Möser and Rainer Böhme
+
+        Department of Information Systems, University of Münster, Germany
+
+
+
+       Abstract. The Bitcoin protocol supports optional direct payments from
+       transaction partners to miners. These “fees” are supposed to substitute
+       miners’ minting rewards in the long run. Acknowledging their role for
+       the stability of the system, the right level of transaction fees is a hot
+       topic of normative debates. This paper contributes empirical evidence
+       from a historical analysis of agents’ revealed behavior concerning their
+       payment of transaction fees. We identify several regime shifts, which can
+       be largely explained by changes in the default client software or actions of
+       big intermediaries in the ecosystem. Overall, it seems that rules dominate
+       ratio, a state that is sustainable only if fees remain negligible.
+
+
+1    Introduction
+
+Bitcoin is a protocol claimed to enable a decentralized cryptographic currency
+[23]. The amount of bitcoin “in circulation”, that is the book value managed in a
+distributed transaction ledger, is worth about 4–5 billion USD, converted with
+current market prices [7]. A selling proposition of Bitcoin is that it enables cheap
+online payments independent of the geographical location of the transaction
+partners. Therefore, Bitcoin directly competes with established payment systems
+on the Internet, such as credit cards or PayPal.
+    Factors influencing the adoption of innovative payment systems are primarily
+risks and costs [3, 19]. While there is already some work on technical and financial
+risks of using Bitcoin (e.g., [1, 9, 17, 20, 21, 22]), the actual costs of the system are
+not extensively studied, yet. Böhme et al. [9] note that, disregarding intangible
+factors of (in)convenience, Bitcoin may not be as cheap for consumers as it
+appears. The authors argue that most purchases settled in bitcoin require costly
+conversions from and to conventional currencies, and consumers forgo kickbacks
+offered by many credit cards. On top of that, Bitcoin users are encouraged to
+pay fees to miners, up to 10 cents (of USD) per transaction, irrespective of the
+amount paid. This is in the same order of magnitude as recently imposed caps
+on interchange fees for conventional card-based payment systems [24].
+    Transaction fees are designed to gradually replace the minting revenue as a
+compensation to miners for contributing to the distributed consensus mechanism
+that maintains the (probabilistic) consistency of the global system state. The
+longterm level of fees is uncertain, yet the question is highly relevant given its
+connection to the security and sustainability of the system as a whole. Several
+
+
+
+
+    Electronic copy available at: http://ssrn.com/abstract=2530843
+2      Malte Möser and Rainer Böhme
+
+authors speculate that high fees will render Bitcoin uneconomical for micro
+payments [12, 18, 29]. Other plausible scenarios include vast variations in fees
+paid depending on users’ time preferences, a low-fee equilibrium with altruistic
+action to keep the system alive for niche demands [15], or a combination of both
+with a system of off-blockchain compensation arrangements. Predicting the future
+regime is hard because it depends not only on properties of the protocol, but
+also on agent behavior and resulting path dependencies in the Bitcoin ecosystem.
+    To explore the space of possible future developments, we conduct a longitudinal
+study of past conventions by analyzing the transaction fees paid with all 45.7
+million transactions recorded in the public block chain from the inception of
+Bitcoin until the end of August 2014. To the best of our knowledge, this first
+systematic account reveals several regime shifts concerning the payment of
+transaction fees in Bitcoin’s short history. We try to explain these shifts and
+extract evidence that allows us to test several hypotheses that belong to the
+conventional wisdom of the Bitcoin community, including:
+ 1. Do higher transaction fees lead to faster confirmation? (yes)
+ 2. Do impatient users offer higher fees? (yes)
+ 3. Do mining pools enforce strictly positive fees systematically? (rather not)
+   The rest of this paper is structured as follows. Section 2 recalls important
+properties of Bitcoin with regard to transaction fees. Section 3 documents how
+we collect and analyze data from the Bitcoin block chain and external sources.
+Section 4 presents our findings. We discuss limitations and design options for
+optimal fees in Section 5, and conclude in Section 6.
+
+2   Background and Research Questions
+We refrain from explaining Bitcoin and its terminology in detail and refer the
+reader to existing high-level [2, 9] or technical [23] descriptions.
+    Bitcoin’s security builds on the block chain, a distributed data structure that
+allows everyone to look up account balances and to verify unspent transactions.1
+Arguably, the block chain can be seen as a public good, defined by the properties
+non-excludability and non-rivalry. Exclusion is hard because everyone can connect
+anonymously to a number of peers and download the block chain. Non-rivalry
+follows from the block chain being an information good that does not wear out
+from being shared.
+    The demand of public goods is characterized by concurrent consumption of
+all members of a community. This raises issues about the incentives to supply a
+public good, in particular if the provision incurs costs that cannot be socialized
+to all members of the community [13]. This is exactly the case in Bitcoin. Miners
+unilaterally bear the cost of solving the proof-of-work puzzle,2 but all potential
+transaction partners benefit from the consistency and security of the block chain.
+1
+  More precisely: to verify that all inputs of a transaction one is about to receive
+  reference to so far unspent outputs of past transactions.
+2
+  We suggest that a probabilistic summation function, in Hirshleifer’s terminology [13],
+  is a reasonable approximation in the short run.
+
+
+
+
+    Electronic copy available at: http://ssrn.com/abstract=2530843
+       Trends, Tips, Tolls: A Longitudinal Study of Bitcoin Transaction Fees        3
+
+    A critical success factor behind Bitcoin’s adoption was the reward mechanism
+that couples, albeit loosely [14], the provision of the public good with newly
+minted units of currency [8]: 25 BTC per block in 2014. However, this reward
+mechanism is incompatible with an upper limit of money supply, another stated
+design goal of Bitcoin. Therefore, the protocol prescribes a transition from minting
+rewards to transaction fees offered by the sender of a transaction to the miners.
+By definition, the fee is encoded as difference between the sum of all inputs and
+the sum of all outputs of a transaction. Miners are free to accept the offer by
+including the transaction in the block chain, or to ignore it. This creates a market
+mechanism to find the price of Bitcoin transactions.
+    In theory, perfectly competitive miners will include transactions as long as
+the fee exceeds the marginal cost of inclusion. Production costs are fixed per
+block (but may vary between miners depending on access to technology and
+energy/cooling) and the protocol defines a maximum block size (1 megabyte at
+the time of writing). As a result, the marginal cost of inclusion is zero if there are
+fewer unconfirmed transactions than capacity in the block, and it is determined
+by the opportunity cost of foregone fees from competing transactions as soon as
+the capacity is reached. Competitive miners make positive expected profits only if
+transactions compete for space in the block chain. Hence, Houy [15] argues that a
+maximum block size is necessary for the stability of Bitcoin. However, dominant
+mining pools or cartels may extract excess profits from reduced competition.
+    If space in the block chain is scarce and the transaction partners’ benefit does
+not emerge from merely looking up information in the block chain, but depends
+on the ability to permanently include data, then space in the block chain changes
+its characteristic from a public to something close to a private good. Rivalry
+comes with the space constraint and excludability with the miners’ discretion
+to exclude unprofitable transactions. However, what remains is that space in
+the block chain generates substantial externalities: positive ones for parties who
+benefit from the information and negative externalities for parties who store
+redundant copies of the block chain in a distributed network.
+    In practice, historical transaction fees in Bitcoin were so small that senders and
+miners did not care a lot. Many users kept the default value for the transaction fee
+that is hard-coded in the client software, thereby following a sort of social norm,
+like for tipping, rather than economic calculus [25]. Likewise, miners followed
+hard-coded rules [6] to include zero-fee transactions even against their own best
+interest. Over time, the hard-coded defaults have been changed several times,
+allegedly to discourage tiny payments (by adding complicated calculation rules)
+and to offset the rising exchange rate. The latter, in particular, puts consumers’
+interest over miners’, who had to struggle with even steeper increases of the
+proof-of-work difficulty. A group of programmers went even further and created
+a fork of the client software that does not offer fees at all [26].
+    This leads us to the first (open-ended) research question (RQ):
+
+Research Question 1 How did transaction fees develop and change over time?
+4         Malte Möser and Rainer Böhme
+
+   If the client software leaves the users freedom to choose the amount of the
+transaction fees, then users may follow conventional wisdom about how miners
+react upon being “tipped” or not.3
+Research Question 2 Do higher fees offered to miners reduce the time until a
+transaction is first confirmed?
+   If RQ 2 is supported with evidence, then it would be rational for users to
+adjust fees to their time preference.
+Research Question 3 Do impatient users offer higher fees?
+    The last research question tests the rationality of the miners, who have no
+incentive in general to confirm zero-fee transactions. We concentrate on the major
+mining pools to identify potential differences in their behavior.
+Research Question 4 Do any major mining pools systematically exclude zero-
+fee transactions?
+    In summary, while many are talking about the importance of transaction fees,
+we are not aware of a comprehensive overview of how fees have changed in the
+past and why users might decide to deviate from the default. We set out to close
+this gap with the available data.
+
+3     Data and Method
+To study trends of Bitcoin transaction fee conventions over the past couple of
+years, we combine data from four sources (cf. Table 1). First, we load the block
+chain by parsing the block files of the Bitcoin Core reference client and extract
+information on the size of blocks and transactions. To analyze transaction fees
+as a function of the relation between transactions in the transaction graph, we
+import all relevant transaction information into an instance of the Neo4j graph
+database, from which we then extract output amounts, transaction fees, and the
+duration (based on the blocks’ time stamps) until the first output was reused.
+We also estimate the net amount of bitcoin transferred, that is total outputs
+minus estimated change, based on a set of heuristics.
+    Some analyses require additional data gathered from the website blockchain.
+info. We use this source to find the mining pool (if any) that solved a given
+block and to obtain the time stamps for when a transaction was first seen on the
+network. This information is not included in the block chain.
+    Data on the bitcoin exchange rate is taken from coindesk.com, which provides
+an average bitcoin price in USD. This price index is based on the exchange rates
+of multiple global exchanges since July 2013, and on the exchange rate of the
+former exchange Mt. Gox for the time before [11].
+3
+    The default client implements soft rules reflecting part of this wisdom. But uncertainty
+    remains as users cannot anticipate enforcement of these rules. Unlike hard rules (for
+    instance, the requirement to verify signatures), soft rules do not decide the validity
+    of a block. Moreover, miners organized in pools are less likely to heed the defaults
+    than individuals who use the standard client to manage their own transactions.
+        Trends, Tips, Tolls: A Longitudinal Study of Bitcoin Transaction Fees       5
+
+                       Table 1. Data sources and information gathered
+
+         Source              Entity       Information
+         Block files         Block       Height, time stamp, #transactions, size
+                             Transaction #inputs, #outputs, size
+         Graph database Transaction Output volume, fee, unused period,
+                                    net amount, heuristics
+         Blockchain.info     Block       Relayed by (mining pool)
+                             Transaction Time first seen, time included in block
+         Coindesk.com        Price        USD value
+
+
+
+
+    We select the time range from January 2011 to August 2014 for our analysis.4
+Although the Bitcoin block chain exists since 2009, the popularity of the system
+was low in the first years and interpreting this early data would not be very
+instructive to understand agent behavior.
+    In our longitudinal plots, each data point visualizes aggregated data of 1008
+blocks, i. e., about one week. The time axis is defined in these epochs of block time
+with calendar dates added for readability, always using the closest time stamp in
+the block chain. The constant 1008 was chosen to divide the fixed interval of 2016
+blocks of the difficulty control loop that adjusts the proof-of-work requirements.
+As a result, each pair of consecutive epochs represents blocks mined with the
+same difficulty. When appropriate, we plot a fitted smoothing spline (with six
+degrees of freedom) besides the raw data.
+    To answer RQ 2, we compare the time when a transaction was first seen on the
+network and the time stamp of the block that includes the transaction. We call
+the difference transaction latency. Both clocks are not necessarily in sync, but it is
+reasonable to assume that clock differences are not correlated with our dependent
+variable. The time when a transaction was first seen on the network has to be
+extracted by crawling and parsing the blockchain.info website. To limit the
+amount of requests, we analyze a representative subset of 9,000 transactions
+randomly chosen from all eligible transaction between June 2012 and May 2013, a
+period where the conventions of fee offers remained relatively stable (see Figure 3
+below). Eligible transactions are defined as transactions that offer a fee of 0,
+0.0005, or 0.001 BTC and have a size between 200 and 300 bytes. 60.6 % or, in
+absolute terms, 9.17 of all 15.1 million transactions in the chosen time range
+are eligible by these criteria. Limiting our analysis to this homogenous subset
+removes the need to control for the influence of third variables.
+    For better comparability, we use the same subset of 9.17 million transactions
+to answer RQ 3. For each transaction, we compute the holding time, which is
+the period until one of the outputs was spent again. Computation of this time
+4
+    We plan to extend the time range until December 2014 for the workshop presentation
+    and post-proceedings.
+6       Malte Möser and Rainer Böhme
+
+interval is based on the time stamps of the original block and the block that
+contains the transaction spending the output. A time interval of zero means,
+that the output was spent in the same block, i. e., without confirmation. Again,
+the clocks used for the timestamps of different blocks may not be in sync, but
+deviations from the true value should not correlate with our variable of interest.
+    Answering RQ 4 requires information about the mining pool that won each
+particular block race. We use the information on blockchain.info, parsed from
+168,530 HTML pages, as baseline and cross-check against two additional data
+sources. First, we make use of the fact that some mining pools include a signature
+in the coinbase transactions of their blocks. This way, we are able to learn
+the origin of 72,113 blocks mined by the pools 50BTC, AntPool, ASICMiner,
+BitMinter, BTC Guild, EclipseMC, Eligius, KnCMiner, Polmine, and Slush. This
+information matches the baseline data from blockchain.info for 99.97 % of all
+relevant blocks. A second cross-check against the website http://blockorigin.
+pfoe.be, which maps pools to blocks based on the announced blocks on the pools’
+websites, confirms 99.92 % of the entries. However, this website only provides
+information for the latest 2016 blocks. All this indicates that our data is pretty
+reliable when it comes to the attribution of blocks to the major mining pools.
+
+
+4     Results
+4.1   Trends: Descriptive Analysis
+We start with an exploratory analysis of transaction fees. The black lines in
+Figure 1 show the average sum of transaction fees per block from January 2011
+until August 2014. It grew from about 0.1 BTC in early 2012 to 0.25 BTC by
+mid 2013, with occasional spikes up to 0.5 BTC. In the course of 2014, it fell
+back to about 0.1 BTC. Overall, miners’ revenue from transactions fees is small
+compared to the minting reward (50 BTC until November 2012, then 25 BTC).
+    The blue lines visualize the relative transaction fees as percentage of the
+(estimated) net amount. This value is of interest when looking at the competition
+between online payment systems. Overall, Bitcoin transaction fees are lower
+than 0.1 % of the transmitted value, which is significantly below the fees charged
+by conventional payment systems even if one accounts for the fact that some
+payments settle in two or more Bitcoin transactions.
+    The red lines show the average block size (in MB), which grew steadily to
+about 0.22 MB in August 2014. In the recent past, the default block size limits
+were increased from 250 KB to 350 KB in September 2013, and from 350 KB to
+750 KB in March 2014. Although some blocks get close to the limit, it appears
+that hard size limits do not (yet) significantly drive the level of transaction fees.
+    When comparing the total transaction fees per block in USD to the Bitcoin
+exchange rate against USD, we see substantial co-movement (cf. Figure 2). This
+indicates that BTC is the dominant unit of account when deciding about fee
+offers, unlike prices for many goods and services paid with Bitcoin but fixed in a
+conventional currency. The smoothed curve shows that total fees have stabilized
+at about 45 USD per block in 2014.
+       Trends, Tips, Tolls: A Longitudinal Study of Bitcoin Transaction Fees         7
+
+         Absolute fee per block (in BTC)
+0.5      Block size (in MB)
+         Relative fee (in % of est. net amount)
+
+
+
+
+0.1
+
+
+
+ Jan Apr     Jul Oct Jan Apr Jul       Oct Jan Apr     Jul   Oct   Jan Apr     Jul
+ 2011                2012                  2013                    2014
+
+
+        Fig. 1. Transaction fees per block (in BTC) and block size (in MB)
+
+
+
+    Next, we explore changes in the nominal values of fees. Figure 3 shows trends
+for the fees paid per transaction over time. Each region represents the percentage
+of transactions with a specific nominal fee. Starting in January 2011, almost no
+transaction pays a fee. In the following months, a growing share of transactions
+started to include a fee of 0.01 BTC. The first notable change occurs after June
+2011. Transactions with a fee of 0.0005 BTC appear and account for about
+20–30 % of all transactions. In the second quarter of 2012, the share of zero-fee
+transactions drops significantly and 60–70 % of all transactions pay a fee of
+0.0005 BTC. In the fourth quarter of 2012, this dominant share registers a sharp
+decrease, with a fee of 0.001 BTC now accounting for 30–40 % of all transactions.
+In May 2013, the nominal value of 0.001 BTC makes space for a tenth: 0.0001
+BTC. This fee level stays on and gains a share of more than 70 % towards the
+end of the sample. The second largest nominal fee paid at the time of writing is
+0.0002 BTC. This value started to appear in late 2013 and has a share of 15–20 %.
+It is very evident from Figure 3 that the conventions on transaction fees are not
+static, but exhibit distinct trends over time.
+    In order to reason about these changes, we map important events in the
+Bitcoin ecosystem to the timeline (cf. Figure 3). Generally, there seem to be two
+main reasons for shifts in trends: changes to the Bitcoin reference implementation
+and actions by large intermediaries in the ecosystem.
+    The emergence of 0.0005 BTC fees in June 2011 can be mapped to the release
+of version 0.3.23 of the Bitcoin Core client, which reduced the default transaction
+fee from 0.01 BTC to 0.0005 BTC. The rise of transactions with a 0.0005 BTC
+fee in the second quarter of 2012 is probably due to the launch of the gambling
+ 8      Malte Möser and Rainer Böhme
+
+
+          Absolute fee per block in USD                                                      1000
+          Bitcoin price index
+
+
+
+100
+
+
+
+
+ Jan Apr       Jul Oct Jan Apr Jul       Oct Jan Apr       Jul   Oct    Jan Apr      Jul
+ 2011                  2012                  2013                       2014
+
+
+                      Fig. 2. Transaction fees per block (in USD)
+
+
+
+website SatoshiDice. This service works as follows. A user can send a hand-picked
+amount of bitcoin to an address controlled by SatoshiDice. The service owns
+several deposit addresses with different associated win and payout ratios. For
+every incoming transaction, SatoshiDice instantly creates a new transaction to
+the incoming transaction’s source address. This new transaction returns the prize
+to the user in case he is lucky, or a very small output value to signal a loss.5
+After its announcement on 24 April 2012, the service quickly gained popularity.
+It started to flood the block chain with transactions, leading to allegations of
+being a “DDoS attack against the Bitcoin network” [5].
+     While we could not find a plausible reason for the drop of the 0.0005 BTC
+nominal fee in early 2013, we found a possible explanation when looking at
+the payout transactions of SatoshiDice before and after this shift. Prior to it,
+SatoshiDice added a transaction fee of 0.0005 BTC to each payment. Then, in
+the fourth quarter of 2012, it doubled the fee to 0.001 BTC, while everyone else
+still payed the Bitcoin client’s default fee of 0.0005 BTC.
+     On 29 May 2013, version 0.8.2 of Bitcoin Core, the reference implementation,
+was released. In this update, the default transaction fee was lowered from 0.0005
+BTC per KB to 0.0001 BTC per KB. Hence, the growing share of 0.0001 BTC
+fees might also visualize the adoption rate of both the new version of the reference
+client and other clients following this change.6
+
+ 5
+   It was one Satoshi initially, then increased to 0.00005460 BTC after the default client
+   required a minimum output value of 0.00005430 BTC to fight transaction spam [10].
+ 6
+   We did not find a reason for the emergence of 0.0002 BTC fees between October and
+   December 2013 and welcome suggestions from the community.
+        Trends, Tips, Tolls: A Longitudinal Study of Bitcoin Transaction Fees                9
+
+           v0.3.23          Satoshi Dice                v0.8.2
+100
+           0.01
+
+                                                   0.001                      0.0002
+
+
+
+
+                                             0.0005
+                  0 BTC                                                       0.0001
+
+
+
+
+ 0
+ Jan Apr      Jul Oct Jan Apr Jul          Oct Jan Apr     Jul       Oct   Jan Apr     Jul
+ 2011                 2012                     2013                        2014
+
+
+                          Fig. 3. Distribution of transaction fees
+
+
+
+ 4.2   Tips: Explaining the Decision to Offer a Fee
+
+ Even at the time of writing there is a small share of transactions that does not
+ offer a transaction fee to miners. Many of those paying a fee adhere to the default,
+ but some were even willing to pay a higher fee. A plausible rationale is that
+ paying a fee provides incentives to miners to prioritize a transaction, leading to
+ faster confirmation. If this holds true, impatient users would be more willing to
+ pay a fee, i. e., if transaction outputs are to be spent again soon after inclusion.
+     Table 2 shows the quantiles of transaction latencies for different fees. Half
+ of all zero-fee transactions had to wait more than twenty minutes for their first
+ confirmation. In contrast to that, paying a fee of 0.0005 BTC lead to an inclusion
+ into a block in half of the time. While this seems acceptable for less time-critical
+ transactions, the 90 % quantile shows a more extreme difference. Ten percent of
+ all zero-fee transactions took almost 4 hours to confirm, in contrast to 40 minutes
+ for transactions paying a 0.0005 BTC fee. The difference between paying a fee of
+ 0.0005 or 0.001 BTC is not as pronounced, but the difference in medians is still
+ statistically and economically significant.
+     Figure 4 reports the amount of transactions that include a fee dependent on
+ the holding time. It is easy to see that the percentage of transactions including
+ a fee is higher for those where outputs are spent shortly after being included
+ in a block. The curve levels off to about 60–70 % for holding times of more
+ than one hour. Another observation is that the amount of transactions whose
+ outputs are reused in the same block amounts to slightly more than 40 %. We
+10      Malte Möser and Rainer Böhme
+
+            Table 2. Transaction latency in seconds by transaction fee
+
+
+                                 Quantiles of the latency distribution
+                              10 %       25 %      50 %    75 %    90 %
+           Fee        # Tx                      (median)
+           0          1503     180       444       1339    4270   13927
+           0.0005     5735     106       255        600    1244    2440
+           0.001      1905      90       212        520    1129    2135
+           Sample period: June 2012 to May 2013. See text for details.
+
+
+
+
+suspect that many of these transactions belong to SatoshiDice’s zero-confirmation
+transactions.
+
+4.3   Tolls: Mining Pools as Gatekeepers
+Finally, we analyze pool behavior regarding a possible systematic exclusion of
+zero-fee transactions. Figure 5 shows the block solution share of each mining pool
+over time. Shares have shifted between pools quite extensively. In 2013, BTC
+Guild had a market share of up to 40 %, in 2014 both GHash.IO – which triggered
+controversial discussions when reaching almost a share of 50 % for a short time
+(cf. [4]) – and Discus Fish ousted this pool. Also, the share of “other” pools has
+risen in 2014. Previous incumbents like Slush or 50BTC have lost popularity.
+Possible reasons include economic and technical factors, like pool fees, service
+availability, or robustness against attacks (cf. [16, 28]).
+     Given the dominance of a few mining pools, we now answer the question
+whether some pools systematically enforce fees. Table 3 shows the share of zero-
+fee transactions as well as the share of blocks without any zero-fee transaction
+(excluding the always present coinbase transaction) for the ten biggest pools. To
+account for developments over time, we contrast a longer sample (since April
+2012) to the more recent past (since January 2014). The results show that two
+pools, Discus Fish and Eligius, have a considerably higher share of blocks without
+any zero fee-transaction, with 30.6 % for Eligius and 62.5% for Discus Fish (since
+January 2014) – in contrast to an average of 14.4%. Other than that, there is no
+clear evidence for enforcement of strictly positive transaction fees.
+     A reason for the high number of blocks without zero-fee transactions for
+Discus Fish and Eligius could be that these blocks do not contain any transactions
+(besides the unavoidable coinbase transaction). Empty blocks appear on the block
+chain every now and then (one in 117 in 2014). To control for this, we calculate
+the median number of transactions within these blocks. For Eligius, the median
+number of transactions amounts to 75, for Discus Fish to 233. Hence, blocks
+without zero-fee transactions are not completely empty. These two pools seem to
+take a stricter line at enforcing transaction fees in their blocks than the other
+big pools.
+         Trends, Tips, Tolls: A Longitudinal Study of Bitcoin Transaction Fees       11
+
+                                                         % of transactions paying a fee
+100
+                                                         total share of transactions
+                                                mean
+
+
+
+
+    0
+         0 10 20 30 40 50 60 2   4   6   8   10 12 14 16 18 20 22 24 2 3 4 5 6 7
+              Minutes                           Hours                    Days
+
+
+Fig. 4. Distribution of holding times and propensity to pay a fee (June 2012–May 2013)
+
+
+
+5       Discussion
+
+We interpret the heterogeneity and instability over time in transaction fees as an
+indication that the protocol’s built-in market mechanism fails to set a fair price for
+transactions. This may be tolerable as long as minting rewards dominate miners’
+revenue and set the right incentive to defend the system, e. g., by keeping the
+cost of 51 % attacks high at any point in time. Two questions with relevance for
+the future of Bitcoin remain: 1. What factors influence a fair level of transaction
+fees? 2. Which mechanism can (approximately) find and enforce this level of fees?
+    A discussion section of an empirical paper is not the right place for a formal
+theoretical model. But it is safe to state that a fair price for transactions should
+internalize the externalities (cf. Section 2). Costs to others arise in two forms,
+born by two different types of agents in the system. First, miners bear the
+cost of solving the proof-of-work puzzle for the first confirmation. This cost is
+one-off, fixed per block, and thus depends on the number of transactions seeking
+confirmation at the same time. Second, relays in the network (that are all clients
+who store the entire block chain) bear the cost of storing the transaction record.
+Current practice is to store it forever, but in theory records can be pruned after a
+transaction is fully spent [23]. Cost of this second kind are incurred over time and
+depend on the size of the transaction (storage space), the time until all outputs
+are spent, and the size of the network (how many redundant copies exist).
+    It is conceivable that an internalization of the costs of the first kind can be
+enforced by miners (with some caveats, e. g., [15]). But there remains a free-riding
+problem regarding the provision of a public good with uninternalized costs of
+12          Malte Möser and Rainer Böhme
+
+
+
+
+100
+                                      ASICMiner                      Eligius       Discus Fish
+
+
+                    Other
+
+
+
+                                               50BTC
+
+
+
+                                                                                    GHash.IO
+                              Slush
+                                              BTC Guild
+     0
+     Apr      Jul      Oct     Jan      Apr       Jul          Oct       Jan      Apr       Jul
+     2012                      2013                                      2014
+
+
+                        Fig. 5. Block solution share of mining pools
+
+
+
+
+                 Table 3. Enforcement of transaction fees by mining pools
+
+                                       % of zero-fee            % of blocks w/o any
+                                       transactions             zero-fee transaction
+         Blocks solved (%)       Apr 2012–     Jan 2014– Apr 2012–              Jan 2014–
+         All miners 100.0               8.4              3.1          6.5            14.4
+         BTC Guild     19.6             6.8              2.4          1.3             3.6
+         GHash.IO      12.3             4.5              3.8          1.8             2.1
+         Slush          7.7             6.0              4.1          7.1             2.7
+         Eligius        5.3             4.6              0.7         26.5            30.6
+         Discus Fish    4.8             1.0              0.2         54.0            62.5
+         50BTC          4.4             8.2             11.9          0.4             3.3
+         BitMinter      3.9            10.3             15.6          3.6             0.9
+         EclipseMC      3.6            22.7              4.0          2.0             2.6
+         OzCoin         3.1             8.0              3.6          1.2             8.9
+         ASICMiner      2.2             8.8              5.9          1.7             0.0
+         Excluding coinbase transactions. Pool data before Apr 2012 is unreliable.
+        Trends, Tips, Tolls: A Longitudinal Study of Bitcoin Transaction Fees      13
+
+the second kind [27]. Two out of three factors driving the costs of the second
+kind are not predictable at the time when the transaction is created. Taking
+averages over many transactions is no solution. It will lead to cherry-picking
+and other frictions. The time dimension makes it particularly challenging to
+find a mechanism that internalizes these externalities, as well as the positive
+externalities to longterm investors and potential transaction partners who extract
+utility from the very existence of the block chain although they rarely make
+transactions. In a fee-only regime, those with higher transaction demand and
+time preference subsidize others who can silently sit on their assets. Against
+this backdrop, it seems that the devaluation of stock, as implemented through
+monetary inflation in the minting era, could be a closer approximation of the
+optimal mechanism than taxing transaction activity.
+    A limitation of our empirical approach is that off-blockchain payments and
+other agreements are unobservable. For instance, mining pools could allow excep-
+tions for their own transactions used for reward redistribution or accept other
+forms of compensation from business partners, such as large intermediaries. (Such
+compensations are attractive because they can also be hidden from the miners
+and need not be redistributed.) As a result, what we identify as not rational may
+indeed be rational under the hidden agenda.7 Another limitation is that this
+initial analysis relies on central moments (mean, median) and subsamples of ho-
+mogeneous transactions. This hides many particularities in a total of 45.7 million
+heterogeneous transactions. We suspect that various other factors influence the
+transaction fees in subsets of transactions too small to isolate in this analysis.
+
+
+6     Concluding Remarks
+A longitudinal analysis of 45.7 million transaction records reveals several regime
+shifts in agents’ behavior related to the payment of transaction fees. This calls
+for caution against the risk of unobserved heterogeneity in all analyses that do
+not explicitly consider the time dimension.
+    Throughout Bitcoin’s history, it appears that the level of transaction fees is
+primarily driven by social norms and conventions formed by key actors in the
+ecosystem rather than set by the protocol’s implied market mechanism, which
+in principle could match miners’ supply with transaction partners’ demand. In
+other words, most agents seem to follow rules instead of economic ratio.
+    This history, however instructive it may be, is unlikely to offer good predictions
+for a (distant) future. Fees were generally low in the past, so that agents’ ignorance
+can be explained with information, search, and decision costs. (In simple terms:
+they do not care.) At least agents will need to revisit their behavior when
+transaction fees replace minting rewards as the incentive for miners to maintain
+the system secure. Possibly, the Bitcoin stakeholders may also need to revisit the
+protocol’s incentive system.
+7
+    We appreciate hints and anecdotes which might lead to testable hypotheses.
+14     Malte Möser and Rainer Böhme
+
+Bibliography
+ [1] Robleh Ali, John Barrdear, Roger Clews, and James Southgate. “Innova-
+     tions in Payment Technologies and the Emergence of Digital Currencies”.
+     In: Digital Currencies: Quarterly Bulletin 2014 Q3. 2014.
+ [2] Robleh Ali, John Barrdear, Roger Clews, and James Southgate. “The
+     Economics of Digital Currencies”. In: Digital Currencies: Quarterly Bulletin
+     2014 Q3. Bank of England, 2014.
+ [3] Ross Anderson. “Risk and Privacy Implications of Consumer Payment
+     Innovation”. In: Federal Reserve Bank Payments Conference. 2012.
+ [4] Leonid Bershidsky. Trust Will Kill Bitcoin. 2014. url: http : / / www .
+     bloombergview.com/articles/2014-07-17/trust-will-kill-bitcoin
+     (visited on 2014-10-16).
+ [5] Bitcoin Wiki. SatoshiDice. url: https://en.bitcoin.it/wiki/SatoshiDice
+     (visited on 2014-09-17).
+ [6] Bitcoin Wiki. Transaction Fees. 2014. url: https://en.bitcoin.it/
+     w / index . php ? title = Transaction _ fees & oldid = 45501 (visited on
+     2014-10-15).
+ [7] Blockchain.info. Bitcoin Market Capitalization. 2014. url: https : / /
+     blockchain.info/charts/market-cap (visited on 2014-10-08).
+ [8] Rainer Böhme. “Internet Protocol Adoption: Learning from Bitcoin”. In:
+     IAB Workshop on Internet Technology Adoption and Transition (ITAT).
+     2013.
+ [9] Rainer Böhme, Nicolas Christin, Benjamin Edelman, and Tyler Moore.
+     “Bitcoin”. Journal of Economic Perspectives, Forthcoming; Harvard Busi-
+     ness School NOM Unit Working Paper No. 15–015. Available at SSRN:
+     http://ssrn.com/abstract=2495572. 2014.
+[10] Vitalik Buterin. Bitcoin Developers Adding $0.007 Minimum Transaction
+     Output Size. 2013. url: http://bitcoinmagazine.com/4465/bitcoin-
+     developers-adding-0-007-minimum-transaction-output-size/ (vis-
+     ited on 2014-10-17).
+[11] Coindesk. About the Bitcoin Price Index. 2014. url: http://www.coindesk.
+     com/price/bitcoin-price-index/ (visited on 2014-10-23).
+[12] gavinandresen comments on Bitcoin 0.8.6 Released, Updates to Block Size
+     Limit, Free Transactions, OSX Bugs. 2013. url: http://www.reddit.
+     com/r/Bitcoin/comments/1sk3df/bitcoin_086_released_updates_
+     to_block_size_limits/cdyrab7 (visited on 2014-10-13).
+[13] Jack Hirshleifer. “From Weakest-Link to Best-Shot: The Voluntary Provi-
+     sion of Public Goods”. In: Public Choice 41 (1983), pp. 371–386.
+[14] Nicolas Houy. “The Bitcoin Mining Game”. 2014.
+[15] Nicolas Houy. “The Economics of Bitcoin Transaction Fees”. 2014.
+[16] Benjamin Johnson, Aron Laszka, Jens Grossklags, Marie Vasek, and Tyler
+     Moore. “Game-Theoretic Analysis of DDoS Attacks Against Bitcoin Mining
+     Pools”. In: 1st Workshop on Bitcoin Research. 2014.
+[17] Ghassan O Karame, Elli Androulaki, and Srdjan Capkun. “Two Bitcoins at
+     the Price of One? Double-Spending Attacks on Fast Payments in Bitcoin”.
+        Trends, Tips, Tolls: A Longitudinal Study of Bitcoin Transaction Fees   15
+
+       In: Proceedings of the ACM Conference on Computer and Communications
+       Security (CCS). 2012.
+[18]   Kerem Kaskaloglu. “Near Zero Bitcoin Transaction Fees Cannot Last For-
+       ever”. In: The International Conference on Digital Security and Forensics
+       (DigitalSec2014). 2014, pp. 91–99.
+[19]   William J. Luther. “Cryptocurrencies, Network Effects, And Switching
+       Costs”. 2013.
+[20]   Sarah Meiklejohn, Marjoir Pomarole, Grant Jordan, Kirill Levchenko, Da-
+       mon McCoy, Geoffrey M. Voelker, and Stefan Savage. “A Fistful of Bitcoins:
+       Characterizing Payments Among Men with No Names”. In: Proceedings
+       of the ACM Internet Measurement Conference (IMC). New York: ACM,
+       2013, pp. 127–140.
+[21]   Tyler Moore and Nicolas Christin. “Beware the Middleman: Empirical
+       Analysis of Bitcoin-Exchange Risk”. In: Financial Cryptography and Data
+       Security. 2013.
+[22]   Malte Möser, Rainer Böhme, and Dominic Breuker. “Towards Risk Scoring
+       of Bitcoin Transactions”. In: Proceedings of the 1st Workshop on Bitcoin
+       Research in Association with Financial Crypto 14. 2014.
+[23]   Satoshi Nakamoto. Bitcoin: A Peer-to-Peer Electronic Cash System. 2008.
+[24]   Plastic stochastic. 2014. url: http://www.economist.com/news/finance-
+       and - economics / 21621882 - capping - fees - card - transactions - has -
+       not-worked-out-planned-plastic-stochastic (visited on 2014-10-22).
+[25]   M. Sherif. The Psychology of Social Norms. New York: Harper, 1936.
+[26]   [UPDATE: 2014-10-05] Bitcoin Core soft-fork ”No Forced TX Fee” v0.9.3
+       avaiable. url: https://bitcointalk.org/index.php?topic=22434.0
+       (visited on 2014-10-23).
+[27]   Hal R. Varian. “System Reliability and Free Riding”. In: Workshop on
+       the Economics of Information Security (WEIS). University of California,
+       Berkeley, 2002.
+[28]   Marie Vasek, Micah Thornton, and Tyler Moore. “Empirical Analysis of
+       Denial-of-Service Attacks in the Bitcoin Ecosystem”. In: 1st Workshop on
+       Bitcoin Research. 2014.
+[29]   Joon Ian Wong. New Study: Low Bitcoin Transaction Fees Unsustainable.
+       2014. url: http : / / www . coindesk . com / new - study - low - bitcoin -
+       transaction-fees-unsustainable/ (visited on 2014-10-13).
+

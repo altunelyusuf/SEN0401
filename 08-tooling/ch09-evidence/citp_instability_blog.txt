@@ -1,0 +1,760 @@
+ 
+ 
+ 
+	  
+	 
+ 
+
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+
+
+ Bitcoin is unstable without the block reward - CITP Blog 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+ 
+ 
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+
+ Skip to content   
+ 
+ 
+ 
+     
+
+
+
+     
+ 
+
+
+
+          
+				 
+					 
+						 
+							      
+							 
+								  Log in  	 
+		 
+							 
+					 
+												 
+							 
+							 
+							 
+							 
+							 
+							 
+							 
+							   							 
+								Subscribe							 
+						 
+					 
+				 
+								 
+	 
+	  Search     
+					  
+				    
+								
+							 
+						 
+					 
+				   
+ 
+ 
+ 
+
+
+ 
+ 
+ 
+ 
+
+
+  Bitcoin is unstable without the block reward 
+
+ 
+ 
+ 
+ 
+   October 21, 2016   
+
+
+
+  – by     Arvind Narayanan    
+ 
+ 
+
+
+
+  Comments  
+
+
+
+   Digital Infrastructure & Platforms  ,   Privacy & Security   
+ 
+  
+ 
+
+
+
+    With Miles Carlsten, Harry Kalodner, and Matt Weinberg, I have a new paper titled    On the instability of Bitcoin without the block reward   , which Harry will present at ACM CCS next week. The paper predicts that miner incentives will start to go haywire as Bitcoin rewards shift from block rewards to transaction fees, based on theoretical results that closely match up with findings from our new Bitcoin mining simulator.   
+  Bitcoin provides two incentives for miners: block rewards and transaction fees. Currently the vast majority of miner revenues come from block rewards, but in the long run they will come primarily from transaction fees as block rewards dwindle. This design decision has been discussed a lot, but in terms of monetary policy and hardly ever in terms of security. There has been an implicit belief that the transition to transaction fees will not affect the security and stability of the block chain, and in particular that it is immaterial whether miners receive (say) 25 bitcoins as a fixed reward or 25 bitcoins    in expectation    via transaction fees.   
+  We reexamine this assumption in our paper, and our findings make disturbing news for the future security of Bitcoin and many other cryptocurrencies. Our key insight is that with only transaction fees, the variance of the miner reward is very high due to the randomness of the block arrival time, and it becomes attractive to fork a “wealthy” block to “steal” the rewards therein. [1]  
+      The figure shows a scenario where forking might be more profitable than extending the longest chain. See the  paper  for a full explanation.  
+    Here’s how things could go wrong. Due to the possibility of profitable forking, the default strategy is no longer best; we lay out a menagerie of interesting and bizarre strategies in the paper. The most worrisome is “undercutting,” where miners capture as    little    of the available transaction fees as they can get away with, leaving the rest in the pool as an incentive for the next miner to extend their block rather than a competing block.   
+  We also show rigorously that    selfish mining    gets worse when block rewards are replaced by transaction fees, motivated by the following intuition: if you happen to mine a new block just seconds after the last one was found, you gain nothing by publishing, so you might as well keep it for selfish mining in case you get lucky. The variance in transaction fees enables strategies like this that simply don’t make sense when the block reward is fixed.  
+  If miners switch to these deviant strategies, the blockchain will be much less secure because of the mining power wasted due to constant forking, undercutting, and withholding of found blocks.  
+  We derive most of our results in two separate ways: analytically, i.e., using game theory, and with a new mining simulator that we created. This gives us added confidence in our findings. For example, in one setting, the theory predicts a rather grotesque equilibrium involving on the    Lambert W function   , with the proof running to several pages. Sure enough, in our simulations of the same setting, the Lambert miner does best. We hope that our analytical techniques as well as our simulator will be useful to other researchers. We have made the simulator code    open-source   .  
+  What is the impact of our findings? The Bitcoin community will probably need to respond to this problem in the long run, potentially via a fork, to discourage deviant strategies. We aren’t predicting that deviant strategies will arise in the short term, and there is a long runway for mitigation steps to be rolled out. The fact that blocks have filled up due to their 1MB limit decreases the variance of transaction fees between different blocks, and this mitigates the problem somewhat, although it is far from a complete and satisfactory solution. For example, at the time of writing our paper, the previous 1000 blocks included per-block transaction fees ranging from 0.03 BTC to 4.51, with a mean of 0.49 and standard deviation of 0.25 (over half the mean!). So simply maintaining the block-size limit probably won’t resolve the underlying issues.  
+  At a deeper level, our results suggest a fundamental rethinking of the role of block rewards in cryptocurrency design. The prevailing view is that the block reward is a necessary but temporary evil to achieve an initial allocation of coins in the absence of a central authority. The transaction-fee regime is seen as the ideal steady state of the system. But our work shows that incentivizing compliant miner behavior in the transaction fee regime is a significantly more daunting task than in the block reward regime. So perhaps designers of new cryptocurrencies should make the block reward permanent and accept monetary inflation as inevitable. Transaction fees would still exist, but merely as an incentive for miners to include transactions in their blocks.  
+  One final point: there is a science of designing economic incentives so that rational players will behave in a desired way, and it’s called    mechanism design   . Creators of cryptocurrencies (as well as creators of applications such as the DAO) are essentially doing mechanism design. But mechanism design is    hard   , and our paper is the latest among many to point out that the mechanisms embedded in cryptocurrencies have flaws. Yet, sadly, the cryptocurrency community is currently disjoint from the mechanism design community. That is why I’m thrilled that mechanism design expert    Matt Weinberg   , who’s behind all the sophisticated theory in our paper, is joining Princeton’s faculty next semester. Expect more research from us on the mechanism design of cryptocurrencies!  
+  [1] The problems uncover arise not because transaction fees may arrive erratically, but because    blocks    inevitably arrive unpredictably.  We model transaction fees as arriving at a uniform rate. The rate is non-uniform in practice, which is an additional complication. This is a theme throughout our paper: we show that undesirable behaviors will arise even in simplified, “clean” models. This is bad news both because we think things will probably be worse in practice and because we want cryptocurrency mining games to be analytically tractable. Our work shows that in a transaction-fee regime, predicting behavior will be fiendishly complex.  
+  Update : see also Bryan Ford’s   response   to this post (and paper). 
+ 
+
+
+ 
+ 
+ 
+
+
+
+ 
+ Comments 
+
+
+ 16 responses to “Bitcoin is unstable without the block reward” 
+
+  
+
+ 
+   
+
+
+  Chris Camp 
+
+   October 21, 2016    
+ 
+
+
+  Love what you’re doing! 
+ It is so great to see this kind of work being done on bitcoin / cryptoassets – thank you! 
+ In terms of the block reward, and mechanism design in general, the fact that it’s hard to get those things right highlights the need for effective governance. or some approach that allows a system to evolve when reality deviates from expectation (which seems to keep happening…). 
+ Matt – Welcome! and I looking forward to reading your findings 🙂 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  vapour 
+
+   October 21, 2016    
+ 
+
+
+  very interesting reading. 
+ the two brain cell left in my brain basically just wave at each other at the moment but they do look forward to more research in this aspect of cryptocurrency. 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  Token 
+
+   October 21, 2016    
+ 
+
+
+  The last bitcoin will be mined more than 100 years in the future . 
+ Bit too early for your conclusion ! 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  Arvind Narayanan 
+
+   October 21, 2016    
+ 
+
+
+  Ah, but the relevant timeline is how quickly transaction fees will catch up to the block reward. That will likely happen much sooner, not just because of the block reward halving but also because transaction fees are rising. 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  dwdoc 
+
+   October 22, 2016    
+ 
+
+
+  But what if the value of btc rises faster than each halving and rises faster than transaction fees? 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  Chinthamani Chary 
+
+   October 26, 2016    
+ 
+
+
+  Where is this “relevant timeline”? How long do we have? I’m guessing one, maybe two halvings more before this becomes an immediate problem. 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+      
+
+ 
+   
+
+
+  sillytuna 
+
+   October 21, 2016    
+ 
+
+
+  Transaction fees are also needed as an anti-spam measure. 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  FaceDeer 
+
+   October 21, 2016    
+ 
+
+
+  As I understand it, Ethereum’s proposed proof-of-stake algorithm will result in a much more predictable block production schedule than proof-of-work. Might that be useful in making the chain more stable when in a fee-dominated state? 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  Papa Lazzarou 
+
+   October 21, 2016    
+ 
+
+
+  Well, despite monero having a fast initial emission it does have perpetual block reward. The block reward will never decrease bellow 0.3 monero per minute (and that will only happen in a few decades). 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  pos 
+
+   October 21, 2016    
+ 
+
+
+  Proof of Stake is being offered to the banks as a means of controlling the access and direction of Ethereum after the transition. 
+ The largest stakeholders control the project(s) at the expense of the smallest stakeholders who see their holding devalue as the stakeholders gain the issuance of new currency. 
+ Therefore proof of stake becomes the permission based distributed ledger they want with control over access and money supply devaluing over time – Just like with fiat. 
+ Hence the interest and involvement of Goldman Sachs, JP Morgan, Santander, Microsoft, IBM etc. With the story a group of geeks made it and they honestly had nothing to do with it..lol! 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  M@ 
+
+   October 22, 2016    
+ 
+
+
+  Well said! 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+    
+
+ 
+   
+
+
+  bobdobson 
+
+   October 21, 2016    
+ 
+
+
+  If a miner is withholding the solution, wouldn’t it be in there interest to release it before some other miner comes up with the same solution? Is it possible to calculate the optimal amount of time to hold an ‘early’ solution? 
+Doesn’t a miner put their equipment investment at risk in some sense when trying to game the system (isn’t it detectable)? 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  souspeed 
+
+   October 21, 2016    
+ 
+
+
+  Wouldn’t this be the same as a current miner, when finding a new block with 12,5 btc block reward, claiming the previous block as well for another 12,5 btc reward, and leaving 6 btc of this previous block reward for the next miner as a transaction fee? And why hasn’t this happened yet? 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  Chinthamani Chary 
+
+   October 26, 2016    
+ 
+
+
+  That would cause a hard fork, which would clearly be rejected by the rest of the network. The paper talks loosely about “forks”, but it’s not talking about changes in the consensus like you are proposing. 
+ Still, the whole issue of how the rest of the network would respond seems to have been left undiscussed. 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+    
+
+ 
+   
+
+
+  souspeed 
+
+   October 21, 2016    
+ 
+
+
+  Nevermind. You need to have found two blocks first for this, so it is better to keep the reward completely than to handover part of it. 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+ 
+   
+
+
+  Jake 
+
+   November 1, 2016    
+ 
+
+
+  I was surprised to not see any proposed changes in your paper that would mitigate the various mining attacks you describe, e.g. changing the reward structure for tx fees. 
+ Is that due to come in a separate paper? 
+ 
+
+
+ 
+
+  Reply   
+ 
+
+  
+
+
+
+	 
+		 Leave a Reply   Cancel reply      Your email address will not be published.   Required fields are marked  *     Comment  *        Name  *     
+  Email  *     
+  Website    
+    Notify me of follow-up comments by email.      Notify me of new posts by email.      
+ 
+      Δ     
+  	  
+	 
+
+
+
+   ←   Previous:    Open Review leads to better books   
+
+   Next:    Neophilia and Human Nature   →   
+ 
+ 
+ 
+ 
+
+
+
+  
+ 
+ 
+ 
+ About 
+
+
+
+ The CITP Blog is hosted by  Princeton University’s Center for Information Technology Policy , a research center that studies digital technologies in public life. Here you’ll find comment and analysis from the digital frontier, written by the Center’s faculty, students, and friends. 
+ 
+
+
+
+ 
+ Categories 
+
+
+ 	  Artificial Intelligence, Data Science & Society  (79)
+ 
+	  Digital Infrastructure & Platforms  (163)
+ 
+	  Meet the Researcher  (9)
+ 
+	  Other Topics  (174)
+ 
+	  Privacy & Security  (483)
+ 
+	  Uncategorized  (1,596)
+ 
+	  Voting  (127)
+ 
+  
+ 
+ 
+  
+ 
+ 
+
+
+
+ 
+ 
+ 
+ 
+  
+ 
+ 
+ 
+
+
+
+  
+ 
+
+
+ 
+ 
+ 
+ 
+ 
+ Center for Information Technology Policy  
+
+
+
+ 303 Sherrerd Hall – Princeton University  citp@princeton.edu  
+ 
+ 
+
+
+
+ 
+ 
+ Subscribe to CITP Blog 
+
+
+
+ Get notified of new posts.  
+
+
+	 
+		 
+							 
+					 
+												 
+							 
+								Type your email…							 
+							 						 
+												 
+							 
+							 
+							 
+							 
+							 
+							 
+							 
+							   							 
+								Subscribe							 
+						 
+					 
+				 
+								 
+	 
+	 
+
+
+
+ 
+ Stay Connected 
+
+
+
+  Subscribe  to CITP’s newsletter, listserv or events calendar. 
+ 
+ 
+
+
+
+ 
+ 
+ Follow Us 
+
+
+
+       X   
+
+       LinkedIn   
+
+       YouTube   
+
+       Bluesky    
+
+
+
+        Posts   
+
+       Comments    
+ 
+ 
+ 
+
+
+
+  
+
+
+
+ 
+ 
+ 
+  Accessibility Help  
+ 
+
+
+
+ 
+ © 2026 The Trustees of Princeton University 
+ 
+
+
+
+ 
+     
+ 
+ 
+ 
+ 
+  Diversity & Non-Discrimination    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+ 

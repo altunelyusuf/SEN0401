@@ -1,0 +1,217 @@
+<html><head><title>[bitcoin-dev] CPFP Carve-Out for Fee-Prediction Issues in Contracting Applications (eg Lightning) - Matt Corallo</title><link
+rel=alternate
+title="Atom feed"
+href="../new.atom"
+type="application/atom+xml"/><style>pre{white-space:pre-wrap}*{font-size:100%;font-family:monospace}</style></head><body><form
+action="../"><pre><a
+href="../?t=20181129193757"><b>Bitcoin Development Mailinglist</b></a>
+<input
+name=q
+type=text /><input
+type=submit
+value=search /> <a
+href="../_/text/help/">help</a> / <a
+href="../_/text/color/">color</a> / <a
+id=mirror
+href="../_/text/mirror/">mirror</a> / <a
+href="../new.atom">Atom feed</a></pre></form><pre
+id=b>From: Matt Corallo &lt;lf-lists@mattcorallo.com&gt;
+To: bitcoin-dev@lists.linuxfoundation.org
+Cc: lightning-dev@lists.linuxfoundation.org
+Subject: <a
+href="#r"
+id=t>[bitcoin-dev] CPFP Carve-Out for Fee-Prediction Issues in Contracting Applications (eg Lightning)</a>
+Date: Thu, 29 Nov 2018 19:37:54 +0000	<a
+href="#r">[thread overview]</a>
+Message-ID: &lt;c3f68b73-84c6-7428-4bf6-b47802141392@mattcorallo.com&gt; (<a href="raw">raw</a>)
+
+(cross-posted to both lists to make lightning-dev folks aware, please 
+take lightning-dev off CC when responding).
+
+As I&#39;m sure everyone is aware, Lightning (and other similar systems) 
+work by exchanging pre-signed transactions for future broadcast. Of 
+course in many cases this requires either (a) predicting what the 
+feerate required for timely confirmation will be at some (or, really, 
+any) point in the future, or (b) utilizing CPFP and dependent 
+transaction relay to allow parties to broadcast low-feerate transactions 
+with children created at broadcast-time to increase the effective 
+feerate. Ideally transactions could be constructed to allow for 
+after-the-fact addition of inputs to increase fee without CPFP but it is 
+not always possible to do so.
+
+Option (a) is rather obviously intractible, and implementation 
+complexity has led to channel failures in lightning in practice (as both 
+sides must agree on a reasonable-in-the-future feerate). Option (b) is a 
+much more natural choice (assuming some form of as-yet-unimplemented 
+package relay on the P2P network) but is made difficult due to 
+complexity around RBF/CPFP anti-DoS rules.
+
+For example, if we take a simplified lightning design with pre-signed 
+commitment transaction A with one 0-value anyone-can-spend output 
+available for use as a CPFP output, a counterparty can prevent 
+confirmation of/significantly increase the fee cost of confirming A by 
+chaining a large-but-only-moderate-feerate transaction off of this 
+anyone-can-spend output. This transaction, B, will have a large absolute 
+fee while making the package (A, B) have a low-ish feerate, placing it 
+solidly at the bottom of the mempool but without significant risk of it 
+getting evicted during memory limiting. This large absolute fee forces a 
+counterparty which wishes to have the commitment transaction confirm to 
+increase on this absolute fee in order to meet RBF rules.
+
+For this reason (and many other similar attacks utilizing the package 
+size limits), in discussing the security model around CPFP, we&#39;ve 
+generally considered it too-difficulty-to-prevent third parties which 
+are able to spend an output of a transaction from delaying its 
+confirmation, at least until/unless the prevailing feerates decline and 
+some of the mempool backlog gets confirmed.
+
+You&#39;ll note, however, that this attack doesn&#39;t have to be permanent to 
+work - Lightning&#39;s (and other contracting/payment channel systems&#39;) 
+security model assumes the ability to get such commitment transactions 
+confirmed in a timely manner, as otherwise HTLCs may time out and 
+counterparties can claim the timeout-refund before we can claim the HTLC 
+using the hash-preimage.
+
+To partially-address the CPFP security model considerations, a next step 
+might involve tweaking Lightning&#39;s commitment transaction to have two 
+small-value outputs which are immediately spendable, one by each channel 
+participant, allowing them to chain children off without allowng 
+unrelated third-parties to chain children. Obviously this does not 
+address the specific attack so we need a small tweak to the anti-DoS 
+CPFP rules in Bitcoin Core/BIP 125:
+
+The last transaction which is added to a package of dependent 
+transactions in the mempool must:
+  * Have no more than one unconfirmed parent,
+  * Be of size no greater than 1K in virtual size.
+(for implementation sanity, this would effectively reduce all mempool 
+package size limits by 1 1K-virtual-size transaction, and the last would 
+be &#34;allowed to violate the limits&#34; as long as it meets the above criteria).
+
+For contracting applications like lightning, this means that as long as 
+the transaction we wish to confirm (in this case the commitment transaction)
+  * Has only two immediately-spendable (ie non-CSV) outputs,
+  * where each immediately-spendable output is only spendable by one 
+counterparty,
+  * and is no larger than MAX_PACKAGE_VIRTUAL_SIZE - 1001 Vsize,
+each counterparty will always be able to independantly CPFP the 
+transaction in question. ie because if the &#34;malicious&#34; (ie 
+transaction-delaying) party bradcasts A with a child, it can never meet 
+the &#34;last transaction&#34; carve-out as its transaction cannot both meet the 
+package limit and have only one unconfirmed ancestor. Thus, the 
+non-delaying counterparty can always independently add its own CPFP 
+transaction, increasing the (A, Tx2) package feerate and confirming A 
+without having to concern themselves with the (A, Tx1) package.
+
+As an alternative proposal, at various points there have been 
+discussions around solving the &#34;RBF-pinning&#34; problem by allowing 
+transactors to mark their transactions as &#34;likely-to-be-RBF&#39;ed&#34;, which 
+could enable a relay policy where children of such transactions would be 
+rejected unless the resulting package would be &#34;near the top of the 
+mempool&#34;. This would theoretically imply such attacks are not possible 
+to pull off consistently, as any &#34;transaction-delaying&#34; channel 
+participant will have to place the package containing A at an effective 
+feerate which makes confirmation to occur soon with some likelihood. It 
+is, however, possible to pull off this attack with low probability in 
+case of feerate spikes right after broadcast.
+
+Note that this clearly relies on some form of package relay, which comes 
+with its own challenges, but I&#39;ll start a separate thread on that.
+
+See-also: lightning-dev thread about the changes to lightning spec 
+required to incorporate this: 
+<a
+href="https://lists.linuxfoundation.org/pipermail/lightning-dev/2018-November/001643.html">https://lists.linuxfoundation.org/pipermail/lightning-dev/2018-November/001643.html</a>
+
+Matt
+
+</pre><hr><pre><a
+href="../CAMZUoKnF65_4V6Lngg2eO2R+maqahEOzpgt=Z3EN5xTmMY=LKA@mail.gmail.com/"
+rel=next>next</a>             <a
+href="#R">reply</a><a id=related>	</a>other threads:[<a
+href="../?t=20181129193757">~2018-11-29 19:37 UTC</a>|<a
+href="../">newest</a>]
+
+<b>Thread overview: </b>19+ messages / expand[<a
+href="T/#u">flat</a>|<a
+href="t/#u">nested</a>]  <a
+href="t.mbox.gz">mbox.gz</a>  <a
+href="t.atom">Atom feed</a>  <a
+href="#b">top</a>
+<b>2018-11-29 19:37 <a
+id=r
+href="#t">Matt Corallo [this message]</a></b>
+2018-11-30 17:38 ` <a
+href="../CAMZUoKnF65_4V6Lngg2eO2R+maqahEOzpgt=Z3EN5xTmMY=LKA@mail.gmail.com/">[bitcoin-dev] CPFP Carve-Out for Fee-Prediction Issues in Contracting Applications (eg Lightning)</a> Russell O&#39;Connor
+2018-11-30 19:33   ` <a
+href="../f0234c95-031b-3bc2-e055-37585ed247ec@mattcorallo.com/">Matt Corallo</a>
+2018-12-02 15:08 ` <a
+href="../20181202150839.GE22873@mcelrath.org/">Bob McElrath</a>
+2018-12-03  4:16   ` <a
+href="../8-tJwX51A0xFHoEsKchKREO5i8YxqM48JWspLRiAV3TBHWrRUkUmcZqbAJH6Z6KBQAppPHwuClmzzoaLxtOQqWoHyQG8nzVJAuzAFFGl-s8=@protonmail.com/">[bitcoin-dev] [Lightning-dev]</a> &#34; ZmnSCPxj
+2018-12-04  3:33 ` <a
+href="../878t163qzi.fsf@rustcorp.com.au/">Rusty Russell</a>
+2019-01-07 15:18   ` <a
+href="../725fc55a-6263-a9fc-74a5-1017cb1cc885@mattcorallo.com/">Matt Corallo</a>
+2019-01-08  5:50     ` <a
+href="../87wonfem03.fsf@rustcorp.com.au/">Rusty Russell</a>
+2019-01-08 14:46       ` <a
+href="../D072562F-5AD0-4B38-94D1-A0AEF04C3DEB@mattcorallo.com/">Matt Corallo</a>
+2019-02-13  4:22         ` <a
+href="../87zhr0gvw0.fsf@rustcorp.com.au/">Rusty Russell</a>
+2019-10-24 13:49           ` <a
+href="../CAD3i26AjhQ9VkCo_5y8aqZ_8YvSqKP2MCkdRv8YunjAhmmXz=Q@mail.gmail.com/">Johan Tor&#229;s Halseth</a>
+2019-10-24 21:25             ` <a
+href="../83915e8a-f49a-8233-0389-934c189f770c@mattcorallo.com/">Matt Corallo</a>
+2019-10-25  7:05               ` <a
+href="../CAD3i26Cf+QpbFXh63NiMig9eceeKaezZwk89A_h_76S_XKkQ9g@mail.gmail.com/">Johan Tor&#229;s Halseth</a>
+2019-10-25 17:30                 ` <a
+href="../6728FF51-E378-4AED-99BA-ECB83688AA9C@mattcorallo.com/">Matt Corallo</a>
+2019-10-27 19:13                   ` <a
+href="../CAD5xwhhK4xexDe=aBv78BsK5BvE=4S0OcqeXYHVAfN3wTOr51Q@mail.gmail.com/">Jeremy</a>
+2019-10-28  9:45                     ` <a
+href="../CAD3i26DTxnDwhQd+kfS609W==A8oFA8DVJfwMiPt6NSXqhqw4w@mail.gmail.com/">Johan Tor&#229;s Halseth</a>
+2019-10-28 17:14                       ` <a
+href="../20191028171416.7owxqblz3ttsvw5r@ganymede/">David A. Harding</a>
+2019-10-30  7:22                         ` <a
+href="../CAD3i26BkuxMyazGsQ1+ij25f3xhXUBpUTcOfgYKnY4fur5rGBw@mail.gmail.com/">Johan Tor&#229;s Halseth</a>
+2019-10-27 22:54             ` <a
+href="../20191027225402.rfajp4j6itujq5av@ganymede/">David A. Harding</a>
+</pre><hr><pre
+id=R><b>Reply instructions:</b>
+
+You may reply publicly to <a
+href=#t>this message</a> via plain-text email
+using any one of the following methods:
+
+* Save the following mbox file, import it into your mail client,
+  and reply-to-all from there: <a
+href=raw>mbox</a>
+
+  Avoid top-posting and favor interleaved quoting:
+  <a
+href="https://en.wikipedia.org/wiki/Posting_style#Interleaved_style">https://en.wikipedia.org/wiki/Posting_style#Interleaved_style</a>
+
+* Reply using the <b>--to</b>, <b>--cc</b>, and <b>--in-reply-to</b>
+  switches of git-send-email(1):
+
+  git send-email \
+    --in-reply-to=c3f68b73-84c6-7428-4bf6-b47802141392@mattcorallo.com \
+    --to=lf-lists@mattcorallo.com \
+    --cc=bitcoin-dev@lists.linuxfoundation.org \
+    --cc=lightning-dev@lists.linuxfoundation.org \
+    /path/to/YOUR_REPLY
+
+  <a
+href="https://kernel.org/pub/software/scm/git/docs/git-send-email.html">https://kernel.org/pub/software/scm/git/docs/git-send-email.html</a>
+
+* If your mail client supports setting the <b>In-Reply-To</b> header
+  via mailto: links, try the <a
+href="mailto:lf-lists@mattcorallo.com?In-Reply-To=%3Cc3f68b73-84c6-7428-4bf6-b47802141392@mattcorallo.com%3E&#38;Cc=bitcoin-dev%40lists.linuxfoundation.org%2Clightning-dev%40lists.linuxfoundation.org&#38;Subject=Re%3A%20%5Bbitcoin-dev%5D%20CPFP%20Carve-Out%20for%20Fee-Prediction%20Issues%20in%20Contracting%20Applications%20%28eg%20Lightning%29">mailto: link</a>
+</pre>
+
+  Be sure your reply has a <b>Subject:</b> header at the top and a blank line
+  before the message body.
+<hr><pre>This is a public inbox, see <a
+href="../_/text/mirror/">mirroring instructions</a>
+for how to clone and mirror all data and code used for this inbox</pre></body></html>

@@ -1,0 +1,262 @@
+ 
+
+  
+   
+   
+    
+ Replace-by-fee (RBF) | Bitcoin Optech 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+   
+
+
+   
+ 
+
+    
+       
+      
+         
+         
+           
+             
+               
+             
+           
+         
+
+         
+             About 
+             Publications 
+             Topics 
+             Workshops 
+             Matrix 
+         
+        
+ 
+ 
+       
+         
+
+
+
+ 
+   
+    
+     /  home  /  topics  /  
+
+
+     Replace-by-fee (RBF) 
+    
+   
+
+   
+    
+
+
+ 
+
+  Also covering BIP125, Opt-in Replace-by-Fee, and Full-RBF  
+
+  Replace-By-Fee (RBF)  is a node policy that allows an unconfirmed transaction in a mempool to be replaced with a different transaction that spends at least one of the same inputs and which pays a higher transaction fee. 
+
+ Different node software can use different RBF rules, so there have
+been several variations.  The most widely-used form of RBF today is
+ BIP125   opt-in RBF  as
+implemented in  Bitcoin Core 0.12.0  and subsequent
+versions; this allows the creator of a transaction to signal that
+they’re willing to allow it to be replaced by a higher-paying version.
+An alternative form of RBF is  full-RBF  that allows any transaction to
+be replaced whether or not it signals BIP125 replaceability. 
+
+ BIP125 requires a replacement transaction to pay both higher feerate
+(BTC/vbyte) and a higher absolute fee (total BTC).  This can make
+multiparty transactions that want to use RBF vulnerable to
+ transaction pinning  attacks, and so an occasional discussion
+topic is proposals to allow RBF to operate solely on a feerate basis. 
+
+ Primary code and documentation 
+
+ 
+    BIP125  
+    Bitcoin Core PR #6871: nSequence-based Full-RBF opt-in  
+ 
+
+ Optech newsletter and website mentions 
+
+  2026  
+ 
+    Bitcoin Core #29278 adds -maxfeerate to cap wallet transaction feerates, including fee bumps  
+    LND #10962 disables the RBF cooperative-close flow for auxiliary channels  
+    Discussion of removing RBF signaling from wallet transactions  
+    Eclair #3298 updates RBF logic to follow the new BOLT2 feerate bump rule  
+    BOLTs #1327 updates the RBF feerate bump rule to ensure compliance at low feerates  
+    Bitcoin Core #34911 removes deprecated RBF-related boolean fields from mempool RPCs  
+    LDK #4494 updates RBF logic to follow the new BOLT2 feerate bump rule  
+    LDK #4427 adds RBF of negotiated splice funding transactions that are not yet locked  
+ 
+
+  2025  
+ 
+    LND introduces an RBF cooperative close flow that allows either peer to bump the fee rate  
+    Updated LND sweeper subsystem for choosing appropriate RBF feerates  
+ 
+
+  2024  
+ 
+    Bitcoin Core #30592 removes the  mempoolfullrbf  setting  
+    Nodes with full-RBF successfully reconstructing more compact blocks than nodes with only opt-in RBF  
+    Bitcoin Core #30493 enables full RBF by default  
+    Question: why does RBF rule #3 exist?  
+    Bitcoin Core #28984 adds support for a limited version of package replace-by-fee  
+    Question about the size of transactions that opt-in to RBF, opt-out of RBF, and replacements  
+    Analysis of how cluster mempool would’ve affected RBF in 2023  
+    Bitcoin Core #29242 lays the groundwork for package replace by fee  
+    BitGo adds RBF support  
+    Pure replace by feerate is not guaranteed to be incentive compatible  
+    Proposal for replace-by-feerate to avoid transaction pinning  
+    Idea to apply RBF rules to v3 transactions to allow removing CPFP carve-out for cluster mempool  
+ 
+
+  2023  
+ 
+    Discussion of cluster mempool for RBF  
+    Summary of well-known behavior for wallets to avoid when creating multiple replacements  
+    Replacement cycle attacks on HTLCs  
+    Recommendation to RBF fee bump pre-signed transactions with more pre-signed transactions  
+    Proposal for miners to automatically retry previously replaced transactions  
+    Proposal to enable full-RBF by default  
+    Question about whether 0 OP_CSV forces the spending transaction to signal BIP125 replaceability?  
+    Suggested best practices for CPFP or RBF fee-bumping a previous CPFP fee bump  
+    Bitcoin Core #25344 updates the fee-bumping RPCs to allow altering replacement outputs  
+    Continued RBF discussion, including number of full-RBF nodes, RBF-FSS, and RBF motivation  
+ 
+
+  2022  
+ 
+    2022 year-in-review: replace-by-fee  
+    Website to monitor unsignaled transaction replacements  
+    Continued discussion about enabling full-RBF in Bitcoin Core  
+    Discussion about  mempoolfullrbf  option’s effect on mempool consistency  
+    Continued discussion about  mempoolfullrbf  option for enabling full RBF  
+    History of the term “full RBF”  
+    Concerns raised about configuration option allowing full replace by fee in Bitcoin Core  
+    Proposal for relay of v3 transactions allows replacement  
+    Bitcoin Core #25610 opts-in the RPCs and  -walletrbf  to RBF by default  
+    Bitcoin Core fullrbf setting where the node always allows transaction replacement  
+    Discussion about enabling full replace by fee in Bitcoin Core (off by default)  
+    Discussion about allowing transaction witness replacement without a fee bump  
+    Summary of recent proposed changes to RBF policy  
+    Discussion about RBF policy, including suggested changes  
+    Proposal to briefly allow full RBF before using default opt-in RBF  
+ 
+
+  2021  
+ 
+    2021 year-in-review: default transaction replacement by fee  
+    2021 year-in-review: BIP125 opt-in replace-by-fee discrepancy  
+    Proposal of initial RBF rules for mempool package acceptance before implementing package relay  
+    Trezor wallet software defaults to enabling BIP125 RBF  
+    Proposal to allow any mempool transaction to be replaced by default  
+    Continued discussion about CVE-2021-31876’s impact on protocols using RBF  
+    CVE-2021-31876 discrepancy between BIP125 and Bitcoin Core implementation  
+    Upcoming relay policy workshop to discuss RBF and other topics  
+    Recovering lost LN funding transactions after RBF fee bumping  
+    Question: would first-seen-safe prevent confirmed RBF double spends?  
+ 
+
+  2020  
+ 
+    Sparrow wallet adds support for RBF fee bumping  
+    C-Lightning #3870 implements RBF scorched earth for penalty transactions  
+    Bitcoin Core #16373 allows the bumpfee RPC used for RBF to return a PSBT  
+ 
+
+  2019  
+ 
+    Compatibility matrix—Replace by Fee  
+    Bitcoin Core removes  mempoolreplacement  configuration option  
+    LND adds support for RBF fee bumping  
+    Proposal to override some BIP125 RBF conditions  
+    RBF in the wild (survey of RBF usage)  
+ 
+
+  2018  
+ 
+    2018 year-in-review: transaction statistics  
+ 
+
+ See also 
+
+ 
+    Transaction pinning  
+    Version 3 transaction relay  
+   
+      Opt-in RBF FAQ  
+
+       
+   
+ 
+
+ 
+
+ Previous Topic:   Rendez-vous routing 
+
+ 
+ 
+
+ Next Topic:   Replacement cycling 
+
+ 
+
+  Edit page  
+   Report Issue  
+
+
+   
+
+ 
+
+       
+      
+    
+
+   
+
+     Bitcoin Optech 
+
+     
+       
+         
+           Bitcoin Optech   info@bitcoinops.org   
+       
+
+                bitcoinops           bitcoinoptech    
+ 
+
+       
+         Helping Bitcoin-based businesses integrate scaling technology. 
+       
+     
+
+   
+
+ 
+ 
+
+ 

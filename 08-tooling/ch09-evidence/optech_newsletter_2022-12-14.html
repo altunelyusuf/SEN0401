@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Bitcoin Optech Newsletter #230 | Bitcoin Optech</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Bitcoin Optech Newsletter #230" />
+<meta name="author" content="Bitcoin Optech" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="This week’s newsletter summarizes a proposal for a modified version of LN that may improve compatibility with channel factories, describes software for mitigating some effects of channel jamming attacks without changing the LN protocol, and links to a website for tracking unsignaled transaction replacements. Also included are our regular sections with announcements of new client and service software, summaries of popular questions and answers on the Bitcoin Stack Exchange, and descriptions of notable changes to popular Bitcoin infrastructure software." />
+<meta property="og:description" content="This week’s newsletter summarizes a proposal for a modified version of LN that may improve compatibility with channel factories, describes software for mitigating some effects of channel jamming attacks without changing the LN protocol, and links to a website for tracking unsignaled transaction replacements. Also included are our regular sections with announcements of new client and service software, summaries of popular questions and answers on the Bitcoin Stack Exchange, and descriptions of notable changes to popular Bitcoin infrastructure software." />
+<link rel="canonical" href="https://bitcoinops.org/en/newsletters/2022/12/14/" />
+<meta property="og:url" content="https://bitcoinops.org/en/newsletters/2022/12/14/" />
+<meta property="og:site_name" content="Bitcoin Optech" />
+<meta property="og:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-12-14T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="twitter:title" content="Bitcoin Optech Newsletter #230" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Bitcoin Optech"},"dateModified":"2022-12-14T00:00:00+00:00","datePublished":"2022-12-14T00:00:00+00:00","description":"This week’s newsletter summarizes a proposal for a modified version of LN that may improve compatibility with channel factories, describes software for mitigating some effects of channel jamming attacks without changing the LN protocol, and links to a website for tracking unsignaled transaction replacements. Also included are our regular sections with announcements of new client and service software, summaries of popular questions and answers on the Bitcoin Stack Exchange, and descriptions of notable changes to popular Bitcoin infrastructure software.","headline":"Bitcoin Optech Newsletter #230","image":"https://bitcoinops.org/img/logos/optech-notext.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://bitcoinops.org/en/newsletters/2022/12/14/"},"url":"https://bitcoinops.org/en/newsletters/2022/12/14/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://bitcoinops.org/feed.xml" title="Bitcoin Optech" /></head>
+
+
+  <body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">
+      <img src="/img/logos/optech-horiz.png" alt="OpTech Logo">
+    </a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/en/about/">About</a>
+            <a class="page-link" href="/en/publications/">Publications</a>
+            <a class="page-link" href="/en/topics/">Topics</a>
+            <a class="page-link" href="/en/workshops/">Workshops</a>
+            <a class="page-link" href="/en/matrix/">Matrix</a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+<article class="newsletter">
+  <header class="post-header">
+    
+<div class="localization">
+    <a href="/en/newsletters/2022/12/14/">en</a>
+    
+        
+        
+        
+            | <a href="/ja/newsletters/2022/12/14/">ja</a>
+        
+    
+        
+        
+        
+            | <a href="/translations/" title="No Spanish translation currently available" class="no-translation">es</a>
+        
+    
+        
+        
+        
+            | <a href="/cs/newsletters/2022/12/14/">cs</a>
+        
+    
+        
+        
+        
+            | <a href="/translations/" title="No Hindi translation currently available" class="no-translation">hi</a>
+        
+    
+        
+        
+        
+            | <a href="/zh/newsletters/2022/12/14/">zh</a>
+        
+    
+        
+        
+        
+            | <a href="/translations/" title="No German translation currently available" class="no-translation">de</a>
+        
+    
+        
+        
+        
+            | <a href="/fr/newsletters/2022/12/14/">fr</a>
+        
+    
+        
+        
+        
+            | <a href="/translations/" title="No Portuguese translation currently available" class="no-translation">pt</a>
+        
+    
+</div>
+    
+    
+    <p class="center">/ <a href="/">home</a> / <a href="/en/newsletters/">newsletters</a> / </p>
+
+
+    <h1 class="post-title">Bitcoin Optech Newsletter #230</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2022-12-14T00:00:00+00:00">Dec 14, 2022
+      </time>
+    </p>
+  </header>
+  <div class="post-content">
+    <p>This week’s newsletter summarizes a proposal for a modified version of
+LN that may improve compatibility with channel factories, describes
+software for mitigating some effects of channel jamming attacks without
+changing the LN protocol, and links to a website for tracking unsignaled
+transaction replacements.  Also included are our regular sections with
+announcements of new client and service software, summaries of popular
+questions and answers on the Bitcoin Stack Exchange, and descriptions of
+notable changes to popular Bitcoin infrastructure software.</p>
+
+<h2 id="news">News</h2>
+
+<ul>
+  <li id="factory-optimized-ln-protocol-proposal" class="anchor-list">
+    <p><a href="#factory-optimized-ln-protocol-proposal" class="anchor-list-link">●</a> <strong>Factory-optimized LN protocol proposal:</strong> John Law <a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/lightning-dev/2022-December/003782.html">posted</a> to the Lightning-Dev mailing list the description of a
+protocol optimized for creating <a href="/en/topics/channel-factories/">channel factories</a>.  Channel factories allow multiple users to trustlessly
+open multiple channels between pairs of users with only a single
+transaction onchain.  For example, 20 users could cooperate to create
+an onchain transaction about 10 times larger than a normal two-party
+open but which opened a total of 190 channels<!-- n=20 ; n*(n - 1)/2
+-->.</p>
+
+    <p>Law notes that the existing LN channel protocol (commonly called
+LN-penalty) creates two problems for channels opened from within a
+factory:</p>
+
+    <ul>
+      <li id="long-required-htlc-expiries" class="anchor-list">
+        <p><a href="#long-required-htlc-expiries" class="anchor-list-link">●</a> <em>Long required HTLC expiries:</em> trustlessness requires that any
+participant in a factory be able to exit it and regain exclusive
+control over their funds onchain.  This is accomplished by the
+participant publishing the current state of balances in the
+factory onchain.  However, a mechanism is needed to prevent the
+participant from publishing an earlier state, e.g. one where they
+controlled a greater amount of money.  The original factory
+proposal accomplishes this by using one or more timelocked
+transactions that ensure more recent states can be confirmed more
+quickly than outdated states.</p>
+
+        <p>A consequence of this, described by Law, is that any LN payment
+(<a href="/en/topics/htlc/">HTLC</a>) that is routed through a channel in a
+channel factory needs to provide enough time for the latest
+state timelock to expire so the factory can be unilaterally
+closed.  Worse, this applies each time a payment is forwarded
+through a factory.  For example, if a payment is forwarded
+through 10 factories each with a 1-day expiry, it’s possible that
+a payment could be <a href="/en/topics/channel-jamming-attacks/">jammed</a> by
+accident or on purpose for 10 days (or longer, depending on
+other HTLC settings).</p>
+      </li>
+      <li id="all-or-nothing" class="anchor-list">
+        <p><a href="#all-or-nothing" class="anchor-list-link">●</a> <em>All or nothing:</em> for factories to truly achieve their best
+efficiencies, all of their channels also need to be cooperatively
+closed in a single onchain transaction.  Cooperative closes aren’t
+possible if any of the original participants becomes
+unresponsive—and the chance of a participant becoming
+unresponsive approaches 100% as the number of participants
+increases, limiting the maximum benefit factories can provide.</p>
+
+        <p>Law cites previous work in allowing factories to remain
+operational even if one participant wants to leave or,
+conversely, one participant becomes unresponsive, such as the
+proposals for <code class="language-plaintext highlighter-rouge">OP_TAPLEAF_UPDATE_VERIFY</code> and <code class="language-plaintext highlighter-rouge">OP_EVICT</code> (see
+Newsletters <a href="/en/newsletters/2021/09/15/#covenant-opcode-proposal">#166</a> and <a href="/en/newsletters/2022/03/02/#proposed-opcode-to-simplify-shared-utxo-ownership">#189</a>).</p>
+      </li>
+    </ul>
+
+    <p>Three proposed protocols are presented by Law to address the
+concerns.  All derive from a previous proposal by Law <a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/lightning-dev/2022-October/003732.html">posted</a> in October for <em>tunable penalties</em>—the ability to separate the
+management of the enforcement mechanism (penalties) from the
+management of other funds.  That previous proposal has not yet
+received any discussion on the Lightning-Dev mailing list.  As of
+this writing, Law’s new proposal has also not received any
+discussion.  If the proposals are sound, they would have the
+advantage over other proposals of not requiring any changes to
+Bitcoin’s consensus rules. <a href="/en/podcast/2022/12/15/#factory-optimized-ln-protocol-proposal"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="local-jamming-to-prevent-remote-jamming" class="anchor-list">
+    <p><a href="#local-jamming-to-prevent-remote-jamming" class="anchor-list-link">●</a> <strong>Local jamming to prevent remote jamming:</strong> Joost Jager
+<a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/lightning-dev/2022-December/003781.html">posted</a> to the Lightning-Dev mailing list a link and
+explanation for his project, <a href="https://github.com/lightningequipment/circuitbreaker">CircuitBreaker</a>.  This program,
+designed to be compatible with LND, enforces limits on the number of
+pending payments (<a href="/en/topics/htlc/">HTLCs</a>) the local node will forward on
+behalf of each of its peers.  For example, consider the worst case
+HTLC jamming attack:</p>
+
+    <p><img src="/img/posts/2020-12-ln-jamming-attacks.png" alt="Illustration of two different jamming attacks" /></p>
+
+    <p>With the current LN protocol, Alice is fundamentally limited to
+concurrently forwarding a maximum of <a href="https://github.com/lightning/bolts/blob/master/02-peer-protocol.md#rationale-7">483 pending HTLCs</a>.  If she
+instead uses CircuitBreaker to limit her channel with Mallory to
+10 concurrent pending HTLC forwards, her downstream channel with Bob
+(not visualized) and all other channels in this circuit will be
+protected from all but those first 10 HTLCs that Mallory keeps
+pending.  This may significantly reduce the effectiveness of
+Mallory’s attack by requiring she open many more channels to block
+the same number of HTLC slots, which may increase the cost of the
+attack by requiring she pay more onchain fees.</p>
+
+    <p>Although CircuitBreaker was originally implemented to simply refuse
+to accept any HTLCs in any channel which exceeded its limit, Jager
+notes that he recently implemented an optional additional mode which
+puts any HTLCs in a queue rather than immediately refusing or
+forwarding them.  When the number of concurrent pending HTLCs in a
+channel drops below the channel limit, CircuitBreaker forwards the
+oldest non-expired HTLC from the queue.  Jager describes two
+advantages of this approach:</p>
+
+    <ul>
+      <li id="backpressure" class="anchor-list">
+        <p><a href="#backpressure" class="anchor-list-link">●</a> <em>Backpressure:</em> if a node in the middle of a circuit refuses an
+HTLC, all nodes in the circuit (not just those further down the
+circuit) can use that HTLC’s slot and funds to forward other
+payments.  That means there’s limited incentive for Alice to
+refuse more than 10 HTLCs from Mallory—she can simply hope that
+some later node in the circuit will run CircuitBreaker or
+equivalent software.</p>
+
+        <p>However, if a later node (say Bob) uses CircuitBreaker to queue
+excess HTLCs, then Alice could still have her HTLC slots or
+funds exhausted by Mallory even though Bob and later nodes in
+the circuit retain the same benefits as now (with the exception
+of possibly increased channel closing costs for Bob in some
+cases; see Jager’s email or the CircuitBreaker documentation for
+details).  This gently pressures Alice into running
+CircuitBreaker or something similar.</p>
+      </li>
+      <li id="failure-attribution" class="anchor-list">
+        <p><a href="#failure-attribution" class="anchor-list-link">●</a> <em>Failure attribution:</em> the current LN protocol allows (in many
+cases) a spender to identify which channel refused to forward an
+HTLC.  Some spender software tries to avoid using those channels
+in future HTLCs for a certain amount of time.  In the case of
+refusing HTLCs from malicious actors like Mallory, this obviously
+doesn’t matter, but if a node running CircuitBreaker refuses HTLCs
+from honest spenders, this may not only reduce its income from
+those refused HTLCs but also the income it would’ve received from
+subsequent payment attempts.</p>
+
+        <p>However, the LN protocol doesn’t currently have a widely
+deployed way to determine which channel delayed an HTLC, so it’s
+less consequential in this regard to delay forwarding an HTLC
+than it is to outright refuse to forward it.  Jager notes that
+this is changing due to many LN implementations working on
+supporting more detailed onion-routed error messages (see
+<a href="/en/newsletters/2022/11/02/#ln-routing-failure-attribution">Newsletters #224</a>), so this advantage may
+disappear some day.</p>
+      </li>
+    </ul>
+
+    <p>Jager calls CircuitBreaker, “a simple but imperfect way to deal with
+channel jamming and spamming”.  Work continues on finding and
+deploying a protocol-level change that will more comprehensively
+mitigate concerns about jamming attacks, but CircuitBreaker stands
+out as a seemingly reasonable solution that’s compatible with the
+current LN protocol and which any LND user can deploy immediately on
+their forwarding node.  CircuitBreaker is MIT licensed and
+conceptually simple, so it should be possible to adapt or port for
+other LN implementations. <a href="/en/podcast/2022/12/15/#local-jamming-to-prevent-remote-jamming"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="monitoring-of-full-rbf-replacements" class="anchor-list">
+    <p><a href="#monitoring-of-full-rbf-replacements" class="anchor-list-link">●</a> <strong>Monitoring of full-RBF replacements:</strong> developer 0xB10C
+<a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2022-December/021258.html">posted</a> to the Bitcoin-Dev mailing list that they’ve
+begun providing <a href="https://fullrbf.mempool.observer/">publicly accessible</a> monitoring of
+transaction replacements in the mempool of their Bitcoin Core node
+that don’t contain the BIP125 signal.  Their node allows full-RBF
+replacement using the <code class="language-plaintext highlighter-rouge">mempoolfullrbf</code> configuration option (see
+<a href="/en/newsletters/2022/07/13/#bitcoin-core-25353">Newsletter #208</a>).</p>
+
+    <p>Users and services can use the website as an indicator for which
+large mining pools might be currently confirming unsignaled
+replacement transactions (if any are doing so).  However, we remind
+readers that payments received in unconfirmed transactions cannot be
+guaranteed even if miners don’t currently seem to be mining
+unsignaled replacements. <a href="/en/podcast/2022/12/15/#monitoring-of-full-rbf-replacements"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+</ul>
+
+<h2 id="changes-to-services-and-client-software">Changes to services and client software</h2>
+
+<p><em>In this monthly feature, we highlight interesting updates to Bitcoin
+wallets and services.</em></p>
+
+<ul>
+  <li id="lily-wallet-adds-coin-selection" class="anchor-list">
+    <p><a href="#lily-wallet-adds-coin-selection" class="anchor-list-link">●</a> <strong>Lily Wallet adds coin selection:</strong>
+Lily Wallet <a href="https://github.com/Lily-Technologies/lily-wallet/releases/tag/v1.2.0">v1.2.0</a> adds <a href="/en/topics/coin-selection/">coin selection</a> features. <a href="/en/podcast/2022/12/15/#lily-wallet-adds-coin-selection"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="vortex-software-creates-ln-channels-from-a-coinjoin" class="anchor-list">
+    <p><a href="#vortex-software-creates-ln-channels-from-a-coinjoin" class="anchor-list-link">●</a> <strong>Vortex software creates LN channels from a coinjoin:</strong>
+Using <a href="/en/topics/taproot/">taproot</a> and collaborative <a href="/en/topics/coinjoin/">coinjoin</a>
+transactions, users have <a href="https://twitter.com/benthecarman/status/1590886577940889600">opened LN channels</a> on Bitcoin mainnet using the
+<a href="https://github.com/ln-vortex/ln-vortex">Vortex</a> software. <a href="/en/podcast/2022/12/15/#vortex-software-creates-ln-channels-from-a-coinjoin"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="mutiny-demonstrates-ln-node-in-a-browser-poc" class="anchor-list">
+    <p><a href="#mutiny-demonstrates-ln-node-in-a-browser-poc" class="anchor-list-link">●</a> <strong>Mutiny demonstrates LN node in a browser PoC:</strong>
+Using WASM and LDK, developers <a href="https://twitter.com/benthecarman/status/1595395624010190850">demonstrated</a> a
+<a href="https://github.com/BitcoinDevShop/mutiny-web-poc">proof-of-concept</a> implementation of an LN node running in a
+mobile phone browser. <a href="/en/podcast/2022/12/15/#mutiny-demonstrates-ln-node-in-a-browser-poc"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="coinkite-launches-binarywatch-org" class="anchor-list">
+    <p><a href="#coinkite-launches-binarywatch-org" class="anchor-list-link">●</a> <strong>Coinkite launches BinaryWatch.org:</strong>
+The <a href="https://binarywatch.org/">BinaryWatch.org</a> website checks binaries from Bitcoin-related projects
+and monitors for any changes. The company also operates <a href="https://bitcoinbinary.org/">bitcoinbinary.org</a> a
+service that archives <a href="/en/topics/reproducible-builds/">reproducible builds</a> for
+Bitcoin-related projects. <a href="/en/podcast/2022/12/15/#coinkite-launches-binarywatch-org"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+</ul>
+
+<h2 id="selected-qa-from-bitcoin-stack-exchange">Selected Q&amp;A from Bitcoin Stack Exchange</h2>
+
+<p><em><a href="https://bitcoin.stackexchange.com/">Bitcoin Stack Exchange</a> is one of the first places Optech
+contributors look for answers to their questions—or when we have a
+few spare moments to help curious or confused users.  In
+this monthly feature, we highlight some of the top-voted questions and
+answers posted since our last update.</em></p>
+
+<ul>
+  <li id="why-is-connecting-to-the-bitcoin-network-exclusively-over-tor-considered-a-bad-practice" class="anchor-list">
+    <p><a href="#why-is-connecting-to-the-bitcoin-network-exclusively-over-tor-considered-a-bad-practice" class="anchor-list-link">●</a> <a href="https://bitcoin.stackexchange.com/a/116146">Why is connecting to the Bitcoin network exclusively over Tor considered a bad practice?</a>
+Several answers explain that due to the lower cost of being able to generate many
+Tor addresses as compared to IPv4 and IPv6 addresses, a Bitcoin node operator
+exclusively using the Tor network could more easily be <a href="/en/topics/eclipse-attacks/">eclipse attacked</a> when compared to operating only on clearnet or with a
+combination of <a href="/en/topics/anonymity-networks/">anonymity networks</a>. <a href="/en/podcast/2022/12/15/#why-is-connecting-to-the-bitcoin-network-exclusively-over-tor-considered-a-bad-practice"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="why-aren-t-3-party-or-more-channels-realistically-possible-in-lightning-today" class="anchor-list">
+    <p><a href="#why-aren-t-3-party-or-more-channels-realistically-possible-in-lightning-today" class="anchor-list-link">●</a> <a href="https://bitcoin.stackexchange.com/a/116257">Why aren’t 3 party (or more) channels realistically possible in Lightning today?</a>
+Murch explains that since LN channels currently use the LN penalty mechanism
+that allocates <em>all</em> channel funds to a single counterparty in the event of a
+breach, extending LN penalty to handle multiple recipients of a justice
+transaction may be overly complicated and involve excessive overhead to
+implement. He then explains <a href="/en/topics/eltoo/">eltoo’s</a> mechanism and how it might
+handle multiparty channels. <a href="/en/podcast/2022/12/15/#why-aren-t-3-party-or-more-channels-realistically-possible-in-lightning-today"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="with-legacy-wallets-deprecated-will-bitcoin-core-be-able-to-sign-messages-for-an-address" class="anchor-list">
+    <p><a href="#with-legacy-wallets-deprecated-will-bitcoin-core-be-able-to-sign-messages-for-an-address" class="anchor-list-link">●</a> <a href="https://bitcoin.stackexchange.com/a/116187">With legacy wallets deprecated, will Bitcoin Core be able to sign messages for an address?</a>
+Pieter Wuille distinguishes between Bitcoin Core <a href="/en/newsletters/2020/11/25/#how-will-the-migration-tool-from-a-bitcoin-core-legacy-wallet-to-a-descriptor-wallet-work">deprecating legacy
+wallets</a> and the continued support for
+older address types like P2PKH addresses even in newer <a href="/en/topics/output-script-descriptors/">descriptor</a> wallets. While message signing is currently only possible for
+P2PKH addresses, efforts around <a href="/en/topics/generic-signmessage/">BIP322</a> could
+allow for message signing across other address types. <a href="/en/podcast/2022/12/15/#with-legacy-wallets-deprecated-will-bitcoin-core-be-able-to-sign-messages-for-an-address"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="how-do-i-set-up-a-time-decay-multisig" class="anchor-list">
+    <p><a href="#how-do-i-set-up-a-time-decay-multisig" class="anchor-list-link">●</a> <a href="https://bitcoin.stackexchange.com/a/116035">How do I set up a time-decay multisig?</a>
+User Yoda asks how to set up a time-decaying multisig, a UTXO that is spendable
+with a broadening set of pubkeys over time. Michael Folkson provides an
+example using <a href="/en/newsletters/2019/11/27/#what-is-the-difference-between-bitcoin-policy-language-and-miniscript">policy</a> and <a href="/en/topics/miniscript/">miniscript</a>, links to related resources, and notes the lack of user-friendly
+options currently. <a href="/en/podcast/2022/12/15/#how-do-i-set-up-a-time-decay-multisig"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="when-is-a-miniscript-solution-malleable" class="anchor-list">
+    <p><a href="#when-is-a-miniscript-solution-malleable" class="anchor-list-link">●</a> <a href="https://bitcoin.stackexchange.com/a/116275">When is a miniscript solution malleable?</a>
+Antoine Poinsot defines what malleability means in the context of
+miniscript, describes static analysis of malleability in miniscript, and walks
+through the original question’s malleability example. <a href="/en/podcast/2022/12/15/#when-is-a-miniscript-solution-malleable"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+</ul>
+
+<h2 id="releases-and-release-candidates">Releases and release candidates</h2>
+
+<p><em>New releases and release candidates for popular Bitcoin infrastructure
+projects.  Please consider upgrading to new releases or helping to test
+release candidates.</em></p>
+
+<ul>
+  <li id="bitcoin-core-24-0-1" class="anchor-list">
+    <p><a href="#bitcoin-core-24-0-1" class="anchor-list-link">●</a> <a href="https://bitcoincore.org/bin/bitcoin-core-24.0.1/">Bitcoin Core 24.0.1</a> is a major release of the mostly widely used
+full node software.  Its new features include an option for
+configuring the node’s <a href="/en/topics/replace-by-fee/">Replace-By-Fee</a> (RBF) policy, a new
+<code class="language-plaintext highlighter-rouge">sendall</code> RPC for easily spending all of a wallet’s funds in a single
+transaction (or for otherwise creating transactions with no change
+output), a <code class="language-plaintext highlighter-rouge">simulaterawtransaction</code> RPC that can be used to verify how
+a transaction will effect a wallet (e.g., for ensuring a coinjoin
+transaction only decreases the value of a wallet by fees), the ability
+to create watch-only <a href="/en/topics/output-script-descriptors/">descriptors</a> containing
+<a href="/en/topics/miniscript/">miniscript</a> expressions for improved forward
+compatibility with other software, and the automatic application of
+certain setting changes made in the GUI to RPC-based actions.  See the
+<a href="https://bitcoincore.org/en/releases/24.0.1/">release notes</a> for the full list of new features and bug
+fixes.</p>
+
+    <p>Note: a version 24.0 was tagged and had its binaries released, but
+project maintainers never announced it and instead worked with other
+contributors to resolve <a href="https://github.com/bitcoin/bitcoin/milestone/59?closed=1">some last-minute issues</a>, making this release of 24.0.1 the first announced release
+of the 24.x branch. <a href="/en/podcast/2022/12/15/#bitcoin-core-24-0-1"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="libsecp256k1-0-2-0" class="anchor-list">
+    <p><a href="#libsecp256k1-0-2-0" class="anchor-list-link">●</a> <a href="https://github.com/bitcoin-core/secp256k1/releases/tag/v0.2.0">libsecp256k1 0.2.0</a> is the first tagged release of this widely-used
+library for Bitcoin-related cryptographic operations.  An
+<a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2022-December/021271.html">announcement</a> of the release states, “for a
+long time, libsecp256k1’s development only had a master branch,
+creating unclarity about API compatibility and stability. Going
+forward, we will be creating tagged releases when relevant
+improvements are merged, following a semantic versioning scheme. […]
+We’re skipping version 0.1.0 because this version number was set in
+our autotools build scripts for years, and does not uniquely identify
+a set of source files. We will not be creating binary releases, but
+will take expected ABI compatibility issues into account for release
+notes and versioning.” <a href="/en/podcast/2022/12/15/#libsecp256k1-0-2-0"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="core-lightning-22-11-1" class="anchor-list">
+    <p><a href="#core-lightning-22-11-1" class="anchor-list-link">●</a> <a href="https://github.com/ElementsProject/lightning/releases/tag/v22.11.1">Core Lightning 22.11.1</a> is a minor release that temporarily
+reintroduces some features that were deprecated in 22.11, as requested
+by some downstream developers. <a href="/en/podcast/2022/12/15/#core-lightning-22-11-1"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+</ul>
+
+<h2 id="notable-code-and-documentation-changes">Notable code and documentation changes</h2>
+
+<p><em>Notable changes this week in <a href="https://github.com/bitcoin/bitcoin">Bitcoin Core</a>, <a href="https://github.com/ElementsProject/lightning">Core
+Lightning</a>, <a href="https://github.com/ACINQ/eclair">Eclair</a>, <a href="https://github.com/lightningdevkit/rust-lightning">LDK</a>,
+<a href="https://github.com/lightningnetwork/lnd/">LND</a>, <a href="https://github.com/bitcoin-core/secp256k1">libsecp256k1</a>, <a href="https://github.com/bitcoin-core/HWI">Hardware Wallet
+Interface (HWI)</a>, <a href="https://github.com/rust-bitcoin/rust-bitcoin">Rust Bitcoin</a>, <a href="https://github.com/btcpayserver/btcpayserver/">BTCPay
+Server</a>, <a href="https://github.com/bitcoindevkit/bdk">BDK</a>, <a href="https://github.com/bitcoin/bips/">Bitcoin Improvement
+Proposals (BIPs)</a>, and <a href="https://github.com/lightning/bolts">Lightning BOLTs</a>.</em></p>
+
+<ul>
+  <li id="bitcoin-core-25934" class="anchor-list">
+    <p><a href="#bitcoin-core-25934" class="anchor-list-link">●</a> <a href="https://github.com/bitcoin/bitcoin/issues/25934">Bitcoin Core #25934</a> adds an optional <code class="language-plaintext highlighter-rouge">label</code> argument to the
+<code class="language-plaintext highlighter-rouge">listsinceblock</code> RPC. Only transactions matching the label will be returned
+when a label is specified. <a href="/en/podcast/2022/12/15/#bitcoin-core-25934"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="lnd-7159" class="anchor-list">
+    <p><a href="#lnd-7159" class="anchor-list-link">●</a> <a href="https://github.com/lightningnetwork/lnd/issues/7159">LND #7159</a> updates the <code class="language-plaintext highlighter-rouge">ListInvoiceRequest</code> and
+<code class="language-plaintext highlighter-rouge">ListPaymentsRequest</code> RPCs with new <code class="language-plaintext highlighter-rouge">creation_date_start</code> and
+<code class="language-plaintext highlighter-rouge">creation_date_end</code> fields that can be used to filter out invoices and
+payments before or after the indicated date and time. <a href="/en/podcast/2022/12/15/#lnd-7159"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="ldk-1835" class="anchor-list">
+    <p><a href="#ldk-1835" class="anchor-list-link">●</a> <a href="https://github.com/lightningdevkit/rust-lightning/issues/1835">LDK #1835</a> adds a fake Short Channel IDentifier (SCID) namespace for intercepted HTLCs, enabling
+Lightning Service Providers (LSPs) to create a <a href="/en/topics/jit-routing/">just-in-time</a>
+(JIT) channel for end users to receive a lightning payment. This is done
+by including fake route hints in end-user invoices that signal to LDK
+that this is an intercept forward, similar to
+<a href="https://lightningdevkit.org/blog/introducing-phantom-node-payments/">phantom payments</a> (see <a href="/en/newsletters/2022/02/23/#ldk-1199">Newsletter #188</a>). LDK then generates an event,
+allowing the LSP the opportunity to open the JIT channel. The LSP can
+then forward the payment over the newly opened channel or fail it. <a href="/en/podcast/2022/12/15/#ldk-1835"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+  <li id="bolts-1021" class="anchor-list">
+    <p><a href="#bolts-1021" class="anchor-list-link">●</a> <a href="https://github.com/lightning/bolts/issues/1021">BOLTs #1021</a> allows onion-routing error messages to contain a
+<a href="https://github.com/lightning/bolts/blob/master/01-messaging.md#type-length-value-format">TLV</a> stream, which may be used in the future to include additional
+information about the failure.  This is a first step towards
+implementing <a href="/en/newsletters/2022/11/02/#ln-routing-failure-attribution">fat errors</a> as proposed in <a href="https://github.com/lightning/bolts/issues/1044">BOLTs #1044</a>. <a href="/en/podcast/2022/12/15/#bolts-1021"><i class="fa fa-headphones" title="Listen to our discussion of this on the podcast"></i></a></p>
+  </li>
+</ul>
+
+<h2 id="happy-holidays">Happy holidays!</h2>
+
+<p>This is Bitcoin Optech’s final regular newsletter of the year.  On
+Wednesday, December 21st, we’ll publish our fifth annual year-in-review
+newsletter.  Regular publication will resume on Wednesday, January 4th.</p>
+
+
+  </div>
+
+<!-- Begin MailChimp Signup Form -->
+<link href="/assets/css/mailchimp.css" rel="stylesheet" type="text/css">
+<div id="mc_embed_signup">
+<form action="https://bitcoinops.us18.list-manage.com/subscribe/post?u=70c3f85e5d13ffec674f30af8&amp;id=adc93c9774" method="post" id="main-mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+	<label for="mce-EMAIL">Subscribe to our newsletter</label>
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="email address" required>
+    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+    <div class="mc-input" aria-hidden="true"><input type="text" name="b_70c3f85e5d13ffec674f30af8_adc93c9774" tabindex="-1" value=""></div>
+    <div class="clear"><input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="button"></div>
+    </div>
+</form>
+</div>
+
+<!--End mc_embed_signup-->
+
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Bitcoin Optech</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Bitcoin Optech</li><li><a class="u-email" href="mailto:info@bitcoinops.org">info@bitcoinops.org</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/bitcoinops"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">bitcoinops</span></a></li><li><a href="https://www.twitter.com/bitcoinoptech"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">bitcoinoptech</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Helping Bitcoin-based businesses integrate scaling technology.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

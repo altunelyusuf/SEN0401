@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Replacement cycling | Bitcoin Optech</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Replacement cycling" />
+<meta name="author" content="Bitcoin Optech" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Replacement cycling is an attack against CPFP fee bumps and transactions using SIGHASH_SINGLE that allows an attacker to remove an unconfirmed transaction from the mempools of relaying full nodes without leaving an alternative transaction in its place. It mainly affects multiparty transactions that depend on CPFP fee bumps, such as those used in LN." />
+<meta property="og:description" content="Replacement cycling is an attack against CPFP fee bumps and transactions using SIGHASH_SINGLE that allows an attacker to remove an unconfirmed transaction from the mempools of relaying full nodes without leaving an alternative transaction in its place. It mainly affects multiparty transactions that depend on CPFP fee bumps, such as those used in LN." />
+<link rel="canonical" href="https://bitcoinops.org/en/topics/replacement-cycling/" />
+<meta property="og:url" content="https://bitcoinops.org/en/topics/replacement-cycling/" />
+<meta property="og:site_name" content="Bitcoin Optech" />
+<meta property="og:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-10-14T07:26:13+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="twitter:title" content="Replacement cycling" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Bitcoin Optech"},"dateModified":"2026-10-14T07:26:13+00:00","datePublished":"2026-10-14T07:26:13+00:00","description":"Replacement cycling is an attack against CPFP fee bumps and transactions using SIGHASH_SINGLE that allows an attacker to remove an unconfirmed transaction from the mempools of relaying full nodes without leaving an alternative transaction in its place. It mainly affects multiparty transactions that depend on CPFP fee bumps, such as those used in LN.","headline":"Replacement cycling","image":"https://bitcoinops.org/img/logos/optech-notext.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://bitcoinops.org/en/topics/replacement-cycling/"},"url":"https://bitcoinops.org/en/topics/replacement-cycling/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://bitcoinops.org/feed.xml" title="Bitcoin Optech" /></head>
+
+
+  <body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">
+      <img src="/img/logos/optech-horiz.png" alt="OpTech Logo">
+    </a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/en/about/">About</a>
+            <a class="page-link" href="/en/publications/">Publications</a>
+            <a class="page-link" href="/en/topics/">Topics</a>
+            <a class="page-link" href="/en/workshops/">Workshops</a>
+            <a class="page-link" href="/en/matrix/">Matrix</a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+
+
+<article class="post">
+  <header class="post-header">
+    
+    <p class="center">/ <a href="/">home</a> / <a href="/en/topics/">topics</a> / </p>
+
+
+    <h1 class="post-title">Replacement cycling</h1>
+    
+  </header>
+
+  <div class="post-content">
+    
+
+
+<!-- Actual page content -->
+
+<p><strong>Replacement cycling</strong> is an attack against CPFP fee bumps and transactions using <code class="language-plaintext highlighter-rouge">SIGHASH_SINGLE</code> that allows an attacker to remove an unconfirmed transaction from the mempools of relaying full nodes without leaving an alternative transaction in its place.  It mainly affects multiparty transactions that depend on CPFP fee bumps, such as those used in LN.</p>
+
+<p>Mallory and Bob may share funds, as in an LN channel.  Each of them has a
+<em>unilateral exit transaction</em> (such as an LN <em>commitment transaction</em>)
+that they can publish onchain at any time to terminate the fund sharing
+arrangement.  To allow either of them to fee bump the transaction, it
+contains at least one output each of them can spend in a child
+transaction for a <a href="/en/topics/cpfp/">CPFP fee bump</a>.</p>
+
+<p>If Bob wants to terminate the fund sharing, he can broadcast his
+unilateral exit transaction along with a child transaction for the CPFP
+fee bump.  Mallory has the
+ability to broadcast her own unilateral exit transaction with a
+higher-fee child transaction.  Because the two exit transactions spend the same
+inputs, they <em>conflict</em>, and Bob’s lower-fee exit transaction will be
+<a href="/en/topics/replace-by-fee/">replaced</a> in mempools with Mallory’s higher-fee alternative.
+That’s fine for Bob: in the protocol, he doesn’t care which exit
+transaction gets confirmed—either transaction will end the fund
+sharing arrangement.</p>
+
+<p>However, after Mallory’s alternative exit transaction has entered
+mempools, she can replace her child transaction with another conflicting
+transaction—this one with no relationship to either exit transaction.
+This replacement removes Mallory’s alternative transaction, leaving the
+mempool devoid of any transaction that terminates the fund sharing
+arrangement.</p>
+
+<p class="center"><img src="/img/posts/2024-08-replacement-cycling.png" alt="Illustration of a replacement cycle attack" /></p>
+
+<p>Bob can broadcast his exact same exit transaction and child transaction from
+before, but Mallory can repeat the sequence of steps to remove his
+transaction from mempools—although she’ll need to use a different UTXO
+or pay a higher feerate to reuse the same input each time.  The cycle of
+Bob rebroadcasting and Mallory re-removing is what presumably gives
+replacement cycling its name.</p>
+
+<p>Replacement cycling is especially concerning in protocols that use time
+sensitive transactions.  For example, forwarded <a href="/en/topics/htlc/">HTLCs</a> in
+LN must be resolved within a certain number of blocks.  If Mallory is
+able to use replacement cycling to prevent Bob from resolving HTLCs
+forwarded to Mallory within a certain amount of time, Mallory can steal
+from Bob.</p>
+
+<p>Several mitigations for replacement have been <a href="/en/newsletters/2023/10/25/#deployed-mitigations-in-ln-nodes-for-replacement-cycling">deployed</a> by LN implementations.  Possibly the most
+effective mitigation is a combination of Bob frequently rebroadcasting
+and the use of longer timeouts in protocols such as HTLCs (e.g.
+increasing the <a href="/en/topics/cltv-expiry-delta/">CLTV expiry delta</a> in LN).
+Additional mitigations have been <a href="/en/newsletters/2023/10/25/#proposed-additional-mitigations-for-replacement-cycling">proposed</a>.</p>
+
+<p class="center"><img src="/img/posts/2023-10-cltv-expiry-delta-cycling.png" alt="Effectiveness of rebroadcast and higher CLTV expiry delta" /></p>
+
+<p>Any transaction that can be replaced in the mempool by a counterparty or
+third party is potentially vulnerable to replacement cycling if any of
+the replacement transactions spend an input under the control of the
+attacker.</p>
+
+<h2 id="primary-code-and-documentation">Primary code and documentation</h2>
+
+<ul>
+  <li><a href="https://gnusha.org/url/https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2023-October/021999.html">Full Disclosure of replacement cycling vulnerabilities</a></li>
+</ul>
+
+<h2 id="optech-newsletter-and-website-mentions">Optech newsletter and website mentions</h2>
+
+<p><strong>2025</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2025/03/21/#discussion-of-lnd-s-dynamic-feerate-adjustment-system">Updated LND sweeper subsystem for fee bumping to improve replacement cycling resistance</a></li>
+  <li><a href="/en/newsletters/2025/01/31/#replacement-cycling-attacks-with-miner-exploitation">Variant of replacement cycling attack that could benefit exploitative miners</a></li>
+  <li><a href="/en/newsletters/2025/01/10/#multiparty-ln-symmetry-variant-with-penalties-for-limiting-published-updates">Comparison of replacement cycling HTLCs to repeatedly broadcasting old states in LN-Symmetry</a></li>
+</ul>
+
+<p><strong>2024</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2024/08/09/#replacement-cycle-attack-against-pay-to-anchor">Replacement cycle attack against pay-to-anchor</a></li>
+</ul>
+
+<p><strong>2023</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2023/10/25/#replacement-cycling-vulnerability-against-htlcs">Replacement cycling vulnerability against HTLCs with deployed and proposed mitigations</a></li>
+</ul>
+
+<h2 id="see-also">See also</h2>
+
+<ul>
+  <li><a href="/en/topics/replace-by-fee/">Transaction replacement</a></li>
+  <li><a href="/en/topics/cpfp/">Child Pays For Parent (CPFP)</a></li>
+  <li>
+    <p><a href="/en/topics/cltv-expiry-delta/">CLTV expiry delta</a></p>
+
+    <p><br /></p>
+  </li>
+</ul>
+
+<p class="float-left">
+
+<strong>Previous Topic:</strong><br /><a href="/en/topics/replace-by-fee/">Replace-by-fee (RBF)</a>
+
+</p>
+<p class="float-right">
+
+<strong>Next Topic:</strong><br /><a href="/en/topics/reproducible-builds/">Reproducible builds</a>
+
+</p>
+
+<p class="center"><a href="https://github.com/bitcoinops/bitcoinops.github.io/edit/master/_topics/en/replacement-cycling.md">Edit page</a><br />
+  <a href="https://github.com/bitcoinops/bitcoinops.github.io/issues/new?body=Source file: _topics/en/replacement-cycling.md">Report Issue</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Bitcoin Optech</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Bitcoin Optech</li><li><a class="u-email" href="mailto:info@bitcoinops.org">info@bitcoinops.org</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/bitcoinops"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">bitcoinops</span></a></li><li><a href="https://www.twitter.com/bitcoinoptech"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">bitcoinoptech</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Helping Bitcoin-based businesses integrate scaling technology.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

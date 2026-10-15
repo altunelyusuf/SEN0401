@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Cluster mempool | Bitcoin Optech</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Cluster mempool" />
+<meta name="author" content="Bitcoin Optech" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Cluster mempool is a proposal to associate each unconfirmed transaction in a mempool with related transactions, creating a cluster. Each cluster contains feerate-sorted chunks consisting of one or more transactions. If we limit a cluster’s size, we also limit how much needs to be recomputed in response to new transactions being added to the mempool, allowing algorithmic decisions affecting the entire mempool to complete fast enough to use them in P2P network code." />
+<meta property="og:description" content="Cluster mempool is a proposal to associate each unconfirmed transaction in a mempool with related transactions, creating a cluster. Each cluster contains feerate-sorted chunks consisting of one or more transactions. If we limit a cluster’s size, we also limit how much needs to be recomputed in response to new transactions being added to the mempool, allowing algorithmic decisions affecting the entire mempool to complete fast enough to use them in P2P network code." />
+<link rel="canonical" href="https://bitcoinops.org/en/topics/cluster-mempool/" />
+<meta property="og:url" content="https://bitcoinops.org/en/topics/cluster-mempool/" />
+<meta property="og:site_name" content="Bitcoin Optech" />
+<meta property="og:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-10-14T07:26:13+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="twitter:title" content="Cluster mempool" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Bitcoin Optech"},"dateModified":"2026-10-14T07:26:13+00:00","datePublished":"2026-10-14T07:26:13+00:00","description":"Cluster mempool is a proposal to associate each unconfirmed transaction in a mempool with related transactions, creating a cluster. Each cluster contains feerate-sorted chunks consisting of one or more transactions. If we limit a cluster’s size, we also limit how much needs to be recomputed in response to new transactions being added to the mempool, allowing algorithmic decisions affecting the entire mempool to complete fast enough to use them in P2P network code.","headline":"Cluster mempool","image":"https://bitcoinops.org/img/logos/optech-notext.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://bitcoinops.org/en/topics/cluster-mempool/"},"url":"https://bitcoinops.org/en/topics/cluster-mempool/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://bitcoinops.org/feed.xml" title="Bitcoin Optech" /></head>
+
+
+  <body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">
+      <img src="/img/logos/optech-horiz.png" alt="OpTech Logo">
+    </a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/en/about/">About</a>
+            <a class="page-link" href="/en/publications/">Publications</a>
+            <a class="page-link" href="/en/topics/">Topics</a>
+            <a class="page-link" href="/en/workshops/">Workshops</a>
+            <a class="page-link" href="/en/matrix/">Matrix</a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+
+
+<article class="post">
+  <header class="post-header">
+    
+    <p class="center">/ <a href="/">home</a> / <a href="/en/topics/">topics</a> / </p>
+
+
+    <h1 class="post-title">Cluster mempool</h1>
+    
+  </header>
+
+  <div class="post-content">
+    
+
+
+<!-- Actual page content -->
+
+<p><strong>Cluster mempool</strong> is a proposal to associate each unconfirmed transaction in a mempool with related transactions, creating a <em>cluster</em>.  Each cluster contains feerate-sorted <em>chunks</em> consisting of one or more transactions.  If we limit a cluster’s size, we also limit how much needs to be recomputed in response to new transactions being added to the mempool, allowing algorithmic decisions affecting the entire mempool to complete fast enough to use them in P2P network code.</p>
+
+<p>The overall goal of cluster mempool is being able to reason about the
+effect of transactions on the blocks a miner would create if it has an
+identical mempool to the local node’s mempool.</p>
+
+<p>The most apparent example of why we need that kind of
+reasoning is the fact that today, the eviction mechanism (when the
+mempool exceeds the node’s size limit) can choose to evict the very best
+transaction in the mempool overall (<a href="https://docs.google.com/presentation/d/1Jl6VDNismGKEeVI7MxWsi0PW9pfNfKzOe1KdbH94QYw/edit#slide=id.g293b84fe537_0_63">example</a>).</p>
+
+<p>To describe the current limitation in short: miners prefer to select for inclusion the
+transactions in order of highest ancestor-feerate first (feerate of a
+set formed by a single transaction and all its unconfirmed ancestors).
+Eviction removes transactions in order of lowest-descendant feerate
+first (feerate of a set formed by a single unconfirmed transaction and
+its descendants). This mechanism is certainly suboptimal (highest
+ancestor-feerate first is just an approximation for highest-feerate
+subset overall, and e.g. can’t deal with
+multiple-children-pay-for-the-same-parent), but more problematic is the
+fact that eviction isn’t the exact opposite of transaction selection: they’re both
+approximations, and the ways they are suboptimal don’t cancel out, so
+they don’t result in the opposite order of each other.</p>
+
+<h2 id="the-obvious-solution-doesnt-work">The obvious solution doesn’t work</h2>
+
+<p>There is an obvious solution to the problem: instead of finding
+lowest-feerate-descendant-sets, run the normal selection algorithm on the
+entire mempool (don’t stop after one block worth of transactions), and
+see what it would include last. That’s the thing you should evict!</p>
+
+<p>Sadly, this is computationally infeasible. The block building algorithm
+is fairly fast when running on one block worth of transactions, but
+running it on the entire mempool would take a significant multiple of
+the time. This is not possible to do every time
+something needs to be evicted (which may be multiple times per second,
+and ideally, with ~millisecond latency to not stall other processing).</p>
+
+<p>An obvious question arises: can’t we precompute things so that computing
+the updated selection-order-of-full-mempool isn’t too slow? And we kind of
+can. What the block building algorithm ultimately does is find groups of
+transactions to include at once (e.g. <a href="/en/topics/cpfp/">child pays for parent</a> means both
+will be included at once), at the feerate that included set overall has
+(sum of fees divided by sum of sizes). If we could somehow precompute
+those groupings (which we’ll call chunks) ahead of time, then the actual
+block building algorithm (ignoring bin-packing issues once we get close
+to the block being full) is just including chunks in decreasing feerate
+order.</p>
+
+<h2 id="precomputing-is-feasiblebut-only-if-clusters-are-limited-in-size">Precomputing is feasible—but only if clusters are limited in size</h2>
+
+<p>So can we precompute the chunks, and update just the ones that get
+affected when a new transaction or block comes in? Sadly, there is in
+theory no bound on how many transactions’ chunkings can be affected by
+even a single new transaction—it could be the entire mempool, in which
+case we’d be back to recomputing everything. See <a href="https://docs.google.com/presentation/d/1Jl6VDNismGKEeVI7MxWsi0PW9pfNfKzOe1KdbH94QYw/edit#slide=id.g293b84fe537_0_105">this example</a> where a single newly added transaction completely reverses the
+chunking of all transactions.</p>
+
+<p>However, it is hopefully apparent that the limit of how much can be
+affected by a transaction is just whatever transactions it is directly
+or indirectly connected to, i.e. its cluster. Optimal chunks never cross
+cluster boundaries—any chunk that did could be split into independent
+chunks, and doing so would never worsen the result.  Thus, if clusters
+are limited in size, we effectively also limit how much needs to be
+recomputed in response to new transactions being added to the mempool.</p>
+
+<p>So what is cluster mempool?</p>
+
+<ul>
+  <li>
+    <p>A policy rule to limit how big clusters of transactions can get (a
+replacement for the current ancestor and descendant limits).</p>
+  </li>
+  <li>
+    <p>As a result, it becomes feasible to precompute the chunkings (groups
+of transactions that will be included simultaneously at block building
+time) ahead of time by running the selection algorithm on those
+clusters individually and updating this precomputation on the fly
+whenever a cluster changes.</p>
+  </li>
+  <li>
+    <p>Modify all places that effectively involve guessing “how will this
+impact future mined blocks” with looking up chunk feerates, which
+become kind of a “transaction selection score”. This includes the aforementioned
+block building and eviction, but also transaction relay, <a href="/en/topics/replace-by-fee/">RBF</a> assessment, <a href="/en/topics/package-relay/">package relay</a>, possibly fee
+estimation, and maybe other things.</p>
+  </li>
+  <li>
+    <p>As a result of the selection algorithm now working on very small sets,
+maybe even higher-quality algorithms than
+highest-ancestor-feerate-first become possible.</p>
+  </li>
+</ul>
+
+<h2 id="primary-code-and-documentation">Primary code and documentation</h2>
+
+<ul>
+  <li><a href="https://github.com/bitcoin/bitcoin/issues/27677">Bitcoin Core #27677: new mempool design</a></li>
+  <li><a href="https://delvingbitcoin.org/t/introduction-to-cluster-linearization/1032">Introduction to cluster linearization</a></li>
+</ul>
+
+<h2 id="optech-newsletter-and-website-mentions">Optech newsletter and website mentions</h2>
+
+<p><strong>2026</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2026/08/28/#bitcoin-core-34075">Bitcoin Core #34075 uses chunk feerates for mempool-based fee estimation</a></li>
+  <li><a href="/en/newsletters/2026/03/06/#bitcoin-core-34616">Bitcoin Core #34616 introduces a more accurate cost model for spanning-forest linearization</a></li>
+  <li><a href="/en/newsletters/2026/01/02/#bitcoin-core-32545">Bitcoin Core #32545 updates cluster mempool to use a spanning-forest linearization algorithm</a></li>
+</ul>
+
+<p><strong>2025</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2025/07/18/#bitcoin-core-31553">Bitcoin Core #31553 adds block reorg handling to the cluster mempool project</a></li>
+  <li><a href="/en/newsletters/2025/06/13/#relay-censorship-resistance-through-top-mempool-set-reconciliation">Relay censorship resistance using cluster mempool and efficient set reconciliation</a></li>
+  <li><a href="/en/newsletters/2025/05/02/#comparison-of-cluster-linearization-techniques">Comparison of cluster linearization techniques</a></li>
+  <li><a href="/en/newsletters/2025/02/07/#discovery-of-previous-research-for-finding-optimal-cluster-linearization">Discovery of previous research for finding optimal cluster linearization</a></li>
+</ul>
+
+<p><strong>2024</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2024/11/29/#bitcoin-core-31122">Bitcoin Core #31122 allows computing the effect of a set of changes on the state of the mempool</a></li>
+  <li><a href="/en/newsletters/2024/09/20/#bitcoin-core-30286">Bitcoin Core #30286 optimizes the candidate search algorithm used in cluster linearizations</a></li>
+  <li><a href="/en/newsletters/2024/08/09/#bitcoin-core-30285">Bitcoin Core #30285 adds two key cluster linearization algorithms</a></li>
+  <li><a href="/en/newsletters/2024/08/02/#optimizing-block-building-with-cluster-mempool">Optimizing block building with cluster mempool</a></li>
+  <li><a href="/en/newsletters/2024/08/02/#bitcoin-core-30126">Bitcoin Core #30126 introduces a cluster linearization function for eventual use by cluster mempool</a></li>
+  <li><a href="/en/newsletters/2024/07/26/#why-is-restructure-of-mempool-required-with-cluster-mempool">Question: why is restructure of mempool required with cluster mempool?</a></li>
+  <li><a href="/en/newsletters/2024/07/26/#path-to-cluster-mempool">Discussion about replacing CPFP carve-out with either TRUC or RBFR to unblock cluster mempool</a></li>
+  <li><a href="/en/newsletters/2024/07/19/#introduction-to-cluster-linearization">Introduction to cluster linearization</a></li>
+  <li><a href="/en/newsletters/2024/04/17/#what-would-have-happened-if-cluster-mempool-had-been-deployed-a-year-ago">Analysis: what would have happened if cluster mempool had been deployed a year ago?</a></li>
+  <li><a href="/en/newsletters/2024/04/03/#bitcoin-core-29242">Bitcoin Core #29242 introduces utility functions to compare two feerate diagrams</a></li>
+  <li><a href="/en/newsletters/2024/02/14/#ideas-for-relay-enhancements-after-cluster-mempool-is-deployed">Ideas for post-v3 relay enhancements after cluster mempool is deployed</a></li>
+  <li><a href="/en/newsletters/2024/02/07/#securely-opening-zero-conf-channels-with-v3-transactions">Cluster mempool could help solve challenges opening zero-conf channels with v3 transaction relay</a></li>
+  <li><a href="/en/newsletters/2024/01/31/#kindred-replace-by-fee">Idea to apply RBF rules to v3 transactions to allow removing CPFP carve-out for cluster mempool</a></li>
+  <li><a href="/en/newsletters/2024/01/24/#imbued-v3-logic">Interplay between cluster mempool, CPFP carve-out removal, and LN use of v3 relay</a></li>
+  <li><a href="/en/newsletters/2024/01/17/#overview-of-cluster-mempool-proposal">Overview of cluster mempoool, including discussion about its effect on CPFP carve-out</a></li>
+  <li><a href="/en/newsletters/2024/01/03/#cluster-fee-estimation">Discussion about cluster fee estimation</a></li>
+</ul>
+
+<p><strong>2023</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2023/12/06/#cluster-mempool-discussion">Multiple discussions about cluster mempool</a></li>
+  <li><a href="/en/newsletters/2023/07/26/#reliable-transaction-confirmation">LN developer discussion about multiple relay policy topics, including cluster mempool</a></li>
+  <li><a href="/en/blog/waiting-for-confirmation/#policy-proposals">Mempool proposals, including cluster mempool</a></li>
+  <li><a href="/en/newsletters/2023/05/17/#mempool-clustering">Bitcoin Core meeting transcript about mempool redesign</a></li>
+</ul>
+
+<h2 id="see-also">See also</h2>
+
+<ul>
+  <li><a href="/en/topics/package-relay/">Package relay</a></li>
+  <li>
+    <p><a href="/en/topics/replace-by-fee/">Replace-by-Fee</a></p>
+
+    <p><br /></p>
+  </li>
+</ul>
+
+<p class="float-left">
+
+<strong>Previous Topic:</strong><br /><a href="/en/topics/cltv-expiry-delta/">CLTV expiry delta</a>
+
+</p>
+<p class="float-right">
+
+<strong>Next Topic:</strong><br /><a href="/en/topics/codex32/">Codex32</a>
+
+</p>
+
+<p class="center"><a href="https://github.com/bitcoinops/bitcoinops.github.io/edit/master/_topics/en/cluster-mempool.md">Edit page</a><br />
+  <a href="https://github.com/bitcoinops/bitcoinops.github.io/issues/new?body=Source file: _topics/en/cluster-mempool.md">Report Issue</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Bitcoin Optech</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Bitcoin Optech</li><li><a class="u-email" href="mailto:info@bitcoinops.org">info@bitcoinops.org</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/bitcoinops"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">bitcoinops</span></a></li><li><a href="https://www.twitter.com/bitcoinoptech"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">bitcoinoptech</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Helping Bitcoin-based businesses integrate scaling technology.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

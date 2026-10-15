@@ -1,0 +1,1690 @@
+       On the Instability of Bitcoin Without the Block Reward
+
+                 Miles Carlsten                         Harry Kalodner                 S. Matthew Weinberg
+            carlsten@cs.princeton.edu             kalodner@cs.princeton.edu           smweinberg@princeton.edu
+                                                      Arvind Narayanan
+                                                   arvindn@cs.princeton.edu
+
+
+
+
+ABSTRACT
+Bitcoin provides two incentives for miners: block rewards
+and transaction fees. The former accounts for the vast ma-
+jority of miner revenues at the beginning of the system, but
+it is expected to transition to the latter as the block rewards
+dwindle. There has been an implicit belief that whether
+miners are paid by block rewards or transaction fees does
+not affect the security of the block chain.
+   We show that this is not the case. Our key insight is that
+with only transaction fees, the variance of the block reward is
+very high due to the exponentially distributed block arrival
+time, and it becomes attractive to fork a “wealthy” block
+to “steal” the rewards therein. We show that this results
+                                                                   Figure 1: One possible state of the block chain and
+in an equilibrium with undesirable properties for Bitcoin’s
+                                                                   two possible actions a miner could take.
+security and performance, and even non-equilibria in some
+circumstances. We also revisit selfish mining and show that
+it can be made profitable for a miner with an arbitrarily low
+                                                                   tion of rational, self-interested miners. Consider a block
+hash power share, and who is arbitrarily poorly connected
+                                                                   chain with blocks of exponentially distributed rewards, as
+within the network. Our results are derived from theoretical
+                                                                   we expect when the fixed block reward runs out. A miner
+analysis and confirmed by a new Bitcoin mining simulator
+                                                                   has numerous options to consider when mining, but let’s fo-
+that may be of independent interest.
+                                                                   cus on just two possibilities. She could extend the longest
+   We discuss the troubling implications of our results for
+                                                                   chain (Option One), obtaining a reward of 5 and leaving a
+Bitcoin’s future security and draw lessons for the design of
+                                                                   reward of 0 for the next miner (at least until more transac-
+new cryptocurrencies.
+                                                                   tions arrive). Alternatively, she could fork it (Option Two),
+                                                                   obtaining reward of 55 while leaving a reward of 50 Bitcoin
+                                                                   unclaimed. The Bitcoin protocol dictates Option One, but
+1.     INTRODUCTION                                                a quick reasoning suggests that Option Two is better.
+   The security of Bitcoin’s consensus protocol relies on min-        To reason about this correctly, we must consider which
+ers behaving correctly. They are incentivized to do so via         strategies the other miners are using. For instance, if all
+mining revenues under the assumption that they are ratio-          other miners follow the heuristic of mining on the block they
+nal entities. Any deviant miner behavior that outperforms          heard about first in the case of a 1-block fork (and if there
+the default is thus a serious threat to the security of Bitcoin.   is no latency in the network), then forking is ineffective, and
+   Miners receive two types of revenue: block rewards and          Option One is clearly superior. On the other hand, since
+transaction fees. The former account for the vast majority         other miners are rational, perhaps they will choose to build
+of miner revenues at the beginning of the system, but it           on the fork instead of the older block, in which case Option
+is expected to transition to the latter as the block rewards       Two would yield more rewards.
+dwindle (specifically, they halve every four years). There            Examples like these reveal novel incentive issues that sim-
+has been an unexamined belief that in terms of the security        ply don’t arise when block rewards are fixed. The goal of this
+of the block chain (including incentives of the mining game),      paper is to understand the potential impact on Bitcoin’s sta-
+it is immaterial whether miners receive (say) 25 bitcoins in       bility by investigating the mining game in the regime where
+each block as a block reward or 25 bitcoins in expectation as      the block reward has dwindled to a negligible amount, and
+transaction fees.                                                  transaction fees dominate mining rewards. We find new and
+                                                                   surprising incentive issues in a transaction-fee regime, even
+     Illustrative example (Figure 1). Imagine a popula-
+                                                                   assuming that transactions (and associated fees) arrive at
+ This is an extended version of our paper that appeared at         a steady rate. To be clear: the incentive issues we uncover
+ACM CCS 2016. Some of the figures have been updated                arise not because transaction fees may arrive erratically, but
+with more accurate versions due to improvements to our             because the time-varying nature of transaction fees allows
+simulator.                                                         for a richer set of strategic deviations that don’t arise in the
+block-reward model.                                               into their blocks. This results in a backlog of transactions
+   At a high level, there is an analogy with pool hopping [22].   whose size grows indefinitely with time. We confirm this
+With certain mining pool reward schemes, the miner’s ex-          result using simulation.
+pected reward for participation varies over time, depend-           Accurately predicting the steady-state mining behavior
+ing on how many shares have been contributed since the            requires modeling a vast number of variables such as miners’
+pool found its last block. The concern is that miners would       cost structure, and is not the goal of our work. Instead,
+respond by “hopping” in real time to the pool that max-           our results can be seen as an informal “lower bound” on
+imizes their expected rewards. For another illustration of        the departures from compliant behavior that are likely in
+this theme, consider a future where there are multiple cryp-      a transaction-fee regime. We can realistically predict that
+tocurrencies with time-varying rewards which can be mined         PettyCompliant miners will arise, and that the existence
+by the same hardware. Perhaps this will give rise to coin-        of such miners opens the field for various more aggressive
+hopping, i.e., miners hopping to the cryptocurrency with the      strategies (Section 5).
+largest transaction fee pool.
+                                                                     Contribution 3: Revisiting selfish mining. We re-
+    Contribution 1: A mining strategy simulator. While            visit the selfish mining strategy of Eyal and Sirer [9] and
+we establish a number of theoretical results in Sections 5        show that, contrary to intuition, it performs even better in
+and 6, the variety of possible parameters and assumptions         the transaction-fee regime than in the block-reward regime.
+makes it completely infeasible to pose a perfectly accurate       Next, we propose a more sophisticated selfish mining strat-
+Game-Theoretic model of Bitcoin that is also tractable. To        egy that accounts for the non-uniformity of rewards and out-
+fill the gaps and to confirm our theoretical results, we’ve       performs both default mining and “classic” selfish mining.
+built a mining strategy simulator. Theoretical results in         Worse, unlike classic selfish mining, this strategy works for
+simple yet principled models provide good intuition to guide      miners with arbitrarily low hash power and regardless of
+practice, and simulations of more complex scenarios confirm       their connectedness in the Bitcoin network. Moreover, the
+that these results have applicability to more realistic models    attack is profitable as soon as it is deployed, whereas classic
+where mathematical proofs are intractable.                        selfish mining only becomes profitable after a two-week dif-
+    Miners in our simulation learn over time which strate-        ficulty adjustment period, arguably giving the community
+gies are successful using no-regret learning algorithms that      a crucial window of time to detect and respond to such an
+iteratively update a probability distribution over strategies     attack [10]. We validate these results via both theory and
+(Section 4.2). Our simulator is versatile and allows model-       simulation (Section 6).
+ing different numbers of miners, hash power distributions,
+                                                                     Impact on Bitcoin security. If any of the deviant min-
+network latencies, and reward schemes. We show how it
+                                                                  ing strategies we explore were to be deployed, the impact
+allows researchers to quickly prototype and study new set-
+                                                                  on Bitcoin’s security would be serious. At best, the block
+tings within this parameter space. The simulator does have
+                                                                  chain will have a significant fraction of stale or orphaned
+limitations: it cannot model mining pools or a non-constant
+                                                                  blocks due to constant forks, making 51% attacks much eas-
+arrival rate of transactions. We have made the simulator
+                                                                  ier and increasing the transaction confirmation time. At
+open source.1
+                                                                  worst, consensus will break down due to block withholding
+    In addition to the versatility of settings, our simulator
+                                                                  or increasingly aggressive undercutting.
+allows exploring a large space of mining strategies, defined
+                                                                     This suggests a fundamental rethinking of the role of block
+by the miner’s responses to three questions: which block to
+                                                                  rewards in cryptocurrency design. Nakamoto appears to
+extend, how much of the outstanding transactions to include
+                                                                  have viewed the block reward as a necessary but temporary
+in the block, and when to publish found blocks. We define
+                                                                  evil to achieve an initial allocation of bitcoins in the absence
+a formal language to compactly express any strategy in this
+                                                                  of a central authority, with the transaction fee regime being
+space (Section 4).
+                                                                  the ideal, inflation-free steady state of the system. But our
+   Contribution 2: Undercutting attacks. The focus                work shows that incentivizing compliant miner behavior in
+of this paper is on analyzing deviant mining strategies in        the transaction fee regime is a significantly more daunting
+the transaction-fee regime that can harm Bitcoin’s security.      task than in the block reward regime. Perhaps instead, de-
+We begin with the observation that if there is a 1-block          signers of new cryptocurrencies must resign themselves to
+fork, it is more profitable for the next miner to break the       the inevitability of monetary inflation and make the block
+tie by extending the block that leaves the most available         reward permanent. Transaction fees would still exist, but
+transaction fees rather than the oldest-seen block. We call       merely as an incentive for miners to include transactions in
+this strategy PettyCompliant.                                     their blocks.
+   Once any non-zero fraction of miners is PettyCompli-
+ant, it enables various strategies that are more aggressive       2.   RELATED WORK
+and harmful to Bitcoin consensus. We call this the undercut-
+ting attack, where miners will actively fork the head of the         Several recent works analyze incentives in Bitcoin min-
+chain and leave transactions unclaimed in the hope of incen-      ing. Some examples include [12] and [8], which analyze how
+tivizing PettyCompliant miners to build on their block.           strategic mining pools may attack competing pools in vari-
+   In some scenarios, our simulation reveals a non-equilibrium    ous ways, and [16], which analyzes how strategic Ethereum
+with increasingly aggressive undercutting. But with an ex-        miners can trick others into wasting their computational
+panded strategy space, and suitable assumptions, we are           power verifying the validity of complex scripts. Understand-
+able to prove that an equilibrium exists. However, it is one      ing miner incentives in the Bitcoin system is important —
+where miners include only a fraction of available transactions    there is empirical evidence that miners/mining pools are
+                                                                  willing to attack others in order to maximize their own prof-
+1
+    https://github.com/citp/mining simulator                      its (e.g. launching DDoS attacks against other pools) [24].
+   Eyal and Sirer develop the selfish mining attack [9], a de-     issues we uncover. Put another way, our results are only
+viant mining strategy that enables miners to get more than         made stronger by simplifying assumptions, because we are
+their fair share of rewards. We build on their results in Sec-     claiming that weird and undesirable consequences arise even
+tion 6. Other works, notably Sapirshtein et al. [23] have          if one is willing to grant simplifying assumptions.
+analyzed selfish mining in more detail using Markov Deci-             Getting to details, the model of Bitcoin that we analyze is
+sion Processes (MDP). In an MDP, a player moves through a          after the block reward has dropped to zero. That is, trans-
+discrete state space and tries to maximize reward (the state-      action fees are the only source of revenue for miners, and
+transition function and reward function are probabilistic).        we model available transaction fees as arriving to the Bit-
+This makes it a good fit for modeling Bitcoin mining. In the       coin system at a constant rate. Specifically, we assume that
+fixed-reward model, states are discrete. In the transaction        for any time interval I of length t, the total sum of transac-
+fees model, states are continuous, so we cannot apply MDP          tion fees for transactions announced during I is t (the choice
+machinery directly. Still, our analysis takes an MDP-like          of t instead of ct for some constant c is just normalization).
+approach. In more recent work, Kiayias et. al. [13] perform        This is different from Bitcoin as it is today with a large block
+a theoretical analysis of various selfish mining strategies in     reward compared to the small transaction fees, but this sce-
+the fixed-reward model, and proves that when miners are            nario is consistent with the vision of the long-term steady
+sufficiently small, the default mining behavior is an equilib-     state behaviour of Bitcoin after all Bitcoins have eventually
+rium.                                                              been minted.
+   There is some work on understanding the market for trans-          We also assume that the difficulty is set so that a hash puz-
+action fees and its relation to the block size (i.e. what fees     zle is solved by someone in the network every one time unit in
+will users have to pay in order for transactions to be in-         expectation (this is again just a normalization). Addition-
+cluded in a block?) [14, 11, 21, 18]. Our work avoids this         ally, for simplicity, in our theoretical results and reported
+discussion; we show that undesirable behavior emerges even         simulations we model the network having no latency (unless
+if the market reaches an equilibrium where transaction fees        otherwise stated). Once a miner publishes a block, all other
+are non-negligible, and arrive steadily and reliably. Inter-       miners immediately gain knowledge of it. Similarly, once a
+estingly, Möser and Böhme reach the same conclusion as us        transaction is announced, all miners immediately learn of its
+(that monetary inflation is a preferable mechanism to trans-       existence. However, our simulator is capable of simulating
+action fees) through very different methods [18].                  latency of both types, and we do not see any substantive
+   On the simulation side, numerous prior works have devel-        change in our results as latency changes.
+oped simulators for some aspect of Bitcoin. Some simulators           Finally, we assume that when there are R transaction fees
+are aimed at aspects of Bitcoin aside from strategic min-          available, the miner can choose to include any real-valued
+ing, such as privacy [3], or the peer-to-peer network [17].        number of transaction fees between 0 and R in their block.
+Those developed in [9] and [8] also focus on simulating de-        That is, transactions are fine-grained enough that a miner
+viant mining strategies, but our understanding is that these       can selectively choose a set of transactions whose fees are
+simulators are tailor-made for the specific deviant strategies     very close to whatever real-valued target they have in mind.
+they wish to test. In comparison, our simulator allows for         We believe this is a reasonable approximation due to the
+easy implementation of a broad range of strategies in var-         large number of transactions per block.
+ious environments. Indeed, the versatility of our simulator           We also assume that miners always have space to include
+is crucial for getting intuition for every result in this paper.   all available transactions. If the block size is not large
+We have made it open-source and hope it will be a useful           enough to meet demand for transactions, we believe the
+tool for future research on strategic miner behavior.              qualitative content of all our results continue to hold, but the
+                                                                   quantitative impact is mitigated. This belief is supported by
+3.    MODEL AND STRATEGIES                                         the following data, taken from the most recent 1000 blocks
+                                                                   (roughly one week’s worth) as of July 11, 2016: of these
+  In this section, we cover the model of Bitcoin that we
+                                                                   1000 blocks, 702 are full. Of the full blocks, the total sum
+investigate. We will use this model to quickly illustrate how
+                                                                   of transaction fees ranges from 0.03 BTC to 4.51 BTC. The
+the switch to transaction-fee dominated rewards may lead
+                                                                   mean is 0.49 BTC and the standard deviation is 0.25 BTC,
+to interesting and potentially harmful effects for Bitcoin.
+                                                                   more than half the mean. It’s unclear how to extrapolate
+We also introduce a formal language for describing Bitcoin
+                                                                   these data to the future, but it is clear that there will indeed
+strategies that we will use throughout the paper.
+                                                                   be fluctuation in the available fees that fit in a block. So if
+3.1    Model of the system                                         the block size is not large enough to meet demand for trans-
+                                                                   actions, even though the available fees immediately after a
+   Briefly, let us describe the theme of our model before get-
+                                                                   block is found will not be zero (as in our analysis), they may
+ting into specific details. The goal of this work is not to
+                                                                   be significantly lower than (say) ten minutes later. So even
+accurately predict exactly what mining behavior will arise
+                                                                   though our exact analysis will not apply in this setting, the
+in practice, but instead to uncover incentive issues that arise
+                                                                   intuition does carry over.
+solely due to the time-varying nature of transaction fees ver-
+sus block rewards. To this end, our model is intentionally         3.2    What could go wrong? The mining gap
+simple because we want to isolate the effects of time-varying
+versus fixed rewards. As an example, we will assume that                 Without a block reward, immediately after a block
+transactions (and their associated fees) arrive at a constant            is found there is zero expected reward for min-
+and continuous rate. We make this assumption not be-                     ing but nonzero electricity cost, making it unprof-
+cause we necessarily predict it will hold in practice, but               itable for any miner to mine.
+because without it we can’t guarantee that we’ve isolated
+time-varying transaction fees as the cause for any incentive         In order to provide insight as to how time-varying rewards
+                                                                  tinct decisions:
+
+                                                                      • Which block to extend.
+
+                                                                      • How much of the available transactions (and associated
+                                                                        fees) to include in the block they are solving.
+
+                                                                      • For each unpublished block, whether or not to publish.
+
+                                                                     The first decision is which block to extend. As an ex-
+                                                                  ample, the default compliant miner chooses to mine on the
+                                                                  longest chain that they are aware of, and in the case of multi-
+                                                                  ple blocks that are tied for the longest chain, they will favor
+                                                                  mining on the first of these blocks that they became aware
+Figure 2: Illustration of Mining Gaps. Miners will                of. This decision forms the basis for how a mining strat-
+only mine when the instantaneous expected reward                  egy will determine which side of a fork it wants to support,
+exceeds the instantaneous cost.                                   or, alternatively, if the miner wants to create a new fork.
+                                                                  The next decision is how much of the available transaction
+                                                                  fees to claim. Again, as an example, the default compliant
+could be harmful for Bitcoin, let’s walk through an example.
+                                                                  miner will include all of the unclaimed transaction fees they
+Imagine that we are in the model previously described, that
+                                                                  are aware of in their block. The final decision is when to
+all miners are using the default compliant strategy (mine on
+                                                                  publish blocks. When a miner mines a block, only they are
+top of the longest chain, authorize all available transactions,
+                                                                  aware of its existence. At each moment, miners can choose
+publish immediately), but also that that miners have some
+                                                                  whether or not to alert the other miners of the block that
+cost in electricity to run their mining rigs (i.e., running one
+                                                                  they have found. This allows for mining strategies where
+rig for t units of time costs pt Bitcoin worth of electricity).
+                                                                  miners intentionally choose to not reveal their blocks (such
+Now, immediately after a block is found, there will be no
+                                                                  as selfish mining [9]).
+more transactions in the network to be claimed by a miner
+                                                                     We define the following concepts in order to more rig-
+making the next block. This means that for the instant fol-
+                                                                  orously describe the mining strategies: First, for a set of
+lowing the discovery of a new block, there is actually zero
+                                                                  transactions T , we will abuse notation and use T to also
+expected reward for mining, but a non-zero electricity cost
+                                                                  denote the total transaction fees included for transactions
+for doing so! Figure 2 shows how to extend this reasoning to
+                                                                  in T . For a block, B, we will denote Tx(B) to be the set
+the time period beyond. Essentially, every instant your rig
+                                                                  of transactions included in block B, and Rem(B) to denote
+is running, you claim some expected reward, which increases
+                                                                  the remaining transactions after block B. That is, Rem(B)
+depending on the available transaction fees. But every in-
+                                                                  contains all announced transactions in that are not included
+stant your rig is running, you also have to pay a constant
+                                                                  in B or any of its predecessors (thus, this is a set that varies
+amount for electricity. So the expected reward for running
+                                                                  over time). We will also use Height(B) to denote the height
+your rig won’t exceed the cost of electricity until some min-
+                                                                  of a block (i.e. the height of a chain that ends at block B),
+imum number of transaction fees are available to include. If
+                                                                  denoting by H the height of the current longest chain that
+a is the fraction of the total (effective) hash power that a
+                                                                  has been announced,2 and Owner(B) to denote the miner
+single rig generates, then a miner must wait t = p/a time
+                                                                  that produced block B.
+steps after a block is found before mining becomes profitable
+                                                                     When a miner m is deciding which block of height i to
+again.
+                                                                  extend in the case of a tie, all strategies considered in this pa-
+   In Appendix A, we discuss in more detail the effects of
+                                                                  per first select a block that they themselves mined (Owner(B) =
+such a mining gap, and find that it leads to miners mining
+                                                                  m). Also, all strategies in this paper avoid mining multiple
+for a smaller and smaller fraction of the time between the ar-
+                                                                  blocks at the same height, so if a block with Owner(B) = m
+rival of blocks (with the difficulty dropping to compensate).
+                                                                  at height i exists, it would be unique. If m did not pro-
+Clearly, this would have a negative impact for Bitcoin secu-
+                                                                  duce any blocks at height i, the default client would then
+rity, as the effective hash power in the network would drop,
+                                                                  select the first block that m became aware of. So we define
+and it would become easier for a malicious miner to fork. Of
+                                                                  Oldestm   i to be the unique block of height i produced by
+course, turning a rig on and off every ten minutes may be
+                                                                  miner m if it exists, or the first block of height i that m
+practically infeasible. Nevertheless, this analysis illustrates
+                                                                  became aware of. Note that if i = H, then this is the block
+that strategic miners might look for ways to deviate when
+                                                                  m would extend using the default strategy. We also define
+the default protocol would have them wasting electricity to
+                                                                  Mosti to be the block of height i that maximizes the remain-
+mine a near-valueless block.
+                                                                  ing transaction fees (formally: argmaxB|Height(B)=i {Rem(B)}).
+3.3    Formal language for mining strategies                      Note that while Rem(B) changes over time, the block Mosti
+                                                                  can only change if a new block of height i is published. Fi-
+  In the rest of this paper, we focus on mining strategies
+                                                                  nally, we denote by Mostm     i the block of height i produced
+that always mine within the same cryptocurrency, but may
+                                                                  by m (if it exists), or the block of height i that maximizes
+deviate from the default protocol in choosing how to build
+                                                                  the remaining transaction fees otherwise.
+blocks and what to do with them once they’re found. We
+consider a variety of known and novel Bitcoin mining strate-      2
+                                                                   So for instance, if a chain of height 2 has been announced,
+gies. All of these can be formalized into the same general        but some miner is privately storing a chain of length 10, we
+structure. At each instant, every miner makes several dis-        would define H = 2.
+   We can now formally define mining strategies we consider.     and the current network difficulty) to determine whether the
+We model strategies as time-driven (rather than event-driven):   miner successfully found a block or not. Then, the miner de-
+in every infinitesimally small time step, the miner must de-     cides which unpublished blocks to publish. The duration of a
+cide which block to extend (denoted by Mining(m)), what          round is a configurable parameter, which we discuss shortly
+set of transactions to include, and for each of their own        in Section 4.3.
+unpublished blocks, whether to publish. Note that by pub-        Games. A game involves setting parameters such as choos-
+lishing a block B, we mean ensuring that every node in the       ing a number of miners, assigning their strategies and hash
+network is aware of B and all its predecessors, and aren’t       power, etc. (all detailed in Section 4.3). Once these parame-
+concerned with exactly what physical measures m takes to         ters are set, a game runs for several rounds, and keeps track
+ensure this. In this language, the default mining strategy       of the rewards earned by each miner.
+would be formalized as follows:                                  Simulations. A simulation might consist of a single game
+                                                                 (to see how certain strategies fare against each other), or
+DefaultCompliant:                                                several games with parameter adjustments in between. For
+The default Bitcoin mining strategy, including all avail-        example, in order to model miners who learn over time, we
+able transactions, mining on the end of the longest chain,       have them play several games and decide which strategies
+choosing the older block in a tie, and publishing all blocks.    to use in future games based on results of past games. In
+                                                                 principle, any parameters can be adjusted between games.
+Which Block: Mining(m) = Oldestm
+                               H.
+                                                                 4.2    Strategy exploration
+How much: include Rem(Mining(m)).                                   For several of our simulations we want miners to utilize the
+                                                                 strategies that are doing the best, to simulate how strate-
+Publish(B)?: yes.                                                gic miners might adapt over time. In order to accomplish
+                                                                 this, we run several games, with hundreds of miners in each
+                                                                 game. Miners choose strategies proportional to how success-
+                                                                 ful those strategies have historically done. Formally, min-
+4.    MINING STRATEGY SIMULATOR                                  ers in our simulator perform no-regret learning, a standard
+  In order to more clearly analyze what the game theoretic       notion of learning that is popular in game theoretic con-
+landscape will look like once the Bitcoin mining incentive be-   texts. This is due to the fact that in any repeated game
+comes transaction fee based instead of block reward based,       where each player separately performs no-regret learning,
+we have developed a versatile Bitcoin mining strategy sim-       the repeated play converges to a coarse correlated equilib-
+ulator.3 Here we discuss the strategies our simulator is ca-     rium [1, 2]. Moreover, numerous simple no-regret learning
+pable of implementing, the process by which our simulator        algorithms are known that converge quickly (i.e. in a num-
+can explore a strategy space, the configurable parameters of     ber of rounds sublinear in the number of possible strate-
+the simulator, and its limitations.                              gies) [5, 6, 4, 15]. If a miner has no regret, their total re-
+                                                                 ward across all of time is at least as good as had they instead
+4.1   Strategies, Rounds, and Games                              picked “the best” strategy and used it in every game. Sim-
+   We first describe the basic units of our simulator and how    ilarly, a coarse correlated equilibrium is a joint distribution
+they interact with each other before getting into details.       over strategy profiles such that every miner gets more ex-
+Strategies. The simulator is designed in such a way to be        pected payoff by following the equilibrium than deviating to
+able to run any strategy that fits the strategy space detailed   any possible strategy.
+in Section 3.3. That is, every strategy is fully defined by         These learning algorithms all maintain a weight for every
+a function that outputs a block to extend, a set of trans-       strategy, and adjust the weights of the strategies from game
+actions to include, and a rule to decide whether to publish      to game depending on how well they’re doing. Our simulator
+any found blocks. All of these functions may take as input       offers two alternatives for these update rules. The first al-
+any public information, including all published blocks and       ternative is an exact implementation of the EXP3 algorithm
+all announced transactions.                                      for learning with adversarial bandits [5, 6]. This update rule
+Rounds. Our simulator is time-driven, as opposed to event-       provides a theoretical guarantee on the regret of each miner
+driven. We made this decision because we want it to be easy      as a function of the number of games played and a tunable
+to add new strategies to the simulator. In an event-driven       parameter in the update rule, . The second alternative is
+simulation, new strategies would be limited by the current       based on the multiplicative weights update rule (MWU) for
+list of possible events. However, in our time-based simula-      learning with experts [4, 15]. We find that MWU is com-
+tions, any strategy that details how to make the decisions       putationally expensive, so we use a less expensive proxy in-
+above at any moment can be easily implemented.                   stead. That means there is no theoretical guarantee on the
+   A round is the smallest unit of time in our simulator (cur-   regret bounds. But in practice this update rule is signifi-
+rently, 1/600 of the time it takes for the entire network to     cantly faster and does converge quickly to coarse correlated
+find a block). During a round, every miner first takes as in-    equilibrium. For a further discussion of these update rules,
+put the block chain (that they’re aware of) and all transac-     see Appendix B.
+tions (that they’re aware of) and decides which block to (try       All of the figures included in this paper were generated
+to) extend, and which transactions to include. Then there        from simulations using EXP3, so they come with a theo-
+is a random check (as a function of that miner’s hash rate       retical guarantee that all miners in the simulation have no
+3
+                                                                 regret.
+ While this is the original motivation for developing our
+simulator, it is indeed capable of simulating non-zero block
+reward as well — more on that in Section 4.3.
+4.3   Versatility                                               to the entire network, and does not treat “their own” blocks
+   Our simulator has many configurable parameters:              any differently than generic blocks.
+Strategies. Just to reiterate: every miner in our simulator        Of course, the real world is atomic. But it is extremely
+is assigned a time-driven strategy that chooses which block     helpful to compare simulation results between the two mod-
+to extend, how many transactions to include, and whether        els to isolate behavior that arises only when miners are
+to publish any found blocks. Any strategy that fits this        atomic (example: selfish mining), as intuitively this behav-
+framework can be implemented in the simulator. To design        ior “gets worse” with big miners (as with selfish mining).
+a new strategy, a user would create a new function that takes
+as input the current public state of Bitcoin network (the       4.4     Implementation and performance.
+blockchain and available transaction fees), and the miner          The simulator is written in C++, and has a running time
+who is using the strategy. The function would then use this     proportional to the product of the number of games, the
+information to determine which block to extend, and how         number of rounds per game, and the number of miners. We
+many of the transaction fees to include in the next block.      find that for accurate results, the games need to include
+Finally, the user would go to the publication rules and add     enough rounds so that that for every strategy, the miners
+a rule for how the strategy should choose whether or not to     using it together find tens of blocks. We also find that it
+publish any found blocks.                                       takes on the order of a few hundred thousand games for
+Hash Power. Every miner m is assigned a hashPpower αm .         our learning algorithms to converge to an equilibrium. On
+Any number of miners, and any αm such that m αm = 1             a commodity laptop with a 2.7 GHz Intel Core i5 proces-
+can be supported.                                               sor, running a simulation of 1000 games with 200 miners,
+Round Duration. The size of a round can be set so the           an average interarrival time of 600 rounds, and a total of
+network finds a block every r rounds in expectation, for any    6,000,000 rounds (≈10,000 blocks will be created), takes ap-
+r > 0.                                                          proximately 22 seconds.
+Rewards. At the end of each game, miners are rewarded           Limitations. A current limitation of the simulator is that
+based on their blocks within the longest chain. The reward      the transaction fees can only be modeled as coming in at
+they receive is b per block (fixed reward), plus any trans-     a uniform rate in time. Additionally, the simulator is not
+action fees. a transaction fees accrue in the system every      capable of modeling mining pool dynamics beyond treating
+round. Both of these parameters are configurable.               them as a single miner with hash power equal to that of the
+Costs. There is a configurable parameter cm for every miner     pool. This doesn’t allow for consideration of attacks such as
+m that denotes the cost (i.e. in electricity) for miner m to    those presented in [8].
+mine. For our simulations, we always set cm = 0 because we
+aren’t looking at this aspect of mining.                        5.    NEW DEVIANT MINING BEHAVIOR
+Latency. If desired, latency can be introduced to the simu-       In this section, we examine what deviant mining behavior
+lation. There is a configurable parameter λ such that when      might unfold in the transaction fees model that doesn’t arise
+blocks are published, it takes λ rounds before other miners     in the block-reward model. Specifically, we argue that:
+are aware of this blocks existence. Latency in hearing about
+transactions can also be implemented — it is currently easi-         • It is reasonable to expect self-interested miners to be-
+est to do this by modifying strategies to randomly “pretend”           come PettyCompliant instead of DefaultCompli-
+they haven’t heard of some transactions.                               ant once transaction fees take over.
+Learning parameter. Our learning rules are parameter-
+ized pby an  ∈ [0, 1/2]. For EXP3, it is customary to set           • The existence of PettyCompliant miners in the net-
+ ≈ n ln n/T , where n is the number of strategies consid-             work opens the field for a range of aggressive strategies
+ered and T is the number of games played. For MWU (and                 with detrimental effects to Bitcoin’s stability.
+p “MWU-like” update rule), it is customary to set  ≈
+our
+                                                                5.1     Phase One: Petty compliant
+   ln n/T . Larger  encourages beliefs (about the strength
+of strategies) to be updated rapidly in response to recent
+games. Smaller  encourages waiting for more evidence be-              Observation: The default client behavior of min-
+fore updating beliefs.                                                 ing on the oldest block is not optimal. Miners
+Atomic versus Non-Atomic Miners. We say miners                         can do strictly better by mining on the block that
+are atomic if there are finitely many of them, and each has            leaves the most transactions fees unclaimed.
+a finite fraction of the total hash power. Such miners may
+have an interest in sacrificing immediate gains related to a       Consider the case where there is a fork: two blocks are
+block mined now in order to achieve greater gains for blocks    tied for longest chain. The traditional behavior, and the one
+mined in the future. Non-atomic miners are infinitesimally      programmed into the default client,4 would have the miner
+small, but there are infinitely many of them. When such         select the older of the two potential block heads. However,
+miners find a block, they are only interested in maximizing     there is really no cost for that miner instead to tie-break
+their gains related to that block (because they will never      arbitrarily. In particular, if the miner is planning to in-
+find another block in the future).                              clude all unclaimed transactions in their block, it would be
+   Obviously our simulation cannot create infinitely many       in that miner’s interest not to mine on the oldest block,
+miners, but we can functionally simulate them. To simulate      but instead the block that leaves the most remaining fees.
+that an α fraction of non-atomic miners are using strategy s,   Therefore, a strategic miner would want to mine on Mostm    H
+
+we instead create a single atomic miner with an α fraction of   instead of Oldestm  H . We call this strategy petty compliant,
+
+the hash power, and ensure that all of this miner’s strategic   4
+                                                                  Note: this is not a self-enforcing part of the protocol. It’s
+decisions take as input only the public information available   purely client-side behavior.
+as it is still mining on a longest chain, including all available   these parameters, we call this strategy LazyFork.
+transactions, and publishing all blocks that are found (like           While the existence of PettyCompliant miners them-
+a default compliant miner). It is just tie-breaking between         selves is relatively benign, the existence of LazyFork min-
+longest chains in a “petty” way to achieve greater revenue.         ers would be bad: they frequently decide to intentionally
+                                                                    orphan blocks in order to achieve greater rewards. In addi-
+PettyCompliant:                                                     tion to creating uncertainty about when blocks are “safely”
+Mine like a default compliant miner, except when choos-             in the eventual longest chain, this decreases the effective
+ing between two sides in a fork; mine on the block that             hash power of the network and makes Bitcoin more prone
+has claimed the fewest transaction fees.                            to double spend attacks. For cleanliness in formally defining
+                                                                    LazyFork and other undercutting strategies, we introduce
+Which Block: Mining(m) = Mostm                                      the notation Gapi = Rem(Mosti−1 ) − Rem(Mosti ), the
+                             H.
+                                                                    maximum transaction fees that a miner could include while
+How much: include Rem(Mining(m)).                                   mining on top of Mosti−1 to become the new Mosti .
+
+Publish(B)? yes.                                                    LazyFork:
+                                                                    Forks the blockchain if the head block is more valuable
+   If forks ever exist, then PettyCompliant strictly outper-        than the unclaimed transaction fees it leaves behind.
+forms DefaultCompliant. The two are identical except for            Only takes half of the possible transaction fees to prevent
+the case where the miner is required to choose between two          other lazy forkers from forking their block.
+equal height blocks to mine on. In this case PettyCompli-
+ant always makes the decision to mine in a location that            Which Block:
+maximizes their rewards, and DefaultCompliant might                  if Owner(Mostm                    m
+                                                                                    H ) = m or Rem(MostH ) ≥ GapH
+not. In our mining strategy simulator, we compare De-                                     m
+                                                                        Mining(m) = MostH .
+faultCompliant to PettyCompliant and do in fact see                  else
+that PettyCompliant outperforms DefaultCompliant,                       Mining(m) = Mostm H−1 .
+regardless of the breakdown of other miners in any simula-
+tion where there is enough latency (in learning of both new         How much: include Rem(Mining(m))/2.
+blocks and transactions) that forks naturally occur.
+   Note that the existence of petty compliant miners is not         Publish(B)?: yes.
+necessarily harmful by itself: so what if miners are tie-
+breaking differently in the rare event that forks naturally         5.3    Phase Three: Aggressive Undercutting
+occur? The problem arises when other strategic miners no-
+tice the existence of petty compliant miners and choose to                Simulation result: increasingly aggressive under-
+exploit this with more aggressive tactics. We’ll see some                 cutting behavior evolves when miners strategize.
+examples of this in the remainder of this section. The ex-
+                                                                       Once miners consider undercutting, they may also try to
+istence of PettyCompliant miners impact other deviant
+                                                                    aggressively optimize the tradeoff between maximizing the
+strategies in surprising ways too. For example, a selfish
+                                                                    transaction fees included in blocks they mine and minimizing
+miner (discussed more in Section 6), performs better against
+                                                                    the chance that their block will be undercut by other miners
+PettyCompliant miners than DefaultCompliant.
+                                                                    in the system (as opposed to using the less-principled reason-
+5.2    Phase Two: Lazy Undercutting                                 ing of LazyFork). We define these strategies so that when
+                                                                    they are presented with Rem(Mining(m)) = x, they will
+      Observation: Once some fraction of miners is                  authorize f (x) transactions, for some f (·) with f (x) ∈ [0, x]
+      petty compliant, other miners may profit by in-               for all x, and call them forkers.
+      tentionally forking the chain.                                   While in principle, forkers could consider going back sev-
+                                                                    eral blocks to undercut, the strategies we study only consider
+   The key insight for more aggressive strategies is that a         mining on top of a block of height H or H − 1. Certainly,
+deviant miner can incentivize petty compliant miners to ex-         it would be an interesting direction for future work to see if
+tend their block, even if an older block of the same height         any additional gains can be achieved by considering blocks
+was discovered several minutes earlier, for instance, by ex-        of height H − 2 or less, but already we uncover interesting
+tending that block’s direct predecessor and including slightly      behavior when forkers go back just a single block.
+fewer transaction fees. If the current unauthorized transac-           A function forking miner looks at potential blocks at height
+tion fees are substantially fewer than those included by the        H that they could extend, and within this set considers ex-
+current MostH , then maybe it is in a miner’s interest to try       tending only Mostm     H , since it leaves the most remaining
+and replace MostH with a new block of height H, instead             transaction fees. If a miner indeed chooses to mine on top
+of continuing on top of it. We call this undercutting.              of Mostm  H , we call this continuing. They also look at poten-
+   So what might a strategic miner do to take advantage             tial blocks of height H − 1, again considering only extending
+of this? They might first compare between the maximum               the block Mostm   H−1 from this set. If a miner indeed chooses
+rewards they could get by continuing versus undercutting            to mine on top of Mostm    H−1 , we call this undercutting. When
+(while still becoming the new MostH ), and mine on top of           deciding whether to continue or undercut, a forker simply
+whichever block yields greater rewards. Then, to protect            observes that they will choose to claim f (Rem(Mostm       H )) by
+themselves with certainty against future undercutters using         continuing, versus min{f (Rem(Mostm         H−1 )), GapH } if they
+the same rule, they could take half of the remaining transac-       undercut (the min is taken because they must actually un-
+tions. Because of the somewhat lax reasoning used to choose         dercut in order to incentivize future miners to select their
+Figure 3: Normalized weights of different linear co-                 Figure 4: This is a simulation of 8 atomic miners.
+efficient function forking strategies over a series of               The simulation parameters are otherwise configured
+games. Strategies that are slightly more aggres-                     the same way as Figure 3. We see that when there
+sive than the most common strategy perform the                       are a small number of atomic miners the more ag-
+best and have their normalized weights increase.                     gressive undercutters are no longer effective since
+This simulation had 200 miners, 9 strategies, 10,000                 they are beaten by more gentle forkers who are lucky
+blocks per game and an  value of .01.                               enough to mine two blocks in a row.
+
+
+block). So for a given f , we can define:                            these strategies, and let non-atomic strategic miners learn
+                                                                     over many games which perform best, we get the plot in
+       Valcont (f ) = f (Rem(Mostm
+                                 H ))                                Figure 3. What we see is the following: when the majority
+      Valunder (f ) = min{f (Rem(Mostm
+                                     H−1 )), GapH }
+                                                                     of miners are using Function-Fork(kx), the best response
+                                                                     is to use Function-Fork(k0 x), for k0 a little smaller than
+   If Valcont (f ) > Valunder (f ), then more rewards can be         k, (i.e. to undercut just a little bit more aggressively). So
+achieved by continuing. Otherwise, more rewards can be               eventually the smallest coefficient in our simulation becomes
+achieved through undercutting. Formally, for any function            dominant.
+f (·), this induces the following formal strategy:                      If we instead consider atomic miners, we observe the be-
+                                                                     havior in Figure 4 — less aggressive undercutters remain
+Function-Fork(f ):                                                   dominant. This is because even when other miners are ag-
+Always takes a certain function, f (·), of the possible              gressively undercutting, each miner still has a decent chance
+transactions it could claim. Always mines in the location            to get their block accepted “for free,” by mining two blocks
+to maximize the size of the block they would make, with              in a row. Note that simulation is vital to this understanding
+the constraint that if they fork, they must undercut.                due to the large number of parameters to consider.
+
+Which Block:                                                         5.4    An Undercutting Equilibrium
+ if Owner(Mostm H ) = m or Valcont (f ) > Valunder (f )
+    Mining(m) = Mostm                                                      Analytical result: An equilibrium exists where all
+                      H.
+ else                                                                      miners use the same undercutting strategy. It in-
+    Mining(m) = Mostm                                                      duces a growing backlog of transactions.
+                      H−1 .
+
+                                                                        Linear function-forking is of course a natural class of strate-
+How much:
+                                                                     gies to consider, but our simulations in the previous section
+ if Mining(m) = Mostm      H
+                                                                     show that long-term behavior may be erratic if miners only
+    include Valcont (f ).
+                                                                     consider these strategies. Our goal in this section is to un-
+ else
+                                                                     derstand what undercutting behavior is stable.
+    include Valunder (f ).
+                                                                        Our approach is to find a function f (·) such that Function-
+                                                                     Fork(f ) is an equilibrium. That is, as long as every other
+Publish(B)?: yes.
+                                                                     miner is using the strategy Function-Fork(f ), it is in your
+  Any reasonable choice of f (·) will be monotonically in-           interest to do so as well. In other words, we would like to
+creasing, which means that f (Mostm    H−1 ) will always be larger   find an f such that Function-fork(f ) is a best-response to
+than f (Mostm   H ), so the decision on whether to continue or       the case when all other miners themselves use Function-
+undercut will come down to a comparison of f (Mostm       H ) ver-   fork(f ). We provide now intuition for why the f (·) we
+sus GapH .                                                           present yields an equilibrium.
+  One natural family of f (·) to consider is linear functions           So what does it mean for a strategy to be a best-response
+(that is, f (x) = kx for some k ∈ [0, 1]). If we take a group of     to other miner behavior? Recall that a strategy proposes
+which block to extend, how many transaction fees to claim,
+and which blocks to publish as a function of the currently
+held information. A strategy is a best response if it maxi-
+mizes the miner’s expected reward (taking into account fu-
+ture events, and in particular the probability that the cur-
+rent block is in the eventual longest chain) over all potential
+strategies that miner could have used instead. In particular,
+a best-response must be at least as good as all other strate-
+gies that mine at the same location and publish the same
+blocks (but differ in which transactions to include).
+   To get some intuition for what conditions a potential equi-
+librium must satisfy, let’s first consider the decision facing
+a miner who has already decided to continue on top of the
+longest chain and is just deciding how many transaction fees
+to include. If F denotes the number of transaction fees in-
+cluded, define π(F, f, x) to be the probability that this block
+is included in the eventual longest chain, conditioned on
+including F BTC worth of transaction fees in the block,
+all other miners using strategy Function-Fork(f ), and               Figure 5: Plot of the Lambert function fork starting
+x = Rem(Mostm     H ) (note that π is well-defined). Then the        with a weight of 0.0001 and becoming the strongest
+miner’s expected reward, should they be fortunate enough             strategy in a learning simulation with  = .01. This
+to find a block right now would be F · π(F, f, x).                   simulation had 100 miners, and 10,000 blocks per
+   A best-response would then be to include argmaxF ≤x {F ·          game. These miners are non-atomic.
+π(F, f, x)} transaction fees. The strategy Function-Fork(f )
+would recommend including f (x) transaction fees. So for
+Function-Fork(f ) to be a best-response to other min-                   A proof of Theorem 5.1 appears in Appendix C. To un-
+ers using Function-fork(f ), it better be the case that              derstand the impact of Theorem 5.1, first consider the block
+f (x) ∈ argmaxF ≤x {F · π(F, f, x)} for all x. Note that this        reward model. With non-atomic miners, DefaultCompli-
+is a somewhat strong condition on f , as the fact that the           ant is trivially an equilibrium, and this result is robust to
+other miners are using Function-fork(f ) affects π(F, f, x),         general models of latency (proof in Appendix D). But as we
+whereas we also want this miner’s best response to have              move to atomic miners, strategies like selfish mining arise
+f (x) ∈ argmaxF ≤x {F · π(F, f, x)}.                                 and equilibria get messy (if they exist at all). Now, in the
+   At this point, we show that there is a continuous and             transaction-fee model, even when miners are non-atomic,
+piece-wise differentiable function f (·) that satisfies this con-    equilibrium behavior is complex and undesirable, as we have
+dition. We also show that combined with the fact that                just shown. Therefore, we should expect that analysis with
+f (·) is monotonically non-decreasing, this is sufficient for        atomic miners should conclude with even more chaos.
+Function-fork(f ) to be an equilibrium under some as-                   Figure 5 shows miners learning to play this equilibrium,
+sumptions (which we will discuss post-theorem). In the               even with various other strategies available. Observe the in-
+theorem statement below, W0 is the upper branch of the               terplay between theory and simulation: Theorem 5.1 guides
+Lambert W function which satisfies W0 (xex ) = x for all             us towards a potentially strong strategy, but it is intractable
+x ∈ [−1/e, ∞), and W0 (x) ∈ [−1, ∞). The “Furthermore...”            to prove that the equilibrium will actually arise via learning
+portion of the theorem is proved by showing a connection             even when (say) 99% of miners are already there. Simula-
+between the number of backlogged transactions and an un-             tion fills the gap and shows an equilibrium will indeed even
+biased single-dimensional random walk.                               when only .01% of the miners initially use the equilibrium
+                                                                     strategy.6 Simulation alone could not search through the
+Theorem 5.1. For any constant y ≤ 1/2 such that 2y −                 infinitely many possible strategies, and theory alone cannot
+ln(y) ≥ 2,5 define:                                                  prove that learning converges to the desired equilibrium.
+                       f (x) = x,     ∀x≤y                     (1)
+                                                                     5.5    Undercutting Non-strategic Miners
+                        x−2y
+     f (x) = −W0 (−ye          ),   ∀ y < x < 2y − ln(y) − 1   (2)
+                                                                           Analytical and simulation result: even if 66% of
+                                                                           miners remain default compliant, undercutting is
+                f (x) = 1,     ∀ x ≥ 2y − ln(y) − 1            (3)
+                                                                           profitable.
+Then it is an equilibrium for every miner to use the strategy
+Function-fork(f ) as long as:                                           Our analysis and simulations in the previous sections as-
+                                                                     sumed that all miners were strategic learners. While we
+      • Every miner is non-atomic.                                   clearly learn a lot from this analysis, it is perhaps more
+      • Miners may only mine on top of chains of length H or         realistic to also consider a setting where some miners will
+        H − 1.                                                       stubbornly (or honestly, depending on your perspective),
+                                                                     continue running DefaultCompliant even if it is subop-
+Furthermore, in any such equilibrium, the expected√ number           timal. If a large fraction of the miners are non-strategic,
+of backlogged transactions after n time steps is Θ( n).              6
+                                                                       It is hard to see in Figure 5, but the weight assigned to
+5
+    Such y exist. This range is (0, ≈ 0.2].                          “Lambert” is initially .0001.
+then function-forking becomes immediately less profitable,
+because only a small fraction of the network will actually
+mine on top of your block when you undercut. In particu-
+lar, if 100% of other miners are non-strategic, undercutting
+serves no purpose.
+   In this section, we detail results from our simulation when
+varying fractions of miners are non-strategic. In these sim-
+ulations, we fix a fraction of the network to always mine
+DefaultCompliant, and play enough games until the dis-
+tribution of learned strategies stabilize.7 Figure 6 shows a
+stacked area plot of our simulation results for equilibria at
+different fractions of miners refusing to abandon Default-
+Compliant. There are many interesting features of the plot,
+but we focus on one: even if the majority of miners choose
+to stay DefaultCompliant (and the rest strategize), then
+forking strategies start to become viable.
+   A theoretical analysis indeed predicts the continuing pres-
+ence of FunctionFork(x) until 2/3 of the miners remain
+DefaultCompliant. To see this, imagine that every miner
+is the system is currently DefaultCompliant or Petty-
+Compliant, and we want to see if it is profitable for a Pet-
+tyCompliant miner to switch to FunctionFork(x). At
+any point in time, consider the current MostH . Then if the
+miner runs PettyCompliant, they will always try to con-          Figure 6: Stacked area chart showing the equilib-
+tinue, and will get Rem(MostH ) should they find a block         rium distributions of strategies covered thus far,
+(because no one else in the network is undercutting). If in-     given that a fraction of miners will always use the de-
+stead they run FunctionFork(x), they will continue when-         fault strategy. These simulations involved 100 min-
+ever Rem(MostH ) > GapH and undercut otherwise. When             ers, with 10,000 blocks per game. We found that
+they continue, they will always get Rem(MostH ). When            the strategies would reach an equilibrium around
+they undercut, they would include GapH transaction fees.         300000 games with  = 0.01.
+If the next miner to find a block is PettyCompliant (or
+this miner), then the undercut will be successful and the        6.    SELFISH MINING WITH TRANSACTION
+miner will receive GapH in rewards. But if the next block
+is found by a DefaultCompliant miner, the undercut fails               FEES
+and they get nothing. So if y is the fraction of the network        Selfish mining is a deviant strategy first identified by Eyal
+that remains DefaultCompliant, we see that the expected          and Sirer [9]. Essentially, a selfish miner chooses not to
+reward obtained by FunctionFork(x) is proportional to:8          release blocks immediately upon being found, instead with-
+   We emphasize that while the theory gives us a crisp un-       holding them in hopes of tricking the rest of the network
+derstanding of what should happen when exactly 2/3 of the        into wasting their mining power mining blocks that will be
+miners are DefaultCompliant, it is intractable to rigor-         orphaned.
+ously analyze the equilibria at various other fractions of          We find that the selfish mining strategy performs even
+DefaultCompliant miners. Thus our simulation both con-           better in the transaction fees model than the block-reward
+firms and extends our theoretical understanding (Figure 6).      model. A priori, there’s no reason to expect this. In this sec-
+                                                                 tion we provide simulation results, along with some intuition
+                                                                 and a theoretical analysis proving this. Essentially what
+        E[Rem(MostH ) · I(Rem(MostH ) > GapH )]                  winds up happening is that while the selfish miner mines
+                                                                 the same fraction of blocks in either reward model, the self-
+          + (1 − y) · E[GapH · I(GapH > GapH )]                  ish miner’s blocks will tend to be larger. In the block-reward
+                                                                 model, this doesn’t matter because all blocks are worth the
+Finally, because Rem(MostH ) and GapH are i.i.d. exponen-        same, but in the transaction fees model this means the self-
+tial random variables with mean 1, we have that E[GapH ·         ish miner gets greater reward.
+I(GapH > Rem(MostH ))] = E[Rem(MostH )·I(Rem(MostH ) >
+GapH )] = 3/4. Therefore, whenever y ≤ 2/3, the reward           6.1    The Selfish Mining Strategy
+from FunctionFork(x) is at least one, and therefore it is a
+better choice than PettyCompliant (which gets expected                 Analytical and simulation result: selfish mining
+reward exactly one).                                                   performs slightly better in the transaction fee model.
+
+                                                                    The goal of a miner employing the selfish mining strategy
+7                                                                is to essentially trick the other miners in the Bitcoin network
+  Note that learning is by no means guaranteed to result in a    to mine on top of a block that will be orphaned. By having
+static equilibrium at all, although in these simulations that
+happens to be the result.                                        other miners waste their power, the selfish miner is capa-
+8
+  E[X] denotes the expectation of the random variable X,         ble of exaggerating their own portion of the overall network
+and I(E) denotes the indicator random variable for event E       hash-rate. Selfish miners do this by maintaining a chain in
+(that is 1 when E occurs and 0 otherwise).                       private that only they know about. When the selfish miner
+initially finds a block, they will not announce their block to     two blocks B1 , B2 with Height(B1 ) = Height(B2 ) = i, and
+the rest of the network. They will continue to mine on their       Owner(B1 ) = m 6= Owner(B2 ). In other words, Racingm    i
+private block, hoping to find a second block before the rest       denotes whether or not there are two competing blocks of
+of the network finds a block.                                      height i, one of which was produced by m.
+   If the miner succeeds, now they’re in a very strong posi-
+tion: they know of a block with height H + 2, whereas the          Analysis.
+rest of the network only knows a block of height H. If the            We proceed now with an analysis of the rewards obtained
+rest of the network finds the next block at height H + 1, the      in the transaction fee model by a selfish miner. Parts will
+selfish miner can reveal their private chain and the public        look similar to the analysis done in [9]. For every infinitesi-
+block will be immediately orphaned. Of course, maybe the           mally small transaction fee that arrives, we wish to compute
+selfish miner will find the third block as well. In this case,     the probability that it winds up in a block mined by the self-
+they’re in an even better position and can waste even more         ish miner. Note that if the selfish miner just used default
+of the network’s power. But the point is that with a lead of       mining instead, this probability would be exactly α.
+two or more, the selfish miner can guarantee that the rest            The determining factor in this probability will be the size
+of the network is wasting power.                                   of the selfish miner’s private chain. To this end, let’s de-
+   Of course, the selfish miner might also fail to find a sec-     fine the following states (same states used in [9]), and we’ll
+ond block before the rest of the network finds their first.        compute this probability separately for each state.
+In this case, they immediately release their block and hope
+                                                                      • State 0: Everyone agrees on the longest chain — Racingm
+                                                                                                                              H =
+that others hear about theirs first. Obviously this is not
+                                                                        false.
+ideal: had they released their block immediately, they could
+have guaranteed that it was heard about first. So there’s a           • State i > 0: The selfish miner m has a private chain
+tradeoff — withholding the block has a chance to give the               of length i — Privatem = H + i.
+selfish miner a private chain of length two or more, in which
+case the selfish miner benefits, but it could also cause their        • State 00 : There are competing blocks of height H, one
+block to be orphaned, resulting in less profits.                        of which was produced by the selfish miner, and the
+                                                                        selfish miner has no private blocks — RacingmH = true
+                                                                        and Privatem = H.
+Selfish-Mine:
+Selfish mining strategy from [9]. This miner hides their              Let fs denote the probability that a transaction winds up
+blocks, which risks losing their first block, in order to try      in a block mined by the selfish miner in the eventual longest
+to get the rest of the network mining in a useless location,       chain, conditioned on the system being in state s when the
+amplifying their own apparent hash power.                          transaction is announced. We compute there probabilities
+                                                                   below. If we then define ps to be the probability that the
+Which Block: Oldestm
+                   Privatem .                                      system is in state s, we can then observe that the expected
+                                                                   fraction Pof transaction fees claimed by the selfish miner is
+How much: include Rem(Mining(m)).                                  exactly s fs · ps . Eyal and Sirer [9] have already computed
+                                                                   ps for all s. The values for ps are:
+Publish(B)?:
+ if Height(B) = H                                                                         1 − 2α
+    yes.                                                                       p0 =
+                                                                                      2α3 − 4α2 + 1
+ elseif Racingm
+              H , and Private
+                             m
+                               =H+1                                                    (1 − α)(α − 2α2 )
+    yes.                                                                       p 00 =
+                                                                                        2α3 − 4α2 + 1
+ else
+    no.                                                                                  α i−1      α − 2α2
+                                                                               pi = (        )                , i>0
+                                                                                       1−α       2α − 4α2 + 1
+                                                                                                   3
+   Assuming the selfish miner has less than half of the overall
+hash power of the network, they will eventually need to pub-
+lish their private chain. In order to maintain our focus on the      To complete the analysis, we just need to compute fs for
+difference between transaction fees and fixed block-rewards,       each s. Appendix E contains the derivation of fs for all s,
+we consider just “vanilla” selfish mining, although it is an       which are stated below:
+interesting consideration for future work to consider selfish
+                                                                               f0 = α2 + α(1 − α) (α + γ(1 − α)) .
+miners who also undercut, or various other generalizations
+(e.g. [7, 20, 23]). Similarly to [9], we examine the potential                 f00 = α.
+rewards a selfish miner would receive assuming that the rest                   f1 = α + (1 − α)α = α(2 − α).
+of the network is default mining. In our analysis, we also
+use α to denote the fraction of the total mining power pos-                    fi = 1 − ((1 − α)i−1 (1 − f0 )).
+sessed by the selfish miner, and γ to be the probability that
+in the event of a race (selfish miner is triggered to release       Finally, when α ∈ (0, .5) and γ ∈ [0, 1], we show in the
+a private block of length one) that ends with the honest           Appendix E that the selfish miner’s rewards are given by
+portion of the network finding the next block, that the self-
+ish miner’s block is not orphaned. We introduce notation
+Privatem to denote the height of the longest chain that m                                Reward(α, γ) =
+is aware of (at least as long as H, and possibly longer if m
+                                                                    5α2 − 12α3 + 9α4 − 2α5 + γ(α − 4α2 + 6α3 − 5α4 + 2α5 )
+is keeping any blocks private). We also introduce notation
+Racingm                                                                                 2α3 − 4α2 + 1
+         i to be a boolean variable that is true iff there exist
+                                                                   only becomes profitable once the difficulty readjusts to ac-
+                                                                   count for the fact that the effective mining power in the
+                                                                   network is lower. This is because before the difficulty ad-
+                                                                   justs, the selfish miner is literally just throwing blocks away,
+                                                                   but tricking the rest of the network into throwing blocks
+                                                                   away at a higher rate. In the transaction fees model, selfish
+                                                                   mining is immediately profitable — every transaction that
+                                                                   arrives goes somewhere, so neither the selfish miner nor the
+                                                                   default miners are throwing rewards away. Note also that
+                                                                   our analysis in no way requires the difficulty to adjust before
+                                                                   it becomes accurate — our analysis would hold no matter
+                                                                   how the difficulty of hash puzzles adjusted or didn’t adjust
+                                                                   over time. Moreover, if some of the rest of the network
+                                                                   has switched to the PettyCompliant strategy, then the
+                                                                   selfish miner’s block is actually more likely to win when a
+                                                                   race is triggered (because it was mined earlier and therefore
+                                                                   contains fewer transactions). So the existence of Petty-
+                                                                   Compliant miners in the transaction fees regime indirectly
+Figure 7: We see simulation matching the theory for                improves Selfish-Mine’s performance by increasing γ.
+selfish mining in a transaction based model for γ =
+0, 0.5, and 1.                                                     6.2    An Improved Selfish-Mine
+                                                                         Analytical and simulation result: in the transac-
+  We make the following observations:                                    tion fee model, selfish miners can make the de-
+   • Simulation confirms the above analytical formula for                cision whether to hide their first block based on
+     Reward(α, γ) (Figure 7)                                             the value of the block. This improved selfish min-
+                                                                         ing strictly and always outperforms both default
+   • This function is extremely close to the reward function             mining and traditional selfish mining.
+                                 2
+                                   (4α+γ(1−2α))−α3
+     with block rewards ( α(1−α)
+                               1−α(1+(2−α)α)
+                                                   ) from [9].
+                                                                      In this section we develop an improved selfish mining
+     We find, numerically, that the absolute difference never
+                                                                   strategy. Essentially, we observe that in the transaction fees
+     exceeds 0.026 in the region of interest.
+                                                                   model, a selfish miner has additional information when de-
+   • For 0 ≤ γ < 0.55 (in particular, for γ = 0), for all α ∈      ciding whether to hide or publish their private chain (namely,
+     (0, 0.5), the reward is strictly greater in the transaction   how many transactions are included). We show that, for
+     fee model than in the block reward model.                     all α, γ < 1, our strategy strictly outperforms both default
+                                                                   mining and “vanilla” selfish mining in the transaction fees
+   We provide some intuition for this last point. First, it        model. Our strategy will decide to hide only “small” blocks,
+is clear that the fraction of blocks mined by the selfish vs.      with at most β (some cutoff parameter chosen by the strat-
+default miners is independent of the reward model. So the          egy as a function of α, γ) transaction fees included, but will
+gap must come from the size of blocks found by the respec-         immediately publish any “large” blocks, with more than β
+tive miners. Let’s assume just for the sake of example that        transaction fees in order to avoid the risk of losing them.
+we are in state 100 and the selfish miner has an α = 1/10
+fraction of the mining power. Almost certainly, the next           Selfish-Mine(β):
+un-orphaned block will be found by the selfish miner. How          An improvement to the selfish mining strategy, where the
+long will it take for this block to be found? The answer is        miner will chose to mine as a selfish miner or a default
+approximately 10 time steps. This is because while the en-         compliant miner based on the value of the block they risk
+tire network finds a block roughly every time step, because        losing.
+the selfish miner is the only miner extending his chain (and
+he mines at 1/10 the speed of the full network) it will take       Which Block: Oldestm
+                                                                                      Privatem .
+ten times as long. What this means is that blocks found by
+the selfish miner while the selfish miner has a huge lead are      How much: include Rem(Mining(m)).
+disproportionately large compared to blocks found when the
+selfish miner has no lead (or a tiny lead). So even though          Publish(B)?
+the selfish miner wins the same fraction of blocks, some of            if Height(B) = H or Tx(B) ≥ β
+these blocks are much larger than those won by the default                yes.
+miners.                                                                elseif Racingm  H , and Private
+                                                                                                       m
+                                                                                                         =H+1
+A brief discussion. The main point of this section is to                  yes.
+highlight one example of surprising incentive issues that dif-         else
+fer between the transaction fees model and the block-reward               no.
+model, not to argue that selfish mining becomes significantly         Intuitively, imagine you are mining and find yourself solv-
+better (the improvement is minor). Still, we wish to point         ing a new block immediately after a previous block was
+out two possibly salient differences between selfish mining        announced and before any new transactions have been an-
+in the two models. First, in the block-reward model, self-         nounced. This block is literally worthless, so instead of pub-
+ish mining is actually not ever immediately profitable — it        lishing, why not use it to try and selfish mine? There is
+Figure 8: We show the ideal cutoff factor, β, for a
+selfish miner with mining power α, and γ = 0.
+
+
+no cost, but a positive probability that you build a lead of
+two, no matter your hash power. Similarly, imagine instead      Figure 9: Theory matching simulation for a variety
+that just by chance an hour goes by since the last block was    of cutoff thresholds for selfish mining, all with γ =
+found and you just solved a new block including all trans-      0. The smaller cutoffs do better for a miner with
+actions that arrived during that period. This block is worth    a smaller hash-power (α) and the larger cutoffs do
+roughly six “normal” blocks, so why risk losing it? Unless      better with a larger hash-power. Intuitively, this
+your hash power is very close to 50%, the expected gains        makes sense as a more powerful miner should be
+from selfish mining are dwarfed by the possibility of losing    willing to risk a larger block to try to selfishly mine.
+this unusually wealthy block. So the trick is just choosing
+the proper cutoff β as a function of your hash power α and
+network connectivity γ.
+   Note that Selfish-Mine(0) = DefaultCompliant, and
+that Selfish-Mine(∞) = Selfish-Mine. So clearly, tak-
+ing the optimal choice of β will result in a strategy that
+equals or outperforms both. Using an analysis similar to
+that of Section 6.1, we are able to compute the expected
+reward achieved by a miner with an α fraction of the min-
+ing power, a γ success probability of winning a race, and
+using strategy Selfish-Mine(β). A derivation is included
+in Appendix E.2.
+
+
+Reward(α, γ, β) =
+  1 + β(1 − α)2 (1 − γ)                         2α2
+                                                           
+                                        2                 2
+                        + 5α +  (1 − α)   γ +        − 2α
+         eβ − 1                               1 − 2α
+                              α(1 − 2α)(1 − e−β )
+                                                      
+                       ×
+                           1 − 2e−β α − 3(1 − e−β )α2
+Figure 8 contains a plot showing the optimal choice of β as
+a function of α when γ = 0. A few noteworthy points from
+this plot: as α → 0, so does the optimal β. As α → 1/2,
+the optimal β approaches ∞. Figure 9 plots our theoretical
+predictions against simulation results, confirming that the
+analysis is correct.
+   We conclude this section with Figure 10 plotting the (the-   Figure 10: A selfish miner using the optimal cutoff
+oretical) performance of default mining, selfish mining, and    outperforms both the original selfish mining proto-
+selfish mining with the optimal cutoff for a range of α and     col and default mining for all values of α, with γ = 0.
+γ = 0. Note that in some ranges, the gains are quite signif-    The simulation points confirm that the theory is ac-
+icant. Specifically, when α = 1/3, both selfish mining and      curate.
+default mining achieve expected reward of ≈ 1/3, but selfish
+mining with the optimal cutoff achieves an expected reward
+of ≈ .38, a 13.6% increase!
+   Test
+7.   IMPACT ON BITCOIN AND LESSONS FOR                             Anna Karlin, and Rainer Böhme for very detailed feedback
+     CRYPTOCURRENCY DESIGN                                         on an earlier draft of this paper.
+   We have argued that deviant mining strategies in a transaction-
+fee regime could hurt the stability of Bitcoin mining and          9. REFERENCES
+harm the ecosystem. In a block chain with constant forks            [1] Calibrated learning and correlated equilibrium. Games
+caused by undercutting, an attacker’s effective hash power              and Economic Behavior, 21(1):40–55, 1997.
+is magnified because he will always mine to extend his own
+                                                                    [2] A simple adaptive procedure leading to correlated
+blocks whereas other miners are not unified. This would
+                                                                        equilibrium. Econometrica, 68(5):1127–1150, 2000.
+make a “51%” attack possible with much less than 51% of
+                                                                    [3] E. Androulaki, G. O. Karame, M. Roeschlin,
+the hash power.
+   Many other unanticipated side-effects may arise. In the              T. Scherer, and S. Capkun. Evaluating user privacy in
+block size debate, it is frequently argued or assumed that              bitcoin. In Proceedings of Financial Cryptography,
+space in the block chain will be a scarce resource and a                2013.
+market will emerge, with users being able to speed up the           [4] S. Arora, E. Hazan, and S. Kale. The multiplicative
+confirmation of a transaction by paying a sufficiently large            weights update method: a meta-algorithm and
+transaction fee. But if miners intentionally “leave money on            applications. Theory of Computing, 8(1):121–164,
+the table” when solving blocks, as is the case in undercutting          2012.
+attacks, it breaks this assumption. That is because under-          [5] P. Auer, N. Cesa-Bianchi, Y. Freund, and R. E.
+cutting miners are not looking to maximize the transaction              Schapire. The nonstochastic multiarmed bandit
+fee that they can claim, and don’t have a strong reason to              problem. SIAM Journal of Computing, 32(1):48–77,
+prioritize a transaction with a high fee.9 Put another way,             2002.
+the block size imposes a constraint on the total size of trans-     [6] A. Blum and Y. Mansour. From external to internal
+actions in a block and the threat of being undercut imposes             regret. Journal of Machine Learning Research,
+another constraint on the total fee. The two interact in                8:1307–1324, 2007.
+complex ways. We believe that qualitatively our results will        [7] N. T. Courtois and L. Bahack. On subversive miner
+continue to hold in a world where the available block size is           strategies and block withholding attack in bitcoin
+much smaller than the demand, but quantitatively the im-                digital currency. CoRR, abs/1402.1718, 2014.
+pact of undercutting will be mitigated (see end of Section          [8] I. Eyal. The miner’s dilemma. In Security and Privacy
+3.1). Still, it is an important direction for future research to        (SP), 2015 IEEE Symposium on, pages 89–103. IEEE,
+understand this connection more rigorously.                             2015.
+   Despite the variety of our results, we believe we have only      [9] I. Eyal and E. G. Sirer. Majority is not enough:
+scratched the surface of what can go wrong in a transaction-            Bitcoin mining is vulnerable. In Financial
+fee regime. To wit: we have not presented an analysis of                Cryptography and Data Security, pages 436–454.
+miners whose strategy space includes both undercutting and              Springer, 2014.
+selfish mining, primarily due to the complexity of the result-     [10] K. Hill. Bitcoin is not broken. Forbes, 2013.
+ing models.                                                             http://www.forbes.com/sites/kashmirhill/2013/11/
+   There has been scant attention paid to the transition to             06/bitcoin-is-not-broken/#55d4a8812568.
+a transaction-fee regime. The Nakamoto paper addresses it          [11] N. Houy. The economics of bitcoin transaction fees.
+briefly: “The incentive can also be funded with transaction             Working Paper GATE 2014-07. halshs-00951358.,
+fees... Once a predetermined number of coins have entered               2014.
+circulation, the incentive can transition entirely to transac-     [12] B. Johnson, A. Laszka, J. Grossklags, M. Vasek, and
+tion fees and be completely inflation free” [19]. Similar com-          T. Moore. Game-theoretic analysis of ddos attacks
+ments on the Bitcoin Wiki and other places suggest that                 against bitcoin mining pools. In Proceedings of the
+the community views the transition as unremarkable. Some                First Workshop on Bitcoin Research, 2014.
+altcoins (Monero, Dogecoin) have even opted to hasten the
+                                                                   [13] A. Kiayias, E. Koutsoupias, M. Kyropoulou, and
+block reward halving time.
+                                                                        Y. Tselekounis. Blockchain mining games. In ACM
+   Our results suggest a different view. We see the block re-
+                                                                        Conference on Economics and Computation (EC),
+ward as integral to the stability of the mining game. At a
+                                                                        2016.
+minimum, analyzing equilibria in the transaction-fee regime
+appears dramatically harder than in the block-reward regime,       [14] J. A. Kroll, I. C. Davey, and E. W. Felten. The
+which is a cause for concern by itself. The monetary infla-             economics   of bitcoin mining, or bitcoin in the presence
+tion resulting from making the block reward permanent, as               of adversaries. In Proceedings of the Twelfth Annual
+Ethereum does, may be a small price to pay to ensure the                Workshop on the Economics of Information Security
+stability of a cryptocurrency.                                          (WEIS), 2013.
+                                                                   [15] N. Littlestone and M. K. Warmuth. The weighted
+                                                                        majority algorithm. Inf. Comput., 108(2):212–261,
+8. ACKNOWLEDGMENTS                                                      1994.
+   We are extremely grateful to Jiechen Chen, Kira Goldner,        [16] L. Luu, J. Teutsch, R. Kulkarni, and P. Saxena.
+9
+                                                                        Demystifying incentives in the consensus computer. In
+  They do have a weak reason: miners benefit from creat-                Proceedings of the ACM Conference on Computer and
+ing the smallest possible block for a given value of the to-
+tal transaction fee they seek to claim, since smaller blocks            Communications Security (CCS), 2015.
+propagate faster through the network and are less likely to        [17] A.  Miller and R. Jansen. Shadow-bitcoin: scalable
+be orphaned.                                                            simulation via direct execution of multithreaded
+     applications. In Proceedings of the eighth workshop on
+     Cybersecurity Experimentations and Test (CSET),
+     2015.
+[18] M. Möser and R. Böhme. Trends, tips, tolls: A
+     longitudinal study of bitcoin transaction fees. In
+     Workshop on Bitcoin Research, pages 19–33, 2015.
+[19] S. Nakamoto. Bitcoin: A peer-to-peer electronic cash
+     system, 2008.
+[20] K. Nayak, S. Kumar, A. Miller, and E. Shi. Stubborn
+     mining: Generalizing selfish mining and combining
+     with an eclipse attack. In IEEE European Symposium
+     on Security and Privacy (EuroS&P), 2016.
+[21] R. Peter. A transaction fee market exists without a
+     block size limit. 2015.
+[22] M. Rosenfeld. Analysis of bitcoin pooled mining
+     reward systems. CoRR, abs/1112.4980, 2011.
+[23] A. Sapirshtein, Y. Sompolinsky, and A. Zohar.
+     Optimal selfish mining strategies in bitcoin. In
+     Financial Cryptography and Data Security, 2016.
+[24] M. Vasek, M. Thornton, and T. Moore. Empirical
+     analysis of denial-of-service attacks in the bitcoin
+     ecosystem. In Proceedings of the First Workshop on
+     Bitcoin Research, 2014.
+APPENDIX
+A.    MINING GAP
+   This appendix contains a theoretical analysis of the mining gaps referenced in Section 3.2. Let’s consider the following
+simplified model: there is one style of “rig” available to miners, which costs p BTC per time unit in electricity to run. Let’s
+first analyze what effect this has in the fixed reward model, where each block found is worth one BTC, and the difficulty is
+adjusted so that the time between successive blocks is one unit in expectation.
+   Then if there are k rigs in the network, the expected reward from running a rig for one time unit is exactly 1/k, whereas
+the cost in electricity is p. So the network is sustainable as long as 1/k ≥ p, or k ≤ 1/p. In other words, the cost of electricity
+imposes a hard cap on the total effective mining power of 1/p rigs worth. Of course, this can always be adjusted if necessary
+by changing the fixed reward per block. Also, it is important to point out that as long as k ≤ 1/p, the effective hash power
+in the network will be k rigs worth.
+   Now let’s consider what happens in the transaction fee model, where transaction fees arrive continuously at a rate of 1 per
+time unit. Miners will always turn off their rigs (/coin-hop) immediately after a block is found, because the instantaneous
+expected reward of running a rig is 0, but the cost is non-zero. If the current effective hash power in the network is c rigs
+worth, then the miner needs to wait until x = cp transaction fees have arrived in order for mining to be profitable.
+   Now, assuming that miners are cleverly turning their rigs on and off at the right times, how many rigs must be in the
+network in order to attain an effective hash power of c? The rigs are all off for cp units of time, and then all k of them are
+turned on, and the expected time to find a block is 1 unit of time. This means that the expected time to find a block with all
+k units running must be 1 − cp (due to difficulty adjustment), whereas the expected time to find a block with c units running
+is 1 (because the effective hash power is c). Finally, we observe that for a fixed difficulty, if x denotes the number of rigs
+running, and yx denotes the expected time for x rigs to find a block, then x1 · yx1 = x2 · yx2 for all possible number of rigs
+x1 , x2 . Together, this yields the following equation:
+
+                                                         k · (1 − cp) = c · 1
+
+                                                                       c
+                                                          ⇒k=              .
+                                                                    1 − cp
+  What do we learn from this? First, we see that no c ≥ 1/p can possibly be supported, just like in the fixed-reward model.
+                                                                 1
+On the other hand, we see that it takes an additional factor of 1−cp rigs in order to get the effective hash power of c ≤ p rigs.
+As c → 1/p, the maximum possible effective hash power, this ratio approaches ∞! More quantitatively, if we plug in c = x/p
+                                        1
+for x < 1, we see that the blow-up is 1−x  . This means the following: In the transaction fees model, to obtain an x
+                                                                                                        1
+fraction of the maximum possible effective hash power, a multiplicative blow-up of 1−x                     rigs are necessary.
+Recall that in the fixed-reward model, no blow-up is necessary.
+  We can also reason in the other direction: for a fixed k number of rigs in the network, what is the effective hash rate in
+the fixed reward model versus the transaction fees model with mining gaps? In the fixed reward model, this is easy: it’s just
+                                                                                                        c
+min{k, 1/p}. In the transaction fees model, for a fixed k, we need to solve for the c such that k = 1−cp   . This is:
+
+                                                            k − kcp = c
+
+                                                                       k
+                                                           ⇒c=
+                                                                    1 + pk
+                                                                                 1
+  So for fixed k, the effective mining power of k rigs degrades by a factor of 1+pk , which is always < 1. Note that at k = 1/p,
+every rig is 100% effective in the fixed reward model, whereas the effective mining power is just k/2 in the transaction fees
+model. We can again make a quantitative statement: In the transaction fees model, when the raw hash power in
+                                                                                                                             1
+the network is an x fraction of the maximum possible, the effective hash power degrades by a factor of 1+x                     .
+Recall that in the fixed rewards model, there is no degradation in effective hash power when x ≤ 1.
+
+B.   LEARNING MINERS IN SIMULATOR
+  As referenced in Section 4.2, we provide two options for learning in our simulator. Let’s introduce these with a clear set-up
+for learning.
+  Let there be a set of strategies a learner can use, indexed by k. At each round i ∈ [T ], the learner receives/would have
+received some reward rki ∈ [0, 1], which may be arbitrary. The goal is to select a sequence of strategies si guaranteeing:
+
+                                                   T
+                                                   X              T
+                                                                  X
+                                                     rsi i ≥ max{   rki } − c.
+                                                                k
+                                                   i=1               i=1
+
+  In other words, we would like to select a sequence of strategies that does nearly as well as the best strategy, assuming
+                                                                                     i
+we knew it from the beginning. It is well-known [4] that setting wki = wki−1 (1 − )rk and selecting sik proportional to the
+weights wk results in a guarantee with c = T + ln(# strategies)/. Similarly, [5] shows that even if we don’t learn rki for
+         i
+Figure 11: Illustration of a mining gap. The blue line shows the current P.D.F. of the time to next block. If
+the block reward by itself is too small to incentivize mining, rational miners will wait until enough transactions
+have accumulated before starting to mine. This will lead to a P.D.F. of a different shape (red line). Note
+that in either scenario the mean time to the next block is 10 minutes (green line)
+
+
+strategies k that we didn’t choose in round i, there is an algorithm (namely, EXP3, see [5] for description) that guarantees
+c = 2T + # strategies · ln(# strategies)/.
+   So option one in our simulator is just to run EXP3 in earnest: whenever a miner uses some strategy k during game i, they
+learn their payoff and update their weights accordingly. Still, MWU converges faster, so it would be nice if we could learn
+how much payoff the miner would have received if they used strategy k during game i for all k, but this is computationally
+very expensive as it essentially requires us to rerun the entire game for all miners and strategies k (thereby becoming more
+expensive than just running the additional games to let EXP3 converge).
+   Instead, we make the following observation: even if this miner is not using strategy k during game i, maybe some other
+miner is - could we use that miner’s payoff instead of recomputing exactly what payoff this miner would have received? The
+answer is of course we can, we just won’t get a theoretical guarantee like if we used MWU in earnest. The payoff from different
+miner perspectives are of course different, but not wildly so. Specifically, the difference is that miner 1 is facing opponents
+2, 3, . . ., whereas miner 2 faces opponents 1, 3, . . .. If miner 1 and miner 2 use different strategies in round i, then strategy k
+would yield slightly different rewards when used by each of them. With many small miners, this difference should be small,
+so we include this learning option as it seems to converge faster than EXP3, even though there is no theoretical guarantee.
+Specifically what we mean is the following: instead of learning the payoff that the miner would have received had they used
+strategy k during round i, they simply take the average payoffs of all miners that used strategy k during round i instead.
+   It is certainly possible that improvements to the learning aspect of the simulation are possible (and we encourage future
+work on this aspect once the simulator is open-source), but we note that the current implementations sufficed for the settings
+we studied.
+
+C.    PROOF OF THEOREM 5.1
+  Below is a complete proof of Theorem 5.1. Some quick notation: for an increasing function f (·), we’ll denote by f −1 (x) =
+min{y|f (y) ≥ x}. If no such y exists, then we’ll denote f −1 (x) = +∞.
+  First, we make an extremely useful observation about when miners will receive payment for their blocks. Essentially, because
+miners only consider mining on MostH or MostH−1 , once a block is a predecessor of both such blocks, it is guaranteed to be
+in the eventual longest chain.
+Observation 1. As long as miners only consider mining on top of blocks MostH or MostH−1 , a miner receives eventual
+payment for mining a block if and only if the next block found chooses to continue her chain instead of undercutting.
+   Proof. Because miners only consider chains MostH−1 or MostH , immediately after producing a new block B, B is in the
+longest chain. Either B goes on top of MostH−1 , in which case it is in a chain of length H, which is the longest. Or it goes
+on top of MostH , which creates a new longest chain of length H + 1. Let Hnew denote the new length of the longest chain (H
+if the miner undercut, and H + 1 if she continued).
+   Either the newly minted B is equal to MostHnew , or it isn’t. If it isn’t, then neither the next miner, nor any other miner
+in the future will ever mine on top of it, because there is a “better” chain of length Hnew to mine on top of instead. If it is,
+then the next miner will either undercut or continue. If the next miner continues, then B is now equal to MostHnew and
+the predecessor of MostHnew +1 . This means that all future miners will continue a chain containing B, and therefore it will
+certainly be in the eventual longest chain.
+   If instead the next miner undercuts, then there will be a new chain of length Hnew that leaves more available BTC, meaning
+that MostHnew does not contain B as a predecessor. MostHnew −1 clearly does not contain B either, as B was mined on top
+Figure 12: One example of the function that function forking miners might use that leads to an equilibrium.
+Recall, the function is f (x) = x on the range [0, y], the −W0 (−yex−2y ) on [y, 2y −ln(y)−1, and 1 on [2y −ln(y)−1, ∞).
+
+
+of this chain. So B is contained in neither MostHnew nor MostHnew −1 , and therefore no future miners will ever consider a
+chain containing B.
+  In conclusion, whether or not a miner receives payment for block B depends entirely on whether or not the subsequent
+miner decides to mine on top of B or not.
+
+   We now want to figure out a best response for an individual non-atomic miner, conditioned on all other miners using
+FunctionFork(f ). So we need to figure out the probability that a miner will get undercut when authorizing B BTC
+in transactions, assuming that all other miners are using FunctionFork(f ). Note that as more and more new BTC of
+transactions arrive, other miners become less inclined to undercut. What we need to figure out is exactly how many new BTC
+of transactions need to arrive before the next miner switches from preferring to undercut to preferring to continue the longest
+chain.
+
+Lemma C.1. If a miner authorizes B BTC of transactions on Mosti (of course, i will be in {H − 1, H}), then other
+FunctionFork(f ) miners will try to undercut her until max{0, f −1 (B) + B − Rem(Mosti )} new BTC of transactions arrive
+(Rem(Mosti ) taken at the instant that the miner authorizes her block).
+                                                                                          −1
+  Therefore, the expected BTC obtained by authorizing B BTC of transactions is Be− max{0,f (B)+B−Rem(Mosti )} .
+   Proof. First, observe that because the miner chooses to build upon MostH−1 or MostH , then the chain containing their
+block is the new MostH , and that same chain minus their block is the new MostH−1 . So the gap between the number of
+available BTC in MostH versus MostH−1 (GapH = Rem(MostH−1 ) − Rem(MostH )) for the next miner is exactly B.
+   Now, immediately when the miner publishes her block, there are Rem(Mosti ) BTC of transactions available on MostH−1 ,
+and Rem(Mosti ) − B BTC of transactions available on MostH . So at this point, other miners would choose to undercut iff
+f (Rem(Mosti ) − B) < B. As more new BTC of transactions arrive (call it x), the other miners would choose to undercut iff
+f (Rem(Mosti ) − B + x) < B. As f (·) is increasing, we can look for the minimum x where this ceases hold, which is exactly
+when Rem(Mosti ) − B + x = f −1 (B), or x = f −1 (B) + B − Rem(Mosti ).
+
+  We now prove three corollaries of Lemma C.1 regarding what choices of B might possibly be optimal.
+
+Corollary C.2. If every other miner is playing FunctionFork(f ), then the optimal choice B ∗ of BTC to authorize when
+building upon chain Mosti satisfies
+                                           −1
+  • B ∗ ∈ argmaxB∈[0,GapH ] {Be− max{0,f        (B)+B−Rem(MostH−1 )}
+                                                                       }, if i = H − 1.
+                                                   −1
+  • B ∗ ∈ argmaxB∈[0,Rem(MostH )] {Be− max{0,f          (B)+B−Rem(MostH−1 )}
+                                                                               }, if i = H.
+  Proof. This is an immediate corollary of Lemma C.1, combined with the fact that a miner who chooses to undercut can
+authorize at most GapH BTC, while a miner who chooses to continue can authorize at most Rem(MostH ).
+                                                  −1                     −1
+Corollary C.3. If B1 ≥ B2 , and B1 e−B1 −f (B1 ) ≥ B2 e−B1 −f (B1 ) , then for all X, the expected reward from authorizing
+B1 BTC in transactions is at least as large as the expected reward from authorizing B2 BTC when Rem(MostH ) = X.
+   Proof. There are two cases to consider. First, maybe X > B1 +f −1 (B1 ) (the miner guarantees that she is not undercut by
+authorizing B1 BTC in transactions). In this case, because B1 ≥ B2 and f −1 (·) is increasing, we clearly have X > B2 +f −1 (B2 )
+as well, meaning that the expected reward by authorizing B1 BTC is exactly B1 , and that the expected reward by authorizing
+B2 BTC is exactly B2 , by Lemma C.1. As B1 ≥ B2 , the reward from B1 is at least as large.
+   In the second case, maybe X ≤ B1 + f −1 (B1 ) (the miner is undercut with positive probability by authorizing B1 BTC in
+                                                                                 −1
+transactions). In this case, the reward from authorizing B1 BTC is B1 e−B1 −f (B1 )+X , by Lemma C.1. Also by Lemma C.1,
+                                                           −1                       −1                     −1
+the reward from authorizing B2 BTC is B2 e− max{0,B2 +f (B2 )−X} ≤ B2 eX−B2 −f (B2 ) = eX · B2 e−B2 −f (B2 ) . By hypothe-
+                                           −1
+sis, this is upper bounded by eX B1 e−B1 −f (B1 ) , which is exactly the reward obtained by authorizing B1 BTC. So authorizing
+B1 BTC provides at least as much reward.
+   In both cases, we see that authorizing B1 BTC is at least as good as B2 .
+                                                    −1                   −1
+Corollary C.4. If B1 ≥ B2 , and B1 e−B1 −f (B1 ) ≤ B2 e−B2 −f (B2 ) , then for all X ≤ B2 + f −1 (B2 ), the expected re-
+ward from authorizing B2 BTC in transactions is at least as large as the expected reward from authorizing B1 BTC when
+Rem(MostH ) = X.
+   Proof. By hypothesis, X ≤ B2 + f −1 (B2 ) (the miner is undercut with positive probability by authorizing B2 BTC in
+                                                                                     −1
+transactions). Therefore, the expected reward from authorizing B2 BTC is B2 e−B2 −f (B2 )+X . As B1 > B2 and f −1 (·)
+                                     −1
+is increasing, we have X ≤ B1 + f (B1 ) as well. This means that the expected reward from authorizing B1 BTC is
+           −1
+B1 e−B1 −f (B1 )+X . By hypothesis, this is less than the reward of authorizing B2 .
+
+  We now recall quickly properties of W0 (·):
+  • The domain of W0 (·) is [−1/e, ∞) and the range is [−1, ∞).
+  • W0 (·) is increasing.
+  • W0 (xex ) = x for all x ∈ [−1, ∞).
+We will need to make use of some technical facts about f (·) (our specific choice from the statement of Theorem 5.1) that we
+first prove below.
+Fact 1. f (x) ≤ x everywhere.
+   Proof. Clearly, f (x) ≤ x on [0, y]. Also clearly, f (x) ≤ x on [2y − ln(y) − 1, ∞) iff f (2y − ln(y) − 1) ≤ 2y − ln(y) − 1. So
+we just need to check the range [y, 2y − ln(y) − 1]. The derivative of W0 (x) = x(WW00(x)+1)
+                                                                                       (x)
+                                                                                             . So the derivative of f on this range
+is (by the chain rule):
+
+                                                        W0 (−yex−2y )
+                                              −                               · −yex−2y
+                                                  −yex−2y (W0 (−yex−2y ) + 1)
+
+                                                              −W0 (−yex−2y )
+                                                         =
+                                                             1 + W0 (−yex−2y )
+
+                                                                    f (x)
+                                                              =
+                                                                  1 − f (x)
+   As f (·) is increasing and positive on [y, 2y − ln(y) − 1] (because of the form for f 0 (x) we just derived above - not all positive,
+increasing f (·) have increasing derivatives), this means that f 0 (·) is also increasing and positive on [y, 2y − ln(y) − 1]. As the
+derivative of x is constant (1), this means that if f (x) > x anywhere on this interval, f (2y − ln(y) − 1) > 2y − ln(y) − 1 or
+f (y) > y. We can clearly see that f (y) = −W0 (−ye−y ) = y, and f (2y − ln(y) − 1) = −W0 (−ye2y−ln(y)−1 ) = −W0 (−1/e) = 1.
+So we can’t have f (y) > y, and we have f (2y − ln(y) − 1) > 2y − ln(y) − 1 if and only if 2y − ln(y) − 1 < 1, which is the same as
+2y − ln(y) < 2. As this is exactly the range of y we disallow, we see that we also can’t have f (2y − ln(y) − 1) > 2y − ln(y) − 1
+for any y we allow. Therefore, f (x) ≤ x everywhere.
+                    −1
+Fact 2. Be−B−f           (B)
+                               =
+        −2B
+  • Be        , B ∈ [0, y].
+  • ce−2c , B ∈ [y, 1].
+  • 0, B > 1.
+  Proof. We first observe that f −1 (B) = B for all B ∈ [0, y], which immediately proves the first bullet. We next observe
+that f −1 (B) = +∞ for all B > 1, which immediately proves the last bullet.
+  For the middle bullet, observe that:
+                                         −W0 (−ye(2y+ln(z/y)−y)−2y ) = −W0 (−yeln(z/y)−z )
+
+                                                         = −W0 (−ze−z ) = z.
+ Note that the last equality is due to the fact that W0 (·) is the inverse of xex . This proves that f −1 (B) = 2y + ln(B/y) − B
+when B ∈ [y, 1] and completes the middle bullet.
+                                                       −1
+Corollary C.5. If y ∈ (0, 1/2], then Be−B−f                 (B)
+                                                                  is strictly increasing on [0, y] and constant on [y, 1].
+                    −1
+  Proof. Be−B−f (B) is clearly constant on [y, 1], so we just need to confirm that it’s strictly increasing on [0, y]. The
+derivative of Be−2B is (1−2B)e−2B , which is strictly positive on [0, 1/2] (and therefore on [0, y] for all y ≤ 1/2), as desired.
+
+Proof of Theorem 5.1: We want to invoke Corollary C.3 combined with Corollary C.5. Together, these immediately say that for
+any 1 ≥ B1 > B2 ≥ 0, it is at least as good to authorize B1 BTC as B2 . As authorizing B > 1 BTC always results in expected
+                                                                                                                 −1
+reward of 0, this immediately implies by Corollary C.2 that for any b, min{1, b} ∈ argmaxB∈[0,b] {Be− max{0,B+f (B)−Rem(Mosti )} }.
+   Now, we also want to invoke Corollary C.4 to show that there may exist other maximizers as well if Rem(Mosti ) ∈
+[y, 2y − ln(y) − 1]. Note that f (·) is strictly increasing in this range, meaning that f −1 (f (Rem(Mosti ))) = Rem(Mosti ).
+Therefore, we see that Rem(Mosti ) ≤ f (Rem(Mosti )) + f −1 (f (Rem(Mosti ))) (the miner will be undercut with positive
+probability when authorizing f (Rem(Mosti )) BTC) on this entire range. Together with Corollary C.5, this means that the
+hypotheses of Corollary C.4 are satisfied taking B2 = f (Rem(Mosti )) and any B1 ≥ B2 . Combined with the reasoning
+above, this means that when Rem(Mosti ) ∈ [y, 2y − ln(y) − 1] and b ≥ f (Rem(Mosti )), we also have f (Rem(Mosti )) ∈
+                               −1
+argmaxB∈[0,b] {Be− max{0,B+f (B)−Rem(Mosti )} }.
+   Therefore, when b = Rem(MostH ), we recover that f (Rem(MostH )) is an optimal choice of BTC to authorize when
+continuing. When b = GapH , we recover that min{1, GapH , f (Rem(MostH−1 ))} = min{GapH , f (Rem(MostH−1 ))} is an
+optimal choice of BTC to authorize when undercutting.
+   So FunctionFork(f ) correctly chooses how many BTC to authorize when continuing and when undercutting, we just need
+to check that it also chooses when to undercut and when to continue. If GapH > f (Rem(MostH )), then min{GapH , f (Rem(MostH−1 ))} ≥
+f (Rem(MostH )) as well, and we can invoke Corollary C.3 with B1 = min{GapH , f (Rem(MostH−1 ))} and B2 = f (Rem(MostH )).
+By the argument above, because 1 ≥ B1 ≥ B2 , the hypotheses of Corollary C.3 are satisfied, and the expected re-
+ward is at least as high when authorizing B1 as B2 , so undercutting is at least as good as continuing. Similarly, if
+f (Rem(MostH )) ≥ GapH , then f (Rem(MostH )) ≥ min{GapH , f (Rem(MostH−1 ))}. So we may again invoke Corollary C.3,
+this time with B1 = f (Rem(MostH )) and B2 = min{GapH , f (Rem(MostH−1 ))}.
+   So now we have shown that the FunctionFork(f ) correctly chooses how many BTC to authorize when continuing and
+when undercutting, and also chooses correctly whether to continue or undercut. So it is an equilibrium.
+   The last part we need to reason about is the connection to random walks. Observe that the number of transaction fees
+grows continuously at a rate of 1 per unit. Every time a block is found, it drops by at most 1. So definitely the backlogged
+transactions will be at least as bad as a random walk that drops by exactly 1 (because it will only drop further).        √
+   Lemma C.7 below proves that with constant probability, √                                √ a time interval of length n + n is
+                                                               the number of blocks found in
+at most n. When
+              √ this occurs, there is a backlog
+                                              √     of at least n transactions at time n + n. Therefore,
+                                                                                                  √        the expected backlog
+is at least Θ( n) (in fact, it is exactly Θ( n)). During this time, new transactions take Θ( n) time steps before they are
+included in a block. 2
+  Before proving Lemma C.7, we recall the Berry-Esseen theorem:
+Theorem C.6 (Berry-Esseen). Let X1 , . . . , Xn be i.i.d. random variables with mean 0, E[Xi2 ] = σ 2 , E[Xi3 ] = ρ. Then for all
+x:
+                                                         P
+                                                          i Xi                   ρ
+                                                  P r[    √    ≥ x] − Φ(x) = O( 3 √ ),
+                                                         σ n                   σ n
+  Where Φ(x) denotes the probability that a Gaussian random variable with mean 0 and standard deviation 1 exceeds x.
+Lemma C.7. Define Xi to be an exponential random variable with mean 1. Then:
+                                                              n
+                                                             X          √
+                                                         P r[   Xi > n + n] = Θ(1).
+                                                                  i=1
+                                                                                                      √
+  In particular, this implies that probability that fewer than n blocks are found in n +               n time steps is Θ(1).
+  Proof. Define Yi = Xi − 1. Then the Yi are i.i.d. random variables with mean 0, E[Yi2 ] = σ < 2, and E[Yi3 ] = ρ < 6.
+Plugging into Berry-Esseen (stated below), we get:
+
+                                          n                             Pn
+                                          X            √                  i=1 Yi  1      1        1
+                                   P r[         Yi >    n] = P r[          √     > ] ≥ Φ( ) − O( √ ).
+                                          i=1
+                                                                         σ n      σ      σ         n
+
+  As σ is a constant independent of n, Φ(σ) is also independent of n, so Φ( σ1 ) − O( √1n ) = Θ(1), as desired.
+
+D.    WHEN DEFAULT MINING IS AN EQUILIBRIUM FOR NON-ATOMIC MINERS
+  In the absence of latency, default mining is an equilibrium for non-atomic miners regardless of the reward model, and the
+reasoning is simple: if you do anything except extend the unique longest chain, your block will be orphaned and you will
+receive reward zero. If you wait to publish your block, you risk losing the option to publish it without being orphaned. All
+other miners ignore the transactions included in your block when deciding where to extend, so you may as well include as
+many transactions as possible.
+   In the presence of latency, forks will naturally occur, so PettyCompliant outperforms DefaultCompliant in the trans-
+action fees model. In the fixed reward model, DefaultCompliant remains an equilibrium under quite general models of
+latency (still assuming non-atomic miners). Consider, for instance, any model of latency with the following property. When-
+ever miner m finds a block, and miner m0 finds a block at a later time, we have Bm ⊆ Bm0 , where Bm denotes the set of
+blocks that miner m had heard of when they found their block. In other words, by the time miner m0 solves their block, they
+have become aware of at least every block that m was aware of when they solved their block earlier (but perhaps not m’s
+block, nor any blocks that m was not herself aware of).
+   It is easy to see that simple latency models (such as all announcements being grouped into chunks of λ seconds) have this
+property, as well as much more general latency models. It is also easy to see that in the transaction fees model, the simple
+latency model where announcements are grouped into chunks of λ seconds is rich enough so that DefaultCompliant is
+strictly outperformed by PettyCompliant and therefore not an equilibrium.
+
+Proposition D.1. When miners are non-atomic, even in the presence of any latency of the form described above, it is an
+equilibrium for every miner to use DefaultCompliant.
+   Proof. The proof is actually very straight-forward: assuming that all other miners are DefaultCompliant, mining
+anywhere except on top of a longest chain guarantees that your block will be orphaned and you will receive a reward of
+zero (because our latency assumptions guarantee that the next miner and all future miners will have heard about the blocks
+you chose to undercut before yours, and they are all DefaultCompliant). So the only choices are how to tie-break among
+multiple longest chains. But this choice neither affects your rewards (they are fixed!), nor the likelihood that your block will
+be chosen by the next miner (as this depends only on how quickly they hear about your block and not on its contents). So
+tie-breaking in favor of the earliest chain is at least as good as any other tie-breaking rule.
+   Finally, it is also easy to see that publishing as soon as possible is optimal, as this maximizes the likelihood that your block
+is chosen to be extended.
+
+   The point of Proposition D.1 is again just to contrast the difference between transaction fees and fixed rewards. In the non-
+atomic regime, even in quite general latency models, DefaultCompliant mining is an equilibrium in the fixed-reward model.
+The proof is simple and matches exactly our intuition for why DefaultCompliant should make sense. But in the transaction
+fees model, whenever there exists a possibility for forks, DefaultCompliant is strictly outperformed by PettyCompliant,
+and the space of equilibria is therefore much more complex. In particular, it would be interesting for future work to identify
+an equilibrium for non-atomic miners in the transaction fees model in any non-trivial latency model.
+
+E.    SELFISH MINING
+E.1    Classic Selfish Mining with transaction fees
+   Here we provide details on how to analyze selfish mining in the transaction fee regime. Recall that Eyal and Sirer [9] have
+already computed ps for all s, the probability that the block chain is in state s. Below we compute fs for all states s, the
+probability that a transaction winds up with the selfish miner conditioned on that transaction arriving while the blockchain
+is in state s.
+Computing f0 : Let’s consider the possible outcomes when a transaction arrives in state 0:
+  • If a default miner mines the next block, it will contain this transaction, and this block will definitely be in the eventual
+    longest chain. This happens with probability (1 − α).
+  • Alternatively, the selfish miner could find the next block. If the selfish miner finds the next block, they will include the
+    transaction in their block, but they keep this block private after they find it. This happens with probability α, but this
+    block is not guaranteed to make it into the eventual longest chain, yet.
+  • From here, maybe the selfish miner finds the next block as well. This happens with probability α. Once this happens,
+    both blocks are guaranteed to be in the eventual longest chain. So this event contributes a probability α2 that the
+    transaction winds up in the selfish miner’s block.
+  • Alternatively, a default miner might find the next block, which triggers a race. This happens with probability (1−α). Both
+    racing blocks contain the transaction being considered, so whoever wins the race receives the corresponding transaction
+    fees. The selfish miner wins the race with probability α + γ(1 − α), so this event contributes α(1 − α)(α + γ(1 − α)) in
+    total.
+  Therefore, we see that:
+
+                                               f0 = α2 + α(1 − α) (α + γ(1 − α))                                               (4)
+Computing f00 : If a new transaction is announced in state 00 , then the next block found is certainly contained in the eventual
+longest chain because it is always announced and every miner chooses to mine on top of it. So this transaction is won by
+whichever miner finds the next block, which is the selfish miner with probability α. Therefore:
+                                                             f 00 = α                                                          (5)
+f1 : Consider now a transaction announced in state 1, and where it might wind up:
+
+
+
+
+  • If the selfish miner finds the next block, they will have a private chain of length 2, in which case both blocks are guaranteed
+    to make it into the final block chain. Therefore, this transaction will certainly wind up in a block mined by the selfish
+    miner. This happens with probability α.
+
+
+
+
+  • Alternatively, the rest of the network might find the next block. This happens with probability (1 − α). But we don’t yet
+    know whether or not this block will make it in the eventual longest chain because this triggers the “race,” and puts us in
+    state 00 . Note though that the racing selfish block does not contain this transaction that arrived once we were already
+    in state 1. Therefore, even if the selfish miner wins the race, but because a default miner chose their block, the selfish
+    miner will not get this transaction. So the only way for the selfish miner to win this transaction is to find the block that
+    ends the race. This happens with probability α.
+
+
+
+
+                                                 f1 = α + (1 − α)α = α(2 − α).                                                 (6)
+Computing fi : Finally, consider a transaction arriving to the system in state i, i > 1. In these states, it is easier to consider
+what must happen in order for the transaction to not end up in a block the selfish miner owns. For the transaction to wind
+up in a default miner’s block, it needs to be the case that the selfish miner releases their entire private chain before mining
+a new block (which would contain this transaction). This is because any blocks found by default miners before this trigger
+are all orphaned. For a release to be triggered, a default miner must find each of the next i − 1 blocks, which happens with
+probability (1 − α)i−1 .
+  If this happens, we still don’t know where this transaction winds up, because each of the i − 1 blocks found will be orphaned.
+But we have now returned to state 0, and the remainder of the analysis concludes as if the transaction had been announced
+during state 0. So the probability that a default miner winds up with a transaction arriving in state i is (1 − α)i−1 (1 − f0 ),
+and therefore:
+
+                                                 fi = 1 − ((1 − α)i−1 (1 − f0 ))                                               (7)
+  Summing everything together, we get the following:
+
+
+
+
+Theorem E.1. If all other miners remain DefaultCompliant, a selfish miner in the transaction fees model with an
+α ∈ (0, .5) fraction of the mining power and racing parameter γ ∈ [0, 1] achieves reward Reward(α, γ) with:
+
+
+
+
+                                                        Reward(α, γ) =
+
+
+
+
+                                   5α2 − 12α3 + 9α4 − 2α5 + γ(α − 4α2 + 6α3 − 5α4 + 2α5 )
+                                                       2α3 − 4α2 + 1
+
+                                                                                       P
+  Proof. The only remaining part of the proof is summing p0 f0 + p00 f00 + p1 f1 +         i>1 pi fi .
+                                                                   1 − 2α
+                                                                                · α2 + α(1 − α)(α + (1 − α)γ)
+                                                                                                             
+                                                  p0 f 0 =
+                                                                2α3 − 4α2 + 1
+                                                       2α2 − 5α3 + 2α4 + αγ − 4α2 γ + 5α3 γ − 2α4 γ
+                                                            =
+                                                                      2α3 − 4α2 + 1
+                                                                                     (1 − α)(α − 2α2 )
+                                                                       p 00 f 00 =                        ·α
+                                                                                       2α3 − 4α2 + 1
+                                                                                           α2 − 3α3 + 2α4
+                                                                                        =
+                                                                                             2α3 − 4α2 + 1
+                                                                                  α − 2α2
+                                                                   p1 f 1 =                       · α(2 − α)
+                                                                               2α − 4α2 + 1
+                                                                                  3
+
+                                                                                         2α − 5α3 + 2α4
+                                                                                              2
+                                                                                      =
+                                                                                            2α3 − 4α2 + 1
+                                                  α i−1    α − 2α2           i−1                α − 2α2
+                                      pi f i = (     )                 −  α      (1   − f 0 )
+                                                 1−α    2α3 − 4α2 + 1                         2α3 − 4α2 + 1
+                                                                               X α i−1                  α
+                                                                                    (         )   =
+                                                                               i>1
+                                                                                      1 −  α         1 − 2α
+                                           X                        α2           X                          α − 2α2
+                                       ⇒         p i fi =                    −         αi−1 (1 − f0 )
+                                           i>1
+                                                            2α3 − 4α2 + 1        i>1
+                                                                                                        2α3 − 4α2 + 1
+                                                                                                    X               α
+                                                                                                          αi−1 =
+                                                                                                    i>1
+                                                                                                                   1−α
+                                                            2
+                                X                     α          α(1 − α + α(1 − α) (1 − γ))(α − 2α2 )
+                                                                                                2
+                            ⇒         pi fi =                  −
+                                i>1
+                                                 2α3 − 4α2 + 1           (1 − α)2α3 − 4α2 + 1
+                                                            α2 − α(1 + α(1 − α)(1 − γ))(α − 2α2 )
+                                                                    =                             .
+                                                                       2α3 − 4α2 + 1
+                                         2α3 − α2 (α − 2α2 − α2 + 2α3 − γα + 2γα2 + γα2 − 2γα3 )
+                                       =
+                                                              2α3 − 4α2 + 1
+                                                             α3 + 3α4 − 2α5 + γα3 − 3γα4 + 2γα5
+                                                          =
+                                                                        2α3 − 4α2 + 1
+The proof concludes by just summing the four terms.
+
+E.2    Improved Selfish Mining with a cutoff
+   In this section, we complete our analysis of our improved selfish mining with a cutoff. In order to keep the analysis of this
+strategy tractable, we choose to slightly tweak our analysis (but our theory-matches-simulation plot in Figure 6.2 shows that
+this tweak is essentially irrelevant). The only tweak we make is that right after the selfish miner releases a chain of length two
+simultaneously, they immediately publish the next block (if they find it), and then return to selfish mining. In the language
+of Eyal and Sirer, this is like adding an additional state 000 where the selfish miner honestly mines. No matter who finds a
+block in this state, the next state is 0. The only transition into this state is when the honest portion of the network finds a
+block when the selfish miner has a lead of 2 13 shows an updated Markov chain with state 000 .
+   Again, note that this modification is just for analysis. The selfish mining with cutoff that is implemented in our simulator
+is as described in the body.
+   In order to calculate the selfish miner’s expected revenue, we must again calculate the probability of the system being in
+any given state, and the chance that a transaction arriving to the system while in one of these states eventually ends up in
+a block mined by the selfish miner. From looking at the state transitions in Figure 13, we can derive the following formulas
+relating the probabilities of being in each state:
+
+                                                                  pi α = pi+1 (1 − α)                                         (8)
+
+
+                                                                             α i−1
+                                                                =⇒ pi = (       ) p1                                          (9)
+                                                                            1−α
+
+                                                                p000 = (1 − α)p2 = αp1                                       (10)
+
+
+                                                                   p00 = (1 − α)p1                                           (11)
+                 Figure 13: State machine for selfish mining with a cutoff, introducing state 000 .
+
+
+
+                                                                   p1
+                                                        p0 =                                                               (12)
+                                                               α(1 − e−β )
+  We also know that the system is guaranteed to be in some state, which means the following.
+
+                                                                      i=∞
+                                                                      X
+                                                  p0 + p00 + p000 +         pi = 1                                         (13)
+                                                                      i=1
+
+  Which together imply that
+
+                                                          α(2α − 1)(eβ − 1)
+                                                 p1 =                                                                      (14)
+                                                        3α2 (eβ − 1) + 2α − eβ
+   With equations 9-12, this gives expressions for the probabilities of all the possible states the system could be in. Now we
+need to compute the probability that a transaction that arrives when the system is in state s winds up with the selfish miner.
+   Unfortunately, this is not a clean approach: because in state 0 the selfish miner will sometimes publish and sometimes
+hide their block, depending on how much time has passed since the last block was found, we need actually to introduce a
+continuum of states for each amount of time x for the size of the block that is building during state 0.
+   So let’s define a new variable, p0 (x) which denotes the probability that the system is in state 0 and x units of time have
+passed since the system entered state 0. Because we introduced this new state 000 , whenever we enter state 0, the initial block
+is empty. Therefore, the probability that we wind up in state 0 with a block of size at least x is p0 e−x , and we have:
+
+                                                        p0 (x) = p0 e−x dx                                                 (15)
+  We must now calculate the associated fs (probability that a transaction winds up with the selfish miner conditioned on
+arriving during state s) in order to calculate the expected fraction of the rewards claimed by the selfish miner.
+Computing f0 (x). If a new transaction arrives in state 0, let’s look at where this transaction might wind up. Note that this
+depends on how long it’s been (x) since the last block was found.
+  • If the next block is found by the honest miner, then this transaction will certainly wind up with the honest miners. This
+    happens with probability 1 − α.
+  • If x ≥ β, and the next block is found by the selfish miner, then it certainly winds up with the selfish miner. This happens
+    with probability α.
+  • If x < β, and the next block is found by the selfish miner after time β − x as passed, then it certainly winds up with the
+    selfish miner. This happens with probability αe−β+x .
+  • If x < β, and the next block is found by the selfish miner within β − x time, then this transaction isn’t determined yet
+    because the selfish miner chooses to hide that block. But this happens with probability α(1 − e−β+x ).
+  • If both of the next two blocks are found by the selfish miner, than this transaction is contained in a block of the selfish
+    miner that will certainly be included in the eventual longest chain. This happens with probability α2 (1 − e−β+x ).
+  • If the next block is found by the selfish miner, followed by a block by the honest miner, then a race is triggered. This
+    transaction is contained in the two racing blocks, so whoever wins the race gets this transaction. The race occurs with
+    probability α(1 − e−β+x )(1 − α), and the selfish miner wins the race with probability α + (1 − α)γ.
+   So in total, we see that f0 (x) = α, when x ≥ β, and f0 (x) = αe−β+x + α2 (1 − e−β+x ) + α(1 − α)(1 − e−β+x )(α + (1 − α)γ)
+if x ≤ β.
+Computing f00 . If a new transaction arrives when there are two chains competing of the same length, then the next block
+found is certainly contained in the eventual longest chain (because both miners choose to mine on top of it). So if the next
+block is found by the selfish miner, this transaction is won by him. Otherwise, it’s won by the honest miner. So we have
+f00 = α.
+Computing f000 . If a new transaction arrives during the state 000 , the next block found is certainly contained in the eventual
+longest chain again. So we again have f000 = α.
+Computing f1 . If a new transaction arrives when the sefish miner has a private chain of length 1, let’s consider where the
+transaction might wind up:
+  • If the next block is found by the selfish miner, then this transaction is contained in a block of the selfish miner that will
+    certainly be included in the eventual longest chain. This happens with probability α.
+  • If the next block is found by the honest miner, then this triggers a release of the private block and a race. But, the
+    racing selfish block does not contain this transaction, whereas the racing honest block does. So if the racing honest block
+    wins, the honest miner gets this transaction. If the racing selfish block wins, whoever finds the block that ends the race
+    gets this transaction. So the selfish miner gets the transaction in this case only if he finds the block that ends the race.
+    This happens with probability (1 − α)α.
+  So we see that f1 = α + (1 − α)α = α(2 − α).
+Computing fi , i > 1. If a new transaction arrives when the selfish miner has a private chain of length i > 1, let’s again
+consider where this transaction might wind up:
+  • If the next block is found by the selfish miner, then this transaction is contained in a block of the selfish miner that will
+    certainly be included in the eventual longest chain. This happens with probability α.
+  • If the next i − 1 blocks are all found by the honest miner, then this triggers a release of the private chain, and all those
+    blocks found by the honest miner are immediately ignored. At this point, the transaction has still not been included in
+    any block, so it is as if the transaction arrived in state 000 . So the selfish miner gets this transaction with probability f000
+    in this case.
+  • If any of the next i − 1 blocks are found by the selfish miner, then this block is certainly included in the eventual longest
+    chain, because it is found when the selfish miner has a lead of at least two.
+So we see that the only way the selfish miner might possibly lose the transaction is if each of the next i − 1 blocks are found
+by the honest miner, and even in this case the selfish miner still wins the transaction with probability f000 = α. So the honest
+miner only wins this transaction with probability (1 − α)i−1 (1 − α), and we have fi = 1 − (1 − α)i .
+  Now, we just have to sum/integrate over all states and success probabilities to compute the fraction of transactions that go
+to the selfish miner.
+                                                                     f00 p00 = α(1 − α)p1 .
+                                                                           f000 p000 = α2 p1 .
+                                                                       f1 p1 = α(2 − α)p1 .
+                                                             (1 − (1 − α)i )αi−1 p1
+                                                  f i pi =                          , i > 1.
+                                                                  (1 − α)i−1
+
+
+
+                                                                                            p1 e−x dx
+                                                                                                      , x ≥ β.
+                                                                                          f0 (x)p0 (x) =
+                                                                                            1 − e−β
+                                p1 e−x dx(e−β+x + α(1 − e−β+x ) + (1 − α)(1 − e−β+x )(α + (1 − α)γ))
+                 f0 (x)p0 (x) =                                                                       , x ≤ β.
+                                                              1 − e−β
+
+
+
+
+                                                                                       αi−1 X          α
+                                                                                                 =         .
+                                                                                i>1
+                                                                                    (1 − α) i−1    1 −  2α
+                                                                                        X i−1          α
+                                                                                            α     =        .
+                                                                                        i>1
+                                                                                                     1 − α
+                                                                           ! 
+                                                   αi−1                                             2α2 p1
+                                                                                           
+                        X                   X                        X i−1        α
+                    ⇒         f i pi = p1                  − (1 − α)     α  =          − α   p 1 =         .
+                        i>1                 i>1
+                                                (1 − α)i−1           i>1
+                                                                               1 − 2α              1 − 2α
+                                                                                                      e−β p1
+                                           Z                                    Z
+                                                                         p1
+                                                     f0 (x)p0 (x) =                       e−x dx =           .
+                                               x≥β                    1 − e−β       x≥β              1 − e−β
+
+
+
+      Z
+             β
+                 f0 (x)p0 (x)
+       x=0
+                   Z β
+                            p1                                                                          
+             =                 −β
+                                    e−β − αe−β − (1 − α)(α + (1 − α)γ)e−β + αe−x + (1 − α)(α + (1 − α)γ)e−x dx.
+                     x=0 1 − e
+
+
+
+
+                             p1 βe−β (1 − α − (1 − α)(α + (1 − α)γ))    p1 (1 − e−β )(α + (1 − α)(α + (1 − α)γ))
+                         =                                           +
+                                             1 − e−β                                     1 − e−β
+                                         −β                                    −β
+                                                                                                              
+                                   p1 βe (1 − α)(1 − α − (1 − α)γ) + (1 − e )(α + (1 − α)(α + (1 − α)γ))
+                                 =                                                                              .
+                                                                     1 − e−β
+Summing everything together, we then get:
+                                Z ∞                 X
+                                     p0 (x)f0 (x) +   pi fi + p00 f00 + p000 f000 + p1 f1
+                                               0                      i>1
+
+
+
+
+                     βe−β (1 − α)(1 − α − (1 − α)γ)                                 e−β       2α2
+                                                                                                             
+                                                                                                            2
+          =                                         + α + (1 − α)(α + (1 − α)γ) +         +        + 3α − α     p1 .
+                                1 − e−β                                           1 − e−β   1 − 2α
+This can be further simplified to yield the bound provided in the paper.
+
+                  βe−β (1 − α)(1 − α − (1 − α)γ)                                 e−β       2α2
+                                                                                                          
+                                                                                                         2
+                                                 + α + (1 − α)(α + (1 − α)γ) +         +        + 3α − α     p1 .
+                             1 − e−β                                           1 − e−β   1 − 2α
+                                                         1 + β(1 − α)2 (1 − γ)                                  2α2
+                                                     =                         + 4α + (1 − α)(α + (1 − α)γ) +        − α2 .
+                                                                e −1
+                                                                 β                                            1 − 2α
+
