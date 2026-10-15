@@ -1,0 +1,1222 @@
+                                                Hijacking Bitcoin: Routing Attacks on Cryptocurrencies
+                                                                                          https://btc-hijack.ethz.ch
+
+
+                                                          Maria Apostolaki                           Aviv Zohar                          Laurent Vanbever
+                                                             ETH Zürich                        The Hebrew University                        ETH Zürich
+                                                           apmaria@ethz.ch                       avivz@cs.huji.ac.il                     lvanbever@ethz.ch
+
+
+
+
+                                            Abstract—As the most successful cryptocurrency to date,               One important attack vector has been overlooked though:
+                                         Bitcoin constitutes a target of choice for attackers. While many     attacking Bitcoin via the Internet infrastructure using routing
+                                         attack vectors have already been uncovered, one important vector     attacks. As Bitcoin connections are routed over the Internet—
+                                         has been left out though: attacking the currency via the Internet
+arXiv:1605.07524v2 [cs.NI] 24 Mar 2017
+
+
+
+
+                                         routing infrastructure itself. Indeed, by manipulating routing       in clear text and without integrity checks—any third-party
+                                         advertisements (BGP hijacks) or by naturally intercepting traffic,   on the forwarding path can eavesdrop, drop, modify, inject,
+                                         Autonomous Systems (ASes) can intercept and manipulate a large       or delay Bitcoin messages such as blocks or transactions.
+                                         fraction of Bitcoin traffic.                                         Detecting such attackers is challenging as it requires infer-
+                                            This paper presents the first taxonomy of routing attacks and     ring the exact forwarding paths taken by the Bitcoin traffic
+                                         their impact on Bitcoin, considering both small-scale attacks,
+                                         targeting individual nodes, and large-scale attacks, targeting the
+                                                                                                              using measurements (e.g., traceroute) or routing data (BGP
+                                         network as a whole. While challenging, we show that two key          announcements), both of which can be forged [41]. Even
+                                         properties make routing attacks practical: (i) the efficiency of     ignoring detectability, mitigating network attacks is also hard
+                                         routing manipulation; and (ii) the significant centralization of     as it is essentially a human-driven process consisting of
+                                         Bitcoin in terms of mining and routing. Specifically, we find that   filtering, routing around or disconnecting the attacker. As an
+                                         any network attacker can hijack few (<100) BGP prefixes to
+                                         isolate ∼50% of the mining power—even when considering that
+                                                                                                              illustration, it took Youtube close to 3 hours to locate and
+                                         mining pools are heavily multi-homed. We also show that on-path      resolve rogue BGP announcements targeting its infrastructure
+                                         network attackers can considerably slow down block propagation       in 2008 [6]. More recent examples of routing attacks such as
+                                         by interfering with few key Bitcoin messages.                        [51] (resp. [52]) took 9 (resp. 2) hours to resolve in November
+                                            We demonstrate the feasibility of each attack against the         (resp. June) 2015.
+                                         deployed Bitcoin software. We also quantify their effectiveness on
+                                         the current Bitcoin topology using data collected from a Bitcoin        One of the reasons why routing attacks have been over-
+                                         supernode combined with BGP routing data.
+                                            The potential damage to Bitcoin is worrying. By isolating parts
+                                                                                                              looked in Bitcoin is that they are often considered too chal-
+                                         of the network or delaying block propagation, attackers can cause    lenging to be practical. Indeed, perturbing a vast peer-to-peer
+                                         a significant amount of mining power to be wasted, leading to        network which uses random flooding is hard as an attacker
+                                         revenue losses and enabling a wide range of exploits such as         would have to intercept many connections to have any impact.
+                                         double spending. To prevent such effects in practice, we provide     Yet, two key characteristics of the Internet’s infrastructure
+                                         both short and long-term countermeasures, some of which can
+                                         be deployed immediately.
+                                                                                                              make routing attacks against Bitcoin possible: (i) the efficiency
+                                                                                                              of routing manipulation (BGP hijacks); and (ii) the centraliza-
+                                                                                                              tion of Bitcoin from the routing perspective. First, individuals,
+                                                               I. I NTRODUCTION
+                                                                                                              located anywhere on the Internet, can manipulate routing to
+                                            With more than 16 million bitcoins valued at ∼17 billion          intercept all the connections to not only one, but many Bitcoin
+                                         USD and up to 300,000 daily transactions (March 2017),               nodes. As we show in this paper, these routing manipulations
+                                         Bitcoin is the most successful cryptocurrency to date. Re-           are prevalent today and do divert Bitcoin traffic. Second, few
+                                         markably, Bitcoin has achieved this as an open and fully             ASes host most of the nodes and mining power, while others
+                                         decentralized system. Instead of relying on a central entity,        intercept a considerable fraction of the connections.
+                                         Bitcoin nodes build a large overlay network between them
+                                         and use consensus to agree on a set of transactions recorded         This work In this paper, we present the first taxonomy of
+                                         within Bitcoin’s core data structure: the blockchain. Anyone         routing attacks on Bitcoin, a comprehensive study of their
+                                         is free to participate in the network which boasts more than         impact, and a list of deployable countermeasures. We consider
+                                         6,000 nodes [4] and can usually connect to any other node.           two general attacks that AS-level attackers can perform. First,
+                                            Given the amount of money at stake, Bitcoin is an obvi-           we evaluate the ability of attackers to isolate a set of nodes
+                                         ous target for attackers. Indeed, numerous attacks have been         from the Bitcoin network, effectively partitioning it. Second,
+                                         described targeting different aspects of the system including:       we evaluate the impact of delaying block propagation by
+                                         double spending [43], eclipsing [31], transaction malleabil-         manipulating a small number of key Bitcoin messages. For
+                                         ity [21], or attacks targeting mining [24], [44], [38] and mining    both exploits, we consider node-level attacks along with more
+                                         pools [23].                                                          challenging, but also more disruptive, network-wide attacks.
+Partitioning attacks The goal of a partition attack is to              attacks [24]. Nodes representing merchants, exchanges and
+completely disconnect a set of nodes from the network. This            other large entities are thus unable to secure their transactions,
+requires the attacker to divert and cut all the connections            or may not be able to broadcast them to the network to begin
+between the set of nodes and the rest of the network.                  with. The resulting longer-term loss of trust in Bitcoin security
+   We describe a complete attack procedure in which an at-             may trigger a loss of value for Bitcoin. Attackers may even
+tacker can verifiably isolate a selected set of nodes using BGP        short Bitcoin and gain from the resulting devaluation [35].
+hijacks. Our procedure is practical and only requires basic               Our work underscores the importance of proposed modi-
+knowledge of the Bitcoin topology, namely the IP addresses of          fications which argue for encrypting Bitcoin traffic [47] or
+the nodes the attacker wants to isolate. Due to the complexity         traffic exchanged among miners [34]. Yet, we stress that not all
+of the Bitcoin network (e.g. multi-homed pools, and secret             routing attacks will be solved by such measures since attackers
+peering agreements between pools), the initial isolated set            can still disrupt connectivity and isolate nodes by dropping
+might contain nodes that leak information from and to the rest         Bitcoin packets instead of modifying them.
+of the network. We explain how the attacker can identify and           Contributions Our main contributions are:1
+remove these leakage points until the partition is complete.
+                                                                       • The first comprehensive study of network attacks on Bitcoin
+Delay attacks The goal of a delay attack is to slow down the             (Section III) ranging from attacks targeting a single node to
+propagation of blocks towards or from a given set of nodes.              attacks affecting the network as a whole.
+Unlike partition attacks, which require a perfect cut, delay           • A measurement study of the routing properties of Bitcoin
+attacks are effective even when a subset of the connections              (Section VI). We show that Bitcoin is highly centralized:
+are intercepted. As such, attackers can perform delay attacks            few ASes host most of the nodes while others intercept a
+on connections they are naturally intercepting, making them              considerable fraction of the connections.
+even harder to detect.                                                 • A thorough evaluation of the practicality of routing attacks
+   We again describe a complete attack procedure an attacker             (partitioning and delay attacks). Our evaluation is based on
+can run on intercepted Bitcoin traffic so that the delivery of           an extensive set of measurements, large-scale simulations
+blocks is delayed by up to 20 minutes. The procedure consists            and experiments on the actual Bitcoin software and network.
+of modifying few key Bitcoin messages while making sure that           • A comprehensive set of countermeasures (Section IX),
+the connections are not disrupted.                                       which can benefit even early adopters.
+Practicality We showcase the practicality of each attack and             While our measurements are Bitcoin-specific, they carry
+evaluate their network-wide impact using a comprehensive set           important lessons for other cryptocurrencies which rely on a
+of measurements, simulations and experiments.                          randomly structured peer-to-peer network atop of the Internet,
+   Regarding partitioning attacks, we show that hijacks are            such as Ethereum [1], Litecoin [9], and ZCash [14], [45].
+effective in diverting Bitcoin traffic by performing a hijack in
+                                                                                                 II. BACKGROUND
+the wild against our own nodes. We find that it takes less than
+90 seconds to re-route all traffic flows through the attacker          A. BGP
+once a hijack is initiated. We also show that any AS in the
+Internet hijacking less than 100 prefixes can isolate up to 47%        Protocol BGP [42] is the de-facto routing protocol that reg-
+of the mining power, and this, even when considering that              ulates how IP packets are forwarded in the Internet. Routes
+mining pools are multi-homed. Hijacks involving that many              associated with different IP prefixes are exchanged between
+prefixes are frequent and already divert Bitcoin traffic.              neighboring networks or Autonomous Systems (AS). For any
+                                                                       given IP prefix, one AS (the origin) is responsible for the
+   Regarding delay attacks, we show that an attacker inter-
+                                                                       original route advertisement, which is then propagated AS-
+cepting 50% of a node connections can leave it uninformed
+                                                                       by-AS until all ASes learn about it. Routers then set their
+of the most recent Bitcoin blocks ∼60% of the time. We also
+                                                                       next hop and pick one of the available routes offered by their
+show that intercepting a considerable percentage of Bitcoin
+                                                                       neighbors (this is done independently for each destination).
+traffic is practical due to the centralization of Bitcoin at
+                                                                          In BGP, the validity of route announcements is not checked.
+the routing level: one AS, namely Hurricane Electric, can
+                                                                       In effect, this means that any AS can inject forged information
+naturally intercept more than 30% of all Bitcoin connections.
+                                                                       on how to reach one or more IP prefixes, leading other ASes to
+Impact on Bitcoin The damages caused to Bitcoin in case                send traffic to the wrong location. These rogue advertisements,
+of a successful routing attack can be substantial. By isolating        known as BGP “hijacks”, are a very effective way for an
+a part of the network or delaying the propagation of blocks,           attacker to intercept traffic en route to a legitimate destination.
+attackers can force nodes to waste part of their mining power
+                                                                       BGP hijack An attacker, who wishes to attract all the traffic
+as some of the blocks they create are discarded. Partitioning
+                                                                       for a legitimate prefix p (say, 100.0.0.0/16) by hijacking could
+also enables the attacker to filter transactions that clients try to
+                                                                       either: (i) announce p; or (ii) announce a more-specific (longer)
+include in the blockchain. In both cases, miners lose potential
+revenue from mining and render the network more susceptible            1 Our software, measurements and scripts can be found online at
+to double spending attacks as well as to selfish mining                 https://btc-hijack.ethz.ch
+prefix of p. In the first case, the attacker’s route will be in direct   are created in parallel. In this case, the rate of discarded blocks
+competition with the legitimate route. As BGP routers prefer             (known as the orphan rate or the fork rate) increases and the
+shorter paths, the attacker will, on average, attract 50% of the         security of the protocol deteriorates [20], [26], [49]. Newly
+traffic [30]. In the second case, the attacker will attract all the      created blocks are propagated through the network using a
+traffic (originated anywhere on the Internet) addressed to the           gossip protocol. In addition to the propagation of blocks, nodes
+destination as Internet routers forward traffic according to the         also propagate transactions between them that await inclusion
+longest-match entry. Note that traffic internal to an AS cannot          in the chain by whichever node creates the next block.
+be diverted via hijacking as it does not get routed by BGP but
+                                                                         Network formation Bitcoin acts as a peer-to-peer network
+by internal routing protocols (e.g., OSPF).
+                                                                         with each node maintaining a list of IP addresses of potential
+   For instance, in order to attract all traffic destined to p,          peers. The list is bootstrapped via a DNS server, and additional
+the attacker could advertise 100.0.0.0/17 and 100.0.128.0/17.            addresses are exchanged between peers. By default, each node
+Routers in the entire Internet would then start forwarding any           randomly initiates 8 unencrypted TCP connections to peers in
+traffic destined to the original /16 prefix according to the two         different /16 prefixes. Nodes additionally accept connections
+covering /17s originated by the adversary. Advertising more-             initiated by others (by default on port 8333). The total number
+specific prefixes has its limits though as BGP operators will            of connections nodes can make is 125 by default.
+often filter prefixes longer than /24 [33]. Yet, we show that               Nodes continually listen to block announcements which are
+the vast majority of Bitcoin nodes is hosted in shorter prefixes         sent via INV messages containing the hash of the announced
+(Section VI) and is thus susceptible to hijacking.                       block. If a node determines that it does not hold a newly
+   By default, hijacking a prefix creates a black hole at the            announced block, it sends a GETDATA message to a single
+attacker’s location. However, the attacker can turn a hijack             neighbor. The peer then responds by sending the requested
+into an interception attack simply by making sure she leaves             information in a BLOCK message. Blocks that are requested
+at least one path untouched to the destination [41], [30].               and do not arrive within 20 minutes trigger the disconnection
+B. Bitcoin                                                               of the peer and are requested from another. Transaction prop-
+                                                                         agation occurs with a similar sequence of INV, GETDATA,
+Transactions Transaction validation requires nodes to be                 and TX messages in which nodes announce, request, and share
+aware of the ownership of funds and the balance of each                  transactions that have not yet been included in the blockchain.
+Bitcoin address. All this information can be learned from                Mining pools Mining pools represent groups of miners that
+the Bitcoin blockchain: an authenticated data structure that             divide block creation rewards between them in order to lower
+effectively forms a ledger of all accepted transactions. Bitcoin         the high economic risk associated with infrequent (but high)
+main innovation lies in its ability to synchronize the blockchain        payments. They usually operate using the Stratum protocol
+in an asynchronous way, with attackers possibly attempting               [15]. The pool server is connected to a bitcoind node that
+to disrupt the process. Synchronization is crucial: conflicting          acts as a gateway to the Bitcoin network. The node collects
+transactions attempting to transfer the exact same bitcoins to           recent information regarding newly transmitted transactions
+different destinations may otherwise be approved by miners               and newly built blocks which are then used to construct a
+that are unaware of each other.                                          new block template. The template header is then sent via the
+Block creation Bitcoin’s blockchain is comprised of blocks,              Stratum server to the miners who attempt to complete it to
+batches of transactions, that are appended to the ledger serially.       a valid block. This is done by trying different values of the
+Each block contains a cryptographic hash of its predecessor,             nonce field in the header. If the block is completed, the result
+which identifies its place in the chain, and a proof-of-work.            is sent back to the Stratum server, which then uses the gateway
+The proof-of-work serves to make block creation difficult and            node to publish the newly formed block to the network.
+reduces the conflicts in the system. Conflicts, which take               Multi-homing Mining pools often use multiple gateways
+the form of blocks that extend the same parent, represent                hosted by diffrent Internet Service Providers. We refer to the
+alternative sets of accepted transactions. Nodes converge to             number of different ISPs a pool has as its multi-homing degree.
+a single agreed version by selecting the chain containing the
+highest amount of computational work as the valid version                            III. ROUTING ATTACKS ON B ITCOIN
+(usually the longest chain). The proof-of-work also serves to               In this section, we give an overview of the two routing
+limit the ability of attackers to subvert the system: they cannot        attacks we describe in this paper: (i) partitioning the Bitcoin
+easily create many blocks, which would potentially allow them            network (Section III-A); and (ii) delaying the propagation of
+to create a longer alternative chain that will be adopted by             blocks. For each attack, we briefly describe its effectiveness
+nodes and thus reverse the transfer of funds (double spend).             and challenges as well as its impact on the Bitcoin ecosystem
+   The difficulty of block creation is set so that one block is          (Section III-B).
+created in the network every 10 minutes on average which
+is designed to allow sufficient time for blocks to propagate             A. Partitioning the Bitcoin Network
+through the network. However, if delays are high compared to               In this attack, an AS-level adversary seeks to isolate a set of
+the block creation rate, many forks occur in the chain as blocks         nodes P from the rest of the network, effectively partitioning
+     miners                                                                                           A                        INV
+
+                        A
+                                                                                                               AS8                   GETDATA
+                                                                        J                                                                            C
+                                          AS3                                                                                                  AS1
+                B
+                                                                                                          20 min delay          BLOCK
+
+                            AS2                     AS4             I       Stratum
+      Stratum
+                                                                                                                         AS2
+                    C                                                       H                                                          INV
+                                         AS8          AS5                                                        B
+                    D
+                                                                                             Fig. 2: Illustration of how an AS-level adversary (AS8) which
+                                                                G
+                             AS1                                                stealth      naturally intercepts a part of the traffic can delay the delivery
+                                         AS7        AS6                         connection
+    mining      E                                                   F                        of a block for 20 minutes to a victim node (C).
+    pool
+                                   bitcoin connection
+                                   hijacked connection by AS8
+                                   private pool traffic
+
+Fig. 1: Illustration of how an AS-level adversary (AS8) can
+                                                                                             communicates. This connection may not be based on the
+intercept Bitcoin traffic by hijacking prefixes to isolate the set
+                                                                                             Bitcoin protocol and thus it cannot be intercepted (at least,
+of nodes P = (A, B, C, D, E, F ).
+                                                                                             not easily). As such, even if the attacker drops all the Bitcoin
+                                                                                             connections she intercepts, node F may still learn about trans-
+the Bitcoin network into two disjoint components. The actual                                 actions and blocks produced on the other side and might leak
+content of P depends on the attacker’s objectives and can                                    this information within P . Isolating P as such is infeasible.
+range from one or few merchant nodes, to a set of nodes                                      However, AS8 can identify that node F is the leakage point
+holding a considerable percentage of the total mining power.                                 during the attack and exclude it from P , essentially isolating
+                                                                                             I 0 = (A, B, C, D, E) instead. This I 0 is actually the maximum
+Attack The attacker first diverts the traffic destined to nodes                              subset of P that can be isolated from the Bitcoin network.
+in P by hijacking the most-specific prefixes hosting each
+of the IP address. Once on-path, the attacker intercepts the                                 Practicality We extensively evaluate the practicality of iso-
+Bitcoin traffic (e.g., based on the TCP ports) and identifies                                lating sets of nodes of various sizes (Section VII). We briefly
+whether the corresponding connections cross the partition she                                summarize our findings. First, we performed a real BGP hijack
+tries to create. If so, the attacker drops the packets. If not,                              against our own Bitcoin nodes and show that it takes less than
+meaning the connections are contained within P , she monitors                                2 minutes for an attacker to divert Bitcoin traffic. Second, we
+the exchanged Bitcoin messages so as to detect “leakage                                      estimated the number of prefixes to hijack so as to isolate
+points”. Leakage points are nodes currently within P , which                                 nodes with a given amount of mining power. We found that
+maintain connections with nodes outside of P , that the attacker                             hijacking only 39 prefixes is enough to isolate a specific
+cannot intercept, namely “stealth” connections. The attacker                                 set of nodes which accounts for almost 50% of the overall
+can detect these nodes automatically and isolate them from                                   mining power. Through a longitudinal analysis spanning over
+others in P (Section IV). Eventually, the attacker isolates the                              6 months, we found that much larger hijacks happen regularly
+maximal set of nodes in P that can be isolated.                                              and that some of them have already impacted Bitcoin traffic.
+Example We illustrate the partition attack on the simple                                     Third, we show that, while effective, partitions do not last
+network in Fig. 1 that is composed of 8 ASes, some of which                                  long after the attack stops: the two components of the partition
+host Bitcoin nodes. Two mining pools are depicted as a green                                 quickly reconnect, owing to natural churn. Yet, it takes hours
+(left) and a red (right) region. Both pools are multi-homed and                              for the two components to be densely connected again.
+have gateways in different ASes. For instance, the red (right)
+pool has gateways hosted in AS4, AS5, and AS6. We denote                                     Impact The impact of a partitioning attack depends on the
+the initial Bitcoin connections with blue lines, and those that                              number of isolated nodes and how much mining power they
+have been diverted via hijacking with red lines. Dashed black                                have. Isolating a few nodes essentially constitutes a denial of
+lines represent private connections within the pools. Any AS                                 service attack and renders them vulnerable to 0-confirmation
+on the path of a connection can intercept it.                                                double spends. Disconnecting a considerable amount of min-
+   Consider an attack by AS8 that is meant to isolate the set                                ing power can lead to the creation of two different versions
+of nodes P = (A, B, C, D, E, F ). First, it hijacks the prefixes                             of the blockchain. All blocks mined on the side with the least
+advertised by AS1, AS2 and AS6, as they host nodes within                                    mining power will be discarded and all included transactions
+P , effectively attracting the traffic destined to them. Next, AS8                           are likely to be reversed. Such an attack would cause revenue
+drops all connections crossing the partition: i.e., (A, J), (B, J)                           loss for the miners on the side with least mining power and
+and (F, G).                                                                                  a prominent risk of double spends. The side with the most
+   Observe that node F is within the isolated set P , but is                                 mining power would also suffer from an increased risk of
+also a gateway of the red pool with which F most likely                                      selfish mining attacks by adversaries with mining power.
+B. Slowing down the Bitcoin network                                ASes based in the US) could perform a network-wide delay
+                                                                   attack. Such an attack is thus unlikely to occur in practice.
+   In a delay attack, the attacker’s goal is to slow down the      Impact Similarly to partitioning attacks, the impact of a delay
+propagation of new blocks sent to a set of Bitcoin nodes           attack depends on the number and type (e.g., pool gateway)
+without disrupting their connections. As with partitioning, the    of impacted nodes. At the node-level, delay attacks can keep
+attack can be targeted, aimed at selected nodes, or network-       the victim eclipsed, essentially performing a denial of service
+wide, aimed at disrupting the ability of the entire network to     attack or rendering it vulnerable to 0-confirmation double
+reach consensus [20]. Unlike partitioning attacks though, an       spends. If the node is a gateway of a pool, such attacks can
+attacker can delay the overall propagation of blocks towards       be used to engineer block races, and waste the mining power
+a node even if she intercepts a subset of its connections.         of the pool. Network-wide attacks increase the fork rate and
+                                                                   render the network vulnerable to other exploits. If a sufficient
+Attack Delay attacks leverage three key aspects of the Bitcoin
+                                                                   number of blocks are discarded, miners revenue is decreased
+protocol: (i) the asymmetry in the way Bitcoin nodes exchange
+                                                                   and the network is more vulnerable to double spending. A
+blocks using INV, GETDATA, and BLOCK messages (Sec-
+                                                                   slowdown of block transmission can be used to launch selfish
+tion II); (ii) the fact that these messages are not protected
+                                                                   mining attacks by adversaries with mining power.
+against tampering (unencrypted, no secure integrity checks);
+and (iii) the fact that a Bitcoin node waits for 20 minutes                         IV. PARTITIONING B ITCOIN
+after having requested a block from a peer before requesting
+it again from another peer. These protocol features enable            In this section, we elaborate on partition attacks in which
+an attacker intercepting even one direction of the victim’s        an AS-level adversary seeks to isolate a set of nodes P . We
+connection to delay the propagation of a block, as long as this    first describe which partitions are feasible by defining which
+connection is traversed by either the actual BLOCK message         connections may cause information leakage (Section IV-A)
+or the corresponding GETDATA.                                      to the isolated set. We then discuss how an attacker may
+                                                                   better select a P that is feasible, if she has some view of the
+   Specifically, if the attacker intercepts the traffic from the
+                                                                   Bitcoin topology (Section IV-B). Next, we walk through the
+victim, she can modify the content of the GETDATA message
+                                                                   entire attack process, starting with the interception of Bitcoin
+the victim uses to ask for blocks. By preserving the message
+                                                                   traffic, the detection of leakage points and the adaptation of
+length and structure and by updating the TCP and Bitcoin
+                                                                   P until the partition is successfully created (Section IV-C). In
+checksums, the modified message is accepted by the receiver
+                                                                   particular, we present an algorithm which, given a set of nodes
+and the connection stays alive. If the attacker intercepts the
+                                                                   P , leads the attacker to isolate the maximal feasible subset.
+traffic towards a node, she can instead corrupt the content of
+                                                                   Finally, we prove that our algorithm is correct (Section IV-D).
+the BLOCK message such that the victim considers it invalid.
+In both cases, the recipient of the blocks remains uninformed      A. Characterizing feasible partitions
+for 20 minutes.
+                                                                      An attacker can isolate a set of nodes P from the network
+Example As an illustration, consider Fig. 2, and assume that       if and only if all connections (a, b) where a ∈ P and b 6∈ P
+AS8 is the attacker and C, the victim. Suppose that A and B        can be intercepted. We refer to such connections as vulnerable
+both advertise a block (say, block X) to C via an INV message      and to connections that the attacker cannot intercept as stealth.
+and that, without loss of generality, the message from A arrives
+                                                                   Vulnerable connections: A connection is vulnerable if: (i) an
+at C first. C will then send a GETDATA message back to
+                                                                   attacker can divert it via a BGP hijack; and (ii) it uses the
+A requesting block X and start a 20 minute timeout count.
+                                                                   Bitcoin protocol. The first requirement enables the attacker to
+By modifying the content of the GETDATA node A receives,
+                                                                   intercept the corresponding packets, while the second enables
+AS8 indirectly controls what node A will send to node C.
+                                                                   her to identify and then drop or monitor these packets.
+This way the attacker can delay the delivery of the block by
+                                                                      As an illustration, consider Fig. 3a, and assume that the
+up to 20 minutes while avoiding detection and disconnection.
+                                                                   attacker, AS8, wants to isolate P = {A, B, C}. By hijacking
+Alternatively, AS8 could modify the BLOCK message.
+                                                                   the prefixes pertaining to these nodes the attacker receives all
+Practicality We verified the practicality of delay attacks by      traffic from nodes A and B to node C, as well as the traffic
+implementing an interception software which we used against        from node D to node A. The path the hijacked traffic follows is
+our own Bitcoin nodes. We show that intercepting 50% of a          depicted with red dashed lines and the original path with blue
+node connections is enough to keep the node uninformed for         lines. As all nodes communicate using the Bitcoin protocol,
+63% of its uptime (Section VIII).                                  their connections can easily be distinguished, as we explain in
+                                                                   Section IV-C. Here, AS8 can partition P from the rest of the
+   We also evaluated the impact that ASes, which are naturally
+                                                                   network by dropping the connection from node D to node A.
+traversed by a lot of Bitcoin traffic, could have on the network
+using a scalable event-driven simulator. We found that due to      Stealth connections: A connection is stealth if the attacker
+the relatively high degree of multi-homing that pools employ,      cannot intercept it. We distinguish three types of stealth
+only very powerful coalitions of network attackers (e.g., all      connections: (i) intra-AS; (ii) intra-pool; and (iii) pool-to-pool.
+                                                               stealth connection
+                                                                                                               miners
+                                                             crossing the partition
+                  A                        D                   A               X          D                                                   desired
+                                                                                                                              C               partition
+           B                                            B                                                                 B                                 D
+                        AS2        AS4                               AS2           AS4                                                  AS2
+                                                                                                                Stratum   A                           AS3
+                                               E                                              E
+      desired                                      desired
+      partition                    AS8             partition                       AS8                   stealth
+                                                                                                         connection           E                 AS8
+
+            C                                            C                                                                        AS1
+                          AS1                                          AS1                                    mining
+                                                                                                              pool        F
+                      bitcoin connection                           bitcoin connection                                         bitcoin connection
+                      hijacked connection by AS8                   hijacked connection by AS8                                 hijacked connection by AS8
+
+             (a) Feasible partition                (b) Infeasible partition because                      (c) Infeasible partition because of intra-
+                                                   of intra-AS connections                               pool connections
+     Fig. 3: Not all Bitcoin connections can be diverted by an attacker implying that some partitions cannot be formed.
+
+
+intra-AS: An attacker cannot intercept connections within the                         public initiatives to interconnect all pools, such as the Bitcoin
+same AS using BGP hijack. Indeed, internal traffic does not get                       relays [13]. Unlike private peering agreements, relays cannot
+routed by BGP, but by internal routing protocols (e.g., OSPF,                         act as bridges to the partition (see Appendix E).
+EIGRP). Thus, any intra-AS connection crossing the partition
+                                                                                      B. Preparing for the attack
+border renders the partition infeasible. Such connections rep-
+resent only 1.14% of all the possible connection nodes can                               In light of these limitations the attacker can apply two
+create (this percentage is calculated based on the topology we                        techniques to avoid having stealth connections crossing the
+inferred in Section VI).                                                              partition she creates. First, she can include in P either all or
+   As an illustration, consider Fig. 3b and assume that the                           none of the nodes of an AS, to avoid intra-AS connections
+attacker, AS8, wants to isolate P = {A, B, C}. By hijacking                           crossing the partition. This can be easily done as the mapping
+the corresponding BGP prefixes, AS8 can intercept the con-                            from IPs to ASNs is publicly available [11]. Second, she can
+nections running between nodes A and B to node C. However,                            include in P either all or none of the gateways of a pool, to
+she does not intercept the intra-AS connection between A and                          avoid intra-pool connections crossing the partition. Doing so
+X. This means that node X will inform node A of the blocks                            requires the attacker to know all the gateways of the mining
+mined in the rest of the network, and node A will then relay                          pools she wants to include in P . Inferring the gateways is
+this information further within P . Thus, P = {A, B, C} is not                        outside the scope of this paper, yet the attacker could use
+feasible. Yet, observe that isolating I = {B, C} is possible. In                      techniques described in [36] and leverage her ability to inspect
+the following, we explain how the attacker can detect that A                          the traffic of almost every node via hijacking (see Appendix
+maintains a stealth connection leading outside of the partition                       C). Even with the above measures, P may still contain leakage
+and dynamically adapt to isolate I instead.                                           points that the attacker will need to identify and exclude
+intra-pool: Similarly to intra-AS connections, an attacker                            (see below). Yet, these considerations increase the chances of
+might not be able to cut connections between gateways be-                             establishing the desired partition as well as reducing the time
+longing to the same mining pool. This is because mining                               required to achieve it.
+pools might rely on proprietary or even encrypted protocols                           C. Performing the attack
+for internal communication.
+   As an illustration, consider Fig. 3c and assume that the at-                          We now describe how a network adversary can successfully
+tacker, AS8, wants to isolate P = {A, B, C, D}. By hijacking                          perform a partitioning attack. The attack is composed of two
+the corresponding prefixes, she would intercept and cut all                           main phases: (i) diverting relevant Bitcoin traffic; and (ii)
+Bitcoin connections between nodes A, B, C, D and nodes E,                             enforcing the partition. In the former phase, the adversary
+F. However, nodes A and F would still be connected internally                         diverts relevant Bitcoin traffic using BGP hijacking. In the
+as they belong to the same (green) pool. Again, observe that                          latter phase, the attacker cuts all vulnerable connections that
+while isolating P = {A, B, C, D} is not feasible, isolating                           cross the partition and excludes from P nodes which are
+I = {B, C, D} from the rest of the network is possible.                               identified as leakage points. Leakage points are nodes that are
+                                                                                      connected to the rest of the network via stealth connections.
+pool-to-pool: Finally, an attacker cannot intercept (possi-
+bly encrypted) private connections, corresponding to peering                          Intercept Bitcoin traffic: The attacker starts by hijacking
+agreements between mining pools. From the attacker’s point                            all the prefixes pertaining to the Bitcoin nodes she wants to
+of view, these connections can be treated as intra-pool connec-                       isolate, i.e. all the prefixes covering the IP addresses of nodes
+tions and the corresponding pair of pools can be considered as                        in P . As a result, she receives all the traffic destined to these
+one larger pool. Note that such connections are different than                        prefixes, which she splits into two packet streams: relevant and
+ Algorithm 1: Partitioning algorithm.                                  Algorithm 2: Leakage detection algorithm.
+   Input: - P , a set of Bitcoin IP addresses to disconnect from        Input: - U , a set of Bitcoin IP addresses the attacker cannot
+          the rest of the Bitcoin network; and                                  monitor; and
+          - S = [pkt1 , · · ·], an infinite packet stream of                    - pkt, a (parsed) diverted Bitcoin packet.
+          diverted Bitcoin traffic resulting from the hijack of the   1 detect_leakage(U, pkt):
+          prefixes pertaining to P .                                  2 begin
+   Output: False if there is no node ∈ P that can be verifiably       3     if contains_block(pkt) ∨ contains_inv(pkt) then
+            isolated;                                                 4          if hash(pkt) ∈ Blocks(¬(P \ L)) then
+ 1 enforce_partition(P, S):                                           5              L ← L ∪ {pkt.ip_src} ;
+ 2 begin                                                              6              drop(pkt) ;
+ 3     U ← ∅;
+ 4     L ← ∅;
+ 5     while P \ (L ∪ U ) 6= ∅ do
+ 6         for pkt ∈ S do
+ 7              if pkt.ip_src ∈ P ∧ pkt.ip_src ∈     / L then         connection internal to P \ L or to one between a node in
+ 8                  last_seen[pkt.ip_dst] = now() ;
+ 9                  U ← U \ {pkt.ip_src} ;                            P \ L and an external node based on the source IP address.
+10                  detect_leakage(U, pkt) ;                          If the source IP is in P \ L, the packet belongs to an internal
+11             else                                                   connection and it is given to Algorithm 2 to investigate if
+12                    drop(pkt) ;                                     the corresponding node acts as a leakage point (Algorithm 1,
+13             for src ∈ P ∧ src ∈/ L do                              Line 10). Otherwise, the packet belongs to a connection that
+14                 if last_seen[src] > now() − threshold then         crosses the partition and is dropped (Algorithm 1, Line 12).
+15                      U ← U ∪ {src}                                    Given a packet originated from P \ L, Algorithm 2 checks
+                                                                      whether the sender of the packet is advertising information
+16     return false ;                                                 from outside of P \L. Particularly, the attacker checks whether
+                                                                      the packet contains an INV message with the hash of a block
+                                                                      mined outside of P \ L (or the block itself). If it does so,
+                                                                      the sender must have a path of stealth connections to a node
+irrelevant. Relevant traffic includes any Bitcoin traffic destined    outside of P \ L from which the block was transmitted. Thus
+to nodes in P . This traffic should be further investigated.          the sender is a leakage point and is added to L (Algorithm 2,
+Irrelevant traffic corresponds to the remaining traffic which         Line 5). The actual packet is also dropped to prevent this
+should be forwarded back to its legitimate destination.               information from spreading.
+   To distinguish between relevant and irrelevant traffic, the           To detect whether a node in P \ L is a leakage point, an
+attacker applies a simple filter matching on the IP addresses,        attacker should be able to intercept at least one of that node’s
+the transport protocol and ports used, as well as certain bits        connections. Specifically, the node should have a vulnerable
+of the TCP payload. Specifically, the attacker first classifies       connection to another node within P \ L, so that the attacker
+as irrelevant all non-TCP traffic as well as all traffic with         can monitor the blocks it advertises. To keep track of the
+destination IPs which are not included in P . In contrast,            nodes that the attacker cannot monitor, Algorithm 1 maintains
+the attacker classifies as relevant all traffic with destination      a set U which contains the nodes she has not received any
+or source TCP port the default Bitcoin port (8333). Finally,          packets from for a predefined time threshold. (Algorithm 1,
+she classifies as relevant all packets which have a Bitcoin           Line 15). Whenever one of these nodes manages to a establish
+header in the TCP payload. Any remaining traffic is considered        a connection that the attacker intercepts, it is removed from
+irrelevant.                                                           U (Algorithm 1, Line 9).
+Partitioning algorithm: Next, the attacker processes the              Example: We now show how the algorithms work on the
+relevant traffic according to Algorithms 1 and 2. We start by         example of Fig. 3b in which the attacker, AS8, aims to isolate
+presenting their goal before describing them in more details.         P = {A, B, C}. By hijacking the prefixes corresponding to
+   The high-level goal of the algorithms is to isolate as many        these nodes, the attacker intercepts the connections (B, C) and
+nodes in P as possible. To do so, the algorithms identify             (A, C) and feeds the relevant packets to the algorithms. Recall
+L, the nodes that are leakage points, and disconnect them             that the partition is bridged by a stealth (intra-AS) connection
+from the other nodes in P . Also, the algorithms maintain a           between nodes A and X which cannot be intercepted by the
+set of verifiably isolated nodes P 0 = P \ {U ∪ L}, where             attacker. When a block outside P is mined, node X will inform
+U corresponds to the nodes that cannot be monitored (e.g.,            A which then will advertise the block to C. The attacker will
+because they never send packets). In particular, Algorithm 2          catch this advertisement and will conclude that node A is a
+is in charge of identifying L, while Algorithm 1 is in charge         leakage point. After that, the attacker will drop the packet and
+of identifying U and performing the isolation itself.                 will add A to L. As such, all future packets from A to other
+   We now describe how the algorithms work. Algorithm 1               nodes within P \ L = {A, B} will be dropped. Observe that
+starts by initializing L and U to ∅. For every received packet,       the partition isolating P \ L = {B, C} is indeed the maximum
+the algorithm first decides whether the packet belongs to a           feasible subset of P .
+                                                                              attacker      victim                  attacker     victim
+D. Correctness of the partitioning algorithm
+  We now prove the properties of Algorithm 1.
+                                                                           INV                                   INV
+Theorem 1. Given P , a set of nodes to disconnect from the              Block #42                   INV       Block #42                   INV
+Bitcoin network, there exists a unique maximal subset I ⊆                            GET DATA
+                                                                                                 Block #42
+                                                                                                                          GET DATA     Block #42
+                                                                        GET DATA
+                                                                                     Block #42                            Block #42
+P that can be isolated. Given the assumption that Bitcoin               Block #30
+                                                                                                              Block #42                wrong
+nodes advertise blocks that they receive to all their peers,                                     ignored                  Block #4@!   checksum!
+                                                                        Block #30
+Algorithm 1 isolates all nodes in I, and maintains a set P 0 =
+                                                                                     GET DATA        up to
+P \ {U ∪ L} ⊆ I that contains all nodes in I that have a                 GET DATA     Tx #123        20 min                            20 min
+                                                                         Block #42
+monitored connection and are thus known to be isolated.                                                          DISCONNECT/
+                                                                        Block #42                                   TIMEOUT
+Proof. Consider the set of nodes S ⊆ P that has a path of
+stealth connections to some nodes not in P . Clearly, nodes
+in S cannot be isolated from the rest of the network by the             (a) x Attacker x victim               (b) y Attacker y victim
+attacker. Let I = P \ S. Notice that I is the maximal set in          Fig. 4: An attacker can perform different delay attacks depend-
+P that can be disconnected by an attacker. Now, notice that           ing on the direction of traffic she intercepts. When on the path
+every node in S is placed in sets L or U by the algorithm: if         from the victim, it can modify the GETDATA message (a),
+the node has a monitored connection and is caught advertising         while it can modify the BLOCK message when intercepting
+external blocks it is placed in L (Algorithm 2 Line 5). If it is      the opposite path (b).
+not monitored then it is placed in U (Algorithm 1, Line 15).
+   Notice also that the entire set I is isolated from the network.
+If some node has no stealth connection outside, and was               intercept such a connection increases proportionally with the
+removed solely for the lack of monitoring, it is still having         fraction of the connections she intercepts. In addition, Bitcoin
+all its packets from outside of P \ L dropped – Algorithm 1           connections are bi-directional TCP connections, meaning the
+Line 12).                                                             attacker may intercept one direction (e.g., if the victim is
+                                                                      multi-homed), both, or none at all. Depending on the direction
+                                                                      she intercepts, the attacker fiddles with different messages.
+            V. D ELAYING B LOCK P ROPAGATION
+                                                                      In the following, we explain the mechanism that is used to
+   While partitioning attacks (Section IV) are particularly           perform the attack if the attacker intercepts traffic from the
+effective and can be performed by any AS, they require full           victim (Section V-A) or to the victim node (Section V-B).
+control over the victim’s traffic and are also highly visible.        While in both cases the attacker does delay block propagation
+In this section, we explore delay attacks, which can cause            for 20 minutes, the former attack is more effective.
+relatively severe delays in block propagation, even when an
+attacker intercepts only one of the victim’s connections, and         A. The attacker intercepts outgoing traffic
+wishes the attack to remain relatively undetectable.                     Once a node receives a notification that a new block is
+   In this attack, the adversary delays the delivery of a block       available via an INV message, it issues a download request
+by modifying the content of specific messages. This is possible       to its sender using a GETDATA message. As an illustration
+due to the lack of encryption and of secure integrity checks of       in Fig. 4a the victim requests Block 42 from the first of its
+Bitcoin messages. In addition to these, the attacker leverages        peers that advertised the block. Since the attacker intercepts
+the fact that nodes send block requests to the first peer that        the traffic from the victim to this peer, she can modify this
+advertised each block and wait 20 minutes for its delivery,           GETDATA message to request an older block, instead of the
+before requesting it from another peer.                               original one. In Fig. 4a for example, the attacker replaces the
+   The first known attack leveraging this 20 minutes time-            hash corresponding to block 42 with that of block 30. The
+out [28] mandates the adversary to be connected to the victim         advantage of doing so, over just dropping the packet, is that
+and to be the first to advertise a new block. After a successful      the length of the message is left unchanged. Notice that if
+block delay, the connection is lost. In contrast, network-based       the packet was dropped the attacker would need to intercept
+delay attacks are more effective for at least three reasons: (i) an   both directions of the connection and update the TCP sequence
+attacker can act on existing connections, namely she does not         numbers of all following packets to ensure that the connection
+need to connect to the victim which is very often not possible        is not dropped. If the block is not delivered, the victim node
+(e.g, nodes behind a NAT); (ii) an attacker does not have to be       will disconnect after 20 minutes. To avoid a disconnection,
+informed about recently mined blocks by the victim’s peers to         the attacker can use another GETDATA, sent within the 20
+eclipse it; and (iii) the connection that was used for the attack     minute window, to perform the reverse operation. Specifically,
+is not necessarily lost, prolonging the attack.                       she modifies the hash back to the original one, requested
+   Particularly, the effectiveness of the delay attack depends        by the victim. Since the GETDATA message for blocks and
+on the direction and fraction of the victim’s traffic the attacker    transactions have the same structure, the attacker is more likely
+intercepts. Intuitively, as Bitcoin clients request blocks from       to use the latter as these are much more common. In Fig. 4a
+one peer at a time, the probability that the attacker will            for example, she changes the hash of the transaction (Tx #123)
+to the hash of block 42. Since the block is delivered within the     two Bitcoin supernodes with publicly available data regarding
+timeout neither of the nodes disconnects or has any indication       mining pools. One supernode was connected to ∼2000 Bitcoin
+of the attack (e.g., an error in the log files).                     nodes per day, collecting block propagation information, while
+                                                                     the other was crawling the Bitcoin network, collecting the
+B. The attacker intercepts incoming traffic                          ∼6,000 IPs of active nodes each day.
+   We now describe the mechanism an attacker would use                  We inferred which of these IPs act as the gateway of a pool
+if she intercepts traffic towards the victim, i.e. she can see       in two steps. First, we used block propagation information
+messages received by the victim, but not the messages that           (gathered by the first supernode), considering that the gateways
+it sends. This attack is less effective compared to the attack       of a pool are most likely the first to propagate the blocks this
+working in the opposite direction, as it will eventually result in   pool mines. Particularly, we assigned IPs to pools based on
+the connection being dropped 20 minutes after the first delayed      the timing of the INV messages received by the supernode.
+block (similarly to [28]). In this case, the attack focuses on       We considered a given IP to belong to a gateway of a pool
+the BLOCK messages rather than on the GETDATA. A naive               if: (i) it relayed blocks of that pool more than once during
+attack would be for the attacker to simply drop any BLOCK            the 10 day period; and (ii) it frequently was the first to relay
+message she sees. As Bitcoin relies on TCP though, doing             a block of that pool (at least half as many times as the most
+so would quickly kill the TCP connection. A better, yet still        frequent node for that pool). Second, we also considered as
+simple approach is for the attacker to corrupt the contents of       extra gateways the IPs of the stratum servers used by each
+a BLOCK message while preserving the length of the packet            mining pool. Indeed, previous studies [36] noted that stratum
+(see Fig. 4b). This simple operation causes the BLOCK to be          servers tend to be co-located in the same prefix as the pool’s
+discarded when it reaches the victim, because of a checksum          gateway. Since the URLs of the stratum servers are public
+mismatch. Surprisingly though, we discovered (and verified)          (Section II), we simply resolved the DNS name (found on the
+that the victim will not request the block again, be it from the     pools websites or by directly connecting to them) and add the
+same or any other peer. After the 20 minute timeout elapses,         corresponding IPs to our IP-to-pool dataset.
+the victim simply disconnects because its requested block did
+not arrive on time.                                                  Mining power To infer the mining power attached to pools,
+   An alternative for the adversary is to replace the hash of the    we tracked how many blocks each pool mined during the
+most recent Block with a hash of an older one in all the INV         10 days interval [2] and simply assigned them a proportional
+messages the victim receives. This attack however would fail         share of the total mining power.
+if the attacker intercepts only a fraction of the connections, as    AS-level topology and forwarding paths We used the AS-
+the victim will be informed via other connections. As such,          level topologies provided by CAIDA [5] to infer the for-
+this practice is only useful when the attacker hijacks and thus      warding paths taken between any two ASes. An AS-level
+intercepts all the traffic directed to the victim.                   topology is a directed graph in which a node corresponds
+                                                                     to an AS and a link represents an inter-domain connection
+    VI. H OW VULNERABLE IS B ITCOIN TO ROUTING
+                                                                     between two neighboring ASes. Links are labeled with the
+ ATTACKS ? A COMPREHENSIVE MEASUREMENT ANALYSIS
+                                                                     business relationship linking the two ASes (customer, peer or
+   Evaluating the impact of routing attacks requires a good          provider). We computed the actual forwarding paths following
+understanding of the routing characteristics of the Bitcoin          the routing tree algorithm described in [30] which takes into
+network. In this section, we explain the datasets and the            account the business relationships between ASes.
+techniques used to infer a combined Internet and Bitcoin
+topology (Section VI-A). We then discuss our key findings and        Mapping Bitcoin nodes to ASes We finally inferred the
+their impact on the effectiveness of the two routing attacks we      most-specific prefix and the AS hosting each Bitcoin node
+consider (Section VI-B).                                             by processing more than 2.5 million BGP routes (covering all
+                                                                     Internet prefixes) advertised on 182 BGP sessions maintained
+A. Methodology and datasets                                          by 3 RIPE BGP collectors [10] (rrc00, rrc01 and rrc03). The
+   Our study is based on three key datasets: (i) the IP addresses    mapping is done by associating each prefix to the origin AS
+used by Bitcoin nodes and gateways of pools; (ii) the portion        advertising it and by validating the stability of that origin AS
+of mining power each pool possesses; (iii) the forwarding path       over time (to avoid having the mapping polluted by hijacks).
+taken between any two IPs. While we collected these datasets
+over a period of 6 months, starting from October 2015 through        B. Findings
+March 2016, we focus on the results from a 10 day period                We now discuss the key characteristics of the Bitcoin
+starting from November 5th 2015, as the results of our analysis      network from the Internet routing perspective. We explain
+do not change much through time.                                     which of them constitute enablers or hindrances for an AS-
+                                                                     level attacker.
+Bitcoin IPs We started by collecting the IPs of regular
+nodes (which host no mining power) along with the IPs of             A few ASes host most of the Bitcoin nodes Fig. 5a depicts
+the gateways the pools use to connect to the network. We             the cumulative fraction of Bitcoin nodes as a function of the
+gathered this dataset by combining information collected by          number of hosting ASes. We see that only 13 (resp. 50) ASes
+                                                                                                                            While this finding does not have a direct impact on delay
+
+
+
+
+                                                         cum. % connections intercepted
+cum. % of bitcoin nodes
+                          100                                                             100
+
+                          80                                                              80
+                                                                                                                         attacks, it clearly helps partition attackers as they can divert
+                          60                                                              60                             almost all Bitcoin traffic to their infrastructure (modulo stealth
+                          40                                                              40                             connections, see Section IV).
+                          20                                                              20
+                                                                                                                         Mining pools tend to be distributed and multi-homed
+                           0                                                               0
+                                1   10      100   1222                                          1   10      100   1222   Mining pools have a complex infrastructure compared to
+                                     # of ASes                                                       # of ASes
+                                                                                                                         regular nodes. We found that all pools use at least two ASes
+(a) Only 13 ASes host 30%                                (b) Few ASes intercept large                                    to connect to the Bitcoin network, while larger pools such as
+of the entire network, while 50                          percentages of Bitcoin traffic: 3                               Antpool, F2Pools, GHash.IO, Kano use up to 5 ASes.
+ASes host 50% of the Bitcoin                             of them intercept 60% of all
+network.                                                 possible Bitcoin connections.                                      Pool multi-homing makes both network attacks more chal-
+                                                                                                                         lenging and is one of the main precaution measures node
+Fig. 5: Bitcoin is heavily centralized from a routing viewpoint.                                                         owners can use against routing attacks. While harder, routing
+                                                                                                                         attacks are still possible in the presence of multi-homing as
+                                                                                                                         we illustrate in Section VIII.
+host 30% (resp. 50%) of the entire Bitcoin network. These
+ASes pertain to broadband providers such as Comcast (US),                                                                Bitcoin routing properties are stable over time While nu-
+Verizon (US) or Chinanet (CN) as well as to cloud providers                                                              merous nodes continuously join and leave the Bitcoin network,
+such as Hetzner (DE), OVH (FR) and Amazon (US). We                                                                       the routing properties highlighted in this section are stable. As
+observe the same kind of concentration when considering the                                                              validation, we ran our analysis daily over a 4 month period.
+distribution of Bitcoin nodes per IP prefix: only 63 prefixes                                                            We found that the same IPs were present on average for 15.2
+(0.012% of the Internet) host 20% of the network.                                                                        consecutive days (excluding IPs that were seen only once).
+   Regarding delay attacks, this high concentration makes                                                                Moreover, 50 ASes hosted each day 49.5% of Bitcoin clients
+Bitcoin traffic more easy to intercept and therefore more                                                                (standard deviation: 1.2%) while 24.7% of Bitcoin nodes are
+vulnerable. With few ASes hosting many nodes, any AS on-                                                                 found daily in just 100 prefixes (standard deviation: 1.77%).
+path (including the host ASes) is likely to intercept many                                                                       VII. PARTITIONING B ITCOIN : E VALUATION
+connections at once, making delay attacks more disruptive.
+Regarding partition attacks, the effect of the concentration is a                                                           In this section, we evaluate the practicality and effectiveness
+bit more nuanced. Indeed, high concentration reduces the total                                                           of partitioning attacks by considering four different aspects of
+number of feasible partitions because of intra-AS connections                                                            the attack. First, we show that diverting Bitcoin traffic using
+that cannot be intercepted (Section IV-A). At the same time,                                                             BGP hijacks works in practice by performing an actual hijack
+tough, the remaining feasible partitions are much easier to                                                              targeting our own Bitcoin nodes (Section VII-A). Second, we
+achieve since they require fewer hijacked prefixes (Section IV).                                                         show that hijacking fewer than 100 prefixes is enough to
+                                                                                                                         isolate a large amount of the mining power due to Bitcoin’s
+A few ASes naturally intercept the majority of the Bit-                                                                  centralization (Section VII-B). Third, we show that much
+coin traffic Large transit providers (i.e., Tier-1s) tend to be                                                          larger hijacks already happen in the Internet today, some
+traversed by a large fraction of all the Bitcoin connections.                                                            already diverting Bitcoin traffic (Section VII-C). Fourth, we
+Fig. 5b depicts the cumulative percentage of connections that                                                            show that Bitcoin quickly recovers from a partition attack once
+can be intercepted by an increasing number of ASes (e.g.,                                                                it has stopped (Section VII-D).
+by colluding with each other). We see that only three ASes,
+namely Hurricane Electric, Level3, and Telianet, can together                                                            A. How long does it take to divert traffic with a hijack?
+intercept more than 60% of all possible Bitcoin connections,                                                                We hijacked and isolated our own Bitcoin nodes which were
+with Hurricane alone being on path for 32% of all connections.                                                           connected to the live network via our own public IP prefixes.
+   Regarding delay attacks, these few ASes could act as                                                                  In the following, we describe our methodology as well as our
+powerful delay attackers. Regarding partition attacks, this ob-                                                          findings with regard to the time it takes for a partition to be
+servation does not have any direct implication as partitioning                                                           established.
+requires a full cut to be effective (Section IV).
+                                                                                                                         Methodology We built our own virtual AS with full BGP
+>90% of Bitcoin nodes are vulnerable to BGP hijacks                                                                      connectivity using Transit Portal (TP) [46]. TP provides virtual
+93% of all prefixes hosting Bitcoin nodes are shorter than                                                               ASes with BGP connectivity to the rest of the Internet by
+/24, making them vulnerable to a global IP hijack using                                                                  proxying their BGP announcements via multiple worldwide
+more-specific announcements. Indeed, prefixes strictly longer                                                            deployments, essentially acting as a multi-homed provider to
+than /24 (i.e., /25 or longer) are filtered by default by many                                                           the virtual AS. In our experiment, we used the Amsterdam
+ISPs. Observe that the remaining 7% hosted in /24s are not                                                               TP deployment as provider and advertised 184.164.232.0/22 to
+necessarily safe. These can still be hijacked by another AS                                                              it. Our virtual AS hosted six bitcoin nodes (v/Satoshi:0.13.0/).
+performing a shortest-path attack, i.e., the attacker, who will                                                          Each node had a public IP in 184.164.232.0/22 (.1 to .6
+advertise a /24 just like the victim’s provider will attract traffic                                                     addresses) and could therefore accept connections from any
+from all ASes that are closer to her in terms of number of hops.                                                         other Bitcoin node in the Internet.
+                       100                                                                Isolated         min. # pfxes    median # pfxes     # feasible
+                                                                                          mining power     to hijack       to hijack          partitions
+                            80
+
+
+
+
+            CDF # Connections
+                                                                                          8%               32              70                 14
+                            60
+                                                                                          30%              83              83                 1
+                            40                                                            40%              37              80                 8
+                                                                                          47%              39              39                 1
+                            20
+
+                                                                                        TABLE I: Hijacking <100 prefixes is enough to feasibly
+                                0
+                                    0      10 20 30 40 50 60 70 80                      partition ∼50% of the mining power. Complete table in Ap-
+                                        Seconds from hijack until traffic is received   pendix B.
+Fig. 6: Intercepting Bitcoin traffic using BGP hijack is fast
+and effective: all the traffic was flowing through the attacker
+                                                                                        prefixes is with respect to the hijacks that frequently take place
+within 90 seconds. Results computed while performing an
+                                                                                        in the Internet.
+actual BGP hijack against our own Bitcoin nodes.
+                                                                                        Methodology As described in Section IV, not all sets of nodes
+                                                                                        can be isolated as some connections cannot be intercepted. We
+   We performed a partition attack against our 6 nodes using                            therefore only determine the number of prefixes required to
+BGP hijacking. For this, we used Cornell, another TP                                    isolate sets P that are feasible in the topology we inferred in
+deployment, as the malicious AS. Specifically, we advertised                            Section VI. In particular, we only consider the sets of nodes
+the prefix 184.164.235.0/24 via the Cornell TP. This ad-                                that contain: (i) either all nodes of an AS or none of them; and
+vertisement is a more-specific prefix with respect to the an-                           (ii) either the entire mining pool, namely all of its gateways or
+nouncement coming from the Amsterdam TP and covers all                                  none of them. With these restrictions, we essentially avoid the
+the IPs of our nodes. Thus, after the new prefix announcement                           possibility of having any leakage point within P , that is caused
+is propagated throughout the Internet, Bitcoin traffic directed                         by an intra-AS or intra-pool stealth connection. However, we
+to any of our nodes will transit via Cornell instead of                                 cannot account for secret peering agreements that may or may
+Amsterdam. To mimic an interception attack (Section II),                                not exist between pools. Such agreements are inherently kept
+we configured the Cornell TP to forward traffic back to                                 private and their existence is difficult to ascertain.
+our AS. As such, connections to our nodes stayed up during
+the hijack even though they experienced a higher delay.                                 Hijacking <100 prefixes is enough to isolate ∼50% of
+   We performed the attacks 30 times and measured the time                              Bitcoin mining power In Table I we show the number of
+elapsed from announcement of the most specific prefix until                             different feasible sets of nodes we found containing the same
+all traffic towards our nodes was sent via the Cornell TP.                              amount of mining power (4th and 1st column, respectively).
+                                                                                        We also include the minimum and median number of the
+Diverting Bitcoin traffic via BGP is fast (takes <2 minutes)                            prefixes the attacker would need to hijack to isolate each
+The results of our experiment are shown in Fig. 6. The                                  portion of mining power (2nd and 3rd column, respectively).
+main insight is that the attacker received the hijacked traffic                            As predicted by the centralization of the Bitcoin network
+very quickly. After only 20 seconds, more than 50% of the                               (Section VI), the number of prefixes an attacker needs to hijack
+connections are diverted. Within 1.5 minutes, all traffic was                           to create a feasible partition is small: hijacking less than 100
+transiting via the malicious AS. Thus, attacked nodes are                               prefixes is enough to isolate up to 47% of the mining power. As
+effectively isolated almost as soon as the hijack starts.                               we will describe next, hijack events involving similar numbers
+   We took great care to ensure that our experiments did not                            of prefixes happen regularly in the Internet. Notice that the
+negatively impact the actual Bitcoin network. We discuss the                            number of prefixes is not proportional to the isolated mining
+ethical considerations behind our experiments in Appendix F.                            power. For example, there is a set of nodes representing 47%
+B. How many prefixes must be hijacked to isolate mining                                 of mining power that can be isolated by hijacking 39 prefixes,
+power?                                                                                  while isolating 30% of the mining power belonging to different
+                                                                                        pools would require 83 prefixes. Indeed, an attacker can isolate
+   Having shown that hijacking prefixes is an efficient way                             additional mining power with the same number of hijacked
+to divert Bitcoin traffic, we now study the practicality of                             prefixes when several pools in the isolated set are hosted in
+isolating a specific set of nodes P . We focus on isolating sets                        the same ASes.
+holding mining power because they are: (i) more challenging
+to perform (as mining pools tend to be multi-homed); and (ii)
+                                                                                        C. How many hijacks happen today? Do they impact Bitcoin?
+more disruptive as successfully partitioning mining power can
+lead to the creation of parallel branches in the blockchain.                              Having an estimate of the number of prefixes that need to
+   To that end, we first estimate the number of prefixes the                            be hijacked to partition the entire network, we now look at
+attacker needs to hijack to isolate a specific set of nodes as                          how common such hijacks are over a 6-months window, from
+a function of the mining power they hold. In the following                              October 2015 to March 2016. We show that BGP hijacks are
+subsection, we evaluate how practical a hijack of that many                             not only prevalent, but also end up diverting Bitcoin traffic.
+                                                                                  max # pfxes hijacked at once (log)
+
+
+
+                                                                                                                       # distinct Bitcoin nodes hijacked
+                                                                            30k                                                                            447                                                                                    60
+                     200k
+# of hijack events
+
+
+
+                                                                            10k
+                     150k                                                                                                                                  300                                                                                    50
+
+
+
+
+                                                                                                                                                                                                                             crossing partition
+                                                                                                                                                                                                                             % of connections
+                     100k                                                                                                                                  200
+                                                                            1k                                                                                                                                                                    40   >   < attack (30 min)
+                      50k                                                                                                                                  100
+                                                                                                                                                                                                                                                  30
+                       0                                                    100                                                                             0                                                                                                                             0%
+                            10/15
+
+                                    11/15
+
+                                            12/15
+
+                                                    01/16
+
+                                                            02/16
+
+                                                                    03/16
+
+
+
+
+                                                                                                                                                                 10/15
+
+                                                                                                                                                                         11/15
+
+                                                                                                                                                                                 12/15
+
+                                                                                                                                                                                         01/16
+
+                                                                                                                                                                                                 02/16
+
+                                                                                                                                                                                                         03/16
+                                                                                                                                                                                                                                                  20                                      13%
+                                                                                                                                                                                                                                                                                          18%
+
+                                                                                                                                                                                                                                                  10                                      28%
+                                            month                                                                                                                                month
+
+(a) Each month sees at least                                                                                           (b) Each month, traffic for at                                                                                             0
+100,000 hijacks, some of which                                                                                         least 100 distinct Bitcoin nodes                                                                                                    0    2      4    6    8   10
+involve thousands of prefixes.                                                                                         end up diverted by hijacks.                                                                                                                  time (hours)
+
+Fig. 7: Routing manipulation (BGP hijacks) are prevalent                                                                                                                                                         Fig. 8: Bitcoin heals slowly after large partition attacks. After
+today and do impact Bitcoin traffic.                                                                                                                                                                             10h, only half as many connections cross the partition. Healing
+                                                                                                                                                                                                                 is even slower if the attacker is naturally on-path for 13%,
+                                                                                                                                                                                                                 18%, 28% of the connections.
+Methodology We detected BGP hijacks by processing 4
+billion BGP updates advertised during this period on 182 BGP                                                                                                                                                     to a connection crossing the partition. Observe that a 50%–
+sessions maintained by 3 RIPE BGP collectors [10] (rrc00,                                                                                                                                                        50% split is the easiest partition to recover from, as after the
+rrc01 and rrc03). We consider an update for a prefix p as                                                                                                                                                        attack the chance that a new connection would bridge the two
+a hijack if the origin AS differs from the origin AS seen                                                                                                                                                        halves is maximal. We measure the partition recovery time by
+during the previous month. To avoid false positives, we do                                                                                                                                                       recording the percentage of connections going from one side
+not consider prefixes which have seen multiple origin ASes                                                                                                                                                       to the other in 30 minute intervals.
+during the previous month. We count only a single hijack per                                                                                                                                                        Bitcoin TCP connections are kept alive for extended periods.
+prefix and origin pair each day: if AS X hijacks the prefix p                                                                                                                                                    As such, new connections are mostly formed when nodes
+twice in one day, we consider both as part of a single hijack.                                                                                                                                                   reconnect or leave the network (churn). To simulate churn
+                                                                                                                                                                                                                 realistically, we collected the lists of all reachable Bitcoin
+Large BGP hijacks are frequent in today’s Internet, and                                                                                                                                                          nodes [3], every 5 minutes, from February 10 to March 10
+already end up diverting Bitcoin traffic Fig. 7 summarizes                                                                                                                                                       2016. For every node i connected in the network on the
+our results. We see that there are hundreds of thousands of                                                                                                                                                      first day, we measured ti as the elapsed time until its first
+hijack events each month (Fig. 7a). While most of these hijacks                                                                                                                                                  disappearance. To determine the probability of a node to
+involve a single IP prefix, large hijacks involving between 300                                                                                                                                                  reboot, we randomly associated every node in our testbed
+and 30,000 prefixes are also seen every month (right axis).                                                                                                                                                      with a type ti and assumed this node reboots after a period of
+Fig 7b depicts the number of Bitcoin nodes for which traffic                                                                                                                                                     time determined by an exponential distribution with parameter
+was diverted in these hijacks. Each month, at least 100 Bitcoin                                                                                                                                                  λ = t1i . The time for next reboot is again drawn according to
+nodes are victim of hijacks2 . As an illustration, 447 distinct                                                                                                                                                  the same distribution. This method produces churn with statis-
+nodes (∼7.8% of the Bitcoin network) ended up hijacked at                                                                                                                                                        tics matching the empirical ones. We repeat each measurement
+least once in November 2015.                                                                                                                                                                                     at least 5 times and report the median value found.
+D. How long do the effects of a partition attack last?                                                                                                                                                           Bitcoin quickly recovers from a partition attack, yet it
+   Having investigated the methodology and the relative cost                                                                                                                                                     takes hours for the network to be densely connected
+of creating a partition, we now explore how quickly the                                                                                                                                                          again We measured how long it takes for the partition to heal
+Bitcoin network recovers from a partition attack. We found                                                                                                                                                       by measuring how many connections cross it, before, during
+out that while the two components quickly reconnect, they                                                                                                                                                        and after its formation (Fig. 8). We consider two different
+stay sparsely connected for a very long time. We first describe                                                                                                                                                  attack scenarios: (i) the adversary does not intercept any
+the experimental set-up. Next, we explain why partitions are                                                                                                                                                     bitcoin traffic before or after the attack; and (ii) the adversary
+not persistent in practice and briefly hint on how an attacker                                                                                                                                                   intercepts some connections naturally.
+could prolong their lifetime.                                                                                                                                                                                       Case 1: The adversary intercepts no traffic after the attack.
+                                                                                                                                                                                                                 It takes 2 hours until one fifth of the initial number of
+Methodology We build a testbed composed of 1050 Bitcoin
+                                                                                                                                                                                                                 connections crossing the partition are established, while after
+clients running the default bitcoind core (v0.12.1) in testnet
+                                                                                                                                                                                                                 10 hours only half of the connections have been re-established.
+mode. Each node runs in a virtual machine connected to
+                                                                                                                                                                                                                 The slow recovery is due to the fact that nodes on both sides
+a virtual switch and is configured with a different random
+                                                                                                                                                                                                                 do not actively change their connections unless they or their
+IP address. Nodes automatically connect to other nodes in
+                                                                                                                                                                                                                 neighbors disconnect.
+the testbed. We enforced a 50%–50% partition, by installing                                                                                                                                                         Case 2: The adversary intercepts some traffic after the
+drop rules on the switch which discard any packet belonging                                                                                                                                                      attack. If an AS-level adversary is naturally on-path for some
+2 The actual hijack attempt may have been aimed at other services in the same                                                                                                                                    of the connections, she can significantly prolong the partition’s
+       IP range, still, these nodes were affected and their traffic was re-routed.                                                                                                                               lifetime. To do so, the attacker would just continue to drop
+packets on connections she naturally intercepts. We measured          % intercepted connections           50%       80%        100%
+the effect of such attacks for attackers that are on-path for 14%,    % time victim node is uniformed     63.21%    81.38%     85.45%
+18%, and 28% of the connections, respectively (Fig. 8). We            % total vulnerable Bitcoin nodes    67.9%     38.9%      21.7%
+see that an AS-adversary who is initially on-path for 28% of
+the connections can prolong the already slow recovery of the         TABLE II: 67.9% of Bitcoin nodes are vulnerable to an
+partition by 58%. Many other ways to increase the persistence        interception of 50% of their connections by an AS other than
+of a partition exist. Due to space constraints, we discuss some      their direct provider. Such interception can cause the node to
+of them in Appendix D.                                               lag behind a reference node 63.21% of the time.
+   Despite the long healing time, the orphan rate of the network
+returned to normal even with 1% of all connections crossing
+the partition. This fact shows that partitions need to be perfect    Delay attackers intercepting 50% of a node’s connection
+in order to affect the network significantly.                        can waste 63% of its mining power Table II illustrates
+                                                                     the percentage of the victim’s uptime, during which it was
+  VIII. D ELAYING B LOCK P ROPAGATION : E VALUATION                  uniformed of the last mined block, considering that the attacker
+   In this section, we evaluate the impact and practicality of       intercepts 100%, 80%, and 50% of its connections. Each value
+delay attacks through a set of experiments both at the node-         is the average over an attack period of ∼200 hours. To further
+level and at the network-wide level. We start by demonstrating       evaluate the practicality of the attack, the table also depicts the
+that delay attacks against a single node work in practice            fraction of Bitcoin nodes for which there is an AS, in addition
+by implementing a working prototype of an interception               to their direct provider, that intercepts 100%, 80%, and 50%
+software that we then use to delay our own Bitcoin nodes             of its connections.
+(Section VIII-A). We then evaluate the impact of network-               Our results reflect the major strength of the attack, which
+wide delay attacks by implementing a scalable event-driven           is its effectiveness even when the adversary intercepts only
+Bitcoin simulator. In constrast to partitioning attacks, and to      a fraction of the victim’s connections. Particularly, we see
+targeted delay attacks, we show that Bitcoin is well-protected       that an attacker can waste 63% of a node’s mining power by
+against network-wide delay attacks, even when considering            intercepting half of its connections. Observe that, even when
+large coalitions of ASes as attackers (Section VIII-B).              the attacker is intercepting all of the victim’s connections, the
+                                                                     victim eventually gets each block after a delay of 20 minutes.
+A. How severely can an attacker delay a single node?
+                                                                        Regarding the amount of vulnerable nodes to this attack in
+Methodology We implemented a prototype of our interception           the Bitcoin topology, we found that, for 67.9% of the nodes,
+software on top of Scapy [12], a Python-based packet ma-             there is at least one AS other than their provider that intercepts
+nipulation library. Our prototype follows the methodology of         more than 50% of their connections. For 21.7% of the nodes
+Section V and is efficient both in terms of state maintained and     there is in fact an AS (other than their provider) that intercepts
+processing time. Our implementation indeed maintains only            all their connections to other nodes. In short, 21.7% of the
+32B of memory (hash size) for each peer of the victim node.          nodes can be isolated by an AS that is not even their provider.
+Regarding processing time, our implementation leverages pre-
+recompiled regular expressions to efficiently identify critical      B. Can powerful attackers delay the entire Bitcoin network?
+packets (such as those with BLOCK messages) which are                   Having shown that delay attacks against a single node
+then processed in parallel by dedicated threads. Observe that        are practical, we now quantify the network-wide effects of
+the primitives required for the interception software are also       delaying block propagation.
+supported by recent programmable data-planes [19] opening               Unlike partitioning attacks, we show that network-wide de-
+up the possibility of performing the attack entirely on network      lay attacks (that do not utilize active hijacking) are unlikely to
+devices.                                                             happen in practice. Indeed, only extremely powerful attackers
+   We used our prototype to attack one of our own Bitcoin            such as a coalition grouping all ASes based in the US could
+nodes (v/Satoshi:0.12.0/, running on Ubuntu 14.04). The pro-         significantly delay the Bitcoin network as a whole, increasing
+totype ran on a machine acting as a gateway to the victim node.      the orphan rate to more than 30% from the normal 1%. We
+Using this setup, we measured the effectiveness of an attacker       also investigate how this effect changes as a function of the
+in delaying the delivery of blocks, by varying the percentage        degree of multi-homing that pools adopt.
+of connections she intercepted. To that end, we measured the
+fraction of time during which the victim was uninformed of           Methodology Unlike partition attacks, the impact of delay
+the most recently mined block. We considered our victim node         attacks on the network is difficult to ascertain. One would
+to be uninformed when its view of the main chain is shorter          need to actually slow down the network to fully evaluate
+than that of a reference node. The reference node was another        the cascading effect of delaying blocks. We therefore built a
+Bitcoin client running the same software and the same number         realistic event-driven simulator following the principles in [39]
+of peers as the victim, but without any attacker.                    and used it to evaluate such effects.
+                                                                        Our simulator models the entire Bitcoin network and the
+                                                                     impact of a delay attack considering the worst-case scenario
+ Coalition   Realistic topology
+                                  Multihoming degree of pools                       IX. C OUNTERMEASURES
+               (Section VI)        1       3       5      7         In this section, we present a set of countermeasures against
+    US             23.78          38.46   18.18   6.29   4.20
+                                                                  routing attacks. We start by presenting measures that do not
+    DE             4.20           18.88   2.10    1.40   1.40     require any protocol change and can be partially deployed
+    CN             4.90           34.27   1.40    0.70   0.70     in such a way that early adopters can benefit from higher
+                                                                  protection (Section IX-A). We then describe longer-term sug-
+TABLE III: Orphan rate (%) achieved by different network-         gestions for both detecting and preventing routing attacks
+wide level delay attacks performed by coalitions of all the       (Section IX-B).
+ASes in a country, and considering either the topology inferred
+in Section VI or synthetic topologies with various degrees of     A. Short-term measures
+pool multi-homing. The normal orphan rate is ∼1%.                 Increase the diversity of node connections The more con-
+                                                                  nected an AS is, the harder it is to attack it. We therefore
+for the attacker. Specifically, it assumes that the communica-    encourage Bitcoin node owners to ensure they are multi-
+tion between gateways of the same pool cannot be intercepted.     homed. Observe that even single-homed Bitcoin nodes could
+Also, pools act as relay networks in that they propagate all      benefit from extra connectivity by using one or more VPN
+blocks that they receive via all their gateways. Moreover, the    services through encrypted tunnels so that Bitcoin traffic to
+simulator assumes that the delay attacker is only effective if    and from the node go through multiple and distinct ASes.
+she intercepts the traffic from a node that receives a block      Attackers that wish to deny connectivity through the tunnel
+(essentially if she is able to perform the attack depicted in     would need to either know both associated IP addresses or,
+Fig. 4a). We provide further details on our simulator and how     alternatively, disrupt all encrypted traffic to and from nodes—
+we evaluated it in Appendix A.                                    making the attack highly noticeable.
+   We ran our simulator on realistic topologies as well as on
+synthetic ones with higher or lower degrees of multi-homing.      Select Bitcoin peers while taking routing into account
+The realistic topology was inferred as described in Section VI.   Bitcoin nodes randomly establish 8 outgoing connections.
+The synthetic ones were created by adding more gateways to        While randomness is important to avoid biased decisions,
+the pools in the realistic topology until all pools reached the   Bitcoin nodes should establish a few extra connections taking
+predefined degree of multi-homing.                                routing into consideration. For this, nodes could either issue a
+                                                                  traceroute to each of their peers and analyze how often
+Due to pools multi-homing, Bitcoin (as a whole) is not            the same AS appears in the path or, alternatively, tap into the
+vulnerable to delay attackers, even powerful ones Our             BGP feed of their network and select their peers based on the
+results are summarized in Table III. We see that multi-homed      AS-PATH. In both cases, if the same AS appears in all paths,
+pools considerably increase the robustness of the Bitcoin         extra random connections should be established.
+network against delay attacks. In essence, multi-homed pools
+act as protected relays for the whole network. Indeed, multi-     Monitor round-trip time (RTT) The RTT towards hijacked
+homed pools have better chances of learning about blocks via      destinations increases during the attack. By monitoring the
+at least one gateway and can also more efficiently propagate      RTT towards its peers, a node could detect sudden changes and
+them to the rest of the network via the same gateways.            establish extra random connections as a protection mechanism.
+   If we consider the current level of multi-homing, only         Monitor additional statistics Nodes should deploy anomaly
+powerful attackers such as a coalition containing all US-based    detection mechanisms to recognize sudden changes in: the
+ASes could effectively disrupt the network by increasing the      distribution of connections, the time elapsed between a request
+fork rate to 23% (as comparison, the baseline fork rate is 1%).   and the corresponding answer, the simultaneous disconnec-
+In contrast, other powerful attackers such as all China-based     tions of peers, and other lower-level connection anomalies.
+or all Germany-based ASes can only increase the fork rate to      Again, anomalies should spur the establishment of extra ran-
+5%. As such coalitions are unlikely to form in practice, we       dom connections.
+conclude that network-wide delay attacks do not constitute a
+threat for Bitcoin.                                               Embrace churn Nodes should allow the natural churn of the
+                                                                  network to refresh their connections. A node with disabled
+Even a small degree of multi-homing is enough to protect          incoming connections or even one that is behind a NAT or
+Bitcoin from powerful attackers. If all mining pools were         a firewall will never receive a random incoming connection
+single-homed, large coalitions could substantially harm the       from the rest of the network. If the node is hijacked for a few
+currency. The US for instance, could increase the fork rate       minutes and isolated from a part of the network, it will only
+to 38% while China and Germany could increase it to 34%           reconnect to the other part upon reboot or when one of its
+and 18% respectively. Yet, the fork rate drops dramatically       outgoing connections fails.
+as the average multi-homing degree increases. This is a good
+news for mining pools as it shows that even a small increase
+in their connectivity helps tremendously in protecting them
+against delay attacks.
+Use gateways in different ASes While inferring the topology                               X. R ELATED W ORK
+we noticed that many pools were using gateways in the same
+AS. Hosting these gateways in different ASes would make              AS-level adversaries The concept of AS-level adversaries has
+them even more robust to routing attacks.                            been studied before in the context of Tor [25], [37], [22],
+                                                                     [50], [53]. These works also illustrated the problems caused
+Prefer peers hosted in the same AS and in /24 prefixes As            by centralization and routing attacks on a distributed system
+the traffic of nodes hosted in /24 prefixes can only partially       running atop the Internet. Yet, Tor and Bitcoin differ vastly in
+be diverted (Section II). Hosting all nodes in such prefixes         their behavior with one routing messages in an Onion-like
+would prevent partition attacks at the cost of (∼1%) increase        fashion, while the other uses random connections to flood
+of the total number of Internet prefixes. Alternatively, nodes       messages throughout the entire network. Although random
+could connect to a peer hosted in a /24 prefix which belongs         graphs are usually robust to attacks, this paper shows that it
+to their provider. By doing so they maintain a stealth (intra-       is not the case when the network is centralized at the routing-
+AS) connection with a node that is at least partially protected      level.
+against hijack.
+                                                                     Bitcoin attacks The security of Bitcoin from network-based
+B. Longer-term measures                                              attacks has been relatively less explored compared to other
+                                                                     attack scenarios. While eclipsing attacks [31], [27] have a
+Encrypt Bitcoin Communication and/or adopt MAC While                 similar impact than delay attacks when performed against a
+encrypting Bitcoin connections would not prevent adversaries         single node, they disrupt the victim’s connections and assume
+from dropping packets, it would prevent them from eavesdrop-         that the attacker is directly connected to the victim (Section V).
+ping connections and modifying key messages. Alternatively,          For more information about Bitcoin attacks, we refer the reader
+using a Message Authentication Code (MAC) to validate that           to a recent comprehensive survey on the Bitcoin protocol [18].
+the content of each message has not been changed would make
+delay attacks much more difficult.                                   BGP security issues Measuring and detecting routing at-
+                                                                     tacks has seen extensive research, both considering BGP
+Use distinct control and data channels A key problem of              hijacks [48], [54], [55] and interception attacks [16]. Similarly,
+Bitcoin is that its traffic is easily identifiable by filtering on   there has been much work on proposing secure routing proto-
+the default port (8333). Assuming encrypted connections, the         cols that can prevent the above attacks [17], [29], [32], [40].
+two ends could negotiate a set of random TCP ports upon              In contrast, our work is the first one to show the consequences
+connecting to each other using the well-known port and use           of these attacks on cryptocurrencies.
+them to establish the actual TCP connection, on which they
+will exchange Bitcoin data. This would force the AS-level                                  XI. C ONCLUSIONS
+adversary to look at all the traffic, which would be too costly.        This paper presented the first analysis of the vulnerabilities
+   A simpler (but poorer) solution would be for Bitcoin clients      of the Bitcoin system from a networking viewpoint. Based on
+to use randomized TCP port (encoded in clear with the ADDR           real-world data, we showed that Bitcoin is heavily centralized.
+message) as it will force the AS-level adversary to maintain         Leveraging this fact, we then demonstrated and quantified
+state to keep track of these ports. Although a node can already      the disruptive impact that AS-level adversaries can have on
+run on a non-default port, such a node will receive fewer            the currency. We showed that attackers can partition the
+incoming connections (if any) as the default client strongly         Bitcoin network by hijacking less than 100 prefixes. We also
+prefers peers that run on the default port.                          showed how AS-level adversaries can significantly delay the
+Use UDP heartbeats A TCP connection between two Bitcoin              propagation of blocks while remaining undetected. Although
+nodes may take different forward and backward paths due to           these attacks are worrying, we also explained how to counter
+asymmetric routing, making AS-level adversaries more power-          them with both short-term and long-term measures, some of
+ful (as they only need to see one direction, see Section V). In      which are easily deployable today.
+addition to TCP connections, Bitcoin clients could periodically
+send UDP messages with corroborating data (e.g., with several
+recent block headers). These UDP messages can be used as a                               ACKNOWLEDGMENTS
+heartbeat that will allow nodes to discover that their connection      We would like to thank Christian Decker for sharing Bitcoin
+was partially intercepted. As UDP messages do not rely on            data with us as well as for his valuable comments in the
+return traffic, this would enable node to realize that they are      beginning of the project. We would also like to thank David
+out-of-sync and establish new connections.                           Gugelmann for his support in one of our experiments. Finally,
+Request a block on multiple connections Bitcoin clients              we are grateful to Tobias Bühler, Edgar Costa Molero, and
+could ask multiple peers for pieces of the block. This measure       Thomas Holterbach from ETH Zürich as well as Eleftherios
+would prevent misbehaving nodes from deliberately delaying           Kokoris Kogias from EPFL for their helpful feedback on early
+the delivery of a block, simply because in such a case the           drafts of this paper. Aviv Zohar is supported by the Israel
+client will only miss one fraction of the block, which it can        Science Foundation (grant 616/13) and by a grant from the
+request from one of its other peers.                                 Hebrew University Cybersecurity Center.
+                             R EFERENCES                                        [32] Y.-C. Hu, A. Perrig, and M. Sirbu, “SPV: Secure Path Vector Routing
+                                                                                     for Securing BGP,” ser. SIGCOMM ’04. New York, NY, USA: ACM,
+ [1] “A Next-Generation Smart Contract and Decentralized Application                 2004, pp. 179–192.
+     Platform ,” https://github.com/ethereum/wiki/wiki/White-Paper.             [33] J. Karlin, S. Forrest, and J. Rexford, “Pretty Good BGP: Improving BGP
+ [2] “Bitcoin Blockchain Statistics,” https://blockchain.info/.                      by Cautiously Adopting Routes,” in Proceedings of the Proceedings
+                                                                                     of the 2006 IEEE International Conference on Network Protocols, ser.
+ [3] “bitnodes,” https://bitnodes.21.co/.
+                                                                                     ICNP ’06. Washington, DC, USA: IEEE Computer Society, 2006, pp.
+ [4] “Bitnodes. Estimating the size of Bitcoin network,” https://bitnodes.21.        290–299.
+     co/.                                                                       [34] E. K. Kogias, P. Jovanovic, N. Gailly, I. Khoffi, L. Gasser, and B. Ford,
+ [5] “CAIDA Macroscopic Internet Topology Data Kit.” https://www.caida.              “Enhancing bitcoin security and performance with strong consistency
+     org/data/internet-topology-data-kit/.                                           via collective signing,” in 25th USENIX Security Symposium (USENIX
+ [6] “Dyn Research. Pakistan hijacks YouTube.” http://research.dyn.com/              Security 16). Austin, TX: USENIX Association, 2016, pp. 279–296.
+     2008/02/pakistan-hijacks-youtube-1/.                                       [35] J. A. Kroll, I. C. Davey, and E. W. Felten, “The economics of bitcoin
+ [7] “FALCON,” http://www.falcon-net.org/.                                           mining, or bitcoin in the presence of adversaries.” Citeseer.
+ [8] “FIBRE,” http://bitcoinfibre.org/.                                         [36] A. Miller, J. Litton, A. Pachulski, N. Gupta, D. Levin, N. Spring, and
+ [9] “Litecoin ,” https://litecoin.org.                                              B. Bhattacharjee, “Discovering bitcoin’s public topology and influential
+[10] “RIPE RIS Raw Data,” https://www.ripe.net/data-tools/stats/ris/                 nodes.”
+     ris-raw-data.                                                              [37] S. J. Murdoch and P. Zieliński, “Sampled traffic analysis by Internet-
+[11] “Routeviews Prefix to AS mappings Dataset (pfx2as) for IPv4 and IPv6.”          exchange-level adversaries,” in Privacy Enhancing Technologies: 7th
+     https://www.caida.org/data/routing/routeviews-prefix2as.xml.                    International Symposium, PET 2007, N. Borisov and P. Golle, Eds.
+[12] “Scapy.” http://www.secdev.org/projects/scapy/.                                 Springer-Verlag, LNCS 4776, 2007, pp. 167–183.
+[13] “The Relay Network,” http://bitcoinrelaynetwork.org/.                      [38] K. Nayak, S. Kumar, A. Miller, and E. Shi, “Stubborn mining: Gen-
+[14] “ZCash,” https://z.cash/.                                                       eralizing selfish mining and combining with an eclipse attack,” IACR
+[15] A. M. Antonopoulos, “The bitcoin network,” in Mastering Bitcoin.                Cryptology ePrint Archive, vol. 2015, p. 796, 2015.
+     O’Reilly Media, Inc., 2013, ch. 6.                                         [39] T. Neudecker, P. Andelfinger, and H. Hartenstein, “A simulation model
+[16] H. Ballani, P. Francis, and X. Zhang, “A Study of Prefix Hijacking and          for analysis of attacks on the bitcoin peer-to-peer network,” in IFIP/IEEE
+     Interception in the Internet,” ser. SIGCOMM ’07. New York, NY, USA:             International Symposium on Internet Management. IEEE, 2015, pp.
+     ACM, 2007, pp. 265–276.                                                         1327–1332.
+[17] A. Boldyreva and R. Lychev, “Provable Security of S-BGP and Other          [40] P. v. Oorschot, T. Wan, and E. Kranakis, “On interdomain routing
+     Path Vector Protocols: Model, Analysis and Extensions,” ser. CCS ’12.           security and pretty secure bgp (psbgp),” ACM Trans. Inf. Syst. Secur.,
+     New York, NY, USA: ACM, 2012, pp. 541–552.                                      vol. 10, no. 3, Jul. 2007.
+                                                                                [41] A. Pilosov and T. Kapela, “Stealing The Internet. An Internet-Scale Man
+[18] J. Bonneau, A. Miller, J. Clark, A. Narayanan, J. A. Kroll, and E. W.
+                                                                                     In The Middle Attack.” DEFCON 16.
+     Felten, “Sok: Research perspectives and challenges for bitcoin and
+                                                                                [42] Y. Rekhter and T. Li, A Border Gateway Protocol 4 (BGP-4), IETF,
+     cryptocurrencies,” in Security and Privacy (SP), 2015 IEEE Symposium
+                                                                                     Mar. 1995, rFC 1771.
+     on. IEEE, 2015, pp. 104–121.
+                                                                                [43] M. Rosenfeld, “Analysis of hashrate-based double spending,” arXiv
+[19] P. Bosshart, D. Daly, G. Gibb, M. Izzard, N. McKeown, J. Rexford,
+                                                                                     preprint arXiv:1402.2009, 2014.
+     C. Schlesinger, D. Talayco, A. Vahdat, G. Varghese et al., “P4: Pro-
+                                                                                [44] A. Sapirshtein, Y. Sompolinsky, and A. Zohar, “Optimal selfish mining
+     gramming protocol-independent packet processors,” ACM SIGCOMM
+                                                                                     strategies in bitcoin,” CoRR, vol. abs/1507.06183, 2015.
+     Computer Communication Review, vol. 44, no. 3, pp. 87–95, 2014.
+                                                                                [45] E. B. Sasson, A. Chiesa, C. Garman, M. Green, I. Miers, E. Tromer, and
+[20] C. Decker and R. Wattenhofer, “Information propagation in the bitcoin           M. Virza, “Zerocash: Decentralized anonymous payments from bitcoin,”
+     network,” in Peer-to-Peer Computing (P2P), 2013 IEEE Thirteenth                 in 2014 IEEE Symposium on Security and Privacy. IEEE, 2014, pp.
+     International Conference on. IEEE, 2013, pp. 1–10.                              459–474.
+[21] ——, Bitcoin Transaction Malleability and MtGox. Cham: Springer             [46] B. Schlinker, K. Zarifis, I. Cunha, N. Feamster, and E. Katz-Bassett,
+     International Publishing, 2014, pp. 313–326. [Online]. Available:               “Peering: An as for us,” in Proceedings of the 13th ACM Workshop
+     http://dx.doi.org/10.1007/978-3-319-11212-1_18                                  on Hot Topics in Networks, ser. HotNets-XIII. New York, NY, USA:
+[22] M. Edman and P. Syverson, “As-awareness in tor path selection,” in              ACM, 2014, pp. 18:1–18:7.
+     Proceedings of the 16th ACM Conference on Computer and Communi-            [47] J. Schnelli, “BIP 151: Peer-to-Peer Communication Encryption,” Mar.
+     cations Security, ser. CCS ’09, 2009.                                           2016, https://github.com/bitcoin/bips/blob/master/bip-0151.mediawiki.
+[23] I. Eyal, “The miner’s dilemma,” in 2015 IEEE Symposium on Security         [48] X. Shi, Y. Xiang, Z. Wang, X. Yin, and J. Wu, “Detecting prefix
+     and Privacy. IEEE, 2015, pp. 89–103.                                            hijackings in the Internet with Argus,” ser. IMC ’12. New York, NY,
+[24] I. Eyal and E. G. Sirer, “Majority is not enough: Bitcoin mining is             USA: ACM, 2012, pp. 15–28.
+     vulnerable,” in Financial Cryptography and Data Security. Springer,        [49] Y. Sompolinsky and A. Zohar, “Secure high-rate transaction processing
+     2014, pp. 436–454.                                                              in bitcoin,” in Financial Cryptography and Data Security. Springer,
+[25] N. Feamster and R. Dingledine, “Location diversity in anonymity                 2015, pp. 507–527.
+     networks,” in WPES, Washington, DC, USA, October 2004.                     [50] Y. Sun, A. Edmundson, L. Vanbever, O. Li, J. Rexford, M. Chiang, and
+[26] J. Garay, A. Kiayias, and N. Leonardos, “The bitcoin backbone protocol:         P. Mittal, “RAPTOR: Routing attacks on privacy in TOR.” in USENIX
+     Analysis and applications,” in Advances in Cryptology-EUROCRYPT                 Security, 2015.
+     2015. Springer, 2015, pp. 281–310.                                         [51] A. Tonk, “Large scale BGP hijack out of India,” 2015, http://www.
+[27] A. Gervais, G. O. Karama, V. Capkun, and S. Capkun, “Is bitcoin a               bgpmon.net/large-scale-bgp-hijack-out-of-india/.
+     decentralized currency?” IEEE security & privacy, vol. 12, no. 3, pp.      [52] ——, “Massive route leak causes Internet slowdown,” 2015, http://www.
+     54–60, 2014.                                                                    bgpmon.net/massive-route-leak-cause-internet-slowdown/.
+[28] A. Gervais, H. Ritzdorf, G. O. Karame, and S. Capkun, “Tampering with      [53] L. Vanbever, O. Li, J. Rexford, and P. Mittal, “Anonymity on quicksand:
+     the delivery of blocks and transactions in bitcoin,” in Proceedings of          Using BGP to compromise TOR,” in ACM HotNets, 2014.
+     the 22Nd ACM SIGSAC Conference on Computer and Communications              [54] Z. Zhang, Y. Zhang, Y. C. Hu, and Z. M. Mao, “Practical defenses
+     Security, ser. CCS ’15. New York, NY, USA: ACM, 2015, pp. 692–705.              against BGP prefix hijacking,” ser. CoNEXT ’07. New York, NY,
+[29] P. Gill, M. Schapira, and S. Goldberg, “Let the Market Drive Deploy-            USA: ACM, 2007.
+     ment: A Strategy for Transitioning to BGP Security,” ser. SIGCOMM          [55] Z. Zhang, Y. Zhang, Y. C. Hu, Z. M. Mao, and R. Bush, “iSPY:
+     ’11. New York, NY, USA: ACM, 2011, pp. 14–25.                                   Detecting IP prefix hijacking on my own,” IEEE/ACM Trans. Netw.,
+[30] S. Goldberg, M. Schapira, P. Hummon, and J. Rexford, “How Secure                vol. 18, no. 6, pp. 1815–1828, Dec. 2010.
+     Are Secure Interdomain Routing Protocols,” in SIGCOMM, 2010.
+[31] E. Heilman, A. Kendler, A. Zohar, and S. Goldberg, “Eclipse attacks on
+     bitcoin’s peer-to-peer network,” in 24th USENIX Security Symposium
+     (USENIX Security 15), 2015, pp. 129–144.
+                               A PPENDIX                                     Isolated         Minimum        Median        # Feasible
+                                                                           mining power       # prefixes    # prefixes     Partitions
+A. Bitcoin event-driven simulation
+                                                                                6%                2             86             20
+  In this section, we provide more details on the simulator we                  7%                7             72             23
+used in Section VIII-B.                                                         8%               32             69             14
+                                                                               30%               83             83              1
+Inputs The simulator takes as input a realistic topology and
+                                                                               39%               32             51             11
+some synthetic topologies with higher or lower degree of                       40%               37             80              8
+multi-homing. Each of the topologies includes the list of IP                   41%               44             55              3
+addresses running Bitcoin nodes, the IPs of the gateways and                   45%               34             41              5
+the hash rate associated with each mining pool, along with the                 46%               78             78              1
+forwarding paths among all pairs of IPs. The realistic topology                47%               39             39              1
+was inferred as described in Section VI. The synthetic ones
+were created by adding more gateways to the pools in the                TABLE IV: This table lists all partitions that can be created
+realistic topology until they all reached the predefined degree         based on our inferred topology. The leftmost column indicates
+of multi-homing.                                                        the portion of mining power contained within the isolated set
+                                                                        and the rightmost the number of different combinations of
+Model The simulator models each Bitcoin node as an inde-                pools that could form it.
+pendent thread which reacts to events according to the Bitcoin
+protocol. Whenever a node communicates with another, the
+simulator adds a delay which is proportional to the number of              We run the simulation 20 times for each set of parameters
+ASes present on the forwarding path between the two nodes.              and consider a new random Bitcoin topology during each
+Each nodes initializes 8 connections following the default              run. In each run, 144 blocks are created, which is equivalent
+client implementation. Blocks are generated at intervals drawn          to a day’s worth of block production (assuming an average
+from an exponential distribution, with an expected rate of one          creation rate of one block per 10 minutes). We evaluated the
+block every 10 minutes. The probability that a specific pool            impact of delay attacks by measuring the orphan rate, different
+succeeds in mining a block directly depends on its mining               adversaries can cause.
+power. We consider that the gateways of a pool form a clique
+and communicate with each other with links of zero delay                B. Possible Partitions
+which an attacker cannot intercept. Concretely, this means that           Table IV shows a complete list of all the possible sets
+whenever a block is produced by a pool, it is simultaneously            of nodes P with the mining power that can be isolated. A
+propagated from all the gateways of this pool. Although this            summary of it was included and discussed in Section VII.
+choice makes the attacker less effective, we assume that this
+                                                                        C. Inferring pool gateways
+is the default behavior of a benign pool.
+                                                                           We summarize here two ways hijacking can be used to
+Attack In the simulation, an AS can effectively delay the               reveal the gateways of pools.
+delivery of a block between two nodes if and only if she
+                                                                          1) The attacker may hijack the pool’s stratum servers to
+intercepts the traffic from the potential recipient to the sender,
+                                                                             discover connections that they establish and thus reveal
+essentially if she is able to perform the attack depicted in
+                                                                             the gateways they connect to. Connections between the
+Fig. 4a. An adversary that intercepts the opposite direction
+                                                                             pool’s stratum server and its gateways are done via
+is considered unable to delay blocks, during the simulation.
+                                                                             bitcoind’s RPC access, and can be easily distinguished.
+Although this choice makes the attacker less effective, it avoids
+                                                                          2) The attacker may hijack the relay network to discover
+a dependency between the orphan rate and time. Indeed, these
+                                                                             the connections used by large mining pools. The relay
+attackers lose their power through time, as the connections
+                                                                             network has indeed a public set of six IPs that pools
+they intercept are dropped after the first effective block delay,
+                                                                             connect to. By hijacking these, one may learn the IPs
+and possibly replaced with connections that are not intercepted
+                                                                             of various gateways. Specifically, it will not be hard to
+by the attacker.
+                                                                             identify a pool by observing the blocks each publishes to
+Validation We verified our simulator by comparing the orphan                 the relay network.
+rate as well as the median propagation delay computed with
+those of the real network. We found that both of them are               D. Increase partition persistence
+within the limits of the actual Bitcoin network [20].                      Our observations in Section VII-D reveal concrete ways for
+                                                                        the attacker to make her partition lasts longer. Intuitively, the
+Methodology We evaluated the impact of delay attacks con-               attacker needs to suppress the effect of churn in order to keep
+sidering the three most powerful country-based coalition (US,           the victim nodes isolated. The following three observations
+China and Germany) as measured by the percentage of traffic             help in this regard:
+all their ASes3 see.
+3 We map an AS to a country based on the country it is registered in.
+   Observation 1: A smaller set of nodes will be easier to         F. Ethical considerations
+isolate for extended periods. The smaller the set of nodes is,        Although we performed both of the attacks we describe
+the more time will pass before any isolated node restarts.         against nodes that were connected to the Bitcoin network
+Similarly, if the set of nodes is small, external nodes will       we did not disturb their normal operations. Regarding the
+connect to the isolated set with lower probability.                hijack experiment, we advertised and hijacked a prefix that was
+   Observation 2: All incoming connection slots can be oc-         assigned to us by the Transit Portal (TP) project [46]. No other
+cupied by connections from attacker nodes. Bitcoin nodes           traffic was influenced by our announcements. Also, the isolated
+typically limit the number of incoming connections they            nodes were experimental nodes we ran ourselves. Actual
+accept. The attacker may use several nodes to aggressively         Bitcoin nodes that happened to be connected to these were
+connect to the isolated nodes, and maintain these connections      not affected, they just had one of their connections occupied
+even after BGP routing is restored. Connections initiated by       (as if they were connected to a supernode). Regarding the
+external nodes would then be rejected by the isolated nodes        delay experiment, the victims were again our own Bitcoin
+(as all slots of connections remain occupied).                     clients. While they were indeed connected to nodes in the real
+   Observation 3: Outgoing connections can be biased via a         network, those were not affected as we only modified packets
+traditional eclipse attack [31]. Once an isolated node reboots,    towards our victim nodes.
+it will try to establish connections to nodes in its peer lists.
+These can be biased to contain attacker nodes, other isolated
+nodes, and IP addresses that do not actually lead to Bitcoin
+nodes. This is done by aggressively advertising these IPs to
+the victim nodes. The connections they form upon rebooting
+will then be biased towards those that maintain the partition.
+E. Frequently Asked Questions
+
+Can bitcoin relays bridge the partition? While Bitcoin
+relays [13] improve Bitcoin performance, they do not improve
+Bitcoin security against routing attacks. Indeed, as the IPs of
+the relays are publicly available, relays are also vulnerable to
+both hijacking and passive attacks. As such, they can neither
+bridge the partition, nor act as a protected relay when an
+actual network attack takes place. Note that routing attacks
+are completely different from DDoS attacks, which relays are
+most likely protected against. Routing attacks are much more
+complicated to deal with as they constitute a human-driven
+process depending highly on the provider of the victim rather
+than the victim itself. As an illustration, the mitigation of a
+hijack could include the provider of the attacker disconnecting
+her or her announcements being filtered globally, after the
+hijack has been detected by the provider of the victim.
+Can NATed nodes bridge a partition? All nodes behind a
+NAT act as a simple node that doesn’t accept connections.
+Indeed, by hijacking the corresponding public IP, the attacker
+receives traffic destined to all of them. In Section IV, we
+explained why simple nodes cannot bridge the partition, the
+same applies for NATed nodes.
+Can Bitcoin routing alternatives solve the attacks presented
+in this paper? Similar to the Bitcoin relays, existing proposals
+could indeed speed up the transmission of blocks by tackling
+with natural limitation of the current Internet such as delay
+and packet loss. For instance, FIBRE [8] uses Forward Error
+Correction (FEC) and compression to speed up the block
+transmission. In parallel, Falcon [7], uses a technique called
+cut-through routing to achieve fast block transmission in the
+presence of increased network delays. However, neither of the
+aforementioned approaches address routing attacks in the form
+of BGP hijacks or traffic eavesdropping.
+

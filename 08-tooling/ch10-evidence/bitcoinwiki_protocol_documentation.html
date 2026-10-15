@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<title>Protocol documentation - Bitcoin Wiki</title>
+<script type="8fffb9964420d8f7de9c7ede-text/javascript">(function(){var className="client-js";var cookie=document.cookie.match(/(?:^|; )db_bitcoin_enmwclientpreferences=([^;]+)/);if(cookie){cookie[1].split('%2C').forEach(function(pref){className=className.replace(new RegExp('(^| )'+pref.replace(/-clientpref-\w+$|[^\w-]+/g,'')+'-clientpref-\\w+( |$)'),'$1'+pref+'$2');});}document.documentElement.className=className;}());RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"2f4fccaa4752fd20545388d9","wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Protocol_documentation","wgTitle":"Protocol documentation","wgCurRevisionId":68832,"wgRevisionId":68832,"wgArticleId":56,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Technical","Developer","Bitcoin Core documentation"],"wgPageViewLanguage":"en","wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Protocol_documentation","wgRelevantArticleId":56,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgCiteReferencePreviewsActive":true};
+RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.cite.styles":"ready","skins.vector.styles.legacy":"ready"};RLPAGEMODULES=["ext.cite.ux-enhancements","site","mediawiki.page.ready","mediawiki.toc","skins.vector.legacy.js","zzz.customizations","ext.moderation.notify","ext.moderation.notify.desktop"];</script>
+<script type="8fffb9964420d8f7de9c7ede-text/javascript">(RLQ=window.RLQ||[]).push(function(){mw.loader.impl(function(){return["user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});
+}];});});</script>
+<link rel="stylesheet" href="/w/load.php?lang=en&amp;modules=ext.cite.styles%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector">
+<script async="" src="/w/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector" type="8fffb9964420d8f7de9c7ede-text/javascript"></script>
+<meta name="ResourceLoaderDynamicStyles" content="">
+<link rel="stylesheet" href="/w/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector">
+<meta name="generator" content="MediaWiki 1.43.11">
+<meta name="robots" content="max-image-preview:standard">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=1120">
+<link rel="search" type="application/opensearchdescription+xml" href="/w/rest.php/v1/search" title="Bitcoin Wiki (en)">
+<link rel="EditURI" type="application/rsd+xml" href="https://en.bitcoin.it/w/api.php?action=rsd">
+<link rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+<link rel="alternate" type="application/atom+xml" title="Bitcoin Wiki Atom feed" href="/w/index.php?title=Special:RecentChanges&amp;feed=atom">
+</head>
+<body class="skin-vector-legacy mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Protocol_documentation rootpage-Protocol_documentation skin-vector action-view"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Protocol documentation</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From Bitcoin Wiki</div>
+		<div id="contentSub"><div id="mw-content-subtitle"></div></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content"><div class="mw-content-ltr mw-parser-output" lang="en" dir="ltr"><p>This page <i>describes</i> the behavior of the <a href="/wiki/Original_Bitcoin_client" title="Original Bitcoin client">reference client</a>. The Bitcoin protocol is specified by the behavior of the reference client, not by this page. In particular, while this page is quite complete in describing the <a href="/wiki/Network" title="Network">network</a> protocol, it does not attempt to list all of the rules for block or transaction validity.
+</p><p>Type names used in this documentation are from the C99 standard.
+</p><p>For protocol used in mining, see <a href="/wiki/Getblocktemplate" title="Getblocktemplate">getblocktemplate</a>.
+</p>
+<div id="toc" class="toc" role="navigation" aria-labelledby="mw-toc-heading"><input type="checkbox" role="button" id="toctogglecheckbox" class="toctogglecheckbox" style="display:none" /><div class="toctitle" lang="en" dir="ltr"><h2 id="mw-toc-heading">Contents</h2><span class="toctogglespan"><label class="toctogglelabel" for="toctogglecheckbox"></label></span></div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="#Common_standards"><span class="tocnumber">1</span> <span class="toctext">Common standards</span></a>
+<ul>
+<li class="toclevel-2 tocsection-2"><a href="#Hashes"><span class="tocnumber">1.1</span> <span class="toctext">Hashes</span></a></li>
+<li class="toclevel-2 tocsection-3"><a href="#Merkle_Trees"><span class="tocnumber">1.2</span> <span class="toctext">Merkle Trees</span></a></li>
+<li class="toclevel-2 tocsection-4"><a href="#Signatures"><span class="tocnumber">1.3</span> <span class="toctext">Signatures</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="#Transaction_Verification"><span class="tocnumber">1.4</span> <span class="toctext">Transaction Verification</span></a></li>
+<li class="toclevel-2 tocsection-6"><a href="#Addresses"><span class="tocnumber">1.5</span> <span class="toctext">Addresses</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-7"><a href="#Common_structures"><span class="tocnumber">2</span> <span class="toctext">Common structures</span></a>
+<ul>
+<li class="toclevel-2 tocsection-8"><a href="#Message_structure"><span class="tocnumber">2.1</span> <span class="toctext">Message structure</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="#Variable_length_integer"><span class="tocnumber">2.2</span> <span class="toctext">Variable length integer</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="#Variable_length_string"><span class="tocnumber">2.3</span> <span class="toctext">Variable length string</span></a></li>
+<li class="toclevel-2 tocsection-11"><a href="#Network_address"><span class="tocnumber">2.4</span> <span class="toctext">Network address</span></a></li>
+<li class="toclevel-2 tocsection-12"><a href="#Inventory_Vectors"><span class="tocnumber">2.5</span> <span class="toctext">Inventory Vectors</span></a></li>
+<li class="toclevel-2 tocsection-13"><a href="#Block_Headers"><span class="tocnumber">2.6</span> <span class="toctext">Block Headers</span></a></li>
+<li class="toclevel-2 tocsection-14"><a href="#Differential_encoding"><span class="tocnumber">2.7</span> <span class="toctext">Differential encoding</span></a></li>
+<li class="toclevel-2 tocsection-15"><a href="#PrefilledTransaction"><span class="tocnumber">2.8</span> <span class="toctext">PrefilledTransaction</span></a></li>
+<li class="toclevel-2 tocsection-16"><a href="#HeaderAndShortIDs"><span class="tocnumber">2.9</span> <span class="toctext">HeaderAndShortIDs</span></a></li>
+<li class="toclevel-2 tocsection-17"><a href="#BlockTransactionsRequest"><span class="tocnumber">2.10</span> <span class="toctext">BlockTransactionsRequest</span></a></li>
+<li class="toclevel-2 tocsection-18"><a href="#BlockTransactions"><span class="tocnumber">2.11</span> <span class="toctext">BlockTransactions</span></a></li>
+<li class="toclevel-2 tocsection-19"><a href="#Short_transaction_ID"><span class="tocnumber">2.12</span> <span class="toctext">Short transaction ID</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-20"><a href="#Message_types"><span class="tocnumber">3</span> <span class="toctext">Message types</span></a>
+<ul>
+<li class="toclevel-2 tocsection-21"><a href="#version"><span class="tocnumber">3.1</span> <span class="toctext">version</span></a></li>
+<li class="toclevel-2 tocsection-22"><a href="#verack"><span class="tocnumber">3.2</span> <span class="toctext">verack</span></a></li>
+<li class="toclevel-2 tocsection-23"><a href="#addr"><span class="tocnumber">3.3</span> <span class="toctext">addr</span></a></li>
+<li class="toclevel-2 tocsection-24"><a href="#inv"><span class="tocnumber">3.4</span> <span class="toctext">inv</span></a></li>
+<li class="toclevel-2 tocsection-25"><a href="#getdata"><span class="tocnumber">3.5</span> <span class="toctext">getdata</span></a></li>
+<li class="toclevel-2 tocsection-26"><a href="#notfound"><span class="tocnumber">3.6</span> <span class="toctext">notfound</span></a></li>
+<li class="toclevel-2 tocsection-27"><a href="#getblocks"><span class="tocnumber">3.7</span> <span class="toctext">getblocks</span></a></li>
+<li class="toclevel-2 tocsection-28"><a href="#getheaders"><span class="tocnumber">3.8</span> <span class="toctext">getheaders</span></a></li>
+<li class="toclevel-2 tocsection-29"><a href="#tx"><span class="tocnumber">3.9</span> <span class="toctext">tx</span></a></li>
+<li class="toclevel-2 tocsection-30"><a href="#block"><span class="tocnumber">3.10</span> <span class="toctext">block</span></a></li>
+<li class="toclevel-2 tocsection-31"><a href="#headers"><span class="tocnumber">3.11</span> <span class="toctext">headers</span></a></li>
+<li class="toclevel-2 tocsection-32"><a href="#getaddr"><span class="tocnumber">3.12</span> <span class="toctext">getaddr</span></a></li>
+<li class="toclevel-2 tocsection-33"><a href="#mempool"><span class="tocnumber">3.13</span> <span class="toctext">mempool</span></a></li>
+<li class="toclevel-2 tocsection-34"><a href="#checkorder"><span class="tocnumber">3.14</span> <span class="toctext">checkorder</span></a></li>
+<li class="toclevel-2 tocsection-35"><a href="#submitorder"><span class="tocnumber">3.15</span> <span class="toctext">submitorder</span></a></li>
+<li class="toclevel-2 tocsection-36"><a href="#reply"><span class="tocnumber">3.16</span> <span class="toctext">reply</span></a></li>
+<li class="toclevel-2 tocsection-37"><a href="#ping"><span class="tocnumber">3.17</span> <span class="toctext">ping</span></a></li>
+<li class="toclevel-2 tocsection-38"><a href="#pong"><span class="tocnumber">3.18</span> <span class="toctext">pong</span></a></li>
+<li class="toclevel-2 tocsection-39"><a href="#reject"><span class="tocnumber">3.19</span> <span class="toctext">reject</span></a></li>
+<li class="toclevel-2 tocsection-40"><a href="#filterload,_filteradd,_filterclear,_merkleblock"><span class="tocnumber">3.20</span> <span class="toctext">filterload, filteradd, filterclear, merkleblock</span></a></li>
+<li class="toclevel-2 tocsection-41"><a href="#alert"><span class="tocnumber">3.21</span> <span class="toctext">alert</span></a></li>
+<li class="toclevel-2 tocsection-42"><a href="#sendheaders"><span class="tocnumber">3.22</span> <span class="toctext">sendheaders</span></a></li>
+<li class="toclevel-2 tocsection-43"><a href="#feefilter"><span class="tocnumber">3.23</span> <span class="toctext">feefilter</span></a></li>
+<li class="toclevel-2 tocsection-44"><a href="#sendcmpct"><span class="tocnumber">3.24</span> <span class="toctext">sendcmpct</span></a></li>
+<li class="toclevel-2 tocsection-45"><a href="#cmpctblock"><span class="tocnumber">3.25</span> <span class="toctext">cmpctblock</span></a></li>
+<li class="toclevel-2 tocsection-46"><a href="#getblocktxn"><span class="tocnumber">3.26</span> <span class="toctext">getblocktxn</span></a></li>
+<li class="toclevel-2 tocsection-47"><a href="#blocktxn"><span class="tocnumber">3.27</span> <span class="toctext">blocktxn</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-48"><a href="#Scripting"><span class="tocnumber">4</span> <span class="toctext">Scripting</span></a></li>
+<li class="toclevel-1 tocsection-49"><a href="#See_Also"><span class="tocnumber">5</span> <span class="toctext">See Also</span></a></li>
+<li class="toclevel-1 tocsection-50"><a href="#References"><span class="tocnumber">6</span> <span class="toctext">References</span></a></li>
+</ul>
+</div>
+
+<h2><span class="mw-headline" id="Common_standards">Common standards</span></h2>
+<h3><span class="mw-headline" id="Hashes">Hashes</span></h3>
+<p>Usually, when a hash is computed within bitcoin, it is computed twice. Most of the time <a rel="nofollow" class="external text" href="http://en.wikipedia.org/wiki/SHA-2">SHA-256</a> hashes are used, however <a rel="nofollow" class="external text" href="http://en.wikipedia.org/wiki/RIPEMD">RIPEMD-160</a> is also used when a shorter hash is desirable (for example when creating a bitcoin address).
+</p><p>Example of double-SHA-256 encoding of string "hello":
+</p>
+<pre>hello
+2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824 (first round of sha-256)
+9595c9df90075148eb06860365df33584b75bff782a510c6cd4883a419833d50 (second round of sha-256)
+</pre>
+<p>For bitcoin addresses (RIPEMD-160) this would give:
+</p>
+<pre>hello
+2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824 (first round is sha-256)
+b6a9c8c230722b7c748331a8b450f05566dc7d0f (with ripemd-160)
+</pre>
+<h3><span class="mw-headline" id="Merkle_Trees">Merkle Trees</span></h3>
+<p>Merkle trees are binary trees of hashes. Merkle trees in bitcoin use a <b>double</b> SHA-256, the SHA-256 hash of the SHA-256 hash of something.
+</p><p>If, when forming a row in the tree (other than the root of the tree), it would have an odd number of elements, the final double-hash is duplicated to ensure that the row has an even number of hashes.
+</p><p>First form the bottom row of the tree with the ordered double-SHA-256 hashes of the byte streams of the transactions in the block.
+</p><p>Then the row above it consists of half that number of hashes.  Each entry is the double-SHA-256 of the 64-byte concatenation of the corresponding two hashes below it in the tree.
+</p><p>This procedure repeats recursively until we reach a row consisting of just a single double-hash.  This is the <b>Merkle root</b> of the tree.
+</p><p>For example, imagine a block with three transactions <i>a</i>, <i>b</i> and <i>c</i>.   The Merkle tree is: 
+</p>
+<pre>d1 = dhash(a)
+d2 = dhash(b)
+d3 = dhash(c)
+d4 = dhash(c)            # a, b, c are 3. that's an odd number, so we take the c twice
+
+d5 = dhash(d1 concat d2)
+d6 = dhash(d3 concat d4)
+
+d7 = dhash(d5 concat d6)
+</pre>
+<p>where
+</p>
+<pre>dhash(a) = sha256(sha256(a))
+</pre>
+<p><i>d7</i> is the Merkle root of the 3 transactions in this block.
+</p><p>Note: Hashes in Merkle Tree displayed in the <a href="/wiki/Block_Explorer" class="mw-redirect" title="Block Explorer">Block Explorer</a> are of little-endian notation. For some implementations and <a rel="nofollow" class="external text" href="http://www.fileformat.info/tool/hash.htm">calculations</a>, the bytes need to be reversed before they are hashed, and again after the hashing operation.
+</p>
+<h3><span class="mw-headline" id="Signatures">Signatures</span></h3>
+<p>Bitcoin uses <a rel="nofollow" class="external text" href="http://en.wikipedia.org/wiki/Elliptic_curve_cryptography">Elliptic Curve</a> <a rel="nofollow" class="external text" href="http://en.wikipedia.org/wiki/Digital_Signature_Algorithm">Digital Signature Algorithm</a> (<a rel="nofollow" class="external text" href="http://en.wikipedia.org/wiki/Elliptic_Curve_DSA">ECDSA</a>) to sign transactions. 
+</p><p>For <a href="/wiki/ECDSA" class="mw-redirect" title="ECDSA">ECDSA</a> the secp256k1 curve from <a rel="nofollow" class="external free" href="http://www.secg.org/sec2-v2.pdf">http://www.secg.org/sec2-v2.pdf</a> is used.
+</p><p>Public keys (in scripts) are given as 04 &lt;x&gt; &lt;y&gt; where <i>x</i> and <i>y</i> are 32 byte big-endian integers representing the coordinates of a point on the curve or in compressed form given as &lt;sign&gt; &lt;x&gt; where &lt;sign&gt; is 0x02 if <i>y</i> is even and 0x03 if <i>y</i> is odd.
+</p><p>Signatures use <a rel="nofollow" class="external text" href="http://en.wikipedia.org/wiki/Distinguished_Encoding_Rules">DER encoding</a> to pack the <i>r</i> and <i>s</i> components into a single byte stream (this is also what OpenSSL produces by default).
+</p>
+<h3><span class="mw-headline" id="Transaction_Verification">Transaction Verification</span></h3>
+<p>Transactions are cryptographically signed records that reassign ownership of Bitcoins to new addresses.  Transactions have <i>inputs</i> - records which reference the funds from other previous transactions - and <i>outputs</i> - records which determine the new owner of the transferred Bitcoins, and which will be referenced as inputs in future transactions as those funds are respent.
+</p><p>Each <i>input</i> must have a cryptographic digital signature that unlocks the funds from the prior transaction.  Only the person possessing the appropriate <a href="/wiki/Private_key" title="Private key">private key</a> is able to create a satisfactory signature; this in effect ensures that funds can only be spent by their owners.
+</p><p>Each <i>output</i> determines which Bitcoin address (or other criteria, see <a href="/wiki/Script" title="Script">Script</a>) is the recipient of the funds.
+</p><p>In a transaction, the sum of all inputs must be equal to or greater than the sum of all outputs.  If the inputs exceed the outputs, the difference is considered a <a href="/wiki/Transaction_fee" class="mw-redirect" title="Transaction fee">transaction fee</a>, and is redeemable by whoever first includes the transaction into the block chain.
+</p><p>A special kind of transaction, called a <a href="/wiki/Coinbase_transaction" class="mw-redirect" title="Coinbase transaction">coinbase transaction</a>, has no inputs.  It is created by <a href="/w/index.php?title=Miners&amp;action=edit&amp;redlink=1" class="new" title="Miners (page does not exist)">miners</a>, and there is one coinbase transaction per block.  Because each block comes with a reward of newly created Bitcoins (e.g. 50 BTC for the first 210,000 blocks), the first transaction of a block is, with few exceptions, the transaction that grants those coins to their recipient (the miner).  In addition to the newly created Bitcoins, the coinbase transaction is also used for assigning the recipient of any transaction fees that were paid within the other transactions being included in the same block.  The coinbase transaction can assign the entire reward to a single Bitcoin address, or split it in portions among multiple addresses, just like any other transaction.  Coinbase transactions always contain outputs totalling the sum of the block reward plus all transaction fees collected from the other transactions in the same block.
+</p><p>The <a href="/wiki/Coinbase_transaction" class="mw-redirect" title="Coinbase transaction">coinbase transaction</a> in block zero cannot be spent. This is due to a quirk of the reference client implementation that would open the potential for a block chain fork if some nodes accepted the spend and others did not<sup id="cite&#95;ref-1" class="reference"><a href="#cite_note-1"><span class="cite-bracket">&#91;</span>1<span class="cite-bracket">&#93;</span></a></sup>.
+</p><p>Most Bitcoin outputs encumber the newly transferred coins with a single ECDSA private key.  The actual record saved with inputs and outputs isn't necessarily a key, but a <i>script</i>.  Bitcoin uses an interpreted scripting system to determine whether an output's criteria have been satisfied, with which more complex operations are possible, such as outputs that require two ECDSA signatures, or two-of-three-signature schemes.  An output that references a single Bitcoin address is a <i>typical</i> output; an output actually contains this information in the form of a script that requires a single ECDSA signature (see <a href="/wiki/OP_CHECKSIG" title="OP CHECKSIG">OP_CHECKSIG</a>).  The output script specifies what must be provided to unlock the funds later, and when the time comes in the future to spend the transaction in another input, that input must provide all of the thing(s) that satisfy the requirements defined by the original output script.
+</p>
+<h3><span class="mw-headline" id="Addresses">Addresses</span></h3>
+<p>A bitcoin address is in fact the hash of a ECDSA public key, computed this way:
+</p>
+<pre>Version = 1 byte of 0 (zero); on the test network, this is 1 byte of 111
+Key hash = Version concatenated with RIPEMD-160(SHA-256(public key))
+Checksum = 1st 4 bytes of SHA-256(SHA-256(Key hash))
+Bitcoin Address = Base58Encode(Key hash concatenated with Checksum)
+</pre>
+<p>The Base58 encoding used is home made, and has some differences. Especially, leading zeroes are kept as single zeroes when conversion happens.
+</p>
+<h2><span class="mw-headline" id="Common_structures">Common structures</span></h2>
+<p>Almost all integers are encoded in little endian. Only IP or port number are encoded big endian. All field sizes are numbers of bytes.
+</p>
+<h3><span class="mw-headline" id="Message_structure">Message structure</span></h3>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>magic</td>
+<td>uint32_t</td>
+<td>Magic value indicating message origin network, and used to seek to next message when stream state is unknown
+</td></tr>
+<tr>
+<td>12</td>
+<td>command</td>
+<td>char[12]</td>
+<td>ASCII string identifying the packet content, NULL padded (non-NULL padding results in packet rejected)
+</td></tr>
+<tr>
+<td>4</td>
+<td>length</td>
+<td>uint32_t</td>
+<td>Length of payload in number of bytes
+</td></tr>
+<tr>
+<td>4</td>
+<td>checksum</td>
+<td>uint32_t</td>
+<td>First 4 bytes of sha256(sha256(payload))
+</td></tr>
+<tr>
+<td>?</td>
+<td>payload</td>
+<td>uchar[]</td>
+<td>The actual data
+</td></tr></tbody></table>
+<p><br />
+Known magic values:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Network</th>
+<th>Magic value</th>
+<th>Sent over wire as
+</th></tr>
+<tr>
+<td>main</td>
+<td>0xD9B4BEF9</td>
+<td>F9 BE B4 D9
+</td></tr>
+<tr>
+<td>testnet/regtest</td>
+<td>0xDAB5BFFA</td>
+<td>FA BF B5 DA
+</td></tr>
+<tr>
+<td>testnet3</td>
+<td>0x0709110B</td>
+<td>0B 11 09 07
+</td></tr>
+<tr>
+<td>signet(default)</td>
+<td>0x40CF030A</td>
+<td>0A 03 CF 40
+</td></tr>
+<tr>
+<td>namecoin</td>
+<td>0xFEB4BEF9</td>
+<td>F9 BE B4 FE
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="Variable_length_integer">Variable length integer</span></h3>
+<p>Integer can be encoded depending on the represented value to save space.
+Variable length integers always precede an array/vector of a type of data that may vary in length.
+Longer numbers are encoded in little endian.
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Value</th>
+<th>Storage length</th>
+<th>Format
+</th></tr>
+<tr>
+<td>&lt; 0xFD</td>
+<td>1</td>
+<td>uint8_t
+</td></tr>
+<tr>
+<td>&lt;= 0xFFFF</td>
+<td>3</td>
+<td>0xFD followed by the length as uint16_t
+</td></tr>
+<tr>
+<td>&lt;= 0xFFFF FFFF</td>
+<td>5</td>
+<td>0xFE followed by the length as uint32_t
+</td></tr>
+<tr>
+<td>-</td>
+<td>9</td>
+<td>0xFF followed by the length as uint64_t
+</td></tr></tbody></table>
+<p>If you're reading the Satoshi client code (BitcoinQT) it refers to this encoding as a "CompactSize". Modern Bitcoin Core also has the VARINT macro which implements an even more compact integer for the purpose of local storage (which is incompatible with "CompactSize" described here). VARINT is not a part of the protocol.
+</p>
+<h3><span class="mw-headline" id="Variable_length_string">Variable length string</span></h3>
+<p>Variable length string can be stored using a variable length integer followed by the string itself.
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>1+</td>
+<td>length</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Length of the string
+</td></tr>
+<tr>
+<td>?</td>
+<td>string</td>
+<td>char[]</td>
+<td>The string itself (can be empty)
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="Network_address">Network address</span></h3>
+<p>When a network address is needed somewhere, this structure is used. Network addresses are not prefixed with a timestamp in the version message.
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>time</td>
+<td>uint32</td>
+<td>the Time (version &gt;= 31402). <b>Not present in version message.</b>
+</td></tr>
+<tr>
+<td>8</td>
+<td>services</td>
+<td>uint64_t</td>
+<td>same service(s) listed in <a href="#version">version</a>
+</td></tr>
+<tr>
+<td>16</td>
+<td>IPv6/4</td>
+<td>char[16]</td>
+<td>IPv6 address. Network byte order. The original client only supported IPv4 and only read the last 4 bytes to get the IPv4 address. However, the IPv4 address is written into the message as a 16 byte <a rel="nofollow" class="external text" href="http://en.wikipedia.org/wiki/IPv6#IPv4-mapped_IPv6_addresses">IPv4-mapped IPv6 address</a>
+<p>(12 bytes <i>00 00 00 00  00 00 00 00  00 00 FF FF</i>, followed by the 4 bytes of the IPv4 address).
+</p>
+</td></tr>
+<tr>
+<td>2</td>
+<td>port</td>
+<td>uint16_t</td>
+<td>port number, network byte order
+</td></tr></tbody></table>
+<p>Hexdump example of Network address structure
+</p>
+<pre>0000   01 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  ................
+0010   00 00 FF FF 0A 00 00 01  20 8D                    ........ .
+
+Network address:
+ 01 00 00 00 00 00 00 00                         - 1 (NODE_NETWORK: see services listed under version command)
+ 00 00 00 00 00 00 00 00 00 00 FF FF 0A 00 00 01 - IPv6:&#160;::ffff:a00:1 or IPv4: 10.0.0.1
+ 20 8D                                           - Port 8333
+</pre>
+<h3><span class="mw-headline" id="Inventory_Vectors">Inventory Vectors</span></h3>
+<p>Inventory vectors are used for notifying other nodes about objects they have or data which is being requested.
+</p><p>Inventory vectors consist of the following data format:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>type</td>
+<td>uint32_t</td>
+<td>Identifies the object type linked to this inventory
+</td></tr>
+<tr>
+<td>32</td>
+<td>hash</td>
+<td>char[32]</td>
+<td>Hash of the object
+</td></tr></tbody></table>
+<p><br />
+The object type is currently defined as one of the following possibilities:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Value</th>
+<th>Name</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0</td>
+<td>ERROR</td>
+<td>Any data of with this number may be ignored
+</td></tr>
+<tr>
+<td>1</td>
+<td>MSG_TX</td>
+<td>Hash is related to a transaction
+</td></tr>
+<tr>
+<td>2</td>
+<td>MSG_BLOCK</td>
+<td>Hash is related to a data block
+</td></tr>
+<tr>
+<td>3</td>
+<td>MSG_FILTERED_BLOCK</td>
+<td>Hash of a block header; identical to MSG_BLOCK.  Only to be used in getdata message. Indicates the reply should be a merkleblock message rather than a block message; this only works if a bloom filter has been set. See BIP 37 for more info.
+</td></tr>
+<tr>
+<td>4</td>
+<td>MSG_CMPCT_BLOCK</td>
+<td>Hash of a block header; identical to MSG_BLOCK.  Only to be used in getdata message. Indicates the reply should be a cmpctblock message. See BIP 152 for more info.
+</td></tr>
+<tr>
+<td>0x40000001</td>
+<td>MSG_WITNESS_TX</td>
+<td>Hash of a transaction with witness data. See BIP 144 for more info.
+</td></tr>
+<tr>
+<td>0x40000002</td>
+<td>MSG_WITNESS_BLOCK</td>
+<td>Hash of a block with witness data. See BIP 144 for more info.
+</td></tr>
+<tr>
+<td>0x40000003</td>
+<td>MSG_FILTERED_WITNESS_BLOCK</td>
+<td>Hash of a block with witness data. Only to be used in getdata message. Indicates the reply should be a merkleblock message rather than a block message; this only works if a bloom filter has been set. See BIP 144 for more info.
+</td></tr></tbody></table>
+<p>Other Data Type values are considered reserved for future implementations.
+</p>
+<h3><span class="mw-headline" id="Block_Headers">Block Headers</span></h3>
+<p>Block headers are sent in a headers packet in response to a getheaders message.
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>version</td>
+<td>int32_t</td>
+<td>Block version information (note, this is signed)
+</td></tr>
+<tr>
+<td>32</td>
+<td>prev_block</td>
+<td>char[32]</td>
+<td>The hash value of the previous block this particular block references
+</td></tr>
+<tr>
+<td>32</td>
+<td>merkle_root</td>
+<td>char[32]</td>
+<td>The reference to a Merkle tree collection which is a hash of all transactions related to this block
+</td></tr>
+<tr>
+<td>4</td>
+<td>timestamp</td>
+<td>uint32_t</td>
+<td>A timestamp recording when this block was created (Will overflow in 2106<sup id="cite&#95;ref-2" class="reference"><a href="#cite_note-2"><span class="cite-bracket">&#91;</span>2<span class="cite-bracket">&#93;</span></a></sup>)
+</td></tr>
+<tr>
+<td>4</td>
+<td>bits</td>
+<td>uint32_t</td>
+<td>The calculated difficulty target being used for this block
+</td></tr>
+<tr>
+<td>4</td>
+<td>nonce</td>
+<td>uint32_t</td>
+<td>The nonce used to generate this block… to allow variations of the header and compute different hashes
+</td></tr>
+<tr>
+<td>1+</td>
+<td>txn_count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Number of transaction entries, this value is always 0
+</td></tr></tbody></table>
+<p>cf. <a href="/wiki/Block_hashing_algorithm" title="Block hashing algorithm">Block hashing algorithm</a>
+</p>
+<h3><span class="mw-headline" id="Differential_encoding">Differential encoding</span></h3>
+<p>Several uses of CompactSize below are "differentially encoded". For these, instead of using raw indexes, the number encoded is the difference between the current index and the previous index, minus one. For example, a first index of 0 implies a real index of 0, a second index of 0 thereafter refers to a real index of 1, etc.
+</p>
+<h3><span class="mw-headline" id="PrefilledTransaction">PrefilledTransaction</span></h3>
+<p>A PrefilledTransaction structure is used in HeaderAndShortIDs to provide a list of a few transactions explicitly.
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Name</th>
+<th>Type</th>
+<th>Size</th>
+<th>Encoding</th>
+<th>Purpose
+</th></tr>
+<tr>
+<td>index</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">CompactSize</a></td>
+<td>1, 3 bytes</td>
+<td>Compact Size, differentially encoded since the last PrefilledTransaction in a list</td>
+<td>The index into the block at which this transaction is
+</td></tr>
+<tr>
+<td>tx</td>
+<td>Transaction</td>
+<td>variable</td>
+<td>As encoded in <a class="mw-selflink-fragment" href="#tx">tx messages</a></td>
+<td>The transaction which is in the block at index index.
+</td></tr></tbody></table>
+<p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki">BIP 152</a> for more information.
+</p>
+<h3><span class="mw-headline" id="HeaderAndShortIDs">HeaderAndShortIDs</span></h3>
+<p>A HeaderAndShortIDs structure is used to relay a block header, the short transactions IDs used for matching already-available transactions, and a select few transactions which we expect a peer may be missing.
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Name</th>
+<th>Type</th>
+<th>Size</th>
+<th>Encoding</th>
+<th>Purpose
+</th></tr>
+<tr>
+<td>header</td>
+<td>Block header</td>
+<td>80 bytes</td>
+<td>First 80 bytes of the block as defined by the encoding used by "block" messages</td>
+<td>The header of the block being provided
+</td></tr>
+<tr>
+<td>nonce</td>
+<td>uint64_t</td>
+<td>8 bytes</td>
+<td>Little Endian</td>
+<td>A nonce for use in short transaction ID calculations
+</td></tr>
+<tr>
+<td>shortids_length</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">CompactSize</a></td>
+<td>1 or 3 bytes</td>
+<td>As used to encode array lengths elsewhere</td>
+<td>The number of short transaction IDs in shortids (ie block tx count - prefilledtxn_length)
+</td></tr>
+<tr>
+<td>shortids</td>
+<td>List of 6-byte integers</td>
+<td>6*shortids_length bytes</td>
+<td>Little Endian</td>
+<td>The <a class="mw-selflink-fragment" href="#Short_transaction_ID">short transaction IDs</a> calculated from the transactions which were not provided explicitly in prefilledtxn
+</td></tr>
+<tr>
+<td>prefilledtxn_length</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">CompactSize</a></td>
+<td>1 or 3 bytes</td>
+<td>As used to encode array lengths elsewhere</td>
+<td>The number of prefilled transactions in prefilledtxn (ie block tx count - shortids_length)
+</td></tr>
+<tr>
+<td>prefilledtxn</td>
+<td>List of PrefilledTransactions</td>
+<td>variable size*prefilledtxn_length</td>
+<td>As defined by <a class="mw-selflink-fragment" href="#PrefilledTransaction">PrefilledTransaction</a> definition, above</td>
+<td>Used to provide the coinbase transaction and a select few which we expect a peer may be missing
+</td></tr></tbody></table>
+<p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki">BIP 152</a> for more information.
+</p>
+<h3><span class="mw-headline" id="BlockTransactionsRequest">BlockTransactionsRequest</span></h3>
+<p>A BlockTransactionsRequest structure is used to list transaction indexes in a block being requested.
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Name</th>
+<th>Type</th>
+<th>Size</th>
+<th>Encoding</th>
+<th>Purpose
+</th></tr>
+<tr>
+<td>blockhash</td>
+<td>Binary blob</td>
+<td>32 bytes</td>
+<td>The output from a double-SHA256 of the block header, as used elsewhere</td>
+<td>The blockhash of the block which the transactions being requested are in
+</td></tr>
+<tr>
+<td>indexes_length</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">CompactSize</a></td>
+<td>1 or 3 bytes</td>
+<td>As used to encode array lengths elsewhere</td>
+<td>The number of transactions being requested
+</td></tr>
+<tr>
+<td>indexes</td>
+<td>List of <a class="mw-selflink-fragment" href="#Variable_length_integer">CompactSizes</a></td>
+<td>1 or 3 bytes*indexes_length</td>
+<td><a class="mw-selflink-fragment" href="#Differential_encoding">Differentially encoded</a></td>
+<td>The indexes of the transactions being requested in the block
+</td></tr></tbody></table>
+<p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki">BIP 152</a> for more information.
+</p>
+<h3><span class="mw-headline" id="BlockTransactions">BlockTransactions</span></h3>
+<p>A BlockTransactions structure is used to provide some of the transactions in a block, as requested.
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Name</th>
+<th>Type</th>
+<th>Size</th>
+<th>Encoding</th>
+<th>Purpose
+</th></tr>
+<tr>
+<td>blockhash</td>
+<td>Binary blob</td>
+<td>32 bytes</td>
+<td>The output from a double-SHA256 of the block header, as used elsewhere</td>
+<td>The blockhash of the block which the transactions being provided are in
+</td></tr>
+<tr>
+<td>transactions_length</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">CompactSize</a></td>
+<td>1 or 3 bytes</td>
+<td>As used to encode array lengths elsewhere</td>
+<td>The number of transactions provided
+</td></tr>
+<tr>
+<td>transactions</td>
+<td>List of Transactions</td>
+<td>variable</td>
+<td>As encoded in <a class="mw-selflink-fragment" href="#tx">tx messages</a></td>
+<td>The transactions provided
+</td></tr></tbody></table>
+<p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki">BIP 152</a> for more information.
+</p>
+<h3><span class="mw-headline" id="Short_transaction_ID">Short transaction ID</span></h3>
+<p>Short transaction IDs are used to represent a transaction without sending a full 256-bit hash. They are calculated by:
+</p>
+<ol><li>single-SHA256 hashing the block header with the nonce appended (in little-endian)</li>
+<li>Running SipHash-2-4 with the input being the transaction ID and the keys (k0/k1) set to the first two little-endian 64-bit integers from the above hash, respectively.</li>
+<li>Dropping the 2 most significant bytes from the SipHash output to make it 6 bytes.</li></ol>
+<p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki">BIP 152</a> for more information.
+</p>
+<h2><span class="mw-headline" id="Message_types">Message types</span></h2>
+<h3><span class="mw-headline" id="version">version</span></h3>
+<p>When a node creates an outgoing connection, it will immediately <a href="/wiki/Version_Handshake" title="Version Handshake">advertise</a> its version. The remote node will respond with its version. No further communication is possible until both peers have exchanged their version.
+</p><p>Payload:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>version</td>
+<td>int32_t</td>
+<td>Identifies protocol version being used by the node
+</td></tr>
+<tr>
+<td>8</td>
+<td>services</td>
+<td>uint64_t</td>
+<td>bitfield of features to be enabled for this connection
+</td></tr>
+<tr>
+<td>8</td>
+<td>timestamp</td>
+<td>int64_t</td>
+<td>standard UNIX timestamp in seconds
+</td></tr>
+<tr>
+<td>26</td>
+<td>addr_recv</td>
+<td><a href="#Network_address">net_addr</a></td>
+<td>The network address of the node receiving this message
+</td></tr>
+<tr>
+<td colspan="4">Fields below require version ≥ 106
+</td></tr>
+<tr>
+<td>26</td>
+<td>addr_from</td>
+<td><a href="#Network_address">net_addr</a></td>
+<td>Field can be ignored. This used to be the network address of the node emitting this message, but most P2P implementations send 26 dummy bytes. The "services" field of the address would also be redundant with the second field of the version message.
+</td></tr>
+<tr>
+<td>8</td>
+<td>nonce</td>
+<td>uint64_t</td>
+<td>Node random nonce, randomly generated every time a version packet is sent. This nonce is used to detect connections to self.
+</td></tr>
+<tr>
+<td>?</td>
+<td>user_agent</td>
+<td><a href="#Variable_length_string">var_str</a></td>
+<td><a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0014.mediawiki">User Agent</a> (0x00 if string is 0 bytes long)
+</td></tr>
+<tr>
+<td>4</td>
+<td>start_height</td>
+<td>int32_t</td>
+<td>The last block received by the emitting node
+</td></tr>
+<tr>
+<td colspan="4">Fields below require version ≥ 70001
+</td></tr>
+<tr>
+<td>1</td>
+<td>relay</td>
+<td>bool</td>
+<td>Whether the remote peer should announce relayed transactions or not, see <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki">BIP 0037</a>
+</td></tr></tbody></table>
+<p>A "verack" packet shall be sent if the version packet was accepted.
+</p><p>The following services are currently assigned:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Value</th>
+<th>Name</th>
+<th>Description
+</th></tr>
+<tr>
+<td>1</td>
+<td>NODE_NETWORK</td>
+<td>This node can be asked for full blocks instead of just headers.
+</td></tr>
+<tr>
+<td>2</td>
+<td>NODE_GETUTXO</td>
+<td>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0064.mediawiki">BIP 0064</a>
+</td></tr>
+<tr>
+<td>4</td>
+<td>NODE_BLOOM</td>
+<td>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0111.mediawiki">BIP 0111</a>
+</td></tr>
+<tr>
+<td>8</td>
+<td>NODE_WITNESS</td>
+<td>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0144.mediawiki">BIP 0144</a>
+</td></tr>
+<tr>
+<td>16</td>
+<td>NODE_XTHIN</td>
+<td>Never formally proposed (as a BIP), and discontinued. Was historically sporadically seen on the network.
+</td></tr>
+<tr>
+<td>64</td>
+<td>NODE_COMPACT_FILTERS</td>
+<td>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0157.mediawiki">BIP 0157</a>
+</td></tr>
+<tr>
+<td>1024</td>
+<td>NODE_NETWORK_LIMITED</td>
+<td>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0159.mediawiki">BIP 0159</a>
+</td></tr></tbody></table>
+<p>Hexdump example of version message (OBSOLETE EXAMPLE: This example lacks a checksum and user-agent):
+</p>
+<pre>0000   F9 BE B4 D9 76 65 72 73  69 6F 6E 00 00 00 00 00   ....version.....
+0010   55 00 00 00 9C 7C 00 00  01 00 00 00 00 00 00 00   U....|..........
+0020   E6 15 10 4D 00 00 00 00  01 00 00 00 00 00 00 00   ...M............
+0030   00 00 00 00 00 00 00 00  00 00 FF FF 0A 00 00 01   ................
+0040   20 8D 01 00 00 00 00 00  00 00 00 00 00 00 00 00   ................
+0050   00 00 00 00 FF FF 0A 00  00 02 20 8D DD 9D 20 2C   .......... ... ,
+0060   3A B4 57 13 00 55 81 01  00                       &#160;:.W..U...
+
+Message header:
+ F9 BE B4 D9                                                                   - Main network magic bytes
+ 76 65 72 73 69 6F 6E 00 00 00 00 00                                           - "version" command
+ 55 00 00 00                                                                   - Payload is 85 bytes long
+                                                                               - No checksum in version message until 20 February 2012. See https://bitcointalk.org/index.php?topic=55852.0
+Version message:
+ 9C 7C 00 00                                                                   - 31900 (version 0.3.19)
+ 01 00 00 00 00 00 00 00                                                       - 1 (NODE_NETWORK services)
+ E6 15 10 4D 00 00 00 00                                                       - Mon Dec 20 21:50:14 EST 2010
+ 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 0A 00 00 01 20 8D - Recipient address info - see Network Address
+ 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 0A 00 00 02 20 8D - Sender address info - see Network Address
+ DD 9D 20 2C 3A B4 57 13                                                       - Node random unique ID
+ 00                                                                            - "" sub-version string (string is 0 bytes long)
+ 55 81 01 00                                                                   - Last block sending node has is block #98645
+</pre>
+<p>And here's a modern (60002) protocol version client advertising itself to a local peer...
+</p><p>Newer protocol includes the checksum now, this is from a mainline (satoshi) client during 
+an outgoing connection to another local client, notice that it does not fill out the 
+address information at all when the source or destination is "unroutable".
+</p>
+<pre>
+
+0000   f9 be b4 d9 76 65 72 73 69 6f 6e 00 00 00 00 00  ....version.....
+0010   64 00 00 00 35 8d 49 32 62 ea 00 00 01 00 00 00  d...5.I2b.......
+0020   00 00 00 00 11 b2 d0 50 00 00 00 00 01 00 00 00  .......P........
+0030   00 00 00 00 00 00 00 00 00 00 00 00 00 00 ff ff  ................
+0040   00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+0050   00 00 00 00 00 00 00 00 ff ff 00 00 00 00 00 00  ................
+0060   3b 2e b3 5d 8c e6 17 65 0f 2f 53 61 74 6f 73 68 &#160;;..]...e./Satosh
+0070   69 3a 30 2e 37 2e 32 2f c0 3e 03 00              i:0.7.2/.&gt;..
+
+Message Header:
+ F9 BE B4 D9                                                                   - Main network magic bytes
+ 76 65 72 73 69 6F 6E 00 00 00 00 00                                           - "version" command
+ 64 00 00 00                                                                   - Payload is 100 bytes long
+ 35 8d 49 32                                                                   - payload checksum (internal byte order)
+
+Version message:
+ 62 EA 00 00                                                                   - 60002 (protocol version 60002)
+ 01 00 00 00 00 00 00 00                                                       - 1 (NODE_NETWORK services)
+ 11 B2 D0 50 00 00 00 00                                                       - Tue Dec 18 10:12:33 PST 2012
+ 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 - Recipient address info - see Network Address
+ 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 FF FF 00 00 00 00 00 00 - Sender address info - see Network Address
+ 3B 2E B3 5D 8C E6 17 65                                                       - Node ID
+ 0F 2F 53 61 74 6F 73 68 69 3A 30 2E 37 2E 32 2F                               - "/Satoshi:0.7.2/" sub-version string (string is 15 bytes long)
+ C0 3E 03 00                                                                   - Last block sending node has is block #212672
+</pre>
+<h3><span class="mw-headline" id="verack">verack</span></h3>
+<p>The <i>verack</i> message is sent in reply to <i><a href="#version">version</a></i>.  This message consists of only a <a href="#Message_structure">message header</a> with the command string "verack".
+</p><p>Hexdump of the verack message:
+</p>
+<pre>0000   F9 BE B4 D9 76 65 72 61  63 6B 00 00 00 00 00 00   ....verack......
+0010   00 00 00 00 5D F6 E0 E2                            ........
+
+Message header:
+ F9 BE B4 D9                          - Main network magic bytes
+ 76 65 72 61  63 6B 00 00 00 00 00 00 - "verack" command
+ 00 00 00 00                          - Payload is 0 bytes long
+ 5D F6 E0 E2                          - Checksum (internal byte order)
+</pre>
+<h3><span class="mw-headline" id="addr">addr</span></h3>
+<p>Provide information on known nodes of the network. Non-advertised nodes should be forgotten after typically 3 hours
+</p><p>Payload:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>1+</td>
+<td>count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Number of address entries (max: 1000)
+</td></tr>
+<tr>
+<td>30x?</td>
+<td>addr_list</td>
+<td>(uint32_t + <a href="#Network_address">net_addr</a>)[]</td>
+<td>Address of other nodes on the network. version &lt; 209 will only read the first one. The uint32_t is a timestamp (see note below).
+</td></tr></tbody></table>
+<p><b>Note</b>: Starting version 31402, addresses are prefixed with a timestamp. If no timestamp is present, the addresses should not be relayed to other peers, unless it is indeed confirmed they are up.
+</p><p>Hexdump example of <i>addr</i> message:
+</p>
+<pre>0000   F9 BE B4 D9 61 64 64 72  00 00 00 00 00 00 00 00   ....addr........
+0010   1F 00 00 00 ED 52 39 9B  01 E2 15 10 4D 01 00 00   .....R9.....M...
+0020   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 FF   ................
+0030   FF 0A 00 00 01 20 8D                               ..... .
+
+Message Header:
+ F9 BE B4 D9                                     - Main network magic bytes
+ 61 64 64 72  00 00 00 00 00 00 00 00            - "addr"
+ 1F 00 00 00                                     - payload is 31 bytes long
+ ED 52 39 9B                                     - payload checksum (internal byte order)
+
+Payload:
+ 01                                              - 1 address in this message
+
+Address:
+ E2 15 10 4D                                     - Mon Dec 20 21:50:10 EST 2010 (only when version is &gt;= 31402)
+ 01 00 00 00 00 00 00 00                         - 1 (NODE_NETWORK service - see version message)
+ 00 00 00 00 00 00 00 00 00 00 FF FF 0A 00 00 01 - IPv4: 10.0.0.1, IPv6:&#160;::ffff:10.0.0.1 (IPv4-mapped IPv6 address)
+ 20 8D                                           - port 8333
+</pre>
+<h3><span class="mw-headline" id="inv">inv</span></h3>
+<p>Allows a node to advertise its knowledge of one or more objects. It can be received unsolicited, or in reply to <i>getblocks</i>.
+</p><p>Payload (maximum 50,000 entries, which is just over 1.8 megabytes):
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>1+</td>
+<td>count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Number of inventory entries
+</td></tr>
+<tr>
+<td>36x?</td>
+<td>inventory</td>
+<td><a href="/wiki/Protocol_specification#Inventory_Vectors" class="mw-redirect" title="Protocol specification">inv_vect</a>[]</td>
+<td>Inventory vectors
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="getdata">getdata</span></h3>
+<p>getdata is used in response to inv, to retrieve the content of a specific object, and is usually sent after receiving an <i>inv</i> packet, after filtering known elements. It can be used to retrieve transactions, but only if they are in the memory pool or relay set - arbitrary access to transactions in the chain is not allowed to avoid having clients start to depend on nodes having full transaction indexes (which modern nodes do not).
+</p><p>Payload (maximum 50,000 entries, which is just over 1.8 megabytes):
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>1+</td>
+<td>count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Number of inventory entries
+</td></tr>
+<tr>
+<td>36x?</td>
+<td>inventory</td>
+<td><a href="/wiki/Protocol_specification#Inventory_Vectors" class="mw-redirect" title="Protocol specification">inv_vect</a>[]</td>
+<td>Inventory vectors
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="notfound">notfound</span></h3>
+<p>notfound is a response to a getdata, sent if any requested data items could not be relayed, for example, because the requested transaction was not in the memory pool or relay set.
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>1+</td>
+<td>count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Number of inventory entries
+</td></tr>
+<tr>
+<td>36x?</td>
+<td>inventory</td>
+<td><a href="/wiki/Protocol_specification#Inventory_Vectors" class="mw-redirect" title="Protocol specification">inv_vect</a>[]</td>
+<td>Inventory vectors
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="getblocks">getblocks</span></h3>
+<p>Return an <i>inv</i> packet containing the list of blocks starting right after the last known hash in the block locator object, up to hash_stop or 500 blocks, whichever comes first. 
+</p><p>The locator hashes are processed by a node in the order as they appear in the message. If a block hash is found in the node's main chain, the list of its children is returned back via the <i>inv</i> message and the remaining locators are ignored, no matter if the requested limit was reached, or not.
+</p><p>To receive the next blocks hashes, one needs to issue getblocks again with a new block locator object. Keep in mind that some clients may provide blocks which are invalid if the block locator object contains a hash on the invalid branch.
+</p><p>Payload:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>version</td>
+<td>uint32_t</td>
+<td>the protocol version
+</td></tr>
+<tr>
+<td>1+</td>
+<td>hash count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>number of block locator hash entries
+</td></tr>
+<tr>
+<td>32+</td>
+<td>block locator hashes</td>
+<td>char[32]</td>
+<td>block locator object; newest back to genesis block (dense to start, but then sparse)
+</td></tr>
+<tr>
+<td>32</td>
+<td>hash_stop</td>
+<td>char[32]</td>
+<td>hash of the last desired block; set to zero to get as many blocks as possible (500)
+</td></tr></tbody></table>
+<p>To create the block locator hashes, keep pushing hashes until you go back to the genesis block. After pushing 10 hashes back, the step backwards doubles every loop:
+</p>
+<pre>// From libbitcoin which is under AGPL
+std::vector&lt;size_t&gt; block_locator_indexes(size_t top_height)
+{
+    std::vector&lt;size_t&gt; indexes;
+
+    // Modify the step in the iteration.
+    int64_t step = 1;
+
+    // Start at the top of the chain and work backwards.
+    for (auto index = (int64_t)top_height; index &gt; 0; index -= step)
+    {
+        // Push top 10 indexes first, then back off exponentially.
+        if (indexes.size() &gt;= 10)
+            step *= 2;
+
+        indexes.push_back((size_t)index);
+    }
+
+    //  Push the genesis block index.
+    indexes.push_back(0);
+    return indexes;
+}
+</pre>
+<p>Note that it is allowed to send in fewer known hashes down to a minimum of just one hash. However, the purpose of the block locator object is to detect a wrong branch in the caller's main chain. If the peer detects that you are off the main chain, it will send in block hashes which are earlier than your last known block. So if you just send in your last known hash and it is off the main chain, the peer starts over at block #1.
+</p>
+<h3><span class="mw-headline" id="getheaders">getheaders</span></h3>
+<p>Return a <i>headers</i> packet containing the headers of blocks starting right after the last known hash in the block locator object, up to hash_stop or 2000 blocks, whichever comes first. To receive the next block headers, one needs to issue getheaders again with a new block locator object. Keep in mind that some clients may provide headers of blocks which are invalid if the block locator object contains a hash on the invalid branch.
+</p><p>Payload:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>version</td>
+<td>uint32_t</td>
+<td>the protocol version
+</td></tr>
+<tr>
+<td>1+</td>
+<td>hash count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>number of block locator hash entries
+</td></tr>
+<tr>
+<td>32+</td>
+<td>block locator hashes</td>
+<td>char[32]</td>
+<td>block locator object; newest back to genesis block (dense to start, but then sparse)
+</td></tr>
+<tr>
+<td>32</td>
+<td>hash_stop</td>
+<td>char[32]</td>
+<td>hash of the last desired block header; set to zero to get as many blocks as possible (2000)
+</td></tr></tbody></table>
+<p>For the block locator object in this packet, the same rules apply as for the <a class="mw-selflink-fragment" href="#getblocks">getblocks</a> packet.
+</p>
+<h3><span class="mw-headline" id="tx">tx</span></h3>
+<p><i>tx</i> describes a bitcoin transaction, in reply to <i><a href="#getdata">getdata</a></i>. When a bloom filter is applied <i>tx</i> objects are sent automatically for matching transactions following the <code>merkleblock</code>.
+</p><p><br />
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>version</td>
+<td>uint32_t</td>
+<td>Transaction data format version
+</td></tr>
+<tr>
+<td>0 or 2</td>
+<td>flag</td>
+<td>optional uint8_t[2]</td>
+<td>If present, always 0001, and indicates the presence of witness data
+</td></tr>
+<tr>
+<td>1+</td>
+<td>tx_in count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Number of Transaction inputs (never zero)
+</td></tr>
+<tr>
+<td>41+</td>
+<td>tx_in</td>
+<td>tx_in[]</td>
+<td>A list of 1 or more transaction inputs or sources for coins
+</td></tr>
+<tr>
+<td>1+</td>
+<td>tx_out count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Number of Transaction outputs
+</td></tr>
+<tr>
+<td>9+</td>
+<td>tx_out</td>
+<td>tx_out[]</td>
+<td>A list of 1 or more transaction outputs or destinations for coins
+</td></tr>
+<tr>
+<td>0+</td>
+<td>tx_witnesses</td>
+<td>tx_witness[]</td>
+<td>A list of witnesses, one for each input; omitted if <i>flag</i> is omitted above
+</td></tr>
+<tr>
+<td>4</td>
+<td>lock_time</td>
+<td>uint32_t</td>
+<td>The block number or timestamp at which this transaction is unlocked:
+<table class="wikitable">
+<tbody><tr>
+<th>Value</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0</td>
+<td>Not locked
+</td></tr>
+<tr>
+<td>&lt; 500000000</td>
+<td>Block number at which this transaction is unlocked
+</td></tr>
+<tr>
+<td>&gt;= 500000000</td>
+<td>UNIX timestamp at which this transaction is unlocked
+</td></tr></tbody></table>
+<p>If all TxIn inputs have final (0xffffffff) sequence numbers then lock_time is irrelevant. Otherwise, the transaction may not be added to a block until after lock_time (see <a href="/wiki/NLockTime" title="NLockTime">NLockTime</a>).
+</p>
+</td></tr></tbody></table>
+<p>TxIn consists of the following fields:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>36</td>
+<td>previous_output</td>
+<td>outpoint</td>
+<td>The previous output transaction reference, as an OutPoint structure
+</td></tr>
+<tr>
+<td>1+</td>
+<td>script length</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>The length of the signature script
+</td></tr>
+<tr>
+<td>?</td>
+<td>signature script</td>
+<td>uchar[]</td>
+<td>Computational Script for confirming transaction authorization
+</td></tr>
+<tr>
+<td>4</td>
+<td><a rel="nofollow" class="external text" href="http://bitcoin.stackexchange.com/q/2025/323">sequence</a></td>
+<td>uint32_t</td>
+<td>Transaction version as defined by the sender. Intended for "replacement" of transactions when information is updated before inclusion into a block.
+</td></tr></tbody></table>
+<p>The OutPoint structure consists of the following fields:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>32</td>
+<td>hash</td>
+<td>char[32]</td>
+<td>The hash of the referenced transaction.
+</td></tr>
+<tr>
+<td>4</td>
+<td>index</td>
+<td>uint32_t</td>
+<td>The index of the specific output in the transaction. The first output is 0, etc.
+</td></tr></tbody></table>
+<p>The Script structure consists of a series of pieces of information and operations related to the value of the transaction.
+</p><p>(Structure to be expanded in the future… see script.h and script.cpp and <a href="/wiki/Script" title="Script">Script</a> for more information)
+</p><p>The TxOut structure consists of the following fields:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>8</td>
+<td>value</td>
+<td>int64_t</td>
+<td>Transaction Value
+</td></tr>
+<tr>
+<td>1+</td>
+<td>pk_script length</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Length of the pk_script
+</td></tr>
+<tr>
+<td>?</td>
+<td>pk_script</td>
+<td>uchar[]</td>
+<td>Usually contains the public key as a Bitcoin script setting up conditions to claim this output.
+</td></tr></tbody></table>
+<p>The TxWitness structure consists of a <a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a> count of witness data components, followed by (for each witness data component) a <a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a> length of the component and the raw component data itself.
+</p><p>Example <i>tx</i> message:
+</p>
+<pre>000000	F9 BE B4 D9 74 78 00 00  00 00 00 00 00 00 00 00   ....tx..........
+000010	02 01 00 00 E2 93 CD BE  01 00 00 00 01 6D BD DB   .............m..
+000020	08 5B 1D 8A F7 51 84 F0  BC 01 FA D5 8D 12 66 E9   .[...Q........f.
+000030	B6 3B 50 88 19 90 E4 B4  0D 6A EE 36 29 00 00 00   .;P......j.6)...
+000040	00 8B 48 30 45 02 21 00  F3 58 1E 19 72 AE 8A C7   ..H0E.!..X..r...
+000050	C7 36 7A 7A 25 3B C1 13  52 23 AD B9 A4 68 BB 3A   .6zz%;..R#...h.:
+000060	59 23 3F 45 BC 57 83 80  02 20 59 AF 01 CA 17 D0   Y#?E.W... Y.....
+000070	0E 41 83 7A 1D 58 E9 7A  A3 1B AE 58 4E DE C2 8D   .A.z.X.z...XN...
+000080	35 BD 96 92 36 90 91 3B  AE 9A 01 41 04 9C 02 BF   5...6..;...A....
+000090	C9 7E F2 36 CE 6D 8F E5  D9 40 13 C7 21 E9 15 98   .~.6.m...@..!...
+0000A0	2A CD 2B 12 B6 5D 9B 7D  59 E2 0A 84 20 05 F8 FC   *.+..].}Y... ...
+0000B0	4E 02 53 2E 87 3D 37 B9  6F 09 D6 D4 51 1A DA 8F   N.S..=7.o...Q...
+0000C0	14 04 2F 46 61 4A 4C 70  C0 F1 4B EF F5 FF FF FF   ../FaJLp..K.....
+0000D0	FF 02 40 4B 4C 00 00 00  00 00 19 76 A9 14 1A A0   ..@KL......v....
+0000E0	CD 1C BE A6 E7 45 8A 7A  BA D5 12 A9 D9 EA 1A FB   .....E.z........
+0000F0	22 5E 88 AC 80 FA E9 C7  00 00 00 00 19 76 A9 14   "^...........v..
+000100	0E AB 5B EA 43 6A 04 84  CF AB 12 48 5E FD A0 B7   ..[.Cj.....H^...
+000110	8B 4E CC 52 88 AC 00 00  00 00                     .N.R......
+
+
+Message header:
+ F9 BE B4 D9                                       - main network magic bytes
+ 74 78 00 00 00 00 00 00 00 00 00 00               - "tx" command
+ 02 01 00 00                                       - payload is 258 bytes long
+ E2 93 CD BE                                       - payload checksum (internal byte order)
+
+Transaction:
+ 01 00 00 00                                       - version
+
+Inputs:
+ 01                                                - number of transaction inputs
+
+Input 1:
+ 6D BD DB 08 5B 1D 8A F7  51 84 F0 BC 01 FA D5 8D  - previous output (outpoint)
+ 12 66 E9 B6 3B 50 88 19  90 E4 B4 0D 6A EE 36 29
+ 00 00 00 00
+
+ 8B                                                - script is 139 bytes long
+
+ 48 30 45 02 21 00 F3 58  1E 19 72 AE 8A C7 C7 36  - signature script (scriptSig)
+ 7A 7A 25 3B C1 13 52 23  AD B9 A4 68 BB 3A 59 23
+ 3F 45 BC 57 83 80 02 20  59 AF 01 CA 17 D0 0E 41
+ 83 7A 1D 58 E9 7A A3 1B  AE 58 4E DE C2 8D 35 BD
+ 96 92 36 90 91 3B AE 9A  01 41 04 9C 02 BF C9 7E
+ F2 36 CE 6D 8F E5 D9 40  13 C7 21 E9 15 98 2A CD
+ 2B 12 B6 5D 9B 7D 59 E2  0A 84 20 05 F8 FC 4E 02
+ 53 2E 87 3D 37 B9 6F 09  D6 D4 51 1A DA 8F 14 04
+ 2F 46 61 4A 4C 70 C0 F1  4B EF F5
+
+ FF FF FF FF                                       - sequence
+
+Outputs:
+ 02                                                - 2 Output Transactions
+
+Output 1:
+ 40 4B 4C 00 00 00 00 00                           - 0.05 BTC (5000000)
+ 19                                                - pk_script is 25 bytes long
+
+ 76 A9 14 1A A0 CD 1C BE  A6 E7 45 8A 7A BA D5 12  - pk_script
+ A9 D9 EA 1A FB 22 5E 88  AC
+
+Output 2:
+ 80 FA E9 C7 00 00 00 00                           - 33.54 BTC (3354000000)
+ 19                                                - pk_script is 25 bytes long
+
+ 76 A9 14 0E AB 5B EA 43  6A 04 84 CF AB 12 48 5E  - pk_script
+ FD A0 B7 8B 4E CC 52 88  AC
+
+Locktime:
+ 00 00 00 00                                       - lock time
+</pre>
+<h3><span class="mw-headline" id="block">block</span></h3>
+<p>The <b>block</b> message is sent in response to a getdata message which requests transaction information from a block hash.
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>version</td>
+<td>int32_t</td>
+<td>Block version information (note, this is signed)
+</td></tr>
+<tr>
+<td>32</td>
+<td>prev_block</td>
+<td>char[32]</td>
+<td>The hash value of the previous block this particular block references
+</td></tr>
+<tr>
+<td>32</td>
+<td>merkle_root</td>
+<td>char[32]</td>
+<td>The reference to a Merkle tree collection which is a hash of all transactions related to this block
+</td></tr>
+<tr>
+<td>4</td>
+<td>timestamp</td>
+<td>uint32_t</td>
+<td>A Unix timestamp recording when this block was created (Currently limited to dates before the year 2106!)
+</td></tr>
+<tr>
+<td>4</td>
+<td>bits</td>
+<td>uint32_t</td>
+<td>The calculated <a href="/wiki/Difficulty" title="Difficulty">difficulty target</a> being used for this block
+</td></tr>
+<tr>
+<td>4</td>
+<td>nonce</td>
+<td>uint32_t</td>
+<td>The nonce used to generate this block… to allow variations of the header and compute different hashes
+</td></tr>
+<tr>
+<td>1+</td>
+<td>txn_count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Number of transaction entries
+</td></tr>
+<tr>
+<td>?</td>
+<td>txns</td>
+<td>tx[]</td>
+<td>Block transactions, in format of "tx" command
+</td></tr></tbody></table>
+<p>The SHA256 hash that identifies each block (and which must have a run of 0 bits) is calculated from the first 6 fields of this structure (version, prev_block, merkle_root, timestamp, bits, nonce, and standard SHA256 padding, making two 64-byte chunks in all) and <i>not</i> from the complete block. To calculate the hash, only two chunks need to be processed by the SHA256 algorithm. Since the <i>nonce</i> field is in the second chunk, the first chunk stays constant during mining and therefore only the second chunk needs to be processed. However, a Bitcoin hash is the hash of the hash, so two SHA256 rounds are needed for each mining iteration.
+See <a href="/wiki/Block_hashing_algorithm" title="Block hashing algorithm">Block hashing algorithm</a> for details and an example.
+</p>
+<h3><span class="mw-headline" id="headers">headers</span></h3>
+<p>The <i>headers</i> packet returns block headers in response to a <i>getheaders</i> packet. 
+</p><p>Payload:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>1+</td>
+<td>count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>Number of block headers
+</td></tr>
+<tr>
+<td>81x?</td>
+<td>headers</td>
+<td><a class="mw-selflink-fragment" href="#Block_Headers">block_header</a>[]</td>
+<td><a class="mw-selflink-fragment" href="#Block_Headers">Block headers</a>
+</td></tr></tbody></table>
+<p>Note that the block headers in this packet include a transaction count (a var_int, so there can be more than 81 bytes per header) as opposed to the block headers that are hashed by miners.
+</p>
+<h3><span class="mw-headline" id="getaddr">getaddr</span></h3>
+<p>The getaddr message sends a request to a node asking for information about known active peers to help with finding potential nodes in the network. The response to receiving this message is to transmit one or more addr messages with one or more peers from a database of known active peers. The typical presumption is that a node is likely to be active if it has been sending a message within the last three hours.
+</p><p>No additional data is transmitted with this message.
+</p>
+<h3><span class="mw-headline" id="mempool">mempool</span></h3>
+<p>The mempool message sends a request to a node asking for information about transactions it has verified but which have not yet confirmed. The response to receiving this message is an inv message containing the transaction hashes for all the transactions in the node's mempool.
+</p><p>No additional data is transmitted with this message.
+</p><p>It is specified in <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0035.mediawiki">BIP 35</a>. Since <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki">BIP 37</a>, if a <a class="mw-selflink-fragment" href="#filterload.2C_filteradd.2C_filterclear.2C_merkleblock">bloom filter</a> is loaded, only transactions matching the filter are replied.
+</p>
+<h3><span class="mw-headline" id="checkorder">checkorder</span></h3>
+<p>This message was used for <a href="/wiki/IP_Transactions" class="mw-redirect" title="IP Transactions">IP Transactions</a>. As IP transactions have been deprecated, it is no longer used.
+</p>
+<h3><span class="mw-headline" id="submitorder">submitorder</span></h3>
+<p>This message was used for <a href="/wiki/IP_Transactions" class="mw-redirect" title="IP Transactions">IP Transactions</a>. As IP transactions have been deprecated, it is no longer used.
+</p>
+<h3><span class="mw-headline" id="reply">reply</span></h3>
+<p>This message was used for <a href="/wiki/IP_Transactions" class="mw-redirect" title="IP Transactions">IP Transactions</a>. As IP transactions have been deprecated, it is no longer used.
+</p>
+<h3><span class="mw-headline" id="ping">ping</span></h3>
+<p>The <i>ping</i> message is sent primarily to confirm that the TCP/IP connection is still valid. An error in transmission is presumed to be a closed connection and the address is removed as a current peer.
+</p><p>Payload:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>8</td>
+<td>nonce</td>
+<td>uint64_t</td>
+<td>random nonce
+</td></tr></tbody></table>
+<h3><span class="mw-headline" id="pong">pong</span></h3>
+<p>The <i>pong</i> message is sent in response to a <i>ping</i> message. In modern protocol versions, a <i>pong</i> response is generated using a nonce included in the ping.
+</p><p>Payload:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>8</td>
+<td>nonce</td>
+<td>uint64_t</td>
+<td>nonce from ping
+</td></tr></tbody></table>
+<p><br />
+</p>
+<h3><span class="mw-headline" id="reject">reject</span></h3>
+<p>The <i>reject</i> message is sent when messages are rejected.
+</p><p>Payload:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>1+</td>
+<td>message</td>
+<td>var_str</td>
+<td>type of message rejected
+</td></tr>
+<tr>
+<td>1</td>
+<td>ccode</td>
+<td>char</td>
+<td>code relating to rejected message
+</td></tr>
+<tr>
+<td>1+</td>
+<td>reason</td>
+<td>var_str</td>
+<td>text version of reason for rejection
+</td></tr>
+<tr>
+<td>0+</td>
+<td>data</td>
+<td>char</td>
+<td>Optional extra data provided by some errors.  Currently, all errors which provide this field fill it with the TXID or block header hash of the object being rejected, so the field is 32 bytes.
+</td></tr></tbody></table>
+<p>CCodes
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Value</th>
+<th>Name</th>
+<th>Description
+</th></tr>
+<tr>
+<td>0x01</td>
+<td>REJECT_MALFORMED</td>
+<td>
+</td></tr>
+<tr>
+<td>0x10</td>
+<td>REJECT_INVALID</td>
+<td>
+</td></tr>
+<tr>
+<td>0x11</td>
+<td>REJECT_OBSOLETE</td>
+<td>
+</td></tr>
+<tr>
+<td>0x12</td>
+<td>REJECT_DUPLICATE</td>
+<td>
+</td></tr>
+<tr>
+<td>0x40</td>
+<td>REJECT_NONSTANDARD</td>
+<td>
+</td></tr>
+<tr>
+<td>0x41</td>
+<td>REJECT_DUST</td>
+<td>
+</td></tr>
+<tr>
+<td>0x42</td>
+<td>REJECT_INSUFFICIENTFEE</td>
+<td>
+</td></tr>
+<tr>
+<td>0x43</td>
+<td>REJECT_CHECKPOINT</td>
+<td>
+</td></tr></tbody></table>
+<h3><span id="filterload.2C_filteradd.2C_filterclear.2C_merkleblock"></span><span class="mw-headline" id="filterload,_filteradd,_filterclear,_merkleblock">filterload, filteradd, filterclear, merkleblock</span></h3>
+<p>These messages are related to Bloom filtering of connections and are defined in <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0037.mediawiki">BIP 0037</a>.
+</p><p><br />
+The <code>filterload</code> command is defined as follows:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>?</td>
+<td>filter</td>
+<td>uint8_t[]</td>
+<td>The filter itself is simply a bit field of arbitrary byte-aligned size. The maximum size is 36,000 bytes.
+</td></tr>
+<tr>
+<td>4</td>
+<td>nHashFuncs</td>
+<td>uint32_t</td>
+<td>The number of hash functions to use in this filter. The maximum value allowed in this field is 50.
+</td></tr>
+<tr>
+<td>4</td>
+<td>nTweak</td>
+<td>uint32_t</td>
+<td>A random value to add to the seed value in the hash function used by the bloom filter.
+</td></tr>
+<tr>
+<td>1</td>
+<td>nFlags</td>
+<td>uint8_t</td>
+<td>A set of flags that control how matched items are added to the filter.
+</td></tr></tbody></table>
+<p>See below for a description of the Bloom filter algorithm and how to select nHashFuncs and filter size for a desired false positive rate.
+</p><p>Upon receiving a <code>filterload</code> command, the remote peer will immediately restrict the broadcast transactions it announces (in inv packets) to transactions matching the filter, where the matching algorithm is specified below. The flags control the update behaviour of the matching algorithm.
+</p><p>The <code>filteradd</code> command is defined as follows:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>?</td>
+<td>data</td>
+<td>uint8_t[]</td>
+<td>The data element to add to the current filter.
+</td></tr></tbody></table>
+<p>The data field must be smaller than or equal to 520 bytes in size (the maximum size of any potentially matched object).
+</p><p>The given data element will be added to the Bloom filter. A filter must have been previously provided using <code>filterload</code>. This command is useful if a new key or script is added to a clients wallet whilst it has connections to the network open, it avoids the need to re-calculate and send an entirely new filter to every peer (though doing so is usually advisable to maintain anonymity).
+</p><p>The <code>filterclear</code> command has no arguments at all.
+</p><p>After a filter has been set, nodes don't merely stop announcing non-matching transactions, they can also serve filtered blocks. A filtered block is defined by the <code>merkleblock</code> message and is defined like this:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>version</td>
+<td>int32_t</td>
+<td>Block version information, based upon the software version creating this block (note, this is signed)
+</td></tr>
+<tr>
+<td>32</td>
+<td>prev_block</td>
+<td>char[32]</td>
+<td>The hash value of the previous block this particular block references
+</td></tr>
+<tr>
+<td>32</td>
+<td>merkle_root</td>
+<td>char[32]</td>
+<td>The reference to a Merkle tree collection which is a hash of all transactions related to this block
+</td></tr>
+<tr>
+<td>4</td>
+<td>timestamp</td>
+<td>uint32_t</td>
+<td>A timestamp recording when this block was created (Limited to 2106!)
+</td></tr>
+<tr>
+<td>4</td>
+<td>bits</td>
+<td>uint32_t</td>
+<td>The calculated difficulty target being used for this block
+</td></tr>
+<tr>
+<td>4</td>
+<td>nonce</td>
+<td>uint32_t</td>
+<td>The nonce used to generate this block… to allow variations of the header and compute different hashes
+</td></tr>
+<tr>
+<td>4</td>
+<td>total_transactions</td>
+<td>uint32_t</td>
+<td>Number of transactions in the block (including unmatched ones)
+</td></tr>
+<tr>
+<td>1+</td>
+<td>hash_count</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>The number of hashes to follow
+</td></tr>
+<tr>
+<td>32x?</td>
+<td>hashes</td>
+<td>char[32]</td>
+<td>Hashes in depth-first order
+</td></tr>
+<tr>
+<td>1+</td>
+<td>flag_bytes</td>
+<td><a class="mw-selflink-fragment" href="#Variable_length_integer">var_int</a></td>
+<td>The size of flags (in bytes) to follow
+</td></tr>
+<tr>
+<td>?</td>
+<td>flags</td>
+<td>byte[]</td>
+<td>Flag bits, packed per 8 in a byte, least significant bit first. Extra 0 bits are padded on to reach full byte size.
+</td></tr></tbody></table>
+<p>After a <code>merkleblock</code>, transactions matching the bloom filter are automatically sent in <i><a href="#tx">tx</a></i> messages.
+</p><p>A guide to creating a bloom filter, loading a merkle block, and parsing a partial merkle block tree can be found in the <a rel="nofollow" class="external text" href="https://bitcoin.org/en/developer-examples#creating-a-bloom-filter">Developer Examples</a>.
+</p>
+<h3><span class="mw-headline" id="alert">alert</span></h3>
+<p><b>Note:</b> Support for <a href="/wiki/Alert_system" title="Alert system">alert messages</a> has been removed from bitcoin core in March 2016. Read more <a rel="nofollow" class="external text" href="https://bitcoin.org/en/alert/2016-11-01-alert-retirement">here</a>
+</p><p><br />
+An <a href="/wiki/Alert_system" title="Alert system"><b>alert</b></a> is sent between nodes to send a general notification message throughout the network. If the alert can be confirmed with the signature as having come from the core development group of the Bitcoin software, the message is suggested to be displayed for end-users. Attempts to perform transactions, particularly automated transactions through the client, are suggested to be halted. The text in the Message string should be relayed to log files and any user interfaces.
+</p><p>Alert format:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>?</td>
+<td>payload</td>
+<td>uchar[]</td>
+<td>Serialized alert payload
+</td></tr>
+<tr>
+<td>?</td>
+<td>signature</td>
+<td>uchar[]</td>
+<td>An ECDSA signature of the message
+</td></tr></tbody></table>
+<p>The developers of Satoshi's client use this public key for signing alerts:
+</p>
+<pre>04fc9702847840aaf195de8442ebecedf5b095cdbb9bc716bda9110971b28a49e0ead8564ff0db22209e0374782c093bb899692d524e9d6a6956e7c5ecbcd68284
+(hash) 1AGRxqDa5WjUKBwHB9XYEjmkv1ucoUUy1s
+</pre>
+<p>The payload is serialized into a uchar[] to ensure that versions using incompatible alert formats can still relay alerts among one another. The current alert payload format is:
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>Field Size</th>
+<th>Description</th>
+<th>Data type</th>
+<th>Comments
+</th></tr>
+<tr>
+<td>4</td>
+<td>Version</td>
+<td>int32_t</td>
+<td>Alert format version
+</td></tr>
+<tr>
+<td>8</td>
+<td>RelayUntil</td>
+<td>int64_t</td>
+<td>The timestamp beyond which nodes should stop relaying this alert
+</td></tr>
+<tr>
+<td>8</td>
+<td>Expiration</td>
+<td>int64_t</td>
+<td>The timestamp beyond which this alert is no longer in effect and should be ignored
+</td></tr>
+<tr>
+<td>4</td>
+<td>ID</td>
+<td>int32_t</td>
+<td>A unique ID number for this alert
+</td></tr>
+<tr>
+<td>4</td>
+<td>Cancel</td>
+<td>int32_t</td>
+<td>All alerts with an ID number less than or equal to this number should be cancelled: deleted and not accepted in the future
+</td></tr>
+<tr>
+<td>?</td>
+<td>setCancel</td>
+<td>set&lt;int32_t&gt;</td>
+<td>All alert IDs contained in this set should be cancelled as above
+</td></tr>
+<tr>
+<td>4</td>
+<td>MinVer</td>
+<td>int32_t</td>
+<td>This alert only applies to versions greater than or equal to this version. Other versions should still relay it.
+</td></tr>
+<tr>
+<td>4</td>
+<td>MaxVer</td>
+<td>int32_t</td>
+<td>This alert only applies to versions less than or equal to this version. Other versions should still relay it.
+</td></tr>
+<tr>
+<td>?</td>
+<td>setSubVer</td>
+<td>set&lt;string&gt;</td>
+<td>If this set contains any elements, then only nodes that have their subVer contained in this set are affected by the alert. Other versions should still relay it.
+</td></tr>
+<tr>
+<td>4</td>
+<td>Priority</td>
+<td>int32_t</td>
+<td>Relative priority compared to other alerts
+</td></tr>
+<tr>
+<td>?</td>
+<td>Comment</td>
+<td>string</td>
+<td>A comment on the alert that is not displayed
+</td></tr>
+<tr>
+<td>?</td>
+<td>StatusBar</td>
+<td>string</td>
+<td>The alert message that is displayed to the user
+</td></tr>
+<tr>
+<td>?</td>
+<td>Reserved</td>
+<td>string</td>
+<td>Reserved
+</td></tr></tbody></table>
+<p>Note: <b>set&lt;<i>type</i>&gt;</b> in the table above is a <a href="#Variable_length_integer"> variable length integer</a> followed by the number of fields of the given <i>type</i> (either int32_t or <a href="#Variable_length_string"> variable length string</a>)
+</p><p>Sample alert (no message header):
+</p>
+<pre>73010000003766404f00000000b305434f00000000f2030000f1030000001027000048ee0000
+0064000000004653656520626974636f696e2e6f72672f666562323020696620796f75206861
+76652074726f75626c6520636f6e6e656374696e672061667465722032302046656272756172
+79004730450221008389df45f0703f39ec8c1cc42c13810ffcae14995bb648340219e353b63b
+53eb022009ec65e1c1aaeec1fd334c6b684bde2b3f573060d5b70c3a46723326e4e8a4f1
+
+Version: 1
+RelayUntil: 1329620535
+Expiration: 1329792435
+ID: 1010
+Cancel: 1009
+setCancel: &lt;empty&gt;
+MinVer: 10000
+MaxVer: 61000
+setSubVer: &lt;empty&gt;
+Priority: 100
+Comment: &lt;empty&gt;
+StatusBar: "See bitcoin.org/feb20 if you have trouble connecting after 20 February"
+Reserved: &lt;empty&gt;
+</pre>
+<h3><span class="mw-headline" id="sendheaders">sendheaders</span></h3>
+<p>Request for Direct headers announcement. 
+</p><p>Upon receipt of this message, the node is be permitted, but not required, to announce new blocks by <b>headers</b> command (instead of <b>inv</b> command).
+</p><p>This message is supported by the protocol version &gt;= 70012 or Bitcoin Core version &gt;= 0.12.0.
+</p><p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0130.mediawiki">BIP 130</a> for more information.
+</p><p>No additional data is transmitted with this message.
+</p><p><br />
+</p>
+<h3><span class="mw-headline" id="feefilter">feefilter</span></h3>
+<p>The payload is always 8 bytes long and it encodes 64 bit integer value (LSB / little endian) of <b>feerate</b>.
+The value represents a minimal fee and is expressed in satoshis per 1000 bytes.
+</p><p>Upon receipt of a "feefilter" message, the node will be permitted, but not required, to filter transaction invs for transactions that fall below the feerate provided in the feefilter message interpreted as satoshis per kilobyte.
+</p><p>The fee filter is additive with a bloom filter for transactions so if an SPV client were to load a bloom filter and send a feefilter message, transactions would only be relayed if they passed both filters.
+</p><p>Inv's generated from a mempool message are also subject to a fee filter if it exists.
+</p><p>Feature discovery is enabled by checking protocol version &gt;= 70013
+</p><p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0133.mediawiki">BIP 133</a> for more information.
+</p>
+<h3><span class="mw-headline" id="sendcmpct">sendcmpct</span></h3>
+<ol><li>The sendcmpct message is defined as a message containing a 1-byte integer followed by a 8-byte integer where pchCommand == "sendcmpct".</li>
+<li>The first integer SHALL be interpreted as a boolean (and MUST have a value of either 1 or 0)</li>
+<li>The second integer SHALL be interpreted as a little-endian version number. Nodes sending a sendcmpct message MUST currently set this value to 1.</li>
+<li>Upon receipt of a "sendcmpct" message with the first and second integers set to 1, the node SHOULD announce new blocks by sending a cmpctblock message.</li>
+<li>Upon receipt of a "sendcmpct" message with the first integer set to 0, the node SHOULD NOT announce new blocks by sending a cmpctblock message, but SHOULD announce new blocks by sending invs or headers, as defined by BIP130.</li>
+<li>Upon receipt of a "sendcmpct" message with the second integer set to something other than 1, nodes MUST treat the peer as if they had not received the message (as it indicates the peer will provide an unexpected encoding in</li>
+<li>cmpctblock, and/or other, messages). This allows future versions to send duplicate sendcmpct messages with different versions as a part of a version handshake for future versions.</li>
+<li>Nodes SHOULD check for a protocol version of &gt;= 70014 before sending sendcmpct messages.</li>
+<li>Nodes MUST NOT send a request for a MSG_CMPCT_BLOCK object to a peer before having received a sendcmpct message from that peer.</li></ol>
+<p>This message is only supported by protocol version &gt;= 70014
+</p><p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki">BIP 152</a> for more information.
+</p>
+<h3><span class="mw-headline" id="cmpctblock">cmpctblock</span></h3>
+<ol><li>The cmpctblock message is defined as as a message containing a serialized <a class="mw-selflink-fragment" href="#HeaderAndShortIDs">HeaderAndShortIDs</a> message and pchCommand == "cmpctblock".</li>
+<li>Upon receipt of a cmpctblock message after sending a sendcmpct message, nodes SHOULD calculate the <a class="mw-selflink-fragment" href="#Short_transaction_ID">short transaction ID</a> for each unconfirmed transaction they have available (ie in their mempool) and compare each to each short transaction ID in the cmpctblock message.</li>
+<li>After finding already-available transactions, nodes which do not have all transactions available to reconstruct the full block SHOULD request the missing transactions using a getblocktxn message.</li>
+<li>A node MUST NOT send a cmpctblock message unless they are able to respond to a getblocktxn message which requests every transaction in the block.</li>
+<li>A node MUST NOT send a cmpctblock message without having validated that the header properly commits to each transaction in the block, and properly builds on top of the existing chain with a valid proof-of-work. A node MAY send a cmpctblock before validating that each transaction in the block validly spends existing <a href="/wiki/UTXO" title="UTXO">UTXO</a> set entries.</li></ol>
+<p>This message is only supported by protocol version &gt;= 70014
+</p><p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki">BIP 152</a> for more information.
+</p>
+<h3><span class="mw-headline" id="getblocktxn">getblocktxn</span></h3>
+<ol><li>The getblocktxn message is defined as as a message containing a serialized <a class="mw-selflink-fragment" href="#BlockTransactionsRequest">BlockTransactionsRequest</a> message and pchCommand == "getblocktxn".</li>
+<li>Upon receipt of a properly-formatted getblocktxnmessage, nodes which recently provided the sender of such a message a cmpctblock for the block hash identified in this message MUST respond with an appropriate <a class="mw-selflink-fragment" href="#blocktxn">blocktxn</a> message. Such a blocktxn message MUST contain exactly and only each transaction which is present in the appropriate block at the index specified in the getblocktxn indexes list, in the order requested.</li></ol>
+<p>This message is only supported by protocol version &gt;= 70014
+</p><p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki">BIP 152</a> for more information.
+</p>
+<h3><span class="mw-headline" id="blocktxn">blocktxn</span></h3>
+<ol><li>The blocktxn message is defined as as a message containing a serialized <a class="mw-selflink-fragment" href="#BlockTransactions">BlockTransactions</a> message and pchCommand == "blocktxn".</li>
+<li>Upon receipt of a properly-formatted requested blocktxn message, nodes SHOULD attempt to reconstruct the full block by:</li>
+<li>Taking the prefilledtxn transactions from the original <a class="mw-selflink-fragment" href="#cmpctblock">cmpctblock</a> and placing them in the marked positions.</li>
+<li>For each short transaction ID from the original <a class="mw-selflink-fragment" href="#cmpctblock">cmpctblock</a>, in order, find the corresponding transaction either from the blocktxn message or from other sources and place it in the first available position in the block.</li>
+<li>Once the block has been reconstructed, it shall be processed as normal, keeping in mind that short transaction IDs are expected to occasionally collide, and that nodes MUST NOT be penalized for such collisions, wherever they appear.</li></ol>
+<p>This message is only supported by protocol version &gt;= 70014
+</p><p>See <a rel="nofollow" class="external text" href="https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki">BIP 152</a> for more information.
+</p>
+<h2><span class="mw-headline" id="Scripting">Scripting</span></h2>
+<p>See <a href="/wiki/Script" title="Script">script</a>.
+</p>
+<h2><span class="mw-headline" id="See_Also">See Also</span></h2>
+<ul><li><a href="/wiki/Network" title="Network">Network</a></li>
+<li><a href="/wiki/Protocol_rules" title="Protocol rules">Protocol rules</a></li>
+<li><a href="/wiki/Hardfork_Wishlist" title="Hardfork Wishlist">Hardfork Wishlist</a></li>
+<li><a rel="nofollow" class="external text" href="https://bitcoin.org/en/developer-documentation">Developer Documentation on bitcoin.org</a></li>
+<li>Bitcoin dissectors for Wireshark: <a rel="nofollow" class="external free" href="https://github.com/lbotsch/wireshark-bitcoin">https://github.com/lbotsch/wireshark-bitcoin</a> <a rel="nofollow" class="external free" href="https://github.com/op-sig/bitcoin-wireshark-dissector">https://github.com/op-sig/bitcoin-wireshark-dissector</a></li></ul>
+<h2><span class="mw-headline" id="References">References</span></h2>
+<div class="mw-references-wrap"><ol class="references">
+<li id="cite&#95;note-1"><span class="mw-cite-backlink"><a href="#cite_ref-1">↑</a></span> <span class="reference-text"><a rel="nofollow" class="external text" href="http://bitcointalk.org/index.php?topic=119645.msg1288552#msg1288552">Block 0 Network Fork</a></span>
+</li>
+<li id="cite&#95;note-2"><span class="mw-cite-backlink"><a href="#cite_ref-2">↑</a></span> <span class="reference-text"><a rel="nofollow" class="external free" href="https://en.wikipedia.org/wiki/Unix_time#Notable_events_in_Unix_time">https://en.wikipedia.org/wiki/Unix_time#Notable_events_in_Unix_time</a></span>
+</li>
+</ol></div>
+<p><br />                                                               
+</p>
+<table cellspacing="0" class="navbox" style="border-spacing:0;background:#fdfdfd; width:100%; vertical-align:middle;;"><tbody><tr><td style="padding:2px;"><table cellspacing="0" class="nowraplinks collapsible autocollapse navbox-inner" style="border-spacing:0;background:transparent;color:inherit;;"><tbody><tr><th scope="col" style=";background:#ccccff; padding-left:1em; padding-right:1em; text-align:center;" class="navbox-title" colspan="2"><div class="" style="font-size:110%;">
+<a href="/wiki/Bitcoin_Core" title="Bitcoin Core">Bitcoin Core</a> documentation</div></th></tr><tr style="height:2px;"><td></td></tr><tr><th scope="row" class="navbox-group" style=";background:#ddddff; padding-left:1em; padding-right:1em; text-align:right;;">User documentation</th><td style="text-align:left;border-left-width:2px;border-left-style:solid;width:100%;padding:0px;background:transparent; text-align:left/center;;background:transparent;;" class="navbox-list navbox-odd"><div style="padding:0em 0.25em">
+<a href="/wiki/Alert_system" title="Alert system">Alert system</a> • <a href="/wiki/Bitcoin_Core_compatible_devices" title="Bitcoin Core compatible devices">Bitcoin Core compatible devices</a> • <a href="/wiki/Data_directory" title="Data directory">Data directory</a> • <a href="/wiki/Fallback_Nodes" title="Fallback Nodes">Fallback Nodes</a> • <a href="/wiki/Help:How_to_import_private_keys_in_Bitcoin_Core_0.7%2B" title="Help:How to import private keys in Bitcoin Core 0.7+">How to import private keys in Bitcoin Core 0.7+</a> • <a href="/wiki/Help:Installing_Bitcoin_Core" title="Help:Installing Bitcoin Core">Installing Bitcoin Core</a> • <a href="/wiki/Running_Bitcoin" title="Running Bitcoin">Running Bitcoin</a> • <a href="/wiki/Transaction_fees" class="mw-redirect" title="Transaction fees">Transaction fees</a> • <a href="/wiki/Vocabulary" title="Vocabulary">Vocabulary</a></div></td></tr><tr style="height:2px"><td></td></tr><tr><th scope="row" class="navbox-group" style=";background:#ddddff; padding-left:1em; padding-right:1em; text-align:right;;">Developer documentation</th><td style="text-align:left;border-left-width:2px;border-left-style:solid;width:100%;padding:0px;background:transparent; text-align:left/center;;background:#f7f7f7;;" class="navbox-list navbox-even"><div style="padding:0em 0.25em">
+<a href="/wiki/Help:Accounts_explained" title="Help:Accounts explained">Accounts explained</a> • <a href="/wiki/Original_Bitcoin_client/API_calls_list" title="Original Bitcoin client/API calls list">API calls list</a> • <a href="/wiki/API_reference_(JSON-RPC)" title="API reference (JSON-RPC)">API reference (JSON-RPC)</a> • <a href="/wiki/Block_chain_download" title="Block chain download">Block chain download</a> • <a href="/wiki/Dump_format" title="Dump format">Dump format</a> • <a href="/wiki/Getblocktemplate" title="Getblocktemplate">getblocktemplate</a> • <a href="/wiki/List_of_address_prefixes" title="List of address prefixes">List of address prefixes</a> • <a class="mw-selflink selflink">Protocol documentation</a> • <a href="/wiki/Script" title="Script">Script</a> • <a href="/wiki/Technical_background_of_version_1_Bitcoin_addresses" title="Technical background of version 1 Bitcoin addresses">Technical background of version 1 Bitcoin addresses</a> • <a href="/wiki/Testnet" title="Testnet">Testnet</a> • <a href="/wiki/Transaction_Malleability" class="mw-redirect" title="Transaction Malleability">Transaction Malleability</a> • <a href="/wiki/Wallet_import_format" title="Wallet import format">Wallet import format</a></div></td></tr><tr style="height:2px"><td></td></tr><tr><th scope="row" class="navbox-group" style=";background:#ddddff; padding-left:1em; padding-right:1em; text-align:right;;">History &amp; theory</th><td style="text-align:left;border-left-width:2px;border-left-style:solid;width:100%;padding:0px;background:transparent; text-align:left/center;;background:transparent;;" class="navbox-list navbox-odd"><div style="padding:0em 0.25em">
+<a href="/wiki/Common_Vulnerabilities_and_Exposures" title="Common Vulnerabilities and Exposures">Common Vulnerabilities and Exposures</a> • <a href="/wiki/DOS/STONED_incident" title="DOS/STONED incident">DOS/STONED incident</a> • <a href="/wiki/Economic_majority" title="Economic majority">Economic majority</a> • <a href="/wiki/Full_node" title="Full node">Full node</a> • <a href="/wiki/Original_Bitcoin_client" title="Original Bitcoin client">Original Bitcoin client</a> • <a href="/wiki/Value_overflow_incident" title="Value overflow incident">Value overflow incident</a></div></td></tr></tbody></table></td></tr></tbody></table>
+<!-- 
+NewPP limit report
+Cached time: 20261015030312
+Cache expiry: 86400
+Reduced expiry: false
+Complications: [show‐toc]
+CPU time usage: 0.175 seconds
+Real time usage: 0.379 seconds
+Preprocessor visited node count: 627/1000000
+Post‐expand include size: 12280/2097152 bytes
+Template argument size: 4918/2097152 bytes
+Highest expansion depth: 9/100
+Expensive parser function count: 0/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 10845/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%   12.841      1 Template:Bitcoin_Core_documentation
+100.00%   12.841      1 -total
+ 90.58%   11.632      1 Template:Navbox_default
+ 81.68%   10.488      1 Template:Navbox
+-->
+
+<!-- Saved in parser cache with key db_bitcoin_en:pcache:idhash:56-0!canonical and timestamp 20261015030312 and revision id 68832. Rendering was triggered because: page-view
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://en.bitcoin.it/w/index.php?title=Protocol_documentation&amp;oldid=68832">https://en.bitcoin.it/w/index.php?title=Protocol_documentation&amp;oldid=68832</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="/wiki/Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="/wiki/Category:Technical" title="Category:Technical">Technical</a></li><li><a href="/wiki/Category:Developer" title="Category:Developer">Developer</a></li><li><a href="/wiki/Category:Bitcoin_Core_documentation" title="Category:Bitcoin Core documentation">Bitcoin Core documentation</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+<nav id="p-personal" class="mw-portlet mw-portlet-personal vector-user-menu-legacy vector-menu" aria-labelledby="p-personal-label"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="pt-createaccount" class="mw-list-item"><a href="/w/index.php?title=Special:CreateAccount&amp;returnto=Protocol+documentation" title="You are encouraged to create an account and log in; however, it is not mandatory"><span>Create account</span></a></li><li id="pt-login" class="mw-list-item"><a href="/w/index.php?title=Special:UserLogin&amp;returnto=Protocol+documentation" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+<nav id="p-namespaces" class="mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy vector-menu" aria-labelledby="p-namespaces-label"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="ca-nstab-main" class="selected mw-list-item"><a href="/wiki/Protocol_documentation" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="/wiki/Talk:Protocol_documentation" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+			
+<nav id="p-variants" class="mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown vector-menu" aria-labelledby="p-variants-label"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	>
+	<label
+		id="p-variants-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			
+		</ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+<nav id="p-views" class="mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy vector-menu" aria-labelledby="p-views-label"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="ca-view" class="selected mw-list-item"><a href="/wiki/Protocol_documentation"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="/w/index.php?title=Protocol_documentation&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="/w/index.php?title=Protocol_documentation&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+			
+<nav id="p-cactions" class="mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown vector-menu" aria-labelledby="p-cactions-label"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			
+		</ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<h3 >Search</h3>
+	<form action="/w/index.php" id="searchform" class="vector-search-box-form">
+		<div id="simpleSearch"
+			class="vector-search-box-inner"
+			 data-search-loc="header-navigation">
+			<input class="vector-search-box-input"
+				 type="search" name="search" placeholder="Search Bitcoin Wiki" aria-label="Search Bitcoin Wiki" autocapitalize="sentences" title="Search Bitcoin Wiki [f]" accesskey="f" id="searchInput"
+			>
+			<input type="hidden" name="title" value="Special:Search">
+			<input id="mw-searchButton"
+				 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+			<input id="searchButton"
+				 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+		</div>
+	</form>
+</div>
+
+		</div>
+	</div>
+	
+<div id="mw-panel" class="vector-legacy-sidebar">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="/wiki/Main_Page"
+			title="Visit the main page"></a>
+	</div>
+	
+<nav id="p-navigation" class="mw-portlet mw-portlet-navigation vector-menu-portal portal vector-menu" aria-labelledby="p-navigation-label"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="n-mainpage-description" class="mw-list-item"><a href="/wiki/Main_Page" title="Visit the main page [z]" accesskey="z"><span>Main page</span></a></li><li id="n-Bitcoin-FAQ" class="mw-list-item"><a href="/wiki/Help:FAQ"><span>Bitcoin FAQ</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="/wiki/Bitcoin_Wiki:Help"><span>Editing help</span></a></li><li id="n-Forums" class="mw-list-item"><a href="/wiki/Forums"><span>Forums</span></a></li><li id="n-Chatrooms" class="mw-list-item"><a href="/wiki/IRC_channels"><span>Chatrooms</span></a></li><li id="n-Recent-changes" class="mw-list-item"><a href="/wiki/Special:RecentChanges"><span>Recent changes</span></a></li><li id="n-Page-index" class="mw-list-item"><a href="/wiki/Special:AllPages"><span>Page index</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+	
+<nav id="p-tb" class="mw-portlet mw-portlet-tb vector-menu-portal portal vector-menu" aria-labelledby="p-tb-label"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="t-whatlinkshere" class="mw-list-item"><a href="/wiki/Special:WhatLinksHere/Protocol_documentation" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="/wiki/Special:RecentChangesLinked/Protocol_documentation" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="/wiki/Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="/w/index.php?title=Protocol_documentation&amp;oldid=68832" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="/w/index.php?title=Protocol_documentation&amp;action=info" title="More information about this page"><span>Page information</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+<nav id="p-Sister_projects" class="mw-portlet mw-portlet-Sister_projects vector-menu-portal portal vector-menu" aria-labelledby="p-Sister_projects-label"  >
+	<h3
+		id="p-Sister_projects-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Sister projects</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="n-Essays" class="mw-list-item"><a href="/wiki/Bitcoin_Wiki:Essay_main_page"><span>Essays</span></a></li><li id="n-Source" class="mw-list-item"><a href="/wiki/Bitcoin_Wiki:Source_main_page"><span>Source</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+	
+<nav id="p-lang" class="mw-portlet mw-portlet-lang vector-menu-portal portal vector-menu" aria-labelledby="p-lang-label"  >
+	<h3
+		id="p-lang-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">In other languages</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li class="interlanguage-link interwiki-zh-cn mw-list-item"><a href="https://zh-cn.bitcoin.it/wiki/%E5%8D%8F%E8%AE%AE%E8%AF%B4%E6%98%8E" title="协议说明 – 中文（中国大陆）" lang="zh-Hans-CN" hreflang="zh-Hans-CN" data-title="协议说明" data-language-autonym="中文（中国大陆）" data-language-local-name="中文（中国大陆）" class="interlanguage-link-target"><span>中文（中国大陆）</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 30 July 2021, at 18:08.</li>
+	<li id="footer-info-copyright">Content is available under <a class="external" rel="nofollow" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a> unless otherwise noted.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="/wiki/Bitcoin_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="/wiki/Bitcoin_Wiki:About">About Bitcoin Wiki</a></li>
+	<li id="footer-places-disclaimers"><a href="/wiki/Bitcoin_Wiki:General_disclaimer">Disclaimers</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/" class="cdx-button cdx-button--fake-button cdx-button--size-large cdx-button--fake-button--enabled"><img src="/w/resources/assets/poweredby_mediawiki.svg" alt="Powered by MediaWiki" width="88" height="31" loading="lazy"></a></li>
+</ul>
+
+</footer>
+
+<script type="8fffb9964420d8f7de9c7ede-text/javascript">(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgBackendResponseTime":392,"wgPageParseReport":{"limitreport":{"cputime":"0.175","walltime":"0.379","ppvisitednodes":{"value":627,"limit":1000000},"postexpandincludesize":{"value":12280,"limit":2097152},"templateargumentsize":{"value":4918,"limit":2097152},"expansiondepth":{"value":9,"limit":100},"expensivefunctioncount":{"value":0,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":10845,"limit":5000000},"timingprofile":["100.00%   12.841      1 Template:Bitcoin_Core_documentation","100.00%   12.841      1 -total"," 90.58%   11.632      1 Template:Navbox_default"," 81.68%   10.488      1 Template:Navbox"]},"cachereport":{"timestamp":"20261015030312","ttl":86400,"transientcontent":false}}});});</script>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="8fffb9964420d8f7de9c7ede-|49" defer></script></body>
+</html>

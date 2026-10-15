@@ -1,0 +1,960 @@
+                                                             Bandwidth-Efficient Transaction Relay in Bitcoin
+                                                         Gleb Naumenko                                          Gregory Maxwell                               Pieter Wuille
+                                                   naumenko.gs@gmail.com                                          greg@xiph.org                         pwuille@blockstream.com
+                                                 University of British Columbia                                                                                Blockstream
+
+                                                                                   Alexandra Fedorova                             Ivan Beschastnikh
+                                                                                    sasha@ece.ubc.ca                             bestchai@cs.ubc.ca
+                                                                              University of British Columbia                University of British Columbia
+
+                                        ABSTRACT                                                                               tx created                 tx relayed             tx validated
+                                                                                                                               and signed              to other nodes           by other nodes
+                                        Bitcoin is a top-ranked cryptocurrency that has experienced huge
+arXiv:1905.10518v2 [cs.CR] 3 Jun 2019
+
+
+
+
+                                        growth and survived numerous attacks. The protocols making up
+                                        Bitcoin must therefore accommodate the growth of the network                                        n more blocks         block B           tx included
+                                                                                                                               tx
+                                        and ensure security.                                                                                  mined that          relayed           in a mined
+                                                                                                                           confirmed
+                                           Security of the Bitcoin network depends on connectivity be-                                      follow block B      and validated         block B
+                                        tween the nodes. Higher connectivity yields better security. In
+                                        this paper we make two observations: (1) current connectivity                     Figure 1: Lifecycle of a Bitcoin transaction. In this paper
+                                        in the Bitcoin network is too low for optimal security; (2) at the                we optimize the protocols for relaying transactions between
+                                        same time, increasing connectivity will substantially increase the                nodes in the Bitcoin network (grey box).
+                                        bandwidth used by the transaction dissemination protocol, mak-
+                                        ing it prohibitively expensive to operate a Bitcoin node. Half of
+                                        the total bandwidth needed to operate a Bitcoin node is currently                 were increased from the currently used eight outbound connections
+                                        used to just announce transactions. Unlike block relay, transaction               to 24, the per-node bandwidth used for relaying transactions would
+                                        dissemination has received little attention in prior work.                        exceed 50GB/month. This would make it prohibitively expensive
+                                           We propose a new transaction dissemination protocol, Erlay,                    for some users to operate a Bitcoin node. Despite this inefficiency,
+                                        that not only reduces the bandwidth consumption by 40% assum-                     transaction relay has not received much attention in scientific liter-
+                                        ing current connectivity, but also keeps the bandwidth use almost                 ature, in contrast to block relay [2, 12, 48].
+                                        constant as the connectivity increases. In contrast, the existing                    The overarching reason why the Bitcoin transaction relay proto-
+                                        protocol increases the bandwidth consumption linearly with the                    col is inefficient is that it relies on flooding. A Bitcoin transaction
+                                        number of connections. By allowing more connections at a small                    corresponds to a transfer of funds between several accounts. Fig. 1
+                                        cost, Erlay improves the security of the Bitcoin network. And, as we              overviews the lifecycle of a transaction in the Bitcoin network. To
+                                        demonstrate, Erlay also hardens the network against attacks that                  be accepted by the network of nodes, a transaction must be first
+                                        attempt to learn the origin node of a transaction. Erlay is currently             disseminated, or relayed, throughout the network. Then it must be
+                                        being investigated by the Bitcoin community for future use with                   validated and included into a block with other valid transactions.
+                                        the Bitcoin protocol.                                                             Finally, the block containing the transaction must be relayed to all
+                                                                                                                          the nodes. Every Bitcoin transaction must reach almost all nodes in
+                                        1    INTRODUCTION                                                                 the network, and prior work has demonstrated that full coverage
+                                                                                                                          of the network is important for security [53].
+                                        Bitcoin is a peer-to-peer (P2P) electronic cash system [44]. Recent
+                                                                                                                             Today, Bitcoin disseminates transactions by ensuring that every
+                                        estimates indicate that there are over 60,000 nodes in the Bitcoin
+                                                                                                                          message received by a node is transmitted to all of its neighbors.
+                                        network 1 (as of March 2019). To keep up with the growth in the
+                                                                                                                          This flooding has high fault-tolerance since no single point of fail-
+                                        number of nodes and usage of the network, the system must be
+                                                                                                                          ure will halt relay, and it has low latency since nodes learn about
+                                        continually optimized while retaining the security guarantees that
+                                                                                                                          transactions as fast as possible [35].
+                                        its users have come to expect.
+                                                                                                                             However, flooding has poor bandwidth efficiency: every node in
+                                            Security of the Bitcoin network depends on adequate network
+                                                                                                                          the network learns about the transaction multiple times. Our em-
+                                        connectivity. Bitcoin literature has repeatedly recommended in-
+                                                                                                                          pirical measurements demonstrate that transaction announcements
+                                        creasing the number of connections between nodes to make the
+                                                                                                                          account for 30–50% of the overall Bitcoin traffic. This inefficiency
+                                        network more robust [7, 15]. As we explain in Section 3, certain
+                                                                                                                          is an important scalability limitation: the inefficiency increases as
+                                        attacks become less successful if the network is highly connected.
+                                                                                                                          the network becomes more connected, while connectivity of the
+                                            Unfortunately, increasing the connectivity of the Bitcoin network
+                                                                                                                          network is desirable to the growth and the security of the network.
+                                        linearly increases the bandwidth consumption of transaction relay—
+                                                                                                                             Prior work has explored two principal approaches to address
+                                        the protocol that currently takes up half of the total bandwidth
+                                                                                                                          this inefficient use of bandwidth. The first is the use of short trans-
+                                        required to operate a Bitcoin node. Today, transaction relay alone
+                                                                                                                          action identifiers (to decrease message size) [31]. The second is
+                                        consumes as much as 18GB per node per month. If the connectivity
+                                                                                                                          to exclusively use blocks and never transmit individual transac-
+                                        1 https://luke.dashjr.org/programs/bitcoin/files/charts/software.html             tions [37]. Both approaches are inadequate: short identifiers only
+     Private nodes [Max inbound: 0, Max outbound: 8]                                      Peer 1                                  Peer 2
+                                                                                     tx
+                                    …
+                                                                                      tx valida+on             INV
+                                                                                                             hash(tx)
+                                                                                                            GETDATA
+                                                                                                            hash(tx)
+                                …                                                                                tx
+
+        Public nodes [Max inbound: 125, Max outbound: 8]
+
+                                                                                 Figure 3: Transaction exchange between two peers.
+Figure 2: Private and public nodes in the Bitcoin network.
+
+
+reduce the constant factor and do not scale with the connectivity of
+the network, while using only blocks creates spikes in block relay          network. Once they have joined the network, public and private
+and transaction validation. We discuss these approaches further in          nodes are indistinguishable in their operation: both node types per-
+Section 11.                                                                 form transaction and block validation, and relay valid transactions
+   The contribution of this paper is Erlay, a new protocol that we          and blocks to their peers.
+designed to optimize Bitcoin’s transaction relay while maintaining              The current version of the Bitcoin transaction relay protocol
+the existing security guarantees. The main idea behind our protocol         propagates messages among nodes using diffusion [1], which is a
+is to reduce the amount of information propagated via flooding              variation on random flooding. Flooding is a protocol where each
+and instead use an efficient set reconciliation method [42] for most        node announces every transaction it receives to each of its peers.
+of the transaction dissemination. In addition, we design the Erlay          Announcements can be sent on either inbound and outbound links.
+protocol to withstand DoS, timing, and other attacks.                       With diffusion, a peer injects a random delay before announcing a
+   We implemented Erlay in a simulator and as part of the mainline          received transaction to its peers. This mitigates timing attacks [46]
+Bitcoin node software, and evaluated Erlay at scale. Our results            and significantly reduces the probability of in-flight collisions (when
+show that Erlay makes announcement-related bandwidth negligible             two nodes simultaneously announce the same transaction over the
+while keeping latency a small fraction of the inter-block interval.         link between them).
+   In summary, this paper makes the following contributions:                    The protocol by which a transaction propagates between two
+      • We analyze bandwidth inefficiency of Bitcoin’s transaction          peers is illustrated in Fig. 3. When a Bitcoin node receives a trans-
+        relay protocol. We do this by running a node connected to           action (peer 1 in Fig. 3), it advertises the transaction to all of its
+        the Bitcoin network as well as by running a simulation of           peers except for the node that sent the transaction in the first place
+        the Bitcoin network. Our results demonstrate that 88% of            and other nodes from which it already received an advertisement.
+        the bandwidth used to announce transactions (and around             To advertise a transaction, a node sends a hash of the transaction
+        44% of the overall bandwidth) is redundant.                         within an inventory, or INV message. If a node (peer 2 in Fig. 3)
+      • We propose a new, bandwidth-efficient, transaction relay            hears about a transaction for the first time, it will request the full
+        protocol for Bitcoin called Erlay, which is a combination           transaction by sending a GETDATA message to the node that sent
+        of fast low-fanout flooding and efficient set reconciliation,       it the INV message.
+        designed to work under the assumptions of the Bitcoin                   We refer to the transaction-advertising portion of the protocol
+        network.                                                            (all the INV messages) as BTCFlood. Since it relies on flooding, most
+      • We demonstrate that the protocol achieves a close to opti-          transactions are advertised through each link in the network in one
+        mal combination of resource consumption and propagation             direction (except those that are advertised during the block relay
+        delay, and is robust to attacks. Erlay reduces the bandwidth        phase). As a result, a node with n connections will send and receive
+        used to announce transactions by 84% immediately, and               between n and 2n INV messages for a single transaction (two nodes
+        allows the Bitcoin network to achieve higher connectivity           may announce the same transaction simultaneously to each other).
+        in the future for better security.                                      Both public and private nodes limit the number of inbound and
+                                                                            outbound connections (Fig. 2). By default a private node has no
+    Next, we review the background for our work.                            inbound connections and up to 8 outbound connections, while a
+                                                                            public node can have 8 outbound connections as well as up to 125
+2    BITCOIN BACKGROUND                                                     inbound connections (but the inbound connection limit can be con-
+For the purpose of connectivity graph and propagation analysis,             figured up to around 1,000). Thus, as the number of private nodes
+there are 2 types of nodes in the Bitcoin network: private nodes            in the Bitcoin network grows, the bandwidth and computational
+that do not accept inbound connections and public nodes that                requirements to run a public node quickly increase. This is because
+do accept inbound connections (see Fig. 2). Public nodes act as a           private nodes connect to multiple public nodes to ensure that they
+backbone of the network: they help new nodes bootstrap onto the             are connected to the network through more than a single peer.
+                                                                        2
+  As a result, Bitcoin designers have focused on (1) making the
+running of a public node more accessible, in terms of required
+                                                                                                                      Announcement cost
+
+
+
+
+                                                                                  Bandwidth per month (GB)
+bandwidth, computational power, and hardware resources, and (2)                                              20       Base cost (TX+GETDATA)
+making public nodes more efficient so that they can accept more
+connections from private nodes. Our work targets both objectives.                                            15
+                                                                                                             10
+3   THE PROBLEM WITH FLOODING                                                                                 5
+    TRANSACTIONS
+                                                                                                              0
+Flooding is inefficient. BTCFlood sends many redundant trans-                                                     8          16          24    32
+action announcements. To see why, let us first consider how many                                                              Connectivity
+announcements would be sent if the protocol were efficient. Since,
+optimally, each node would receive each announcement exactly                Figure 4: Analytical cost of relaying transactions via flood-
+once, the number of times each announcement is sent should be equal         ing for one Bitcoin node during one month.
+to the number of nodes.
+   Next, let us consider how many times an announcement is sent
+with BTCFlood. By definition, each node relays an announcement              announcing transactions. Setting connectivity to 24 in Bitcoin today
+on each of the links except the one where that announcement orig-           would cause transaction relay to consume over 15GB/month.
+inally arrived. In other words, each link sees each announcement            Higher connectivity offers more security. In P2P networks,
+once, if no two nodes ever send the same announcement to each               higher connectivity improves network security. This was demon-
+other simultaneously, and more than once if they do. Therefore, in          strated by both traditional P2P research [4, 5] and Bitcoin-specific
+BTCFlood each announcement is sent at least as many times as the            prior work [7, 15, 29, 36, 47].
+number of links.                                                               Certain attacks become less successful if the network is highly
+   If N is the number of nodes in the Bitcoin network, the num-             connected [28, 36, 46]. The eclipse attack paper [29] has shown that
+ber of links is 8N , because each node must make eight outbound             fewer than 13 connections would be detrimental to the security
+connections. Therefore, the number of redundant announcements               of the network. A recently discovered vulnerability [17] relies on
+is at least 8N − N = 7N . Each announcement takes 32 bytes out              InvBlock [41]. InvBlock is a technique that prevents a transaction
+of 300 total bytes needed to relay a single transaction to one node.        from being propagated by first announcing it to a node, but then
+(These 300 bytes include the announcement, the response and the             withholding the transaction contents for two minutes. With higher
+full transaction body). Therefore, if at least seven out of eight an-       connectivity, this attack is easier to mitigate.
+nouncements are redundant (corresponding to 224 bytes), at least
+43% of all announcement traffic is wasteful.                                4   PROTOCOL REQUIREMENTS
+   We validated this analysis experimentally. We configured a pub-          R1: Scale with the number of connections. Our main goal
+lic Bitcoin node with eight outbound connections and ran it for             is to design a transaction dissemination protocol that has good
+one week. During this time, our node also received four inbound             scalability as a function of the number of connections. This way, we
+connections. We measured the bandwidth dedicated to transac-                can make the network more secure without sacrificing performance.
+tion announcements and other transaction dissemination traffic.             R2: Maintain a network topology suited for a decentralized
+A received announcement was considered redundant if it corre-               environment. Bitcoin’s premise of a decentralized environment
+sponded to an already known transaction. A sent announcement                puts constraints on the design of its network. Although imposing
+was considered redundant if it was not followed by a transaction            a structure onto a network, e.g., by organizing it into a tree or
+request. According to our measurements (taken at multiple nodes             star topology, or by using DHT-style routing, enables bandwidth-
+at different locations) 10% of the traffic corresponding to received        efficient implementation of flooding, this also introduces the risks
+announcements and 95% of the traffic corresponding to the sent              of censorship or partitioning [36]. The topology of the network
+announcements was redundant. Overall, 55% of all traffic used by            must, therefore, remain unstructured, and routing decisions must
+our node was redundant.                                                     be made independently by every node based on their local state.
+Higher connectivity requires more bandwidth. Given that the                 R3: Maintain a reasonable latency. Transaction propagation
+amount of redundant traffic is proportional to the number of links,         delays should remain in the ballpark of those experienced with the
+increasing the connectivity of the network (the number of out-              existing protocol. Low latency is essential to user experience and
+bound links per node) linearly increases bandwidth consumption              enables better efficiency in block relay [12].
+in BTCFlood.                                                                R4: Be robust to attacks under the existing threat model. Our
+   We modeled how the bandwidth consumption of disseminating                protocol must remain robust under the same threat model as that
+one transaction across the network of 60K nodes increases with              assumed by the existing protocol. Similarly to Bitcoin, we assume
+connectivity. Fig. 4 (whose results we confirmed via simulation)            that an attacker has control over a limited, non-majority, number
+shows that announcement traffic turns dominant as the network               of nodes in the network, has a limited ability to make other nodes
+becomes more connected. With eight connections per node, a                  connect to it, and is otherwise unrestricted in intercepting and
+private node may consume 9GB of bandwidth per month just for                generating traffic for peers that it is connected to.
+                                                                        3
+             Public             Private                                        up close to every node, then reconciliation can finish dissemina-
+             nodes:             nodes:                                         tion using a small number of rounds. Therefore, a key decision in
+                                                                               low-fanout flooding is to which peers to relay.
+                                                                                  Set reconciliation. Set reconciliation was proposed as an alter-
+                                           Low-fanout                          native to synchronization in distributed systems [42]. Using set
+                                           flooding                            reconciliation a node in a P2P network periodically compares its
+                                                                               local state to the state of its peers, and sends/requests only the
+                                           Reconciliation                      necessary information (the state difference). Set reconciliation may
+                                           Round 1
+                                                                               be viewed as an efficient version of batching (accumulating multi-
+                                           Reconciliation                      ple state updates and sending them as a single message). The key
+                                           Round 2                             challenge in practical reconciliation is for the peers to efficiently
+                                               …                               compute their missing transaction state, and to limit the exchanged
+                                                                               transactions to just those that the other peer is missing.
+                                           Reconciliation                         Fig. 6 shows how Erlay attempts to find a sweet spot in terms of
+                                           Round n                             bandwidth and latency by combining flooding, which wastes band-
+                                                                               width but disseminates transactions quickly, and reconciliation,
+                                                                               which takes longer, but does not waste bandwidth.
+Figure 5: Erlay disseminates transactions using low-fanout
+flooding as the first step, and then several rounds of recon-
+ciliation to reach all nodes in the network.
+                                                                               5.1    Low-fanout flooding
+                                                                               Flooding is expensive, so we want to use it sparingly and in strategic
+                                                                               locations. For that reason, only well-connected public nodes flood
+                     Reconcilation                                             transactions to other public nodes via outbound connections. Since
+       Latency                                                                 every private node is directly connected to several public nodes,
+       to reach                       Erlay                                    this policy ensures that a transaction is quickly propagated to be
+       all nodes                                                               within one hop from the majority of the nodes in the network. As
+                                                   Flooding                    a result, only one or two reconciliation rounds are needed for full
+                                                                               reachability (R3). According to this, the protocol we propose may
+                               Bandwidth used                                  be viewed as two-tier optimistic replication [51].
+                                                                                   To meet our scalability goal (R1), we limit the flooding done by
+                                                                               public nodes to eight outbound connections even if the total number
+Figure 6: Comparison of reconciliation, flooding, and Erlay                    of these connections is higher. This way, increasing connectivity
+in their bandwidth usage and latency to reach all nodes.                       does not increase transaction dissemination cost proportionally.
+                                                                                   The decision to relay through outbound connections, but not the
+                                                                               inbound ones, was made to defend against timing attacks [17, 46].
+   The transaction relay protocol must not be any more susceptible             In a timing attack, an attacker connects to a victim and listens to
+to DoS attacks and client deanonymization, and must not leak any               all transactions that a victim might send on that link (the inbound
+more information about the network topology [46] than the existing             connection for the victim). If an attacker learns about a transaction
+protocol.                                                                      from multiple nodes (including the victim), the timing of transaction
+                                                                               arrival can be used to guess whether a transaction originated at the
+5   ERLAY DESIGN                                                               victim: if it did then it will most likely arrive from the victim earlier
+Traditionally, P2P networks addressed inefficiency of flooding by              than from other nodes. BTCFlood introduces a diffusion delay to
+imposing a structured overlay onto an ad-hoc topology. We re-                  prevent timing attacks. In Erlay, since we do not forward individual
+frained from structured network organizations for security reasons             transactions to inbound links, this delay is not necessary. So this
+discussed in Section 4. Instead, our design relies on two common               decision favors both R3 and R4.
+system-building techniques: delay and batching.                                    Transactions in the Bitcoin network may originate at both public
+   Instead of announcing every transaction on each link, a node                and private nodes. In the protocol we propose, nodes do not relay
+using our protocol advertises it to a subset of peers—this is called           their transactions via flooding, so the network learns about the
+low-fanout flooding. To make sure that all transactions reach the              transactions they have originated via reconciliation: private nodes
+entire network, nodes periodically engage in an interactive protocol           add their own transactions to the batch of other transactions that
+to discover announcements that were missed, and request missing                they forward to their peers during reconciliation. This is used to
+transactions. This is called set reconciliation. Our protocol, Erlay, is       hide when transactions are originated at private nodes. If transac-
+comprised of low-fanout flooding and set reconciliation (Fig. 5).              tions were instead flooded from private nodes, it would be obvious
+   Low-fanout flooding. The rationale behind low-fanout flood-                 to public nodes that those transactions must have been created at
+ing is to expediently relay a transaction to be within a small number          those nodes, because according to the chosen flooding policy, this
+of hops from every node in the network. If each transaction ends               is the only case where a private node floods a transaction, as they
+                                                                           4
+have no inbound links. Since a private node forwards its own trans-                  (1) According to a chosen reconciliation schedule (Section 5.2.2),
+actions as part of a batch, as opposed to individually, a malicious                      Alice sends to Bob the size of A and q.
+public node is unlikely to discover the origin of a transaction (R4).                (2) Bob computes d, an estimate of D, between his B and Alice’s
+                                                                                         A (see below).
+5.2    Set reconciliation                                                            (3) Bob computes a sketch of B with capacity for D transac-
+                                                                                         tions and sends it to Alice, along with the size of B.
+In Erlay peers perform set reconciliation by computing a local set
+                                                                                     (4) Alice receives Bob’s sketch of B, computes a sketch of A,
+sketch, as defined by the PinSketch algorithm [18]. A set sketch is
+                                                                                         and XORs the two sketches. Now Alice has a sketch of the
+a type of set checksum with two important properties:
+                                                                                         difference between A and B.
+      • Sketches have a predetermined capacity, and when the                         (5) If the difference size was estimated correctly, Alice is able
+        number of elements in the set does not exceed the capacity,                      to decode the sketch computed in the previous step, request
+        it is always possible to recover the entire set from the                         the transactions that she is missing from Bob, and then
+        sketch by decoding the sketch. A sketch of b-bit elements                        advertise to Bob the transactions that he is missing. If the
+        with capacity c can be stored in bc bits.                                        estimation was incorrect (sketch decoding failed), Alice
+      • A sketch of the symmetric difference between the two                             will resort to bisection (Section 5.2.3).
+        sets (i.e., all elements that occur in one but not both input                (6) After this process, Alice updates q (see below) and clears
+        sets), can be obtained by XORing the bit representation of                       A. Bob clears B.
+        sketches of those sets.                                                    Accurate estimation of D is crucial for success of reconciliation.
+   These properties make sketches appropriate for a bandwidth-                  Prior work estimated D using techniques like min-wise hashing [10]
+efficient set reconciliation protocol. More specifically, if two parties,       or random projections [24]. These techniques are complex, and we
+Alice and Bob, each have a set of elements, and they suspect that               were concerned that they could end up using more bandwidth
+these sets largely but not entirely overlap, they can use the following         than they save. Therefore, we resorted to a minimalistic approach,
+protocol to have both parties learn all the elements of the two sets:           where we estimate the size of the set difference based on just the
+                                                                                current sizes of sets and the difference observed in the previous
+      • Alice and Bob both locally compute sketches of their sets.              reconciliation round:
+      • Alice sends her sketch to Bob.
+      • Bob combines the two sketches, and obtains a sketch of
+                                                                                             d = abs(|A| − |B|) + q · min(|A|, |B|) + c,
+        the symmetric difference.
+      • Bob tries to recover the elements from the symmetric dif-               where q is a floating point coefficient (derived below) that charac-
+        ference sketch.                                                         terizes previous reconciliation, and c is a parameter for handling
+      • Bob sends to Alice the elements that she is missing.                    special cases.
+                                                                                   Indeed, the difference between two sets cannot be smaller than
+   This procedure will always succeed when the size of the differ-              the difference in their sizes. To avoid costly underestimations, we
+ence (elements that Alice has but Bob does not have plus elements               add the size of the smaller set normalized by q, and a constant
+that Bob has but Alice does not have) does not exceed the capacity              c = 1, which prevents estimating d = 0 when |A| = |B| and q ·
+of the sketch that Alice sent. Otherwise, the procedure is very likely          min(|A|, |B|) = 0.
+to fail.                                                                           The coefficient q characterizes earlier reconciliation, so before
+   A key property of this process is that it works regardless of the            the very first reconciliation round it is set to zero. At the end of
+actual set sizes: only the size of the set differences matters.                 a reconciliation round, we simply update q based on the true D
+   Decoding the sketch is computationally expensive and is qua-                 that we discovered during the round, by substituting D for d in the
+dratic in the size of the difference. Because of this, accurately               above equation, dropping c, and then solving for q:
+estimating the size of the difference (Section 5.2.1) and reconcil-
+ing before the set difference becomes too large (Section 5.2.2) are                                          D − abs(|A| − |B|)
+important goals for the protocol.                                                                     q=
+                                                                                                                min(|A|, |B|)
+                                                                                This updated q will be used in the next reconciliation round. We
+   5.2.1 Reconciliation round. Fig. 7 summarizes the reconciliation
+                                                                                compute q in this way because we assume that every node in the
+protocol. To execute a round of reconciliation, every node maintains
+                                                                                network will have a consistent optimal q.
+a reconciliation set for each one of its peers. A reconciliation set
+                                                                                   Reconciliation is a fertile ground for DoS attacks, because decod-
+consists of short IDs of transactions that a node would have sent to a
+                                                                                ing a sketch is computationally expensive. To prevent these attacks,
+corresponding peer in regular BTCFlood, but has not because Erlay
+                                                                                in our protocol the node that is interested in reconciliation (and the
+limits flooding. We will refer to Alice’s reconciliation set for Bob
+                                                                                one that has to decode the sketch) initiates reconciliation (Alice, in
+as A and Bob’s set for Alice as B. Alice and Bob will compute the
+                                                                                our example). Bob cannot coerce Alice to perform excessive sketch
+sketches for these reconciliation sets as described in the previous
+                                                                                decoding.
+section.
+   Important parameters of the protocol are: D – the true size of                  5.2.2 Reconciliation schedule. Every node initiates reconcilia-
+the set difference, d – an estimate of D, and q – a parameter used to           tion with one outbound peer every T seconds. Choosing the right
+compute d. We provide the derivation of these values below. First,              value for T is important for performance and bandwidth consump-
+we describe a reconciliation round:                                             tion. If T is too low, reconciliation will run too often and will use
+                                                                            5
+     Alice                                 Bob                   Alice                                Bob                                    Alice                              Bob
+                                                                         RECONCIL_DIFF                                                                        BISEC
+     Set A              INIT               Set B                         missing1, missing2
+                       |A|, q                                                                                                                              SUMMARY
+                                                                                TX
+                                                                                                                                                          sketch(B/2, d)
+                                                                             missing1
+                                        Estimate difference:
+                   SUMMARY           d = estimate(|A|, |B|, q)
+                   sketch(B, d)                                                             Remove from missing2 txns          Try to find difference
+                                                                                              received from other peers        diff1, fail1 = recon(sketch(A/2), sketch(B/2))
+                                                                             GETDATA        since start of this exchange       diff2, fail2 = recon(sketch(A-A/2), sketch(B-B/2))
+Attempt to find difference:                                                  missing2
+diff, fail = recon(sketch(A), sketch(B))
+                                                                                                                               if (fail1 OR fail2) then
+                                                                                TX
+if (fail) then                                                                                                                     run Original protocol in Fig. 3
+                                                                             missing2
+    run Protocol Reconcile-Bisec                                                                                               else run Protocol DiffExchange
+else run Protocol DiffExchange
+
+                  Protocol                                                  Protocol                                                                    Protocol
+                Reconcile-Init                                           DiffExchange                                                                Reconcile-Bisec
+
+Figure 7: Reconciliation protocol with correct difference estimation (Reconcile-Init, followed by DiffExchange), and reconcil-
+iation protocol with incorrect difference estimation (Reconcile-Init, followed by Reconcile-Bisec). In case reconciliation fails
+during Reconcile-Bisec, reconciliation falls back to Bitcoin’s current exchange method (see Fig. 3).
+
+
+more bandwidth than it saves. If T is too high, reconciliation sets                                                                                          Can
+                                                                                                                      Sketches (size N)                                    Transmitted
+                                                                                                                                                            Recover
+will be large and decoding set differences will be expensive (the                              Reconcile-
+computation is quadratic in the number of differences). A large T                              Init:                             S0                            N         N : S0
+also increases the latency of transaction propagation.
+   A node reconciles with one peer every T seconds. Since every                                Reconcile-
+node has c outbound connections, every link in the network would,                              Bisec:                 S1              S1          S0         2N N : S1
+on average, run reconciliation every T · c seconds. This means
+that the average reconciliation set prior to reconciliation would                                Figure 8: Bisection is enabled by the linearity of sketches
+contain T · c · T X r at e transactions, where T X r at e is the global
+transaction rate. This also means that during the interval between
+reconciliations every node would receive T · T X r at e transactions.                                           100 ms
+   We use a value of 1 second for T in Erlay. With this setting,
+                                                                                                Decode time
+
+
+
+
+                                                                                                                 10 ms
+and the current ratio of private to public nodes, every public node
+                                                                                                                  1 ms
+will perform about eight reconciliations per second. Given the
+current maximum Bitcoin network transaction rate T X r at e of 7                                                 100 µs                           CPISync
+transactions/s, the average difference set size for this protocol is 7                                            10 µs                         Minisketch
+elements. We evaluate our choice of parameters in Section 8.                                                       1 µs
+                                                                                                                          0   5 10 15 20 25 30 35 40 45 50
+   5.2.3 Bisection for set difference estimation failure. Our set rec-
+onciliation approach relies on the assumption that an upper bound                                                                           Diﬀerences
+for the set difference between two peers is predictable. That is, if the
+actual difference is higher than estimated, then reconciliation will
+                                                                                              Figure 9: The decode time of our library (Minisketch) as com-
+fail. This failure is detectable by a client computing the difference.
+                                                                                              pared to CPISync for varying set difference sizes.
+An obvious solution to this failure is to recompute and retransmit
+the sketch assuming a larger difference in the sets. However, this
+would make prior reconciliation transmissions useless, which is
+inefficient.                                                                                  Even though bisections are not limited to one and may be applied
+   Instead, Erlay uses reconciliation bisection, which reuses previ-                          consequentially without losing efficiency, in our implementation
+ously transmitted information. Bisection is based on the assumption                           after a reconciliation step failure we allow only one bisection with
+that elements are uniformly distributed in reconciliation sets (this                          a new overall estimate 2d (see Fig. 8). The bisection process is
+may be achieved by hashing). If a node is unable to reconstruct the                           illustrated in protocol Reconcile-Bisec in Figure 7.
+set difference from a product of two sketches, the node then makes                                If bisection fails, then Erlay falls back to the original INV-GETDATA
+an additional reconciliation request, similar to the initial one, but                         protocol (Fig. 3) and applies it to all of the transactions in two sets
+this request is applied to only a fraction of possible messages (e.g.,                        being reconciled.
+to transactions in the range 0x0–0x8). Because of the linearity of
+sketches, a sketch of a subset of transactions would allow the node                           6               IMPLEMENTATION DETAILS
+to compute a sketch for the remainder, which saves bandwidth.                                 In this section we describe low-level design decisions required to
+   However, this approach would allow recovery of at most 2d                                  implement Erlay and increase its bandwidth efficiency (R2) and
+differences, where d is the estimated set difference in the initial step.                     make it robust to collision-based DoS attacks (R4).
+                                                                                        6
+Library implementation. We created Minisketch2 , a C++ library                 we enforce every peer to respond to reconciliation requests after a
+with 3305 LOC, which is an optimized implementation of the PinS-               small random delay (in our implementation, a Poisson-distributed
+ketch [18] algorithm. We benchmarked the library to verify that                random variable which is on average Tr i = 1 seconds), which is
+set reconciliation would not create high computational workload                shared across reconciliation requests from all peers, and we rate-
+on Bitcoin nodes. Fig. 9 shows the decoding performance on an                  limit reconciliations per peer. This measure would make Erlay
+Intel Core i7-7820HQ CPU of our library (Minisketch) as compared               better than BTCFlood at withstanding timing attacks.
+to CPISync [54]3 for varying difference sizes. Our library has sub-               Our measure in Erlay has the same idea as in flooding/low-fanout
+millisecond performance for difference sizes of 100 elements or                diffusion; however, having the ratio Tii /Toi higher makes timing
+fewer. As we will show later (Fig. 13) this performance is suffi-              attacks less accurate, because during Tii (the average time before an
+ciently fast for the differences we observe in practice (in simulation         attacker receives a transaction) a transaction would be propagated
+and in deployment).                                                            to more nodes in the network.
+   We used this library to build a reference implementation of                    We chose the interval of 1 seconds because a lower interval
+Erlay as a part of the Bitcoin Core software, which we evaluate in             would make Erlay more susceptible to timing attacks than Bitcoin,
+Section 9.                                                                     and a higher interval results in a high latency.
+Short identifiers and salting. The size of a transaction ID in the
+Bitcoin protocol is 32 bytes. To use PinSketch [18], we have to use            7   EVALUATION METHODOLOGY
+shorter, 64 bit, identifiers. Using fewer bits reduces the bandwidth           In evaluating Erlay we focus on answering the following three
+usage by 75% (R2), but it also creates a probability of collisions.            questions:
+Collisions in transaction relay are an attack surface, because a
+malicious actor may flood a network with colluding transactions                    (1) How does Erlay compare to BTCFlood in latency (the time
+and fill memory pools of the nodes with transactions, which would                      that it takes for the transaction to reach all of the nodes)
+then be propagated and confirmed in a very slow manner. Thus we                        and bandwidth (the number of bits used to disseminate a
+want to secure the protocol against such attacks (R4).                                 transaction)?
+   While collisions on one side of a communication are easy to                     (2) How do the two parts of Erlay (low-fanout flooding and
+detect and handle, collisions involving transactions on both sides                     reconciliation) perform at scale and with varying connec-
+may cause a significant slowdown. To mitigate this, we use different                   tivity, varying number of nodes, and varying transaction
+salt (random data added to an input of a hash-function) while                          rates?
+hashing transaction IDs into short identifiers.                                    (3) How do malicious nodes impact Erlay’s performance?
+   The salt value is enforced by the peer that initiates the connection,           We use measurement results from two sources to answer the
+and per Erlay’s design, requests reconciliation. Since the peer re-            questions above. First, we used a simulator to simulate Erlay on a
+questing reconciliation also computes the reconciliation difference,           single machine (Section 8). Second, we implemented Erlay in the
+the requestor peer would have to deal with short IDs of unknown                mainline Bitcoin client and deployed a network of Erlay clients on
+transactions. Since salt is chosen by the requestor, re-using the              the Azure cloud across several data centers (Section 9).
+same salt for different reconciliations would allow him to compare                 Simulator design. Our simulation was done with ns3. We mod-
+salted short IDs of unknown transactions to the IDs received during            ified an open-source Bitcoin Simulator [26] to support transaction
+flooding from other peers at the same time.                                    relay. The original simulator had 9663 LOC; the version we modified
+Low-fanout diffusion delay. Bitcoin flooding mitigates timing                  has 9948 LOC.
+attacks [46] and in-flight collisions by introducing a random de-                  Our simulator is based on the INV-GETDATA transaction relay
+lay into transaction announcements. For timing attacks Bitcoin                 protocol (see Section 2). It is parameterized by the current ratio of
+assumes that an attacker connects (possibly, multiple times) to                public nodes to private nodes in the Bitcoin network and the trans-
+the node (or takes over a fraction of outbound connections of the              action rate based on the historical data from the Bitcoin network
+node). In a low-fanout model, this attack is not feasible, because             (7 transactions per second on average). We simulate the different
+transactions are flooded through outbound connections only.                    ratios of faults in the network by introducing Black Hole nodes,
+   In-flight collisions are also not possible in the case of low-fanout        which receive transactions but do not relay them.
+relay through only outbound links, because transactions are always                 Our simulator does not account for heterogeneous node re-
+announced in the same direction of a link.                                     sources, the block relay phase, the joining and leaving of nodes
+   In consideration of these arguments as well as to reduce latency,           during the transaction relay phase (churn), and does not consider
+Erlay has a lower random diffusion interval. Instead of usingToi = 2           sophisticated malicious nodes.
+seconds for outbound connections and Tii = 5 seconds for inbound,                  The propagation latency measured for BTCFlood by our sim-
+Erlay uses Toi = 1 seconds for outbound.                                       ulator matches the value suggested for the validation of Bitcoin
+Reconciliation diffusion delay. Even though in Erlay timing at-                simulators [22], and our measured bandwidth matches our analyti-
+tacks by observing low-fanout flooding are not feasible, an attacker           cal estimates.
+would be able to perform them through reconciliations. To make                     Topology of the simulated network. We emulated a network
+timing attacks through reconciliations more expensive to perform,              similar to the current Bitcoin network, since inferring the Bitcoin
+                                                                               network topology is non-trivial [46]. In our simulation we boot-
+2 https://github.com/sipa/minisketch                                           strapped the network in two phases: (1) public nodes connected
+3 https://github.com/trachten/cpisync                                          to each other using a limit of eight outbound connections, then (2)
+                                                                           7
+                               20                                   17.3
+                                       BTCFlood            Erlay
+    Bandwidth per month (GB)
+
+
+
+
+                                                                                     Bandwidth per month (GB)
+                                                                                                                                      Announcement cost
+                               15                                                                               8                     Base cost (TX+GETDATA)
+                                                         12.98
+                                                                                                                6        4.33
+                               10            8.65                                                                                                   0.7
+                                                                                                                4        4.76                      4.76
+                                5 4.33                                                                          2
+                                      0.71        0.83       0.91      0.94                                     0
+                                0                                                                                      BTCFlood                    Erlay
+                                        8          16          24          32
+                                                  Connectivity                      Figure 11: Average bandwidth cost of fully relaying trans-
+                                                                                    actions during 1 month for a Bitcoin node with outbound
+Figure 10: Average bandwidth one Bitcoin node spends per
+                                                                                    connectivity of 8.
+month to announce transactions.
+
+
+private nodes connected to eight random public nodes. In some                                                   Table 1: Breakdown of bandwidth usage in Erlay.
+experiments we increased connectivity, as indicated in the experi-
+ment’s description.                                                                                                    Erlay component       Bandwidth %
+   Unless stated otherwise, our simulation results are for a network                                                  Low-fanout flooding            54%
+of 6,000 public nodes and 54,000 private nodes (this is the scale of                                                        Reconciliation           32%
+today’s network4 ). In each experiment we first used the above two                                                              Bisection           0.7%
+steps to create the topology, then we relayed transactions for 600                                                               Fallback           4.3%
+seconds (on average, we generated 4,200 transactions from random                                                      Post-reconcile. INVs            9%
+private nodes).                                                                                                                      Total         100%
+8                   SIMULATION RESULTS
+In this section we use simulation to demonstrate latency, bandwidth
+consumption, and security of Erlay and compare them to BTCFlood.
+                                                                                       Table 1 lists the results. The table shows that about a third of
+                                                                                    the bandwidth is used by reconciliation, while low-fanout flooding
+8.1                            Relay bandwidth usage                                accounts for a majority of the bandwidth. The post-reconciliation
+To verify that Erlay scales better than BTCFlood as the connectivity                INVs account for a small fraction of Erlay’s bandwidth.
+increases, we varied the number of outbound connections per node                       Set reconciliation effectiveness. To understand the effective-
+and measured the bandwidth used for announcing transactions.                        ness of Erlay’s set reconciliation, we measured how often recon-
+Figure 10 shows the results.                                                        ciliation or the following bisection protocol fail. Fig. 12 reports
+   With BTCFlood, relay bandwidth increases linearly with the                       the results aggregated from one of our simulation runs with 60,000
+connectivity because BTCFlood announces transactions on every                       nodes. The end-to-end probability of reaching fallback is below 1%.
+link in the network. With Erlay, however, bandwidth consump-                        Since bisection does not introduce additional bandwidth overhead
+tion grows significantly slower. Erlay seamlessly embraces higher                   (while fallback does), the overall reconciliation overhead is low.
+connectivity, which allows for better security.                                        Since every reconciliation round requires a set difference esti-
+   Transaction announcements in overall bandwidth. To demon-                        mation, we measured the distribution of the estimated difference
+strate that Erlay’s announcement optimization impacts overall band-                 sizes. Fig. 13 demonstrates that set difference depends on transac-
+width, we measure the bandwidth consumed by a simulated net-                        tion rate. This is expected: for the same reconciliation intervals,
+work to relay transactions with BTCFlood and with Erlay. Fig. 11                    a higher transaction rate would result in both reconciling parties
+plots the results for simulations in which every node establishes 8                 receiving more transactions and would lead to a larger set differ-
+connections. Erlay’s announcement bandwidth is just 12.8% of the                    ence. This dependency between set difference and transaction rate
+relay bandwidth, while for BTCFlood the announcement bandwidth                      allows accurate set difference estimation. Fig. 12 illustrates that
+is 47.6%.                                                                           Erlay’s estimate is correct 96% of the time. For the cases where
+   Breaking down Erlay’s bandwidth usage. To further under-                         Erlay over-estimates and the initial reconciliation fails, the resulting
+stand Erlay’s bandwidth usage, we broke it down by the different                    bandwidth overhead constitutes 9% of the overall bandwidth.
+parts of the protocol: low-fanout flooding, reconciliation, and post-                  In our library benchmarks the decode time for a sketch con-
+reconciliation announcements.                                                       taining 100 differences is under 1 millisecond (Fig. 9). Thus, the
+4 https://bitnodes.earn.com/                                                        computational cost of operating over sketches with the distribution
+https://luke.dashjr.org/programs/bitcoin/files/charts/software.html                 in Fig. 13 is negligible.
+                                                                                8
+               Reconcile-Init       4%      Reconcile-Bisec
+
+
+                    96%             93%           7%
+                                                                                                 6
+
+
+
+
+                                                                                   Latency (s)
+               DiffExchange                     Fallback
+                                                                                                 4
+Figure 12: Finite state machine of the protocol in Fig. 3 an-                                    2                               Erlay
+notated with transition percentages observed in our experi-                                                                      BTCFlood
+ments.
+                                                                                                 0
+                                                                                                  30,000           60,000              90,000
+                                                                                                   Nodes in the network (public and private)
+                           5 tx/s
+                                                                                 Figure 14: Average latency for a single transaction to reach
+                           6 tx/s                                                100% nodes in networks with different sizes.
+                           7 tx/s
+                           8 tx/s
+
+
+                                                                                              10
+                                                                                               8         Erlay
+                                                                                Latency (s)              BTCFlood
+                                                                                               6
+                                                                                               4
+                                                                                               2
+                                                                                               0
+                                                                                                     8          16          24            32
+Figure 13: Distribution of the set difference estimates during
+                                                                                                                 Connectivity
+reconciliation for different transaction rates.
+                                                                                 Figure 15: Average latency for a single transaction to reach
+                                                                                 100% nodes in the network with variable connectivity.
+8.2    Relay latency
+Fig. 14 plots the average latency for a single transaction to reach
+all nodes for Erlay and BTCFlood as we vary the total number of
+nodes. In this set of experiments we kept constant the ratio between
+private and public types of nodes at 9 : 1 (this is the ratio in today’s                                 Erlay
+                                                                                             5.0
+                                                                               Latency (s)
+
+
+
+
+Bitcoin network). Erlay has a constant latency overhead on top of                                        BTCFlood
+BTCFlood that is due to its use of batching. However, this overhead
+is just 2.6 seconds and changes at approximately the same rate with                          2.5
+the number of nodes as BTCFlood’s latency. Erlay’s per-transaction
+                                                                                             0.0
+latency can be reduced at the cost of higher bandwidth usage. This
+                                                                                                     10 20 30 40 50 60 70 80 90 100
+is a tunable parameter, subject to design constraints.
+    We chose to pay this latency overhead, because this is accept-
+                                                                                                             Nodes reached (%)
+able cost to maximize bandwidth efficiency, as we demonstrate in
+Section 10.                                                                       Figure 16: Average latency for a single transaction to reach
+    One of Erlay’s goals is to enable higher connectivity. We there-              a certain fraction of nodes in the network
+fore analyzed the latency of Erlay and BTCFlood for different con-
+nectivities of the network. Figure 15 demonstrates that, as the con-
+nectivity increases, latency significantly decreases for BTCFlood (at             propagation pattern as BTCFlood with a fairly constant overhead
+high bandwidth cost), and only slightly decreases for Erlay without               of 2.6 seconds.
+significant effect on bandwidth.                                                     Latency under faulty condition We also evaluated Erlay’s
+    To understand how transactions propagate across the network,                  latency in a simple adversarial setting. For this we simulated a
+we measured the latency to reach a certain fraction of nodes in                   network in which 10% of the public nodes are black holes and
+the network. Figure 16 demonstrates that Erlay follows the same                   measured the time for a transaction to reach all nodes. While it is
+                                                                           9
+                            50                                                                         Private node spies BTCFlood Erlay
+                                        BTCFlood            Erlay          43.3                                       5%          18%    16%
+ Bandwidth per month (GB)
+
+
+
+                            40                                                                                       10%          20%    20%
+                                                                                                                     30%          20%    27%
+                            30                                                                                       60%          21%    31%
+                                                                                             Table 2: Success rate of first-spy estimator with variable
+                                                             21.65
+                            20                                                               number of private spying nodes in BTCFlood and Erlay.
+
+                                                 10.82
+                            10                                                    7.1
+                                 4.33                1.77          3.55
+                                        0.71
+                             0                                                                          Public node spies BTCFlood Erlay
+                                          7          17.5           35            70
+                                                 Transaction rate (tx/s)                                              5%         11%     11%
+                                                                                                                     10%         19%     15%
+                                                                                                                     30%         52%     32%
+Figure 17: Average bandwidth one node spends per month to
+                                                                                                                     60%         82%     67%
+announce transactions in a system with variable transaction
+rate                                                                                         Table 3: Success rate of first-spy estimator with variable
+                                                                                             number of public spying nodes in BTCFlood and Erlay.
+
+
+
+                        10
+                         8              Erlay
+                                        BTCFlood                                             confirmed these results in a network of 100 nodes running our
+Latency (s)
+
+
+
+
+                         6                                                                   prototype implementation.
+                         4
+                                                                                             8.4    Withstanding timing attacks
+                         2                                                                   One of Erlay’s design goals is to be more robust to timing attacks
+                         0                                                                   from sybils [17, 28].
+                                 7               17.5          35             70                To evaluate Erlay’s robustness against timing attacks, we sim-
+                                               Transaction rate (tx/s)                       ulated a network of 60,000 nodes and used first-spy estimator ap-
+                                                                                             proach to link transactions to nodes of their origin.
+Figure 18: Average latency for a single transaction to reach                                    With the first-spy estimator an attacker deploys some number of
+100% nodes in the network in a system with variable trans-                                   spy nodes. Each node keeps a local log of timestamped records, each
+action rate                                                                                  of which records (1) when the spy first learned about a transaction,
+                                                                                             and (2) from which node the spy learned it. In our setup, at the end
+                                                                                             of the experiment the spy nodes aggregate their logs and estimate
+difficult to outperform the robustness of BTCFlood, an alternative                           that the source node of a transaction is the node which was the
+protocol should not be dramatically impacted by this attack.                                 very first one to announce the transaction (to any of the spies).
+   According to our measurements, while the slowdown with BTCFlood                              Tables 2 and 3 list the success rates of the first-spy estimator
+in this setting is 2%, the slowdown with Erlay is 20%. We believe                            for different number of spies, which were either private or public
+that this latency increase is acceptable for a batching-based proto-                         nodes.
+col. We have ideas for heuristics that might be applied to mitigate                             While Erlay is more susceptible to spying by private nodes (Ta-
+black-hole attacks and make Erlay less susceptible. For example,                             bles 2), we believe that this is acceptable for three reasons. (1) The
+a node might avoid reconciling with those outbound connections                               success rate is below 50% for both protocols, which means that this
+that regularly provide the fewest new transactions.                                          deanonymization attack is unreliable, (2) the difference between
+                                                                                             the two protocols is at most 10%, and (3), Erlay is materially more
+8.3                          Scalability with transaction rate                               susceptible to spying when there are higher levels of private spying
+To demonstrate that bandwidth savings and latency are not im-                                nodes (30%). At this level, an attack with public spies is a more
+pacted by higher transaction rates, we simulated a network of                                reasonable alternative since the attacker must control fewer nodes
+54,000 private and 6,000 public nodes with connectivity of 8, gen-                           to achieve a higher attack success rate.
+erated transactions at different rates (from 7 tx/s to 70 tx/s), and                            By contrast, Erlay increases the cost of the deanonymization
+measured the impact of higher transaction rates on latency and                               attack by public nodes (Table 3): an attacker must control more
+bandwidth.                                                                                   long-running public nodes in the network with Erlay than with
+   Figure 17 shows that the relative bandwidth savings of Erlay                              BTCFlood to achieve the same attack rate.
+is not impacted by transaction rate. Figure 18 shows that Erlay’s                               We also measured that increasing the connectivity with Erlay
+latency remains constant for different transaction rates. We also                            does not change success rate of first-spy estimation.
+                                                                                        10
+                                            X, 0%           X, 5%       X, 10%                                               0, Y%           2, Y%    4, Y%
+
+                Flooding-only                         X : Flooding inbound #                     Flooding-only                        X : Flooding inbound #
+                                            X, Y%                                                                            X, Y%
+                                                      Y : Flooding outbound %                                                         Y : Flooding outbound %
+                  BTCFlood                                                                         BTCFlood
+                                                           Legend                                                                           Legend
+                   8, 100%                                                                          8, 100%
+
+
+                                                        Reconciliation-only                              0,40%                         Reconciliation-only
+               8,10%     6,10%                               0, 0%                                                0,20%                     0, 0%
+                                  4,10%    0,10%                                                                            0,10%
+                                                    0,5%                                            4, 10%       2,10%               0,5%
+                8,5%              2,10%
+                6,5%                   2,5%                                                                4, 5%         2,5%
+                                                    2,0%                                                                             2,0%
+               Erlay       4,5%            4,0%                                                  Erlay
+               8, 0%                6,0%                                                         8, 0%                   4, 0%
+
+
+
+
+Figure 19: Comparison of configurations of the Erlay-style protocol along the latency-bandwidth trade-off, as compared to
+BTCFlood (which does flooding only and no reconciliation). All points except for BTCFlood perform reconciliation on all
+links. Each point varies the choice of the number of peers to flood to that are inbound (out of 8 total), and outbound (out of
+100% total). Points with the same inbound/outbound configurations have the same color. We split the points across two plots
+for readability.
+
+
+8.5     Reconciliation and flooding trade-off                                                                          BTCFlood Erlay
+                                                                                                      Base cost (MB)
+Erlay’s design combines flooding with reconciliation to achieve a                                                              27     27
+                                                                                                      (TX+GETDATA)
+balance between two extremes: the current flooding-only protocol
+                                                                                                  Other messages (MB)        1.06     1.1
+in Bitcoin (BTCFlood), and a reconciliation-only protocol. This
+                                                                                              Announcement cost (MB)           42     15
+intuition is captured in the latency-bandwidth trade-off diagram in
+                                                                                                           Latency (s)       1.85   2.05
+Figure 6. However, does Erlay actually strike a balance? And, what
+other intermediate protocol alternatives lie between flooding-only                    Table 4: Prototype measurements collected from a 100-node
+and reconciliation-only designs?                                                      deployment comparing the latency and bandwidth of the
+    A key design choice in Erlay is to flood transactions to 8 out-                   BTCFlood in the reference implementation against our Er-
+bound peers and none to the inbound peers. We have also con-                          lay implementation.
+sidered other alternatives while designing Erlay. Although a full
+exposition of the design space is beyond the scope of this paper, we
+present a limited comparison of the latency-bandwidth trade-off
+for several other protocol variants that use a different choice of
+flooding inbound/outbound peers. Specifically, we used our simu-
+lator to collect data about versions of the Erlay protocol that use                   for X and Y get close to the left corner. But they do not strike as
+X inbound peers and Y outbound peers for flooding (while using                        good a balance between latency and bandwidth as Erlay does.
+reconciliation on all links including X and Y ), for different values
+of X and Y .                                                                          9   REFERENCE IMPLEMENTATION RESULTS
+    We ran several experiments, with each experiment being a proto-
+col configuration that select a specific X inbound and Y outbound                     We implemented Erlay as part of Bitcoin Core. For this we added
+values. In these experiments we simulated a network of 24,000                         584 LOC, not including Minisketch. We used a network of 100
+private and 6,000 public nodes and relayed a total of 1,000 transac-                  Azure nodes located in 6 data centers, running a reference imple-
+tions5 . We collected transaction latency and bandwidth usage for                     mentation of our protocol integrated in Bitcoin Core node software,
+each experiment and Figure 19 plots the results.                                      to evaluate Erlay in deployment. We generated and relayed 1000
+    Figure 19 shows that BTCFlood and Reconciliation-only indeed                      transactions, all originating from one node with a rate of 7 transac-
+lie at opposite ends of the trade-off spectrum (top left for BTCFlood                 tions per second. We compared the average latency and bandwidth
+and bottom right for Reconciliation-only). And, most key, Erlay                       of Erlay versus Bitcoin’s current implementation. Table 4 summa-
+lies closer to the bottom left corner than either configuration. This                 rizes our results. According to our measurements, Erlay introduced
+figure also shows that configurations with other choices of values                    a latency increase of 0.2 seconds, while saving 40% of the overall
+                                                                                      node bandwidth.
+                                                                                         As in our simulations, Erlay has a higher latency but lower
+5 We restricted the network size to constraint the experiment running time            bandwidth cost, confirming our original design intent (Fig. 6).
+                                                                                 11
+10      DISCUSSION                                                              estimator. Withstanding more sophisticated attacks (e.g., finger-
+Reconciliation-only relay. We believe that a reconciliation-only                printing propagation traces) is an open question for future research.
+transaction relay protocol would be inherently susceptible to tim-                  Mining-related attacks. There is no direct relationship be-
+ing attacks that could reveal the source of the transaction. Unlike             tween Erlay and attacks like selfish mining [21]. By making timing
+flooding, reconciliation is inherently bi-directional: an inbound               attacks more expensive, Erlay makes it harder to infer the network
+connection for one peer is an outbound connection for another                   topology. Inferring the topology would allow clustering the net-
+peer. Delays cannot be applied per-direction but rather per-link.               work by attacking bottlenecks. Clustering the network would then
+Therefore, BTCFlood’s diffusion delay cannot be used in reconcilia-             split mining efforts and introduce many orphan blocks until the net-
+tion.                                                                           work clusters recompose. Thus, Erlay indirectly makes the network
+   Erlay increases latency from 3.15s to 5.75s Erlay increases                  stronger.
+the time to relay an unconfirmed transaction across all nodes, which                Relevance to other blockchains. Erlay is relevant to most
+is a small fraction of the end-to-end transaction processing (10                other deployed blockchains (e.g., Ethereum, Zcash) because they
+minutes).                                                                       use flooding for transaction relay. Even though there might be a
+   We tuned Erlay to maximize bandwidth savings assuming that an                difference in TXID size or number of connected peers, the difference
+increase in latency from 3.15s to 5.75s is acceptable. It is possible to        that matters is transaction rate. As Figures 17 and 18 illustrate, Erlay
+tune Erlay to provide the same latency as BTCFlood by reconciling               is theoretically suitable for systems with higher transaction rate.
+more often, but this would save 70% of transaction relay bandwidth                  On the other hand, since PinSketch has quadratic complexity, us-
+instead of 84%. If we tuned Erlay to provide the same latency as                ing it without modifications would lead to the high computational
+BTCFlood, we could increase network connectivity and improve                    cost of reconciliation, and higher hardware requirements. To re-
+the network security without additional bandwidth overhead.                     duce the computational cost of reconciliation, we suggest applying
+   In practice, there are 2 primary implications of transaction relay           bisection from the first reconciliation step.
+latency increase.                                                                   For example, consider a system with a network similar to Bitcoin,
+   Block production rate is defined by block relay latency, which               but with a throughput of 700 transactions/s. If Erlay is applied in
+is only indirectly defined by transaction relay latency: if fewer               the same way as we suggest for Bitcoin, an average reconciliation
+transactions are relayed, it will take longer for blocks to propagate           set difference would consist of 1,000 elements. According to the
+(since missing transactions have to be relayed and validated). Block            benchmarks, straightforward reconciliation through Minisketch
+production rate is defined in this way because to maximize the                  would take 1,000 ms. At the same time, with bisection recursively
+security of the network all miners have to work on the latest block             applied 3 times, 8 chunks consisting of 125 elements would have to
+and can avoid generating “orphan” blocks. Because Erlay’s latency               be reconciled, and this would take only 20 ms. This result makes
+among public nodes is better than BTCFlood (Erlay’s diffusion                   Erlay usable for systems with much higher transaction rate.
+interval is lower), miners’ orphan rate will probably be lower with                 We do not propose this measure for Bitcoin, because consid-
+Erlay. And, because most miners today use an overlay network                    ering the transaction rate in Bitcoin, the computational cost of
+(e.g., FIBRE), transaction relay latency increase (3.15s to 5.75s with          reconciliation is already low enough.
+Erlay will have even less impact.
+   User experience. If a transaction is accepted in an unconfirmed
+state, then the user perceives the 2.6s latency increase. However,
+                                                                                11    RELATED WORK
+unconfirmed transactions are rarely accepted by users. Instead,                 Prior studies of Bitcoin’s transaction relay focused on information
+users wait for at least 10 minutes to confirm transactions. Therefore,          leakage and other vulnerabilities [23, 46], and did not consider
+we think that Erlay’s 2.6s latency increase insignificantly impacts             bandwidth optimization. We believe that our work is the first to
+the users’ experience.                                                          introduce a bandwidth-efficient, low-latency, and robust transaction
+   Compatibility with Dandelion. Dandelion is an alternative                    relay alternative for Bitcoin. Erlay is designed as a minimal change
+transaction relay protocol introduced to improve the anonymity                  to Bitcoin (584 LOC), in contrast with other proposals that optimize
+and robustness to adversarial observers in Bitcoin [23]. Dandelion              Bitcoin more deeply [20].
+has two phases: stem (propagation across a single link of ten nodes             Short transaction identifiers. One solution to BTCFlood’s inef-
+on average), and fluff (relay using flooding from the last node in              ficiency is to use short transaction identifiers. There are two issues
+the stem link). Erlay is complimentary with Dandelion: Erlay                    with this solution. First, this only reduces bandwidth cost by a con-
+would replace the fluff phase in Dandelion, while the stem phase of             stant factor. In our simulation we found that short identifiers would
+Dandelion would flood through both inbound and outbound links                   reduce redundant traffic from 43% to 10%. But, with higher con-
+to preserve the privacy of private nodes.                                       nectivity, redundancy climbs back up faster than it does with Erlay.
+   Backward compatibility. Only about 30% of Bitcoin nodes                      The second issue with short IDs is that they would make the system
+run the latest release of Bitcoin Core6 . Therefore, Erlay must be              vulnerable to collision-related attacks, requiring a new per-node or
+backwards compatible. If not all nodes use Erlay, then Erlay may                per-link secure salting strategy.
+be activated per-link if both peers support it.                                 Blocksonly setting. Bitcoin Core 0.12 introduced a blocksonly
+   Sophisticated timing attacks. In Section 8.4 we demonstrated                 setting in which a node does not send or receive individual transac-
+that Erlay is less susceptible to timing attacks based on the first-spy         tions; instead, the node only handles complete blocks. As a result,
+                                                                                blocksonly has no INV message overhead. In the blocksonly case,
+6 https://luke.dashjr.org/programs/bitcoin/files/charts/security.html           nodes will have to relay and receive many transactions at once.
+                                                                           12
+This will increase the maximum node bandwidth requirements and              ACKNOWLEDGMENTS
+cause spikes in block content relay and transaction validation.             Gleb Naumenko was partially supported by Blockstream. This
+Reconciliation alternatives. Prior work has also devised multi-             research was also funded by an NSERC discovery grant to Ivan
+party set reconciliation [9, 43]. This approach, however, has addi-         Beschastnikh and was supported in part by a gift from Microsoft
+tional complexity and additional trust requirements between peers.          Azure.
+We believe that the benefits of such an approach are not substantial
+enough to justify these limitations.                                        REFERENCES
+   In addition, reconciliation-based techniques usually provide              [1] [n.d.]. Bitcoin core commit 5400ef. https://bit.ly/2Q2Djux.
+bandwidth-efficiency under the assumptions where most of the                 [2] [n.d.]. Falcon: A Fast New Bitcoin Backbone Relay Network. https://www.
+state being reconciled is shared [12, 48].                                       falcon-net.org/
+                                                                             [3] W. Ai, L. Xinsong, and L. Kejian. 2006. Efficient flooding in peer-to-peer networks.
+   Network attacks on Bitcoin and connectivity. The security                     In International Conference on Computer-Aided Industrial Design and Conceptual
+of the Bitcoin network has been under substantial scrutiny with                  Design. 1–6. https://doi.org/10.1109/CAIDCD.2006.329410
+many published network-related attacks [6–8, 13, 16, 19, 27, 29,             [4] Réka Albert and Albert-László Barabási. 2002. Statistical mechanics of complex
+                                                                                 networks. Rev. Mod. Phys. 74 (Jan 2002), 47–97. Issue 1. https://doi.org/10.1103/
+32, 33, 36, 39, 40, 45]. These attacks attempt to make the network               RevModPhys.74.47
+weaker (e.g., increase the probability of double-spending or denials         [5] Réka Albert, Hawoong Jeong, and Albert-László Barabási. 2000. Error and attack
+                                                                                 tolerance of complex networks. Nature 406 (27 07 2000), 378 EP –. https:
+of service) or violate user privacy. Many of these attacks rely on               //doi.org/10.1038/35019019
+non-mining nodes and assume limited connectivity from victim                 [6] Marcin Andrychowicz, Stefan Dziembowski, Daniel Malinowski, and Lukasz
+nodes. Our work allows Bitcoin nodes to have higher connectivity,                Mazurek. 2015. On the Malleability of Bitcoin Transactions. In Financial Cryptog-
+                                                                                 raphy and Data Security, Michael Brenner, Nicolas Christin, Benjamin Johnson,
+which we believe will make the network more secure.                              and Kurt Rohloff (Eds.). Springer Berlin Heidelberg, Berlin, Heidelberg, 1–18.
+Prior P2P research. Structured P2P networks are usually based on             [7] Alex Biryukov, Dmitry Khovratovich, and Ivan Pustogarov. 2014. Deanonymisa-
+Distributed Hash Tables (DHTs), in which every peer is responsible               tion of Clients in Bitcoin P2P Network. In ACM SIGSAC Conference on Computer
+                                                                                 and Communications Security (CCS).
+for specific content [38]. In these networks research has explored           [8] Joseph Bonneau. 2016. Why Buy When You Can Rent? - Bribery Attacks on
+the use of topology information to make efficient routing deci-                  Bitcoin-Style Consensus. In Financial Cryptography Workshops.
+                                                                             [9] Anudhyan Boral and Michael Mitzenmacher. 2014. Multi-Party Set Reconciliation
+sions [11, 50, 52, 55]. This design, however, makes these protocols              Using Characteristic Polynomials. CoRR abs/1410.2645 (2014).
+leak information about the structure of the network and makes               [10] A. Broder. 1997. On the Resemblance and Containment of Documents. In Pro-
+them less robust to Byzantine faults, though limited solutions to                ceedings of the Compression and Complexity of Sequences 1997 (SEQUENCES ’97).
+                                                                                 IEEE Computer Society, Washington, DC, USA, 21–. http://dl.acm.org/citation.
+Byzantine faults in this setting have been explored [14, 25].                    cfm?id=829502.830043
+   The trade-off between latency and bandwidth efficiency is well-          [11] Ian Clarke, Oskar Sandberg, Brandon Wiley, and Theodore W. Hong. 2001.
+known in P2P research. Kumar et. al. identified and formalized                   Freenet: A Distributed Anonymous Information Storage and Retrieval System.
+                                                                                 Springer Berlin Heidelberg, Berlin, Heidelberg, 46–66. https://doi.org/10.1007/
+the trade-off between latency and bandwidth [34], and Jiang et. al.              3-540-44702-4 4
+proposed a solution to achieve an optimal combination of these              [12] Matt Corallo. 2016.                   BIP 152:           Compact block relay.
+                                                                                 https://github.com/bitcoin/bips/blob/master/bip-0152.mediawiki.
+properties [30]. However, the solution was not designed for adver-          [13] corbixgwelt.        2011.                      Timejacking         and       bitcoin.
+sarial settings.                                                                 http://culubas.blogspot.de/2011/05/timejacking-bitcoin802.html.
+   Prior work also proposed feedback-based approaches to flood-             [14] Alan Dearle, Graham N. C. Kirby, and Stuart J. Norcross. 2010. Hosting Byzantine
+                                                                                 Fault Tolerant Services on a Chord Ring. CoRR abs/1006.3465 (2010).
+ing [3, 49]. However, we believe that to work efficiently (have a           [15] C. Decker and R. Wattenhofer. 2013. Information propagation in the Bitcoin
+horizon larger than 1), this work would have unacceptable informa-               network. In IEEE P2P 2013 Proceedings. 1–10. https://doi.org/10.1109/P2P.2013.
+tion leakage.                                                                    6688704
+                                                                            [16] Christian Decker and Roger Wattenhofer. 2014. Bitcoin Transaction Malleability
+                                                                                 and MtGox. CoRR abs/1403.6676 (2014).
+                                                                            [17] Sergi Delgado Segura, Surya Bakshi, Cristina Pérez-Solà, James Litton, Andrew
+                                                                                 Pachulski, Andrew Miller, and Bobby Bhattacharjee. 2019. TxProbe: Discovering
+                                                                                 Bitcoin’s Network Topology Using Orphan Transactions. In Financial Cryptogra-
+                                                                                 phy (FC).
+                                                                            [18] Yevgeniy Dodis, Leonid Reyzin, and Adam Smith. 2004. Fuzzy Extractors: How
+12    CONCLUSIONS                                                                to Generate Strong Keys from Biometrics and Other Noisy Data. In Advances in
+                                                                                 Cryptology - EUROCRYPT 2004, Christian Cachin and Jan L. Camenisch (Eds.).
+Bitcoin is one of the most widely used P2P applications. Today,                  Springer Berlin Heidelberg, Berlin, Heidelberg, 523–540.
+                                                                            [19] John R. Douceur. 2002. The Sybil Attack. In International Workshop on Peer-to-Peer
+Bitcoin relies on flooding to relay transactions in a network of                 Systems (IPTPS).
+about 60,000 nodes. Flooding provides low latency and is robust             [20] Ittay Eyal, Adem Efe Gencer, Emin Gün Sirer, and Robbert Van Renesse. 2016.
+to adversarial behavior, but it is also bandwidth-inefficient and                Bitcoin-NG: A Scalable Blockchain Protocol. In Usenix Conference on Networked
+                                                                                 Systems Design and Implementation (NSDI).
+creates a significant amount of redundant traffic. We proposed              [21] Ittay Eyal and Emin Gün Sirer. 2013. Majority is not Enough: Bitcoin Mining is
+Erlay, an alternative protocol that combines limited flooding with               Vulnerable. CoRR abs/1311.0243 (2013).
+intermittent reconciliation. We evaluated Erlay in simulation and           [22] Muntadher Fadhil, Gareth Owen, and Mo Adda. 2016. Bitcoin network mea-
+                                                                                 surements for simulation validation and parameterisation. In Proceedings of the
+with a practical deployment. Compared to Bitcoin’s current proto-                Eleventh International Network Conference (INC 2016). University of Plymouth,
+cols, Erlay reduces the bandwidth used to announce transactions                  109–114.
+                                                                            [23] Giulia C. Fanti, Shaileshh Bojja Venkatakrishnan, Surya Bakshi, Bradley Denby,
+by 84% while increasing the latency for transaction dissemination                Shruti Bhargava, Andrew Miller, and Pramod Viswanath. 2018. Dandelion++:
+by 2.6s (from 3.15s to 5.75s). Erlay allows Bitcoin nodes to have                Lightweight Cryptocurrency Networking with Formal Anonymity Guarantees.
+higher connectivity, which will make the network more secure. We                 CoRR abs/1805.11060 (2018). arXiv:1805.11060 http://arxiv.org/abs/1805.11060
+                                                                            [24] Joan Feigenbaum, Sampath Kannan, Martin J. Strauss, and Mahesh Viswanathan.
+are actively working to introduce Erlay into Bitcoin Core’s node                 2003. An Approximate L1-Difference Algorithm for Massive Data Streams. SIAM
+software.                                                                        J. Comput. 32, 1 (Jan. 2003), 131–151. https://doi.org/10.1137/S0097539799361701
+                                                                       13
+[25] Amos Fiat, Jared Saia, and Maxwell Young. 2005. Making Chord Robust to                         Approach to Reduce Duplicate Messages in Unstructured Peer-To-Peer Networks.
+     Byzantine Attacks. In Proceedings of the 13th Annual European Conference on                    Springer US, Boston, MA, 103–118. https://doi.org/10.1007/978-0-387-47658-2 8
+     Algorithms (ESA’05). Springer-Verlag, Berlin, Heidelberg, 803–814. https://doi.           [50] Antony Rowstron and Peter Druschel. 2001. Pastry: Scalable, distributed object
+     org/10.1007/11561071 71                                                                        location and routing for large-scale peer-to-peer systems. In IFIP/ACM Interna-
+[26] Arthur Gervais, Ghassan Karame, Karl Wst, Vasileios Glykantzis, Hubert Ritzdorf,               tional Conference on Distributed Systems Platforms (Middleware). 329–350.
+     and Srdjan Capkun. 2016. On the Security and Performance of Proof of Work                 [51] Yasushi Saito and Marc Shapiro. 2005. Optimistic Replication. ACM Comput.
+     Blockchains. In Proceedings of the 23nd ACM SIGSAC Conference on Computer                      Surv. 37, 1 (March 2005), 42–81. https://doi.org/10.1145/1057977.1057980
+     and Communication Security (CCS). ACM.                                                    [52] Ion Stoica, Robert Morris, David Karger, M. Frans Kaashoek, and Hari Bal-
+[27] Arthur Gervais, Hubert Ritzdorf, Ghassan O. Karame, and Srdjan Capkun. 2015.                   akrishnan. 2001. Chord: A Scalable Peer-to-peer Lookup Service for Internet
+     Tampering with the Delivery of Blocks and Transactions in Bitcoin. In ACM                      Applications. In SIGCOMM.
+     SIGSAC Conference on Computer and Communications Security (CCS).                          [53] P. Todd. 2015.        Why Scaling Bitcoin With Sharding Is Very Hard.
+[28] Matthias Grundmann, Till Neudecker, and Hannes Hartenstein. 2018. Exploiting                   https://petertodd.org/2015/why-scaling-bitcoin-with-sharding-is-very-hard.
+     Transaction Accumulation and Double Spends for Topology Inference in Bitcoin.             [54] A. Trachtenberg, D. Starobinski, and S. Agarwal. 2002. Fast PDA synchronization
+[29] Ethan Heilman, Alison Kendler, Aviv Zohar, and Sharon Goldberg. 2015. Eclipse                  using characteristic polynomial interpolation. In Proceedings.Twenty-First Annual
+     Attacks on Bitcoin’s Peer-to-peer Network. In Proceedings of the 24th USENIX                   Joint Conference of the IEEE Computer and Communications Societies, Vol. 3.
+     Conference on Security Symposium (SEC).                                                        1510–1519 vol.3. https://doi.org/10.1109/INFCOM.2002.1019402
+[30] J. Jiang, C. Hung, and J. Wu. 2010. Bandwidth- and Latency-Aware Peer-to-Peer             [55] S. Vuong and J. Li. 2003. Efa: an efficient content routing algorithm in large
+     Instant Friendcast for Online Social Networks. In 2010 IEEE 16th International                 peer-to-peer overlay networks. In Proceedings Third International Conference on
+     Conference on Parallel and Distributed Systems. 829–834. https://doi.org/10.1109/              Peer-to-Peer Computing (P2P). 216–217. https://doi.org/10.1109/PTP.2003.1231532
+     ICPADS.2010.101
+[31] jl777. 2016. Re: Blocksonly mode BW savings, the limits of efficient block xfer,
+     and better relay. https://bit.ly/2VmcgeM.
+[32] Benjamin Johnson, Aron Laszka, Jens Grossklags, Marie Vasek, and Tyler Moore.
+     2014. Game-Theoretic Analysis of DDoS Attacks Against Bitcoin Mining Pools. In
+     Financial Cryptography and Data Security, Rainer Böhme, Michael Brenner, Tyler
+     Moore, and Matthew Smith (Eds.). Springer Berlin Heidelberg, Berlin, Heidelberg,
+     72–86.
+[33] Philip Koshy, Diana Koshy, and Patrick McDaniel. 2014. An Analysis of
+     Anonymity in Bitcoin Using P2P Network Traffic. In Financial Cryptography and
+     Data Security, Nicolas Christin and Reihaneh Safavi-Naini (Eds.). Springer Berlin
+     Heidelberg, Berlin, Heidelberg, 469–485.
+[34] P. Kumar, G. Sridhar, and V. Sridhar. 2005. Bandwidth and latency model
+     for DHT based peer-to-peer networks under variable churn. In 2005 Systems
+     Communications (ICW’05, ICHSN’05, ICMCS’05, SENET’05). 320–325. https:
+     //doi.org/10.1109/ICW.2005.31
+[35] Spiridoula V. Margariti and Vassilios V. Dimakopoulos. 2013. A study on the re-
+     dundancy of flooding in unstructured p2p networks. International Journal of Par-
+     allel, Emergent and Distributed Systems 28, 3 (2013), 214–229. https://doi.org/10.
+     1080/17445760.2012.724067 arXiv:https://doi.org/10.1080/17445760.2012.724067
+[36] Apostolaki Maria, Zohar Aviv, and Vanbever Laurent. 2017. Hijacking Bitcoin:
+     Routing Attacks on Cryptocurrencies. In Security and Privacy (SP). IEEE.
+[37] Gregory Maxwell. 2016. Blocksonly mode BW savings, the limits of efficient
+     block xfer, and better relay. https://bitcointalk.org/index.php?topic=1377345.0.
+[38] Petar Maymounkov and David Mazières. 2002. Kademlia: A Peer-to-Peer Infor-
+     mation System Based on the XOR Metric. In Peer-to-Peer Systems, Peter Druschel,
+     Frans Kaashoek, and Antony Rowstron (Eds.). Springer Berlin Heidelberg, Berlin,
+     Heidelberg, 53–65.
+[39] Patrick McCorry, Siamak Fayyaz Shahandashti, and Feng Hao. 2016. Refund
+     attacks on Bitcoin’s Payment Protocol. IACR Cryptology ePrint Archive 2016
+     (2016), 24.
+[40] A. Miller. 2013. Feather-forks: enforcing a blacklist with sub-50% hashpower?
+     https://bitcointalk.org/index.php?topic=36788.msg463391#msg463391.
+[41] Andrew Miller, James Litton, Andrew Pachulski, Neal Gupta, Dave Levin, Neil
+     Spring, and Bobby Bhattacharjee. 2015. Discovering Bitcoin fi s Public Topology
+     and Influential Nodes.
+[42] Yaron Minsky and Ari Trachtenberg. 2002. Practical Set Reconciliation. Dept.
+     Elec. Comput. Eng., Boston Univ., Boston, MA, Tech. Rep. BU-ECE2002-01.
+[43] Michael Mitzenmacher and Rasmus Pagh. 2013. Simple Multi-Party Set Recon-
+     ciliation. CoRR abs/1311.2037 (2013).
+[44] Satoshi Nakamoto. [n.d.]. Bitcoin: A peer-to-peer electronic cash system,fi
+     http://bitcoin.org/bitcoin.pdf.
+[45] Arvind Narayanan. 2016. Bitcoin and cryptocurrency technologies : a comprehen-
+     sive introduction. Princeton University Press, Princeton, New Jersey.
+[46] T. Neudecker, P. Andelfinger, and H. Hartenstein. 2016. Timing Analysis for
+     Inferring the Topology of the Bitcoin Peer-to-Peer Network. In IEEE Conferences
+     on Ubiquitous Intelligence Computing, Advanced and Trusted Computing, Scalable
+     Computing and Communications, Cloud and Big Data Computing, Internet of
+     People, and Smart World Congress (UIC/ATC/ScalCom/CBDCom/IoP/SmartWorld).
+     358–367.
+[47] T. Neudecker and H. Hartenstein. 2018. Network Layer Aspects of Permissionless
+     Blockchains. IEEE Communications Surveys Tutorials (2018), 1–1. https://doi.
+     org/10.1109/COMST.2018.2852480
+[48] A. Pinar Ozisik, Gavin Andresen, George Bissias, Amir Houmansadr, and
+     Brian Neil Levine. 2017. Graphene: A New Protocol for Block Propagation
+     Using Set Reconciliation. In DPM/CBT@ESORICS (Lecture Notes in Computer
+     Science), Vol. 10436. Springer, 420–428.
+[49] Charis Papadakis, Paraskevi Fragopoulou, Evangelos P. Markatos, Elias Athana-
+     sopoulos, Marios Dikaiakos, and Alexandras Labrinidis. 2007. A Feedback-Based
+                                                                                          14
+

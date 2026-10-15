@@ -1,0 +1,1767 @@
+                                                        Anonymity Properties of the Bitcoin P2P Network
+
+                                                                                  Giulia Fanti                                                          Pramod Viswanath
+                                                              Coordinated Sciences Laboratory                                                    Coordinated Sciences Laboratory
+                                                           University of Illinois, Urbana-Champaign                                           University of Illinois, Urbana-Champaign
+                                                                             IL 61801                                                                           IL 61801
+                                                                            fanti@illinois.edu                                                        pramodv@illinois.edu
+
+
+                                         ABSTRACT
+arXiv:1703.08761v1 [cs.CR] 26 Mar 2017
+
+
+
+
+                                                                                                                                           and (2) pseudonyms can be linked to financial transactions
+                                         Bitcoin is a popular alternative to fiat money, widely used for                                   by way of a public transaction ledger, called the blockchain
+                                         its perceived anonymity properties. However, recent attacks                                       [27]. This means that if an attacker is able to associate a
+                                         on Bitcoin’s peer-to-peer (P2P) network demonstrated that                                         pseudonym with its human user, the attacker may learn the
+                                         its gossip-based flooding protocols, which are used to ensure                                     user’s entire transaction history. Such leakage represents a
+                                         global network consistency, may enable user deanonymization—                                      massive privacy violation, and would be deemed unaccept-
+                                         the linkage of a user’s IP address with her pseudonym in                                          able in traditional banking systems.
+                                         the Bitcoin network. In 2015, the Bitcoin community re-                                              In practice, there are several ways to link a user to her Bit-
+                                         sponded to these attacks by changing the network’s flood-                                         coin pseudonym. The most commonly-studied methods an-
+                                         ing mechanism to a different protocol, known as diffusion.                                        alyze transaction patterns in the public blockchain, and link
+                                         However, no systematic justification was provided for the                                         those patterns using side information [28, 31]. In this paper,
+                                         change, and it is unclear if diffusion actually improves the                                      we are interested in a lower-layer vulnerability: the network-
+                                         system’s anonymity. In this paper, we model the Bitcoin                                           ing stack. Like most cryptocurrencies, Bitcoin nodes com-
+                                         networking stack and analyze its anonymity properties, both                                       municate over a P2P network [27]. The anonymity implica-
+                                         pre- and post-2015. In doing so, we consider new adversar-                                        tions of this P2P network have been largely ignored until re-
+                                         ial models and spreading mechanisms that have not been                                            cently, when researchers demonstrated empirical deanonymiza-
+                                         previously studied in the source-finding literature. We the-                                      tion attacks that exploit the P2P network’s management
+                                         oretically prove that Bitcoin’s networking protocols (both                                        protocols [8, 19]. These findings are particularly trouble-
+                                         pre- and post-2015) offer poor anonymity properties on net-                                       some because the Bitcoin P2P stack is used in a number
+                                         works with a regular-tree topology. We validate this claim                                        of other cryptocurrencies (or altcoins), some of which are
+                                         in simulation on a 2015 snapshot of the real Bitcoin P2P                                          designed with provable anonymity guarantees in mind [3,
+                                         network topology.                                                                                 33]. Hence vulnerabilities in the Bitcoin P2P network may
+                                                                                                                                           extend to a host of other cryptocurrencies as well.
+                                                                                                                                              We are interested in one key aspect of the Bitcoin P2P
+                                         Categories and Subject Descriptors                                                                network: the dissemination of transactions. Whenever a
+                                         G.2.2 [Graph Theory]: Network problems, Graph algo-                                               user (Alice) generates a transaction (i.e., she sends bitcoins
+                                         rithms                                                                                            to another user, Bob), she first creates a “transaction mes-
+                                                                                                                                           sage” that contains her pseudonym, Bob’s pseudonym, and
+                                         Keywords                                                                                          the transaction amount. Alice subsequently broadcasts this
+                                                                                                                                           transaction message over the P2P network, which enables
+                                         Cryptocurrencies, Bitcoin, Peer-to-Peer Networks, Privacy                                         other users to validate her transaction and incorporate it
+                                                                                                                                           into the global blockchain.
+                                         1.     INTRODUCTION                                                                                  The broadcast of transactions is critical to maintaining
+                                            The Bitcoin cryptocurrency has seen widespread adop-                                           blockchain consistency. Broadcasting proceeds by flooding
+                                         tion, due in part to its reputation as a privacy-preserving fi-                                   transactions along links in the P2P network. The actual
+                                         nancial system [21, 26]. In practice, though, Bitcoin exhibits                                    flooding protocol has been the subject of some discussion,
+                                         a number of serious privacy vulnerabilities [4, 23, 31, 32, 28].                                  and is central to our paper. In particular, we are inter-
+                                         Most of these vulnerabilities arise because of two key prop-                                      ested in theoretically quantifying the anonymity properties
+                                         erties: (1) Bitcoin associates each user with a pseudonym,                                        of existing flooding protocols used by the Bitcoin networking
+                                                                                                                                           stack.
+                                                                                                                                           Anonymity in the Bitcoin P2P network. Transaction
+                                         Permission to make digital or hard copies of all or part of this work for personal or
+                                                                                                                                           broadcasting opens a new avenue for deanonymization at-
+                                         classroom use is granted without fee provided that copies are not made or distributed             tacks. If an attacker can infer the IP address that initiated a
+                                         for profit or commercial advantage and that copies bear this notice and the full cita-            transaction broadcast, then the attacker can also link the IP
+                                         tion on the first page. Copyrights for components of this work owned by others than               address to the associated user’s Bitcoin pseudonym. Since
+                                         ACM must be honored. Abstracting with credit is permitted. To copy otherwise, or re-              IP addresses can sometimes be linked to human identities
+                                         publish, to post on servers or to redistribute to lists, requires prior specific permission       (e.g., with the help of an ISP), this deanonymization vector
+                                         and/or a fee. Request permissions from permissions@acm.org.
+                                         Copyright 20XX ACM X-XXXXX-XX-X/XX/XX ...$15.00.
+                                                                                                                                           is a powerful one.
+
+
+                                                                                                                                       1
+   In recent years, security researchers demonstrated pre-           Table 1: Summary of probability of detection results on reg-
+cisely such deanonymization attacks, which exploit Bitcoin’s         ular trees. Asymptotics are in the tree degree d. Notice that
+transaction-flooding protocols. These attacks rely on a “su-         results for trickle and diffusion are similar.
+pernode” that connects to active Bitcoin nodes and listens
+to the transaction traffic relayed by honest nodes [19, 8, 9].                                  Trickle             Diffusion
+Using this technique, researchers were able to link Bitcoin                                   (pre-2015)           (post-2015)
+                                                                                           log(d)                        log(d−1)
+                                                                                                   + o logd d
+                                                                                                              
+users’ pseudonyms to their IP addresses with an accuracy of                 First-        d log(2)                         (d−2)
+up to 30% [8].                                                            Timestamp             (Eq. 5)             (Thm. 4.1)
+   In 2015, the Bitcoin community responded to these at-                  Maximum-
+tacks by changing its flooding protocols from a gossip-style                             Θ(1)    (Thm. 3.3)       Θ(1)     (Thm 4.2)
+                                                                          Likelihood
+protocol known as trickle spreading to a diffusion spreading
+protocol that spreads content with independent exponential
+delays [1]. We define these protocols precisely in Section           Paper Structure. We begin by modeling Bitcoin’s P2P
+2. However, no systematic motivation was provided for this           networking stack and the adversaries of interest in Section
+shift. Indeed, it is unclear whether the change actually de-         2. We then analyze the performance of trickle propagation
+fends against the deanonymization attacks in [8, 19].                in Section 3. In Section 4, we analyze the performance of
+                                                                     diffusion. We compare these results side-by-side in Section
+1.1   Problem and Contributions                                      5, which also includes empirical trials on a snapshot of the
+   Our goal is to analyze the anonymity properties of the Bit-       real Bitcoin network. We discuss the relation between our
+coin P2P network. The main point of our paper is to show             results and prior work in Section 6. Section 7 concludes
+that the Bitcoin network has poor anonymity properties,              by discussing the practical implications of these results and
+and the community’s shift from trickle spreading (pre-2015)          preliminary ideas on how to solve the problem.
+to diffusion spreading (post-2015) did not help the situation.
+The optimal (maximum-likelihood) source-identification al-
+gorithms change between protocols; identifying such algo-            2.    MODEL AND PROBLEM STATEMENT
+rithms and quantifying their performance is the primary                To characterize the anonymity of Bitcoin’s P2P network,
+focus of this work. We find that despite having different            we need to model three key aspects of the system: the net-
+maximum-likelihood estimators, trickle and diffusion exhibit         work topology, the spreading protocol, and the adversary’s
+roughly the same, poor anonymity properties. Our specific            capabilities.
+contributions are threefold:
+(1) Modeling. We model the Bitcoin P2P network and an                2.1    Network Model
+‘eavesdropper adversary’, whose capabilities reflect recent             The Bitcoin P2P network contains two classes of nodes:
+practical attacks in [8, 19]. This task is complicated by the        servers and clients. Clients are nodes that do not accept in-
+fact that most Bitcoin network protocols are not explicitly          coming TCP connections (e.g., nodes behind NAT), whereas
+documented. Modeling the system therefore requires parsing           servers do accept incoming connections. Clients and servers
+a combination of documentation, papers, and code. Several            have different networking protocols and anonymity concerns.
+of the resulting models are new to the rumor source analysis         For instance, clients do not relay transactions. We focus in
+literature.                                                          this work on servers.
+                                                                        We model the P2P network of servers as a graph G(V, E),
+(2) Analysis of Trickle (Pre-2015). We analyze the
+                                                                     where V is the set of all server nodes and E is the set
+probability of deanonymization by an eavesdropper adver-
+                                                                     of edges, or connections, between them. In practice, each
+sary under trickle propagation, which was used until 2015.
+                                                                     server node is represented by a (IP address, port) tuple.
+Our analysis is conducted over a regular tree-structured net-
+                                                                     Currently, there are about 5,000 active Bitcoin servers, and
+work. Although the Bitcoin network topology is not a reg-
+                                                                     this number generally remains stable over the timescale of a
+ular tree, we will see in Section 2 that regular trees are
+                                                                     single transaction broadcast [10]. Each server is allowed to
+a reasonable first-order model. We consider suboptimal,
+                                                                     establish up to eight outgoing connections to active Bitcoin
+graph-independent estimators (e.g., the first-timestamp es-
+                                                                     nodes and maintain up to 125 total active connections [8,
+timator), as well as maximum-likelihood estimators; both
+                                                                     2]. For a connection between Alice and Bob, an outgoing
+are defined precisely in Section 2. Our analysis suggests
+                                                                     connection (from Alice’s perspective) is one that is initiated
+that although the first-timestamp estimator performs poorly
+                                                                     by Alice, whereas an incoming connection is one initiated
+on high-degree trees, maximum-likelihood estimators can
+                                                                     by Bob. However, these TCP connections are bidirectional
+achieve high probabilities of detection for trees of any de-
+                                                                     once established. Most of a server’s incoming connections
+gree d (Table 1).
+                                                                     are from Bitcoin clients, so they are irrelevant to our analy-
+(3) Analysis of Diffusion (Post-2015). We conduct a                  sis. However, we will see momentarily that adversaries can
+similar analysis of diffusion spreading, which was adopted           use the asymmetry between incoming and outgoing connec-
+in 2015 as a fix for the anonymity weaknesses observed un-           tions to monitor the network for deanonymization attacks.
+der trickle propagation [8, 19]. Table 1 summarizes a subset            The resulting sparse random graph between servers can be
+of our results, which characterize the probability of detec-         modeled approximately as a 16-regular graph; in practice,
+tion asymptotically in tree degree d. We wish to highlight           the average degree is closer to 8 due to nonhomogeneities
+the fact that trickle and diffusion exhibit similar anonymity        across nodes [24]. Critically, the graph is locally tree-like and
+behavior. We revisit this table more carefully in Section 5,         (approximately) regular. For this reason, regular trees are
+where we also empirically validate our findings on a snapshot        a natural class of graphs to study. In our theoretical analysis,
+of the real Bitcoin network from 2015.                               we model G as a d-regular tree. We validate this choice
+
+
+                                                                 2
+by running simulations on a snapshot of the true Bitcoin
+network [24] (Section 5).                                                                   Eavesdropper
+                                                                                                                    𝑑=2
+2.2    Spreading Protocols                                                                                          𝜃=3
+   Recall that every time a transaction (or a block) is com-
+                                                                                                          ∗
+pleted, it is broadcast over the network. In this work, we an-                                        𝑣
+alyze the spread of a single message originating from source
+node v ∗ ∈ V . Without loss of generality, we will label v ∗ as
+node ‘0’ whenever we are iterating over nodes.                        Figure 1: The eavesdropper adversary establishes θ links
+   The broadcasting protocol for messages has been under              (shown in red) to each server. Honest servers are connected
+discussion in the Bitcoin community recently. Until 2015,             in a d-regular tree topology (edges shown in black).
+the Bitcoin network used a gossip-like trickle broadcasting
+protocol. However, in the wake of various anonymity attacks
+[8, 9, 19], the reference Bitcoin implementation changed its          tions in the original server graph G, so G remains a d-regular
+networking stack to use a different broadcasting protocol             graph. This setup is illustrated in Figure 1.
+known as diffusion [1]. In this paper, we evaluate both pro-             Once the supernode in [8, 19] is established, it simply lis-
+tocols and compare their performance.                                 tens to all relayed messages on the network, without relaying
+   Trickle spreading is a gossip-based flooding protocol.             or transmitting any content—hence the name ‘eavesdropper
+Each message source or relay randomly orders its neighbors            adversary.’ Over time, due to peer address propagation pro-
+who have not yet seen the message; we call these uninfected           tocols (which were not discussed here), the adversary learns
+neighbors. It then transmits the message to its neighbors             the network structure between servers. Therefore, we as-
+according to the ordering, with a constant delay of 200 ms            sume that G(V, E) is known to the eavesdropper adversary.
+between transmissions [8]. We model this spreading proto-                The supernode in [8, 19] also observes the timestamps at
+col by assuming a discrete-time system; each source or relay          which messages are relayed from each honest server. Since
+randomly orders its uninfected neighbors and transmits the            the adversary maintains multiple active connections to each
+message to one neighbor per subsequent time step. We as-              server, it receives the message multiple times from each
+sume a node begins relaying a message in the first timestep           server. For ease of analysis, we assume that the eavesdropper
+after it receives the message.                                        adversary only stores the first such timestamp. We also as-
+   In diffusion spreading, each source or relay node trans-           sume that the adversary observes all timestamps relative to
+mits the message to each of its uninfected neighbors with             time t = 0, i.e., it knows when the message started spread-
+an independent, exponential delay of rate λ. We assume a              ing. Given this, we let τv denote the time at which the
+continuous-time system, in which a node starts the expo-              adversary first observes the message from node v ∈ V . We
+nential clocks as soon as it receives (or creates) a message.         let τ denote the set of all observed timestamps.
+   For both protocols, we let Xv denote the timestamp at
+                                                                      Relation to existing adversarial models. We wish to
+which honest node v ∈ V receives a given message. Note
+                                                                      briefly highlight the difference between the eavesdropper ad-
+that server nodes cannot be infected more than once. We
+                                                                      versary and two commonly-studied adversarial models. The
+assume the message originates at time t = 0, so Xv∗ =
+                                                                      snapshot adversary is the most common adversary in this
+X0 = 0. Moreover, we let Gt (Vt , Et ) denote the infected
+                                                                      space [36, 35, 37, 14, 20]. A snapshot adversary observes the
+subgraph of G at time t, or the subgraph of nodes who have
+                                                                      set of infected nodes at a single time T ; in our notation, the
+received the message (but not necessarily reported it to the
+                                                                      adversary learns the set {v ∈ V : Xv ≤ T } (no timestamps),
+adversary) by time t.
+                                                                      along with graph G. The eavesdropper adversary differs in
+                                                                      that it eventually observes a noisy timestamp τv for every
+2.3    Adversarial Model                                              node, regardless of when the node is infected.
+   We consider an adversary whose goal is to link a message             Another common adversarial model is the spy-based ad-
+with the (IP address, port) that originated it. In our setup,         versary, which observes exact timestamps for a corrupted
+this translates to identifying the source node v ∗ ∈ V .              set of nodes that does not include the source [29, 40]. In our
+   To this end, we introduce an eavesdropper adversary,               notation, for a set of spies S ⊆ V , the spy-based adversary
+whose capabilities are modeled on the practical deanonymiza-          observes {(s, Xs ) : s ∈ S}. This is different from the eaves-
+tion attacks in [8, 19]. These attacks are cheap, scalable, and       dropper adversary because the eavesdropper only observes
+simple, so they represent realistic threats to the network. We        delayed timestamps, and it does so for all nodes, including
+begin by describing the attacks at a practical level, and then        the source. Precise analysis of the spy-based adversary has
+extract models for the actual analysis.                               not appeared in the literature.
+   The attacks in [8, 19] use a supernode that connects to              Neither of these prior adversarial models adequately cap-
+most of the servers in the Bitcoin network. The supernode             tures the recent supernode-based deanonymization attacks
+can make multiple connections to each honest server, with             on the Bitcoin network [8, 19]. Indeed, we shall see that the
+each connection coming from a different (IP address, port).           eavesdropper adversary requires different analytical tech-
+Hence, the honest server does not realize that the supern-            niques from traditional adversarial models. On the other
+ode’s connections are all from the same entity. The supern-           hand, some of the techniques we will use to analyze the
+ode can compromise arbitrarily many of a server’s unused              eavesdropper adversary can be applied to traditional adver-
+connections, up to the hard limit of 125 total connections.           saries (Sec. 5).
+We model this setup by assuming that the eavesdropper ad-
+versary makes a fixed number θ of connections to each server,         Source Estimation. The adversary’s goal is as follows:
+where θ ≥ 1. We do not include these adversarial connec-              given the observed noisy timestamps τ (up to estimation
+
+
+                                                                  3
+time t) and the server graph G, find an estimator M(τ , G)             denote the minimum observed timestamp among nodes that
+that correctly identifies the true source. Our metric of suc-          are not the source. Then we compute P(τ0 < τm ), i.e., the
+cess for the adversary is probability of detection. Given              probability that the true source reports the message to the
+an estimator M, the adversary’s probability of detection is            adversary strictly before any of the other nodes. This event
+P(M(τ , G) = v ∗ ). The probability is taken over the random           (which causes the source to be detected with probability
+spreading realization (captured by τ ).                                1) does not include cases where the true source is one of
+   In [8, 19], the adversary’s estimator is a variant of the so-       k nodes (k > 1) that report the message to the adversary
+called first-timestamp estimator. The first-timestamp                  simultaneously, and before any other node in the system.
+estimator MFT (τ , G) outputs the first node (prior to estima-         Since P(τ0 < τm ) does not account for such ‘simultaneous
+tion time t) to report the message to the adversary:                   reporting’ events, it is a lower bound. Nonetheless, for large
+                                                                       d, the ‘simultaneous reporting’ event is rare, so our lower
+                   MFT (τ , G) = arg min τv .                          bound is close to the empirical probability of detection of
+                                    v∈Vt
+                                                                       the first-timestamp estimator.
+The first-timestamp estimator is popular because of its sim-
+                                                                          Theorem 3.1. Consider a message that propagates ac-
+plicity: it requires no knowledge of the graph, and it is com-
+                                                                       cording to trickle spreading over a d-regular tree of honest
+putationally easy to implement. Despite its simplicity, the
+                                                                       servers, where each node additionally has θ connections to
+first-timestamp estimator achieves high accuracy rates in
+                                                                       an eavesdropping adversary. The first-timestamp estima-
+practice [8, 19]. We begin by analyzing this estimator for
+                                                                       tor’s probability of detection at time t = ∞ satisfies
+both trickle and diffusion propagation.
+   In principle, the adversary could implement more compli-                                           θ h                           i
+                                                                         P(MFT (τ , G) = v ∗ ) ≥           Ei(2d log ρ) − Ei (log ρ)
+cated estimators that utilize the underlying graph structure.                                      d log 2
+We are particularly interested in the maximum-likelihood                                                                         (1)
+(ML) estimator, which maximizes the adversary’s proba-                            d−1
+bility of detection:                                                   where ρ = d−1+θ , Ei(·) denotes the exponential integral, de-
+                                                                       fined as
+            MML (τ , G) = arg max P(τ |G, v ∗ = v).                                                 Z ∞ −t
+                             v∈V                                                                         e dt
+                                                                                         Ei(x) , −             ,
+                                                                                                     −x     t
+The ML estimator depends on the time of estimation t to
+the extent that τ only contains timestamps up to time t.               and all logarithms are natural logs.
+Unlike the first-timestamp estimator, the ML estimator dif-            (Proof in Section B.1)
+fers across spreading protocols, depends on the graph, and               We prove this bound by conditioning on the time at which
+may be computationally intractable. We nonetheless bound               the source reports to the adversary, and computing the con-
+its performance for both trickle and diffusion spreading over          ditional probability that all other nodes report later. The
+regular trees.                                                         proof then becomes a combinatorial counting problem.
+2.4    Problem Statement                                               Implications. We can approximate the asymptotic behav-
+   Our primary goal is to understand whether the Bitcoin               ior of equation (1) for large d by using the exponential inte-
+community’s move from trickle spreading to diffusion actu-             gral’s Taylor expansion. First, we note that when d is large,
+ally improved the system’s anonymity guarantees. As such,              Ei(2d log ρ) ≈ 0, so we have
+our main problem is to characterize the maximum-likelihood                          θ h                            i
+(ML) probability of detection of the eavesdropper adversary                               Ei(2d log ρ) − Ei (log ρ)
+                                                                                 d log 2
+for both trickle and diffusion processes on d-regular trees, as                                                ∞
+                                                                                                                             !
+a function of degree d, number of corrupted connections θ,                          θ                         X    (log ρ)ν
+                                                                               ≈           −γ − log |log ρ| −                     (2)
+and detection time t. We meet this goal by computing lower                       d log 2                             ν · ν!
+                                                                                                              ν=1
+bounds derived from the analysis of suboptimal estimators                                                      
+(e.g., first-timestamp estimator and centrality-based estima-                       θ                          θ               θ
+                                                                               ≈           −γ − log log 1 +         + log(1 + )
+tors), and upper bounds derived from fundamental limits on                       d log 2                       d               d
+                                                                                                           !
+detection.                                                                             log2 (1 + dθ )
+                                                                                    −                 + ...                       (3)
+                                                                                             4
+3.    ANALYSIS OF TRICKLE (PRE-2015)                                                θ
+                                                                                         
+                                                                                                       θ    θ   θ2
+                                                                                                                           
+   We begin by analyzing the probability of detection of                       ≈           −γ − log + − 2 + . . .                 (4)
+                                                                                 d log 2               d    d  4d
+trickle spreading. We first consider the first-timestamp es-
+timator, followed by the ML estimator.                                 where γ ≈ 0.577 is the Euler-Mascheroni constant [39], and
+                                                                       (2) comes from substituting the exponential integral by its
+3.1    First-Timestamp Estimator                                       Taylor expansion for real arguments [6]. Line (3) holds be-
+                                                                                                     1
+  The analysis of trickle propagation is complicated by its            cause as d → ∞, ρ ≈ 1+θ/d         , and (4) holds because as
+combinatorial, time-dependent nature. As such, we begin by                              θ      θ
+                                                                       d → ∞, log(1 + d ) ≈ d .
+lower-bounding the first-timestamp estimator’s probability               In particular, for the special case of θ = 1 where the ad-
+of detection. We do so by computing the probability that               versary establishes only one connection per server, line (4)
+the true source reports the message strictly before any other          simplifies to
+node. Let                                                                                                            
+                                                                                                  log d         log d
+                                                                                P(MFT (τ , G)) ≈           +o           .       (5)
+                     τm , min(τ1 , τ2 , . . .)                                                   d · log 2        d
+
+
+                                                                   4
+                            0.65
+                                                         Theoretical lower bound        timestamps (i.e., τ ) restrict the set of possible orderings.
+                             0.6                         log(d) / (d log(2))
+                                                         Simulation
+                                                                                        A feasible ordering is an ordering that respects the rules of
+ Probability of Detection
+
+                            0.55                                                        trickle propagation over graph G, as well as the observed
+                             0.5
+                                                                                        timestamps τ . In this subsection only, we will abuse nota-
+                                                                                        tion by using τ to refer to all timestamps observed by the
+                            0.45                                                        adversary, not just the first timestamp from each server. So
+                                                                                        if the adversary has θ connections to each server, τ would
+                             0.4
+                                                                                        include θ timestamps per honest server.
+                                                                                           We propose an estimator called timestamp rumor cen-
+                            0.35
+                                                                                        trality, which counts the number of feasible orderings orig-
+                                                                                        inating from each candidate source. The candidate with the
+                             0.3                                                        most feasible orderings is chosen as the estimator output.
+                                                                                        This estimator is similar to rumor centrality, an estimator
+                                   2     4           6           8             10       devised for snapshot adversaries in [34]. However, the pres-
+                                             Tree degree, d                             ence of timestamps and the lack of knowledge of the infected
+                                                                                        subgraph complicates matters. We first motivate timestamp
+Figure 2: First-timestamp estimator accuracy on d-regular                               rumor centrality, then show that it is the ML source estima-
+trees when the adversary has one link per server (θ = 1).                               tor for trickle spreading under an eavesdropper adversary.
+
+                                                                                           Proposition 3.2. Consider a trickle process over a d-
+This suggests that the first-timestamp estimator has a prob-
+                                                                                        regular graph, where each node has θ connections to the
+ability of detection that decays to zero asymptotically as
+                                                                                        eavesdropper adversary. Any feasible orderings o1 and o2
+log(d)/d. Intuitively, the probability of detection should de-
+                                                                                        with respect to observed timestamps τ and graph G have the
+cay to zero, because the higher the degree of the tree, the
+                                                                                        same likelihood.
+higher the likelihood that a node other than the source re-
+ports to the adversary before the source does. Nonetheless,
+(5) is only a lower bound on the first-timestamp’s proba-                               (Proof in Section B.2)
+bility of detection, so we wish to understand how tight the                                This claim can be proved with an inductive argument,
+bound is.                                                                               which shows that at any given time, the number of nodes
+                                                                                        with a given uninfected degree, or number of uninfected neigh-
+Simulation Results. To evaluate the lower bound in The-                                 bors, is deterministic—i.e., it does not depend on the under-
+orem 3.1 and the approximation in (5), we simulate the first-                           lying ordering. Moreover, the likelihood of a given ordering
+timestamp estimator on regular trees. Figure 2 illustrates                              is strictly a function of the nodes’ uninfected degrees at each
+the simulation results for θ = 1 compared to the approxi-                               time step, so all feasible orderings have the same likelihood.
+mation in (5). Each data point is averaged over 5,000 trials.                              Proposition 3.2 implies that at any fixed time, the like-
+In practice, the lower bound appears to be tight, especially                            lihood of observing τ given a candidate source is propor-
+as d grows.                                                                             tional to the number of feasible orderings originating from
+  Figure 2 and approximation (5) suggest a natural solution                             that candidate source. Therefore, an ML estimator, which
+to the Bitcoin network’s anonymity problems: increase the                               we call timestamp rumor centrality, counts the number of
+degree of each node to reduce the adversary’s probability of                            feasible orderings at finite estimation time t.
+detection. However, we shall see in the next section that                                  Timestamp rumor centrality is a message-passing algo-
+stronger estimators (e.g., the ML estimator) may achieve                                rithm that proceeds as follows: for each candidate source,
+high probabilities of detection, even for large d. Therefore,                           recursively determine the set of feasible times when each
+the trickle protocol is unlikely to adequately protect users’                           node could have been infected, given the observed times-
+anonymity.                                                                              tamps. This is achieved by passing a set of “feasible times of
+                                                                                        receipt” from the candidate source to the leaves of the largest
+3.2                           Maximum-Likelihood Estimator                              feasible subtree rooted at the candidate source. In each step,
+   In this section, we identify an ML source estimator for                              nodes prune any times of receipt that conflict with their ob-
+finite detection time t, which uses the graph structure and                             served timestamps. Next, given each node’s set of feasible
+timestamps to infer the source. We analyze its limiting prob-                           receipt times, they count the number of feasible orderings
+ability of detection as t → ∞, and show that it achieves a                              that obey the rules of trickle propagation. This is achieved
+probability of detection lower-bounded by 1/2, regardless of                            by passing sets of partial orderings from the leaves back to
+the degree of the tree. This highlights the weakness of trickle                         the candidate source, and pruning out infeasible orderings.
+propagation when the adversary knows the graph. We begin                                   In practice, we do not pass the entire partial ordering; we
+with a discussion of the ML estimator.                                                  can instead store the number of distinct partial orderings
+   As the message spreads, it reaches some nodes before oth-                            for the subtree rooted at each child, indexed by each fea-
+ers. At any time t, if one knew the ground truth timestamps                             sible time of receipt for the child (there are O(d) feasible
+(i.e., the Xv ’s), one could arrange the nodes of the infected                          times of receipt). This reduces the overall computational
+subgraph Gt in the order they received the message. We call                             complexity to O((2d)d |V |): each node passes a message of
+such an arrangement an ordering of the nodes. Since trickle                             size O(d) to its parent, and each parent takes a Cartesian
+propagation is a discrete-time system, multiple nodes may                               product of its children’s messages. The whole procedure
+receive the message simultaneously, in which case they are                              is run for each candidate source, of which there are O(2d ),
+lumped together in the ordering. Of course, the true or-                                since the true source has a timestamp of at most d + 1. Due
+dering is not observed by the adversary, but the observed                               to the additional notation needed to describe timestamp ru-
+
+
+                                                                                    5
+                          𝜏21	   = 4                                                                                          0.68
+                                        𝜏/ ∗	   = 2                                                                                                                 Theoretical upper bound
+                                                                                                                                                                     Timestamp rumor centrality
+
+
+
+
+                                                                                                    Probability of Detection
+                                                       𝜏1	   = 2                                                              0.66
+
+
+     −3       −2            −1             𝑣∗              1            2             3                                        0.64
+
+
+                                                                                                                               0.62
+            𝑋27	   = 4   𝑋21	   = 3   𝑋/ ∗	   = 0    𝑋1	   = 1   𝑋7	   = 3   𝑋8	   = 4
+
+                                                                                                                                0.6
+Figure 3: Example of ball centrality on a line with one link
+to the adversary per server (these links are not shown). The                                                                   0.58
+estimator is run at time t = 4.
+                                                                                                                               0.56
+
+
+                                                                                                                               0.54
+mor centrality in detail, we defer a full-fledged pseudocode                                                                          1   2    3     4      5    6        7      8      9         10
+description to Appendix B (Figure 9).                                                                                                                    Tree degree, d
+   In [37], precise analysis of standard rumor centrality was
+possible because rumor centrality can be reduced to a simple                                       Figure 4: Timestamp rumor centrality (ML estimator) ac-
+counting problem. Such an analysis is more challenging for                                         curacy on d-regular trees when the adversary has one link
+timestamp rumor centrality, because timestamps prevent us                                          per server (θ = 1). The estimator is run at time t = d + 1.
+from using the same counting argument. However, we iden-
+tify a suboptimal, simplified version of timestamp rumor
+centrality that approaches optimal probabilities of detection                                        Theorem 3.3. Consider a trickle spreading process over
+as t grows. We call this estimator ball centrality.                                                a d-regular graph of honest servers. In addition, each server
+   Unlike timestamp rumor centrality, ball centrality simply                                       has θ independent connections to an eavesdropper adversary.
+checks whether a candidate source v could have generated                                           The ML probability of detection at time t satisfies the follow-
+each of the observed timestamps, independently. We ex-                                             ing two expressions:
+plain this in the context of an example. Figure 3 contains a
+sample spread on a line graph, where the adversary has one                                                           (1)                      P(MML (τ , G) = v ∗ ) ≤ 1 − 2(θ+d)
+                                                                                                                                                                              d
+                                                                                                                                                                                                       (6)
+connection per server (not shown). Therefore, d = 2 and                                                                                                                            t
+θ = 1. The ground truth infection time is written as Xv                                                              (2)                  P(MML (τ , G) = v ∗ ) ≥ 1 − 2(θ+d)
+                                                                                                                                                                         d
+                                                                                                                                                                             − θ+dd
+                                                                                                                                                                                                       (7)
+below each node, and the observed timestamps are written
+above the node. In this figure, the estimator is run at time                                       (Proof in Section B.3)
+t = 4, so the adversary only sees three timestamps. For each                                          To prove the upper bound, the key idea is as follows: in
+observed timestamp τv , the estimator creates a ball of radius                                     the first time step, if a source infects an honest neighbor
+τv − 1, centered at v. For example, in our figure, the green                                       instead of the adversary, then the true source and the honest
+node (node 1) has τ1 = 2. Therefore, the adversary would                                           neighbor become indistinguishable to the adversary. This is
+make a ball of radius 1 centered at node 1; this ball is de-                                       because the spreading processes from each node after that
+picted by the green bubble in our figure. The ball represents                                      first time step become identically distributed. This gives
+the set of nodes that are close enough to node 1 to feasibly                                       an upper bound on the probability of detection. For the
+report to the adversary from node 1 at time τ1 = 2. After                                          lower bound, the key idea is that if we wait long enough,
+constructing an analogous ball for every observed timestamp                                        the ball estimator will eventually return an intersection of
+in τ , the protocol outputs a source selected uniformly from                                       balls containing at most two nodes: the source and the first
+the intersection of these balls. In our example, there are                                         honest neighbor to whom it passed the message. We can
+exactly two nodes in this intersection. We outline ball cen-                                       characterize the probability of this happening as a function
+trality precisely in Protocol 1.                                                                   of time, which lower bounds the ML probability of detection.
+   Although ball centrality is not ML for a fixed time t, the                                         We make a few additional remarks about Theorem 3.3:
+following theorem lower bounds the ML probability of detec-
+tion by analyzing ball centrality and showing that its prob-                                       (1) The right-hand side of equation (6) is always greater
+ability of detection approaches a fundamental upper bound                                          than 21 , regardless of θ. As such, increasing the degree of
+exponentially fast in detection time t.                                                            the graph would not significantly reduce the probability of
+                                                                                                   detection—the adversary can still identify the source with
+                                                                                                   probability at least 21 , given enough time.
+                                                                                                   (2) The ML probability of detection approaches its upper
+Protocol 1 Ball Centrality. Returns a source estimate                                              bound exponentially fast in time t. This suggests that the
+whose location is consistent with timestamps τ on tree G.                                          adversary can, in practice, achieve high probabilities of de-
+h(v, w) denotes the hop distance between v and w.                                                  tection at small times t. For example, Figure 4 shows the
+                                                                                                   probability of detection of timestamp rumor centrality, as
+Input: Timestamps τ , graph G(V, E)                                                                a function of d, for θ = 1. The estimator is run at time
+Output: Source estimate v̂ ∈ V                                                                     t = d + 1. Even at such small timestamps, the probability
+ 1: W ← V                                                                                          of detection is empirically close to the upper bound in (6).
+ 2: for v ∈ V do  . Find the intersection of feasible balls
+ 3:     W ← W ∩ {w ∈ V : h(w, v) ≤ τw − 1}                                                         These results highlight a simple but important point: es-
+ 4: v̂ ∼ Unif(W )                                                                                  timators that exploit graph structure can significantly in-
+                                                                                                   crease the accuracy of an estimator, up to order-level gains.
+
+
+                                                                                               6
+4.    ANALYSIS OF DIFFUSION (POST-2015)                                  of the first-timestamp adversary on the trickle protocol when
+  Having studied the anonymity properties of trickle spread-             θ = 1 (cf. equation (5)).
+ing, we now move to diffusion, a spreading mechanism adopted             Theorem 4.1 suggests that the Bitcoin community’s transi-
+by the Bitcoin community in 2015 in response to the attacks              tion from trickle spreading to diffusion spreading does not
+demonstrated on the trickle spreading mechanism [1]. We                  provide any order-level anonymity gains (asymptotically in
+wish to understand whether diffusion has better anonymity                the degree of the graph), at least for the first-timestamp ad-
+properties than trickle propagation. However, the main chal-             versary. Next, we would like to see whether the same is true
+lenge is that even on simple graphs like a line, computing               for estimators that use the graph structure.
+the exact likelihood of a candidate diffusion source is in-
+tractable as the set of infected nodes grows. This is because            4.2    Centrality-Based Estimators
+a node’s likelihood of being the source depends on the unob-                We compute a different lower bound on the ML probabil-
+served times at which each node is infected—a state space                ity of detection by analyzing a centrality-based estimator.
+that grows exponentially in the graph size. As such, it is               Unlike the first-timestamp estimator, this reporting central-
+challenging to characterize the ML probability of detection              ity estimator uses the structure of the infected subgraph
+in closed form. Instead, we will compute lower bounds on                 by selecting a candidate source that is close to the center
+the ML probability of detection by analyzing two achiev-                 (on the graph) of the observed timestamps. However, it
+able estimation schemes: the first-timestamp estimator and               does not explicitly use the observed timestamps. Also unlike
+a heuristic estimator of our own creation, which we call the             the first-timestamp estimator, this centrality-based estima-
+reporting center estimator. We will see that these two es-               tor improves as the degree d of the underlying tree increases.
+timators are complementary, in the sense that they detect                Indeed, it has a strictly positive probability of detection as
+the source well for different regimes of degree d. Moreover,             d → ∞, implying that the eavesdropper adversary has an
+they give detection probabilities of the same order as trickle           ML probability of detection that scales as Θ(1) in d. We
+spreading.                                                               start by presenting the reporting centrality estimator, after
+                                                                         which we analyze its probability of detection.
+4.1    First-timestamp estimator                                         Reporting centrality estimator. At a high level, the re-
+   Although the first-timestamp estimator does not use knowl-            porting centrality estimator works as follows: for each can-
+edge of the underlying graph, its performance depends heav-              didate source v, the estimator counts the number of nodes
+ily on the underlying graph structure. The following theo-               that have reported to the adversary from each of the node v’s
+rem exactly characterizes its eventual probability of detec-             adjacent subtrees. It picks a candidate source for which the
+tion on a regular tree.                                                  number of reporting nodes is approximately equal in each
+   Theorem 4.1. Consider a diffusion process of rate λ = 1               subtree.
+over a d-regular tree, d > 2. Suppose an adversary observes                 To make this precise, we introduce some notation. First,
+each node’s infection time with an independent, exponential              suppose the infected subtree Gt is rooted at w; we use
+delay of rate λ2 = θ, θ ≥ 1. Then the following expression               Tvw to denote the subtree of Gt that contains v and all of
+describes the probability of detection for the first-timestamp           v’s descendants, with respect to root node w. Consider a
+estimator at time t = ∞:                                                 random variable Yv (t), which is 1 if node v ∈ V has re-
+                                                                       ported to theP   adversary by time t, and 0 otherwise. We
+                               θ         d+θ−2                           let YTvw (t) = u∈T w Yu (t) denote the number of nodes in
+      P(MFT (τ , G) = v ∗ ) =      log                      (8)                               v
+                              d−2            θ                           Tvw thatPhave reported to the adversary by time t. We use
+(Proof in Section B.4)                                                   Y (t) = v∈Vt Yv (t) to denote the total number of reporting
+   The proof follows from writing out P(τ0 < τm ), condi-                nodes in Gt at time t. Similarly, we use NTvw (t) to denote
+tioned on all the unobserved infection times. This expression            the number of infected nodes in Tvw (so NTvw (t) ≥ YTvw (t)),
+can be written recursively, which admits a nonlinear differ-             and we let N (t) denote the total number of infected nodes
+ential equation that can be solved exactly. The expression               at time t (N (t) ≥ Y (t)).
+highlights a few points:                                                    For each candidate source v, we consider its d neighbors,
+                                                                         which comprise the set N (v). We define a node v’s reporting
+(1) For a fixed degree d, the probability of detection is                centrality at time t—denoted Rv (t)—as follows:
+strictly positive as t → ∞. This observation is straight-                                 (
+forward in our case (i.e., under the eavesdropper adversary),                               1 if maxu∈N (v) YTuv (t) < Y 2(t)
+but under different adversarial models (e.g., snapshot adver-                    Rv (t) =                                           (9)
+                                                                                            0 otherwise.
+saries) it is not trivial to see that the probability of detection
+is positive as t → ∞. Indeed, several papers are dedicated               That is, a node’s reporting centrality is 1 if and only if each
+to making exactly that point [36, 37].                                   of its adjacent subtrees has strictly fewer than Y (t)/2 re-
+                                                                         porting nodes. We say a node is a reporting center iff it has
+(2) There is a law of diminishing returns with respect to θ:
+                                                                         a reporting centrality of 1. The estimator outputs a node
+for a fixed degree d, as θ increases, the rate of growth of
+                                                                         v̂ chosen uniformly from the set of reporting centers. For
+(8) decreases. Since θ represents the number of adversarial
+                                                                         example in Figure 5, there is only one reporting center, v ∗ .
+connections per honest node, the adversary reaps the largest
+                                                                            Notice that reporting centrality does not use the adver-
+gains from the first few connections it establishes per node.
+                                                                         sary’s observed timestamps—it only counts the number of
+(3) When θ = 1, i.e., the adversary has only one connection              reporting nodes in each of a node’s adjacent subtrees. This
+per node, the probability of detection approaches log(d)/d               estimator is inspired by rumor centrality [36], an ML esti-
+asymptotically in d. Note that this quantity tends to 0 as               mator for the source of a diffusion process under a snapshot
+d → ∞, and it is order-equal to the probability of detection             adversary. Recall that a snapshot adversary sees the infected
+
+
+                                                                     7
+                                                                         on this event, the probability of detection is 1, since there
+                                                                         can exist at most one reporting center. Combining all these
+   Y (t) = 5                                                             observations gives the lower bound in the claim.
+                                                                            The key step in this proof is demonstrating that the source
+   N (t) = 7
+                                      Rv∗ (t) = 1                        is a reporting center with probability lower-bounded by a
+                                                                         constant. To show this, we relate two Pòlya urn processes:
+                                 𝑣∗                                      one that represents the diffusion process over the regular
+                                                                         tree of honest nodes, and one that describes the full spread-
+                         𝑤                                               ing process, which includes both diffusion over the regular
+                                                                         tree and random reporting to the adversary. The first urn
+                          Rw (t) = 0                                     can be posed as a classic Pòlya urn [12], which has been
+                                                                         studied in the context of diffusion [37, 18]. However, the
+                                                                         second urn can be described by an unbalanced generalized
+Figure 5: Reporting centrality example. Yellow nodes are                 Pòlya urn (GPU) with negative coefficients—a class of urns
+infected; a red outline means the node has reported. In this             that does not typically appear in the study of diffusion (to
+example, v ∗ has Rv∗ (t) = 1 because each of its adjacent                the best of our knowledge). In GPUs, upon drawing a ball
+subtrees has fewer than Y (t)/2 = 2.5 reporting nodes.                   of a given color, one can add balls of a different color or even
+                                                                         remove balls; ‘unbalanced’ means that the number of balls
+                                                                         added in each timestep is not necessarily equal. Prior results
+subgraph Gt at time t, but it does not learn any timestamp               by Athreya and Ney [5] and later Janson [16] characterize
+information.                                                             the limiting distribution of unbalanced GPUs with negative
+  Rumor centrality exhibits a key property on trees: a node              coefficients, which allows us to relate the reporting central-
+v is a rumor center of a tree-structured infected subgraph               ity of our process to the rumor centrality of the underlying
+Gt if and only if each of the d adjacent subtrees adjacent               (unobserved) diffusion process.
+has no more than N (t)/2 nodes in it [36]:
+                                                                            Notice that the constant Cd in Theorem 4.2 does not de-
+                                      N (t)                              pend on θ—this is because the reporting centrality estimator
+                       max NTuv (t) ≤       .                 (10)
+                      u∈N (v)          2                                 makes no use of timestamp information, so the noisy delays
+                                                                         in the observed timestamps do not affect the estimator’s
+Moreover, there exists at least one and at most two rumor                asymptotic behavior. The delay does affect the convergence
+centers in a tree, and the true source has a strictly positive           rate of the probability of detection. Characterizing this de-
+probability of being a rumor center on regular trees and                 pendency is theoretically interesting, but beyond the scope
+geometric random trees [36]. In our case, we cannot use                  of this paper.
+rumor centrality directly because the true infected nodes are
+not all observed at any point in time t. We construct the                Simulation results. To evaluate the tightness of the lower
+reporting centrality estimator by applying a condition like              bound in Theorem 4.2, we simulate reporting centrality on
+(10) to the reporting nodes, rather than the infected nodes.             diffusion processes over regular trees. Figure 6 illustrates
+Analysis. We show that for trees with high degree d, re-                 the empirical performance of reporting centrality averaged
+porting centrality has a strictly higher (in an order sense)             over 4,000 trials, compared to the theoretical lower bound
+probability of detection than the first-timestamp estimator;             on the liminf. The estimator is run at time t = d + 2. Our
+its probability of detection is strictly positive as d → ∞.              simulations are run up to degree d = 5 due to computational
+                                                                         constraints, since the infected subgraph grows exponentially
+  Theorem 4.2. Consider a diffusion process of rate λ = 1                in the degree of the tree. We observe that by degree d = 5,
+over a d-regular tree. Suppose this process is observed by               reporting centrality reaches the theoretical lower bound on
+an eavesdropper adversary, which sees each node’s times-                 the limiting detection probability.
+tamp with an independent exponential delay of rate λ2 = θ,
+θ ≥ 1. Then the reporting centrality estimator has a (time-              4.3    First-Timestamp vs. Centrality
+dependent) probability of detection P(MRC (τ , G) = v ∗ ) that             Neither of the lower bounds from the first-timestamp or
+satisfies                                                                reporting centrality estimators strictly outperforms the other.
+               lim inf P(MRC (τ , G) = v ∗ ) ≥ Cd > 0.        (11)       The first-timestamp estimator performs better on graphs
+                t→∞                                                      with low degree d, whereas reporting centrality performs
+where                                                                    better in the high-d regime. By taking the maximum of
+                                                                     these two estimators, we obtain a lower bound on the ML
+                                       1        1
+        Cd = 1 − d 1 − I1/2               ,1 +                           probability of detection for diffusion processes across the full
+                                      d−2      d−2                       range of degrees. Fully characterizing this probability of de-
+is a constant that depends only on degree d, and I1/2 (a, b) is          tection remains an interesting open problem for future work.
+the regularized incomplete Beta function, i.e., the probability            Figure 6 compares the two estimators both in simulation
+a Beta random variable with parameters a and b takes a                   and theoretically as a function of degree d. We observe that
+value in [0, 21 ).                                                       reporting centrality outstrips first-timestamp estimation for
+                                                                         trees of degree 9 and higher; since our theoretical result is
+Proof Sketch: (Full proof in Section B.5) The proof begins               only a lower bound on the performance of reporting cen-
+by conditioning on the event that the true source is a report-           trality, the transition may actually occur at even smaller
+ing center. We demonstrate that this occurs with a prob-                 d. Empirically, the true Bitcoin graph is approximately 8-
+ability that is lower-bounded by a constant. Conditioned                 regular [24], a regime in which we expect reporting central-
+
+
+                                                                     8
+                            1
+                                                    First-timestamp, theoretical                                            0.9
+                           0.9                      First-timestamp, simulated
+                                                    Reporting centrality, theoretical
+                           0.8                      Reporting centrality, simulated
+
+
+
+
+                                                                                                 Probability of Detection
+Probability of Detection
+
+
+
+                                                                                                                            0.8
+                           0.7
+
+                           0.6                                                                                              0.7
+
+                           0.5
+                                                                                                                            0.6
+                           0.4
+
+                           0.3
+                                                                                                                            0.5                           Trickle, Theoretical (Lower bound)
+                           0.2                                                                                                                            Trickle, Simulated (Lower bound)
+                                                                                                                                                          Trickle, Simulated (Exact)
+                           0.1                                                                                              0.4                           Diffusion, Theoretical
+                                                                                                                                                          Diffusion, Simulated
+                            0
+                                 2   3    4   5     6      7        8        9          10                                        0       5          10                   15                   20
+                                              Degree, d                                                                               Number of corrupted connections, θ
+
+    Figure 6: Comparison of first-timestamp and reporting cen-                                       Figure 7: Comparison of trickle and diffusion under the first-
+    trality estimators on diffusion over regular trees, theoreti-                                    timestamp estimator on 4-regular trees.
+    cally and simulated. Here θ = d1 and t = d + 2.
+
+
+    ity to perform similarly to the first-timestamp estimator.                                          Note that our theoretical results suggest a higher prob-
+    Since the practical attacks in [8, 19] use the suboptimal                                        ability of detection for diffusion than for trickle. This is
+    first-timestamp estimator, they may underestimate the ML                                         an artifact of our lower bound on the trickle probability
+    probability of detection.                                                                        of detection. Recall that our lower bound computes the
+                                                                                                     probability that v ∗ reports strictly before any other node
+    5.                       DISCUSSION                                                              (i.e., simultaneous events are discarded). Since Figure 7 is
+                                                                                                     plotted for a small degree d = 4, simultaneous reporting
+       In this section, we provide a comprehensive comparison
+                                                                                                     occurs frequently, so the lower bound is loose. In simu-
+    of trickle and diffusion, both theoretically and in simula-
+                                                                                                     lation, we find that trickle and diffusion actually exhibit
+    tion. We also highlight some mathematical subtleties in our
+                                                                                                     nearly identical performance, which agrees with the theo-
+    analyses, which give rise to a number of open problems of
+                                                                                                     retical probability of detection for diffusion. Moreover, we
+    independent interest.
+                                                                                                     verified our trickle lower bound in simulation by discarding
+    5.1                          Comparison: Trickle vs. Diffusion                                   realizations where multiple nodes report simultaneously at
+                                                                                                     the first timestamp; these simulation results (burgundy line
+       For direct comparison, Table 2 contains our theoretical
+                                                                                                     in Figure 7) align closely with our theoretical prediction.
+    results side-by-side, for the special case of θ = 1 and for
+                                                                                                     We also find that as d increases, the gap between our trickle
+    general θ. As we have previously stated, the performance
+                                                                                                     lower bound and the simulated probability of detection for
+    of trickle and diffusion are similar, particularly when θ =
+                                                                                                     trickle decreases. Meanwhile, the similarity between diffu-
+    1. Although the maximum-likelihood results are difficult to
+                                                                                                     sion and trickle (in simulation) persists even for high d—at
+    compare at first glance, the point is that they both approach
+                                                                                                     least on regular trees.
+    a positive constant as d, t → ∞; for trickle propagation, that
+    constant is 12 , whereas for diffusion, it is approximately 0.307                                Real Bitcoin graph. The real Bitcoin network is not a
+    (Corollary 1 from [37]).                                                                         regular tree. To validate our decision to analyze regular
+       Up to now, we have primarily considered the performance                                       trees, we simulate trickle and diffusion propagation over a
+    of trickle and diffusion as a function of degree d. However,                                     snapshot of the real Bitcoin network from 2015 [24]. Figure
+    in practice, the underlying Bitcoin graph is fixed; the only                                     8 compares these results as a function of θ, for the first-
+    variable quantity is the adversary’s resources, which are cap-                                   timestamp estimator. Since the Bitcoin graph is not tree-
+    tured by θ, the number of corrupted connections per honest                                       structured, we lack ML estimators for both diffusion and
+    node. However, it does not make sense to study the asymp-                                        trickle; hence, the first-timestamp estimator is a reasonable
+    totic probability of detection as θ → 0, since θ ≥ 1; on the                                     choice. Unless specified otherwise, the theoretical curves
+    other hand, as θ → ∞, the probability of detection tends to                                      are calculated for a regular tree with d = 8, since this is the
+    1, regardless of spreading protcol. We therefore wish to nu-                                     mean degree of our dataset.
+    merically understand, for a fixed d, how diffusion and trickle                                      We first observe that the simulated performance of dif-
+    compare as a function of θ. Figure 7 compares analytical                                         fusion is close to our theoretical prediction. This occurs
+    expressions and simulation results for the first-timestamp                                       because with high probability, the first-timestamp estima-
+    estimator on 4-regular trees.                                                                    tor uses only on a local neighborhood to estimate v ∗ . Since
+       We use the first-timestamp estimator for a few reasons:                                       the Bitcoin graph can be approximated by a sparse, random,
+    first, we lack an efficient ML estimator for diffusion. Second,                                  regular graph, the graph is locally tree-like with high prob-
+    the transition from trickle to diffusion was motivated by the                                    ability, so our theoretical analysis of regular trees applies.
+    practical attacks in [8, 19], which used a version of the first-                                 However, our trickle lower bound remains loose. This is
+    timestamp estimator. Third, even under the first-timestamp                                       partially due to simultaneous reporting events, but the main
+    estimator, the probability of detection is unacceptably high.                                    contributing factor seems to be the irregularity of the under-
+
+
+                                                                                             9
+    Table 2: Summary of probability of detection results on a network of honest servers in a d-regular tree topology. The adversary
+    has θ connections to each honest server.
+
+                                                                                        Trickle                                        Diffusion
+                                                                 θ
+                                                                            Ei(2d log ρ) − Ei (log ρ) (Thm 3.1)               θ
+                                                                                                                                 log d+θ−2
+                                                                                                                                          
+                                       First-      All θ      d log 2                                                        d−2         θ
+                                                                                                                                               (Thm. 4.1)
+                                     Timestamp                                log(d)
+                                                                                      + o logd d                                 log(d−1)
+                                                                                                 
+                                                   θ=1                       d log(2)
+                                                                                                   (Eq. 5)                                 (Thm.  4.1)
+                                                                                                                                 (d−2)                 
+                                                                                        d                                                    1         1
+                                     Maximum-      All θ                         1 − 2(θ+d)        (Thm 3.3)               1 − d 1 − I1/2 d−2 , 1 + d−2
+                                     Likelihood    θ=1                                  d
+                                                                                 1 − 2(d+1)        (Thm. 3.3)                         (Thm. 4.2)
+
+
+                            1
+                                                                                                           5.2   Open Problems
+                           0.9                                                                               Several of our analyses suggest open problems that are
+                                                                                                           interesting in their own right. For instance, in our analysis
+Probability of Detection
+
+
+
+
+                           0.8                                                                             of diffusion, the exact ML probability of detection remains
+                                                                                                           unknown. Moreover, it is unclear if an efficient (polynomial-
+                           0.7                                                                             time in the number of nodes) ML estimator exists. Even our
+                                                                                                           analysis of reporting centrality—a suboptimal estimator—
+                           0.6                                                                             gives only a lower bound on the limiting probability of de-
+                                                                                                           tection, and its convergence rate as a function of θ and d is
+                           0.5                                                                             not known. These open problems are all directly related to
+                                                     Trickle, Theoretical lower bound                      the goals of this paper.
+                           0.4                       Trickle, Simulated
+                                                     Trickle, Theoretical lower bound (d=2)
+                                                     Diffusion, Theoretical                                Relation to other adversarial models. Another sub-
+                           0.3                       Diffusion, Simulation                                 class of open problems relates to connecting the eavesdrop-
+                                 0        5           10                    15                20           per adversary to more well-known, canonical adversarial mod-
+                                      Number of corrupted connections, θ                                   els. That is, the eavesdropper adversary can be thought of
+                                                                                                           as a generalization of certain adversarial models, like the
+    Figure 8: Comparison of trickle and diffusion spreading un-                                            spy-based adversary and the snapshot adversary.
+    der the first-timestamp estimator, simulated on a 2015 snap-                                              Recall that in the spy-based adversary, each node other
+    shot of the real Bitcoin network [24].                                                                 than the source is corrupt with probability p, and corrupt
+                                                                                                           nodes observe the exact timestamp at which they receive the
+                                                                                                           message. This setting can be represented by an eavesdropper
+                                                                                                           adversary with random observation delays: either the node
+                                                                                                           reports with an instantaneous delay, or it reports with an
+    lying graph. It appears that trickle responds more acutely
+                                                                                                           infinite delay.
+    to graph irregularities than diffusion, presumably due to its
+                                                                                                              On the other hand, in the snapshot adversary, the adver-
+    more structured nature, which we exploited heavily in our
+                                                                                                           sary learns only which nodes are infected at observation time
+    analysis. Indeed, we find that the simulated performance of
+                                                                                                           t, not their timestamps. This is similar to an eavesdropper
+    trickle is close to the theoretical predictions for regular trees
+                                                                                                           adversary in which the random reporting delays have high
+    of degree d = 2 (black line in Figure 8); d = 2 happens to be
+                                                                                                           variance. As such, the timestamp has little value beyond
+    the mode of the dataset degree distribution. Understanding
+                                                                                                           indicating that the reporting node is infected.
+    this effect more carefully is an interesting question for future
+                                                                                                              The similarities between the eavesdropper adversary and
+    work.
+                                                                                                           these canonical models may be useful to the extent that we
+       Second, we observe that empirically, the probability of
+                                                                                                           can study one to gain intuition about the other. For exam-
+    detection for diffusion is indeed lower than that of trickle
+                                                                                                           ple, we can use techniques developed for the eavesdropper
+    spreading. This suggests that the Bitcoin developers’ in-
+                                                                                                           adversary to study the spy-based adversary. The ML prob-
+    tuition was correct—diffusion has slightly better anonymity
+                                                                                                           ability of detection for the spy-based adversary on regular
+    properties than trickle. Still, the difference is small. Notice
+                                                                                                           trees has evaded exact analysis [13], though several heuris-
+    that in Figure 8, diffusion and trickle become increasingly
+                                                                                                           tics have been found to work well [29, 40]. A simple lower
+    similar as the number of corrupted connections increases. In
+                                                                                                           bound on the ML probability of detection comes from an-
+    practical attacks [8], the eavesdropper was able to establish
+                                                                                                           alyzing the first-timestamp estimator for the spy-based ad-
+    as many as 50 connections to some nodes. In that regime,
+                                                                                                           versary [13]. This gives
+    Figure 8 suggests that trickle and diffusion would have very
+    similar (high) probabilities of detection, even for the sub-
+    optimal first-timestamp estimator. Thus, even in a numeric                                                            lim inf P(MFT (τ , G) = v ∗ ) ≥ p,       (12)
+                                                                                                                           t→∞
+    sense, diffusion and trickle are not substantially different
+    under practical adversarial operating conditions.
+       In summary, we find that trickle and diffusion have proba-                                          since with probability p, the first node to receive the mes-
+    bilities of detection that are similar, both in an asymptotic-                                         sage is a spy. Although reporting centrality is a subopti-
+    order sense and in a numeric sense, as seen in both simula-                                            mal source estimator for the eavesdropper adversary, it is
+    tion and theoretical analysis. We have evaluated this on the                                           straightforward to analyze and can be used to obtain lower
+    canonical class of d-regular trees and, through simulation,                                            bounds on the probability of detection for the spy-based ad-
+    on a real Bitcoin graph topology.                                                                      versary.
+
+
+                                                                                                      10
+  Using similar proof techniques to Theorem 4.2, we can                 cryptographic protocols. For example, a new cryptocur-
+lower-bound the spy-based adversary’s ML probability of                 rency called Zcash [3] uses the Zerocash protocol [33], which
+detection as time t → ∞.                                                cryptographically masks transactions in the blockchain and
+                                                                        proves validity using non-interactive zero-knowledge proofs.
+   Corollary 5.1. Consider a diffusion process of rate λ =
+                                                                        Although Zcash obfuscates more information than Bitcoin,
+1 over a d-regular tree. Suppose this process is observed by
+                                                                        the masked transactions are still broadcast over the P2P
+an spy-based adversary, which sees the exact timestamp of
+                                                                        network using the same protocols as Bitcoin. Hence, an
+each node independently with probability p > 0 (otherwise it
+                                                                        eavesdropper adversary could still learn the IP address that
+sees nothing). Then the reporting centrality estimator has a
+                                                                        originates each transaction.
+probability of detection P(MRC (τ , G) = v ∗ ) that satisfies
+                                                                           Another recently-proposed solution is TumbleBit, an un-
+             lim inf P(MRC (τ , G) = v ∗ ) ≥ Cd > 0,        (13)        trusted payment hub that can be used for the anonymous
+              t→∞
+                                                                        transferral of bitcoins [15]. Unlike Zcash, part of the Tum-
+where                                                                   bleBit protocol occurs off-blockchain, which prevents tracing
+                                                 
+                                  1        1                            attacks by an eavesdropper adversary. However, the sender
+        Cd = 1 − d 1 − I1/2          ,1 +               .               and receiver still conduct blockchain operations to escrow
+                                 d−2      d−2
+                                                                        and retrieve bitcoins at the beginning and end of each trans-
+(Proof in Section B.6)                                                  action, respectively; these operations use the usual Bitcoin
+   The key point to notice about Corollary 5.1 is that (13)             P2P networking protocol, and could be deanonymized (in
+remains positive for a fixed d even as p → 0; this is in                principle) by a payment hub that also acts as an eavesdrop-
+contrast with the previously-known equation (12). Keep in               per adversary. In summary, several anonymity-preserving
+mind that we are first taking the limit as t → ∞ for a fixed            altcoins are vulnerable to the kinds of attacks outlined in
+p, then taking p → 0. It is not possible to exchange the                this paper, despite their strong cryptographic guarantees at
+order of these limits; doing so drives the probability of de-           the application layer.
+tection to zero. The reason is that for a finite t (and hence
+a finite number of infected nodes), as p → 0, the number of             Rumor Source Detection. The last five years have seen
+spies in the infected subgraph also tends to zero. Without              significant work on detecting the source of a diffusion pro-
+any observations, it is impossible to detect the source. How-           cess over a graph. This topic became popular following the
+ever, for any fixed positive p > 0, as t → ∞, eventually the            2010 results of Shah and Zaman, who showed that under
+number of spies in each subtree concentrates, so reporting              a snapshot adversary on a regular tree, one can reliably
+centrality has a nonzero probability of detection. Indeed,              infer the source of a diffusion process [34]. That is, the
+our analysis makes critical use of the fact that as t → ∞, for          probability of detection is lower-bounded by a constant as
+a fixed positive p, the classical Pòlya urn we use to represent        t → ∞. The analysis for these results uses the same Pòlya
+the underlying diffusion process concentrates.                          urn construction that we adopt in the proofs of Theorem 4.2
+   Although the lower bound in (13) does not depend on p,               and Corollary 5.1 [36, 35]. Shah and Zaman later extended
+the convergence rate does; again, understanding this conver-            these results to random, irregular trees [37], and other au-
+gence rate is of theoretical interest. More broadly, a deeper           thors studied heuristic source detection methods on general
+understanding of the similarities between the eavesdropper              graphs [14, 30, 20] and related theoretical limits [38, 25, 18].
+adversary and other canonical adversarial models is needed.                Follow-up research has considered several variants on the
+                                                                        snapshot adversary. For example, Pinto et al. considered a
+6.   RELATED WORK                                                       spy-based adversary that observes a diffusion process where
+                                                                        the delays are truncated Gaussian random variables [29], and
+   There are two primary categories of related work, which
+                                                                        Zhu and Ying consider a spy-based adversary with standard
+originate from the security and network-analysis communi-
+                                                                        exponential delays [40]. These papers do not characterize
+ties, respectively. The first concerns the anonymity proper-
+                                                                        the ML probability of detection, but they do propose effi-
+ties of bitcoin (and related cryptocurrencies). The second
+                                                                        cient heuristics that perform well in practice. Our work in-
+studies rumor source detection under canonical adversarial
+                                                                        stead analyzes the eavesdropper adversary, a new adversar-
+and graph models.
+                                                                        ial model that emerged from practical attacks on the Bitcoin
+Bitcoin and Anonymity. Bitcoin has long been known to                   network [8, 19]. As we saw in various theoretical results, the
+exhibit poor anonymity properties. Many papers have ex-                 eavesdropper adversary requires completely new analytical
+plored the anonymity implications of having a public blockchain.        tools compared to the spy-based and snapshot adversaries.
+In particular, pseudonyms can often be linked together (im-                Similarly, there has been extensive work on alternative
+plying common ownership) with simple, heuristic clustering              spreading models. In particular, researchers have studied
+methods. For instance, Bitcoin transactions are allowed to              various forms of diffusion, in which nodes can “recover from
+have multiple inputs; in practice, the multiple input pseudonyms        the infection”—i.e., they can delete the transaction before
+are often owned by the same entity. Using this and other                it reaches the entire network. The classic diffusion process
+simple heuristics, researchers have been able to cluster pseudo-        is often called susceptible-infected (SI): nodes start as sus-
+nyms in the wild [4, 23, 31, 32, 28]. Since some nodes are al-          ceptible, and once they become infected, they remain so for
+ready deanonymized (e.g., public vendors), transaction pat-             the rest of time. Alternative models include susceptible-
+terns can be used to learn the identities of other users. More          infected-susceptible (SIS) diffusion, in which nodes recover
+recently, researchers have demonstrated attacks on the ac-              from the infection with a random delay and can then be
+tual P2P network [8, 19], as discussed in Section 2.                    re-infected, and susceptible-infected-recovered (SIR) diffu-
+  In response to blockchain-enabled deanonymization threats,            sion, in which nodes recover with an exponential delay, upon
+several papers have proposed anonymous alternatives to Bit-             which they are immune to future infection. These models
+coin; these alternatives typically rely on privacy-preserving
+
+
+                                                                   11
+have been studied in the literature, both theoretically and             [7] Edoardo Beretta and Yasuhiro Takeuchi. Global
+empirically [41, 11, 42, 7]. In our work, we consider only                  stability of an sir epidemic model with time delays.
+classical SI diffusion processes, but we also consider the com-             Journal of mathematical biology, 33(3):250–260, 1995.
+pletely new trickle spreading protocol. As we have seen in              [8] Alex Biryukov, Dmitry Khovratovich, and Ivan
+Theorems 3.1 and 3.3, the theoretical machinery for analyz-                 Pustogarov. Deanonymisation of clients in bitcoin p2p
+ing trickle spreading differs significantly from that used to               network. In Proceedings of the 2014 ACM SIGSAC
+analyze diffusion. The differences arise from the combinato-                Conference on Computer and Communications
+rial nature of trickle spreading.                                           Security, pages 15–29. ACM, 2014.
+                                                                        [9] Alex Biryukov and Ivan Pustogarov. Bitcoin over tor
+7.   CONCLUSION                                                             isn’t a good idea. In 2015 IEEE Symposium on
+   In this paper, we analyze the anonymity properties of the                Security and Privacy, pages 122–134. IEEE, 2015.
+Bitcoin P2P network, with particular attention to the shift            [10] Bitnodes. Global bitcoin nodes distribution, 2016.
+from trickle to diffusion propagation in 2015. We find that            [11] Zhen Chen, Kai Zhu, and Lei Ying. Detecting multiple
+trickle and diffusion have similar (poor) anonymity proper-                 information sources in networks under the sir model.
+ties. On regular trees, they exhibit the same scaling prop-                 IEEE Transactions on Network Science and
+erties asymptotically in d, and numerically similar proba-                  Engineering, 3(1):17–31, 2016.
+bilities of detection for a fixed d. In simulation over a real         [12] Florian Eggenberger and George Pólya. Über die
+Bitcoin graph topology, diffusion and trickle also exhibit nu-              statistik verketteter vorgänge. ZAMM-Journal of
+merically similar performance, which agrees with our theo-                  Applied Mathematics and Mechanics/Zeitschrift für
+retical predictions. This leads us to conclude that the cur-                Angewandte Mathematik und Mechanik, 3(4):279–289,
+rent flooding protocols used in the Bitcoin network do not                  1923.
+sufficiently protect user anonymity.                                   [13] G. Fanti, P. Kairouz, S. Oh, K. Ramchandran, and
+   An interesting question is how to modify the networking                  P. Viswanath. Metadata-aware anonymous messaging.
+stack in order to provide robustness to source deanonymiza-                 In ICML, 2015.
+tion attacks. Although the design of such solutions is beyond          [14] V. Fioriti and M. Chinnici. Predicting the sources of
+the scope of this paper, our analysis gives some intuition for              an outbreak with a spectral technique.
+how to prevent deanonymization attacks. A key reason that                   arXiv:1211.2333, 2012.
+deanonymization is currently possible is because of the sym-           [15] Ethan Heilman, Foteini Baldimtsi, Leen Alshenibr,
+metry of current spreading protocols. That is, diffusion and                Alessandra Scafuro, and Sharon Goldberg. Tumblebit:
+trickle both propagate content over the underlying graph                    An untrusted tumbler for bitcoin-compatible
+in all directions at roughly the same rate. This symmetry                   anonymous payments. 2017.
+enables powerful centrality-based attacks. Thus, a natural
+                                                                       [16] Svante Janson. Functional limit theorems for
+solution is to break the symmetry of diffusion and trickle.
+                                                                            multitype branching processes and generalized pólya
+Understanding how to break symmetry without hurting per-
+                                                                            urns. Stochastic Processes and their Applications,
+formance is of both theoretical and practical interest.
+                                                                            110(2):177–245, 2004.
+                                                                       [17] Svante Janson. Functional limit theorems for
+Acknowledgments                                                             multitype branching processes and generalized pólya
+The authors would like to extend heartfelt thanks to An-                    urns. Stochastic Processes and their Applications,
+drew Miller for pointing out the Bitcoin community’s transi-                110(2):177–245, 2004.
+tion from trickle to diffusion, Varun Jog for valuable insights        [18] Justin Khim and Po-Ling Loh. Confidence sets for the
+about the limiting behavior of Pòlya urns, and Sewoong Oh                  source of a diffusion in regular trees. arXiv preprint
+for discussions on modeling the evolution of diffusion pro-                 arXiv:1510.05461, 2015.
+cesses with an eavesdropper adversary.                                 [19] Philip Koshy, Diana Koshy, and Patrick McDaniel. An
+                                                                            analysis of anonymity in bitcoin using p2p network
+8.   REFERENCES                                                             traffic. In International Conference on Financial
+ [1] Bitcoin core commit 5400ef6.                                           Cryptography and Data Security, pages 469–485.
+     https://github.com/bitcoin/bitcoin/commit/                             Springer, 2014.
+     5400ef6bcb9d243b2b21697775aa6491115420f3.                         [20] A. Y. Lokhov, M. Mézard, H. Ohta, and
+ [2] Bitcoin core integration/staging tree.                                 L. Zdeborová. Inferring the origin of an epidemic with
+     https://github.com/bitcoin/bitcoin.                                    dynamic message-passing algorithm. arXiv preprint
+ [3] Zcash, 2016. https://z.cash/.                                          arXiv:1303.5315, 2013.
+ [4] Elli Androulaki, Ghassan O Karame, Marc Roeschlin,                [21] Paul Mah. Top 5 vpn services for personal privacy and
+     Tobias Scherer, and Srdjan Capkun. Evaluating user                     security, 2016.
+     privacy in bitcoin. In International Conference on                     http://www.cio.com/article/3152904/security/
+     Financial Cryptography and Data Security, pages                        top-5-vpn-services-for-personal-privacy-and-security.
+     34–51. Springer, 2013.                                                 html.
+ [5] Krishna B Athreya and Peter E Ney. Branching                      [22] Hosam Mahmoud. Pólya urn models. CRC press, 2008.
+     processes, volume 196. Springer Science & Business                [23] Sarah Meiklejohn, Marjori Pomarole, Grant Jordan,
+     Media, 2012.                                                           Kirill Levchenko, Damon McCoy, Geoffrey M Voelker,
+ [6] Carl M Bender and Steven A Orszag. Advanced                            and Stefan Savage. A fistful of bitcoins: characterizing
+     mathematical methods for scientists and engineers I.                   payments among men with no names. In Proceedings
+     Springer Science & Business Media, 1999.
+
+
+                                                                  12
+     of the 2013 conference on Internet measurement                 [41] Kai Zhu and Lei Ying. A robust information source
+     conference, pages 127–140. ACM, 2013.                               estimator with sparse observations. Computational
+[24] Andrew Miller, James Litton, Andrew Pachulski, Neal                 Social Networks, 1(1):1, 2014.
+     Gupta, Dave Levin, Neil Spring, and Bobby                      [42] Kai Zhu and Lei Ying. Information source detection in
+     Bhattacharjee. Discovering bitcoin?s public topology                the sir model: a sample-path-based approach.
+     and influential nodes, 2015.                                        IEEE/ACM Transactions on Networking,
+[25] Chris Milling, Constantine Caramanis, Shie Mannor,                  24(1):408–421, 2016.
+     and Sanjay Shakkottai. Network forensics: random
+     infection vs spreading epidemic. ACM SIGMETRICS
+     Performance Evaluation Review, 40(1):223–234, 2012.
+[26] David Z. Morris. Legal sparring continues in bitcoin
+     user?s battle with irs tax sweep, 2017.
+     http://fortune.com/2017/01/01/
+     bitcoin-irs-tax-sweep-user-battle/.
+[27] Satoshi Nakamoto. Bitcoin: A peer-to-peer electronic
+     cash system, 2008.
+[28] Micha Ober, Stefan Katzenbeisser, and Kay
+     Hamacher. Structure and anonymity of the bitcoin
+     transaction graph. Future internet, 5(2):237–250, 2013.
+[29] P. C. Pinto, P. Thiran, and M. Vetterli. Locating the
+     source of diffusion in large-scale networks. Physical
+     review letters, 109(6):068702, 2012.
+[30] B. A. Prakash, J. Vreeken, and C. Faloutsos. Spotting
+     culprits in epidemics: How many and which ones? In
+     ICDM, volume 12, pages 11–20, 2012.
+[31] Fergal Reid and Martin Harrigan. An analysis of
+     anonymity in the bitcoin system. In Security and
+     privacy in social networks, pages 197–223. Springer,
+     2013.
+[32] Dorit Ron and Adi Shamir. Quantitative analysis of
+     the full bitcoin transaction graph. In International
+     Conference on Financial Cryptography and Data
+     Security, pages 6–24. Springer, 2013.
+[33] Eli Ben Sasson, Alessandro Chiesa, Christina Garman,
+     Matthew Green, Ian Miers, Eran Tromer, and Madars
+     Virza. Zerocash: Decentralized anonymous payments
+     from bitcoin. In 2014 IEEE Symposium on Security
+     and Privacy, pages 459–474. IEEE, 2014.
+[34] D. Shah and T. Zaman. Detecting sources of computer
+     viruses in networks: theory and experiment. In ACM
+     SIGMETRICS Performance Evaluation Review,
+     volume 38, pages 203–214. ACM, 2010.
+[35] D. Shah and T. Zaman. Finding rumor sources on
+     random graphs. arXiv preprint arXiv:1110.6230, 2011.
+[36] D. Shah and T. Zaman. Rumors in a network: Who’s
+     the culprit? Information Theory, IEEE Transactions
+     on, 57:5163–5181, Aug 2011.
+[37] D. Shah and T. Zaman. Rumor centrality: a universal
+     source detector. In ACM SIGMETRICS Performance
+     Evaluation Review, volume 40, pages 199–210. ACM,
+     2012.
+[38] Z. Wang, W. Dong, W. Zhang, and C.W. Tan. Rumor
+     source detection with multiple observations:
+     Fundamental limits and algorithms. In ACM
+     SIGMETRICS, 2014.
+[39] Eric W Weisstein. Euler-mascheroni constant. 2002.
+[40] K. Zhu and L. Ying. A robust information source
+     estimator with sparse observations. arXiv preprint
+     arXiv:1309.4846, 2013.
+
+
+
+
+                                                               13
+APPENDIX                                                                               honest degree) of node v at time j—that is, the number
+                                                                                       of total (resp. honest), uninfected neighbors of a node. So
+A.    PROOFS                                                                           the ratio in the definition of bj is comparing the number
+                                                                                       of nodes with honest uninfected degree k to the number of
+B.    ALGORITHMS                                                                       nodes with uninfected degree k.
+                                                                                         Substituting this quantity into Equation (17), we get
+  Timestamp rumor centrality is described in Protocol 9.
+Here we have assumed that the adversary has only one link                                                       j−2 k             2k−m
+                                                                                                                Y Y         d−m
+per honest server, so θ = 1. This is easily extended to                                        aj = (1 − bj )
+                                                                                                                         d−m+θ
+general θ.                                                                                                         m=1
+                                                                                                                     k=1
+                                                                                                                     j−2                     Pj−m−2 2`
+B.1    Proof of Theorem 3.1
+                                                                                                                     Y          d−m              `=0
+                                                                                                     =   (1 − bj )
+                                                                                                                               d−m+θ
+  We can write this lower bound explicitly. Recall that the                                                          m=1
+system is discrete-time, and each node has d honest neigh-                                                           j−2                     2j−m−1 −1
+                                                                                                                     Y          d−m
+bors and θ connections to the adversary. τi denotes the first                                        =   (1 − bj )                                                 (18)
+time node i reports to the adversary.                                                                                m=1
+                                                                                                                               d−m+θ
+                                                                                                                     |            {z                       }
+                      d+θ
+                      X                                                                                                                  Mj
+      P(τ0 < τm ) =         P(τ0 = i)P(τm > i|τ0 = i)                      (14)        Rearranging, we get
+                      i=1
+                                                                                                         Qj−1  d−m 2j−1−m Qj−2  d−k+θ 
+Since the source has only d honest connections, for any i >                                                  m=1     d−m+θ                    k=1      d−k
+(d + 1), it holds that P(τ0 = i) = 0, and if i = d + 1, then                                Mj    =                              d−j+1
+τm ≤ i. So we can simplify this summation to                                                                                    d+θ−j+1
+                                                                                                                                  j−2
+                                                                                                                                    Y              
+                      d                                                                                          d+θ−j+1                      d−k+θ
+                                                                                                  = bj
+                      X
+      P(τ0 < τm ) =         P(τ0 = i)P(τm > i|τ0 = i).                     (15)                                   d−j+1                        d−k
+                                                                                                                                     k=1
+                      i=1                                                                                                            |         {z   }
+                                                                                                                                               Wj
+This means we only need to consider the first d time steps
+of the message spread in order to lower-bound the first-                               Writing out the terms of Wj explicitly, we get that
+timestamp adversary’s probability of detection. Let aj ,
+P(τm = j|τ0 ≥ j) = P(τm = j|τ0 = i for any i ≥ j). Then                                          (d − 1 + θ)(d − 2 + θ) . . . (d − 1) . . . (d − j + 2 + θ)
+                                                                                       Wj   =
+P(τm > i|τ0 = i) = 1 − ij=1 aj , so
+                      P                                                                                (d − 1) . . . (d − j + 2 + θ) . . . (d − j + 2)
+                                                                                                 θ−1
+                            d                      d                 i
+                                                                                                 Y       d+m
+                                                                                            =                  .
+                                                                                                     d + m−j+2
+                            X                      X                 X
+ P(τ0 < τm ) =                    P(τ0 = i) −            P(τ0 = i)         aj                    m=0
+                            i=1                    i=1               j=1
+                                                                                       Substituting all of this into Equation (18), we get that
+                                                   d
+                                                   X                 i
+                                                                     X                                                   θ−1
+             =    1 − P(τ0 = d + 1) −                    P(τ0 = i)         aj .
+                                                                                                         
+                                                                                                           d−j+1+θ Y               d+m
+                                                   i=1               j=1                aj = (1 − bj )bj                                     .
+                                                                                                             d−j+1        m=0
+                                                                                                                               d + m−j+2
+                                                                           (16)
+                                                                                       This expression for aj can be used to rewrite (16):
+Letting bk , P(τm > k | τ0 ≥ k, τm > (k − 1)) gives
+                                                                                                                                  d
+                                                                                                                                  X           Xi
+                                      j−1
+                                      Y                                                 P(τ0 < τm )      =    1 − P(τ0 = d + 1) −   P(τ0 = i)     aj .
+                  aj = (1 − bj )            bk .                           (17)                                   |    {z     } i=1           j=1
+                                                                                                                           PA
+                                      k=1
+                                                                                                                           d                   i
+We can write bk explicitly by noting that as long as no in-                                              =    1 − PA −
+                                                                                                                           X
+                                                                                                                                 P(τ0 = i)
+                                                                                                                                               X
+                                                                                                                                                 (1 − bj )bj ×
+fected nodes have reported the message to the adversary, one                                                               i=1                 j=1
+can deterministically compute the number of infected nodes
+                                                                                                                                  θ−1
+at each time step with a given number of infected (resp. un-                                                     d−j+1+θ          Y d+m
+                                                                                                                                              .                    (19)
+infected) neighbors. This is because the underlying graph is                                                      d − j + 1 m=0 d + m − j + 2
+a regular tree (see Lemma 3.2 for proof). Let N (k, t) denote
+the set of nodes with k infected, honest neighbors at time                             Setting
+t. Then for a fixed time t, we can compute the probability                                                                     θ−1
+that every infected node chooses to infect an honest node in                                             d−j+1+θ Y          d+m
+                                                                                                  qj ,                                ,
+the next time step, by indexing over the value of k:                                                      d − j + 1 m=0 d + m − j + 2
+                j−1 
+                Y |{v ∈ V : uv,h (j) = k}| |N (k,j)|                                  we get that
+       bj =                                                                                                                       d                  i
+                      |{v ∈ V : uv (j) = k}|                                                                                      X                  X
+                k=1
+                                                                                       P(τ0 < τm ) =                1 − PA −             P(τ0 = i)     (1 − bj )bj qj
+                j−1           2j−1−k
+                Y      d−k                                                                                                        i=1                j=1
+            =                                                                                                                                                          !
+                      d−k+θ                                                                                              d
+                                                                                                                         X                    i
+                                                                                                                                              X             i
+                                                                                                                                                            X
+               k=1
+                                                                                                     =   1 − PA −              P(τ0 = i)            bj qj −   b2j qj
+where j > 1, and b1 = 1. Here, the quantity uv (j) (resp.                                                                i=1                  j=2            j=2
+uv,h (j)) denotes the uninfected degree (resp. uninfected                                                                                                          (20)
+
+
+                                                                                  14
+Figure 9: Timestamp Rumor Centrality. Returns the timestamp rumor centrality of candidate source v, given timestamps
+τ on tree G. φ(w) denotes the children of node w on a tree T rooted at v. ∂T denotes the leaves of tree T .
+
+
+Input: Timestamps τ , graph G, candidate source v, esti-                                             20:     AggregateMessages(w, φ(w))
+    mation time t ≥ d + 1                                                                            21:     if z = w = v ∗ then
+Output: Number feasible orderings from source v, fv                                                  22:         return C[v ∗ ][0]
+ 1: [d + 1] , {1, . . . , d + 1}                                                                     23:
+ 2: mvv ← {0}                                                                                        24: function AggregateMessages(z, φ(z), T ) . Counts
+ 3:                             . Two global variables, T and C:                                         the number of valid orderings by passing messages that
+ 4: T ← balanced tree of radius t, center v, over graph G                                                represent the set of feasible orderings
+ 5: C ← dictionary of number of feasible partial orderings                                           25:     N ← [z,
+    for each feasible (w, X̂w ) pair                                                                                Q φ(z)] . Ordered list of parent and children
+                                                                                                     26:     M ← u∈φ(z) m(u)
+ 6: c =PassToLeaves(v, v, {0}, T )                                                                   27:                .
+                                                                                                                           Q
+                                                                                                                              denotes Cartesian set product, where
+ 7: return c                 . Timestamp rumor centrality for v
+                                                                                                         A × B , {(a, b) : a ∈ A, b ∈ B}
+ 8:
+                                                                                                     28:     M ← m(w) × M            . Prepends the current node’s
+ 9: function PassToLeaves(z, w, m, T )              . Each node
+                                                                                                         feasible receipt times to the Cartesian product
+    learns its possible receipt times, recursively
+                                                                                                     29:     M ← {m ∈ M : [(m1 , . . . , md ) distinct]∧[|mi −mj |≤
+10:     m(w) ← m \ {t ∈ m : t ≥ τw } . Remove late times
+                                                                                                         d + 1 for all i, j] ∧[m1 < mi for all i > 1]}
+11:     Node w saves m(w) outside function scope
+                                                                                                     30:               . Removes ordered tuples where neighbors
+12:     if w ∈ ∂T then
+                                                                                                         receive the message at the same time, are too far apart
+13:         for t0 ∈ m do
+                                                                                                         to be feasible, or parent gets message after children. mi
+14:            C[w][t0 ] ← 1       . Number of partial orderings
+                                                                                                         denotes ith element of ordered tuple m
+    with w infected at time t0
+                                                                                                     31:     for m ∈Q  M do
+15:     else
+                                                                                                     32:         q ← di=2 C[Ni ][mi ]                    . Compute
+16:         m0 ← ∪i∈m(w) {i + j : j ∈ [d + 1]}
+                                                                                                         the number of permutations by multiplying counts from
+17:         m0 ← m0 \ {τw }
+                                                                                                         each child node
+18:         for y ∈ φ(w) do
+                                                                                                     33:         C[z][m1 ] ← C[z][m1 ] + q
+19:            PassToLeaves(w, y, m0 )
+                                                                                                     34:     return
+
+
+
+where the change of summation bounds in (20) occurs be-                                              First, we show that the summation (last term) in (24) is
+                                   2−k                                                                                             2`−1
+                                                                                                                                         − q`−1 ):
+                             
+                               d−k
+cause b1 = 1. We define γk , d−k+θ       , which means                                               equal to 0 by writing out (q` γ`−1
+that                                                                                                                                           
+                                                                                                            2`−1           d − ` + 1 + θ 2`−1
+                                        j−1
+                                                                                                        q` γ`−1  − q`−1 = q`−1          γ`−1 − 1
+                                        Y           j−1                                                                      d−`+1
+                                 bj =         γk2         .                            (21)                                                 
+                                                                                                                  d−`+1+θ     d−`+1
+                                        k=1                                                              = q`−1           ·              − 1 = 0.
+                                                                                                                   d−`+1    d−`+1+θ
+Using this notation, we write out the two final summations
+in (20) explicitly:                                                                                  Next, we show that the first term in (24) equals 1 by writing
+                                                                                                     q2 γ12 explicitly:
+i
+X                                                                         i−1             i−1
+      bj qj = q2 γ12 + q3 γ14 γ24 + q4 γ18 γ28 γ38 + . . . + qi γ12                       2
+                                                                                   · · · γi−1                                      θ−1
+                                                                                                                                                            !
+j=2                                                                                                           d−2+1+θ              Y      d+m                    d−1
+                                                                                                     q2 γ12 =                                                         = 1,
+                                                                                       (22)                      d−2+1            m=0
+                                                                                                                                      d + m−2+2                 d−1+θ
+i
+                                                                   i
+                                                                           2i
+X
+  b2j qj = q2 γ14 + q3 γ18 γ28 + q4 γ116 γ216 γ316 + . . . + qi γ12 · · · γi−1                       which implies that
+j=2
+                                                                                       (23)               i
+                                                                                                          X                                    i      i
+                                                                                                                 qj (bj − b2j ) = 1 − qi γ12 · · · γi−1
+                                                                                                                                                    2
+                                                                                                                                                        = 1 − b2i .        (25)
+Subtracting (22)-(23) and collecting terms gives                                                           j=1
+
+ i
+ X
+        qj (bj − b2j ) = q2 γ12 + γ14 (q3 γ24 − q2 ) + γ18 γ28 (q4 γ38 − q3 )+                       Now, we can substitute (25) into (20), getting
+  j=2
+                           i−1          i−1           i−1                      i          i                                              d
+             . . . + γ12                2
+                                 · · · γi−2      2
+                                            (qi γi−1 − qi−1 ) − qi γ12 · · · γi−1
+                                                                              2
+                                                                                                     P(τ0 < τm )      =    1 − PA −
+                                                                                                                                         X                          i       i
+                                                                                                                                               P(τ0 = i)(1 − qi γ12 · · · γi−1
+                                                                                                                                                                           2
+                                                                                                                                                                               )
+                                        i                                                                                                i=2
+                   i             i      X           `−1         `−1      `−1
+= q2 γ12 − qi γ12 · · · γi−1
+                         2
+                             +                γ12                2
+                                                          · · · γ`−2      2
+                                                                     (q` γ`−1 − q`−1 ).                                               d
+                                                                                                                              θ       X              i
+                                                                                                                                                             2i
+                                        `=3                                                                           =          +    P(τ0 = i)qi γ12 · · · γi−1 ,         (26)
+                                                                                       (24)                                 θ + d i=2
+
+
+                                                                                                15
+where (26) is because                                                           uninfected neighbor (honest or adversarial). We also de-
+                                                                                fine the uninfected degree of a node uv (t) as the number
+      d
+      X                                                                         of uninfected neighbors of node v at time t. We define
+            P(τ0 = i) =          1 − P(τ0 = d + 1) − P(τ0 = 1)
+                                                                                At (i) = |{v ∈ V : uv (t) = i}|, i > 0, as the number of
+      i=2
+                                                                                active nodes at time t with uninfected degree i.
+                                                           θ                       We claim that for a given regular tree G and set of ob-
+                      =                        1 − PA −       .
+                                                          θ+d                   served timestamps τ , and for any set of feasible orderings,
+                                 (N −i                                          the number of nodes with uninfected degree i (i.e., At (i))
+                                  θ−1 )
+Note that P (τ0 = i) =                  , where N , d + θ. We can               for a given i > 0 does not depend on the underlying order-
+                                  (Nθ )
+also rewrite qi as                                                              ing. This holds because the graph is regular; we can show
+                                                                                it formally by induction. At time t = 1, there are two op-
+                                              θ−1
+                                d−i+1+θ Y          d+m                          tions: either the source reports directly to the adversary, or
+                      qi =                                                      it spreads the message to an honest neighbor. It if reports
+                                 d − i + 1 m=0 d + m − i + 2
+                                                                                to the adversary, then in every feasible ordering, the source
+          d − i + 1 + θ (d + θ − 1)!     (d − i + 1)!      θ!                   must report to the adversary at t = 1. Therefore at the end
+      =                ·             ·                   ·
+            d−i+1         (d − 1)!     (d + θ + 1 − i)! θ!                      of time step t = 1, we have
+                                                      N −1
+                                                                                                      (
+                                                           θ                                             1    if i = d + θ − 1
+                                                      =   N −i
+                                                               .
+                                                                                              At (i) =
+                                                           θ                                             0    otherwise.
+Thus, the product of these terms is
+                                                                                If the source instead passes the message to an honest neigh-
+                                           θ       N −θ                         bor (it doesn’t matter which one, and the identity of the
+             P (τ0 = i)qi       =                ·
+                                      N −i−θ+1       N                          neighbor could vary across feasible orderings), then
+                                         θ     d                                                       (
+                                =            ·     ,                                                     2    if i = d + θ − 1
+                                      d−i+1 θ+d                                               At (i) =
+                                                                                                         0    otherwise,
+and the desired probability in (26) simplifies to
+                                       d                                        because now we have two active nodes, each of which has
+                                  θ    X       d            θ 2                 d + θ − 1 uninfected neighbors.
+      P(τ0 < τm )     =              +                 ·      bi
+                                θ + d i=2 d − i + 1 θ + d                          Now take t > 1, and assume that at time t − 1, At (i) was
+                                     "      d
+                                                            #                   the same across all feasible orderings, for each i > 0. We
+                                  θ        X        b2i                         want to show that the same is true at time t. Every time an
+                      =               1+d
+                                θ+d        i=2
+                                                d−i+1                           active node v infects a neighbor node w, v’s own uninfected
+                                     "    d
+                                                #                               degree decreases by one. If w is an honest node, it joins the
+                                  θ      X 2
+                                                                                set of active nodes with uninfected degree uw (t) = d − 1 + θ.
+                      ≥               1+     bi                  (27)
+                                θ+d      i=2
+                                                                                If w belongs to the eavesdropper, then it does not join the
+                                     "   d−1 P
+                                                          #                     active nodes. Suppose τ indicates that in time t, exactly m
+                                  θ      X       i
+                                                 k=1 2
+                                                        k
+                                                                                nodes will report to the adversary. Since there were |At−1 |
+                      ≥               1+     γ1                  (28)
+                                θ+d      i=1
+                                                                                active nodes at time t, we know that |At−1 |−m new active
+                                     "   d−1
+                                                        #                       nodes will be infected, each with degree d − 1 + θ, so At (d −
+                                  θ      X     2i+1 −2                          1 + θ) = |At−1 |−m. Moreover, for all 0 < i < (d − 1 + θ),
+                      =               1+     γ1
+                                θ+d      i=1
+                                                                                we have At (i) = At−1 (i + 1), since each previously-active
+                                    d−1
+                                                                                node decrements its uninfected degree by one. None of this
+                                θ X 2i+1                                        depends on the ordering, which proves that At (i) takes the
+                      ≥               γ1                            (29)
+                                d i=0                                           same value for any feasible ordering.
+                                                                                   We write out the likelihood L(o) of a feasible ordering o:
+where (27) comes from replacing d − i + 1 with d, (28) comes
+                                                                                                            t−1
+from replacing γk with γ1 since γk ≥ γ1 , and (29) holds                                                    Y     Y      1
+because γ12 ≤ d+θ
+               d
+                  . We lower-bound the doubly exponential                                          L(o) =                     ,
+                                                                                                            j=1 v∈Aj
+                                                                                                                       uv (j)
+sum in (29) by integrating. Letting ρ = γ12 , we have
+      d−1                       Z d                                             since each active node infects exactly one uninfected neigh-
+    θ X 2 2i                θ             x                                     bor uniformly at random in each time step. By the previous
+          (γ1 )      ≥                ρ2 dx
+    d i=0                   d    0                                              argument, this likelihood can equivalently be grouped by
+                                                                                nodes with the same uninfected degree u:
+                               θ                                
+                     =              Ei(2d log ρ2 ) − Ei(log ρ2 )                                    t
+                            d log 2                                                                Y        Y         Aj (u)
+                                                                                                                        1
+                                                                                            L(o) =                              .
+where Ei(·) denotes the exponential integral. This gives the                                       j=1
+                                                                                                                       u
+                                                                                                       u∈{1,...,d−1+θ}
+desired result.
+                                                                                Nothing in this expression depends on the ordering o (since
+B.2       Proof of Proposition 3.2                                              Aj (u) is independent of o), so the likelihood must be equal
+   The proposition can be seen through a simple counting                        for all feasible orderings.
+argument. Let At denote the set of active nodes at time
+t, or the set of all infected, honest nodes with at least one                   B.3    Proof of Theorem 3.3
+
+                                                                           16
+                                                                                                                             θ
+   We begin by showing that (6) is an upper bound on any                where B is a geometric random variable of rate θ+d−1     .
+estimator’s probability of detection, and then show that ball              Now, we show that conditioned on termination, the prob-
+centrality achieves the lower bound in (7).                             ability of detection is lower-bounded by 21 . We call x and y
+(1): Notice that with probability θ/(θ + d), the true source            left and right terminating endpoints, respectively (Fig. 10).
+reports the message to the adversary in the first time slot. If
+this happens, then the conditional probability of detection is
+1; since the adversary is assumed to know the starting time                     𝑥        …         𝑤         𝑣
+                                                                                                                 ∗    …          𝑦
+of the trickle process, it can deduce that the true source
+is the only possible source. However, if the source does not
+report to the adversary in the first time slot, then the source         Figure 10: Arrangement of nodes from the proof of Thm.
+must instead pass the message to one of its honest neighbors.           3.3.
+In that case, at t = 1, exactly two nodes are infected, both of
+which are honest. Thereafter, the spread from each of these                Now, we show that the balls centered at nodes x and y
+nodes is completely symmetric: both the true source and                 have an intersection of at most two nodes. The ball centered
+the first neighbor are connected to identical graph structures          at node x has a radius of τx − 1, and the ball centered at y
+(i.e., two infinite trees rooted at each of the infected nodes),        a radius of τy − 1. By construction, we know that the hop
+and the message spreading dynamics from each of these two               distance between v ∗ and x is h(v ∗ , x) = τx − 1 ≤ τx − 1 and
+nodes is identically-distributed. As such, no estimator can             h(v ∗ , y) = τy − 2 ≤ τy − 1, so v ∗ must lie in the intersection
+distinguish between the true source and the first neighbor,             of the two balls. Similarly, h(w, x) = τx − 2 ≤ τx − 1 and
+meaning the probability of detection is upper bounded by                h(w, y) = τy − 1 ≤ τy − 1, so w must lie in the intersection
+1/2 in this case. Therefore, a simple upper bound for the               of the two balls. Let us assume by contradiction that there
+ML probability of detection is                                          exists a third node z in the intersection of these two balls.
+                                                                      This implies that h(z, x) ≤ τx − 1 and h(z, y) ≤ τy − 1.
+                                    θ            d     1
+        P(MML (τ , G) = v ∗ ) ≤         (1) +                           Either z lies on the shortest path between x and y, which we
+                                  θ+d         θ+d 2                     denote P (x, y), or it does not. If z ∈ P (x, y), then it either
+                                          d                             lies to the left of w or to the right of v ∗ . In either case, z is
+                              = 1−             .
+                                      2(θ + d)                          excluded from the ball centered at y or x, respectively. Thus
+                                                                        it cannot lie on P (x, y). If z does not lie on P (x, y), then
+(2): Next, we demonstrate that ball centrality has a proba-             there exists an alternative path P 0 (x, y) 6= P (x, y) between
+bility of detection that is lower bounded by (7). Once again,           x and y of distance at most τx + τy − 2 that contains node
+if the source immediately passes the message to the adver-              z; this path is allowed to traverse the same node or edge
+sary, then the adversary identifies a ball of size 1, so the            multiple times. By construction, the hop distance between
+source gets caught with probability 1. This happens with                x and y is h(x, y) = τx + τy − 3, so P 0 (x, y) must have at
+               θ
+probability θ+d    . Thus we need to compute the probability            least this many hops. Moreover, since G is a tree, every path
+of detection conditioned on the source passing the message              between x and y must traverse each node in P (x, y). Since
+to an honest neighbor at t = 1. Suppose source v ∗ passes               P (x, y) already contains τx + τy − 3 edges, P 0 (x, y) should
+the message to its neighbor w at t = 1. Without loss of                 be no longer than τx + τy − 2, and it should also touch an
+generality, let us think of w and v ∗ as the left and right re-         additional node z, P 0 (x, y) must have exactly one more hop
+spective endpoints of a path. In each subsequent time step,             than P (x, y). This eliminates all paths that move from node
+each of the endpoints of this path will forward the message             r ∈ P (x, y) to node z ∈ / P (x, y), then back to r again. But
+either to another honest node or to the adversary. If the left          this implies that there exist two distinct paths between x
+(resp. right) endpoint q forwards the message to another                and y in which no edge or vertex is traversed twice, which is
+honest node z, then z becomes the left (resp. right) end-               a contradiction since G is a tree. Hence there can be at most
+point in the following time step; if q forwards the message             two nodes in the intersection of balls, so the probability of
+to the adversary, then the path terminates at q. This path              detection is at least 1/2 in this case.
+continues to grow until both ends have terminated.                         Combining this with the lower bound in (30), we have
+   We first show that the probability of the path terminating
+is lower bounded by 1 − (1+θ/d) 2
+                                   t−1 , then we show that con-                     P(MBC (τ , G) = v ∗ )
+ditioned on path termination, the probability of detection is                                                                 t−1 !
+                                                                                     θ          1    1                    d
+lower bounded by 1/2. To analyze the probability of termi-                     ≥        (1) +       · · 1−2
+                                                                                    d+θ       d+θ 2                      d+θ
+nation at time t, note that each end of the path terminates
+                                                                                                        t
+after a geometrically-distributed number of hops. This holds
+                                                                                                  
+                                                                                           d         d
+because each endpoint independently terminates with prob-                      =    1−          −          .
+           θ
+                                                                                       2(θ + d)     d+θ
+ability θ+d−1    in each time step. Therefore, the probability
+of both endpoints terminating by time t can be expressed as             Since the ML estimator performs at least as well as the ball
+                                                                        centrality estimator, the claim follows.
+                                                t−1 !2
+                  2                        θ
+        P(B ≤ t) =         1− 1−
+                                      θ+d−1
+                                                         ,              B.4     Proof of Theorem 4.1
+                                                                           To analyze the probability of detection under the first-
+                                         t−1 !2
+                                                                        timestamp estimator, we consider probability of the true
+                               
+                                    d
+                      ≥    1−                                           source reporting before any other node, or P(τ0 < τm ). We
+                                  θ+d
+                                       t−1                            use Ri to denote the random time delay between the infec-
+                                    d                                   tion times of i’s parent and i; by “parent”, we mean with
+                      ≥ 1−2                                (30)
+                                  θ+d                                   respect to the infected subtree Gt , which is rooted at node
+
+
+                                                                   17
+                           Z ∞                               Z t0
+P(τ0 < τm )        =                P(τ0 = t0 ) P(R1 > t0 ) +      P(R1 = r1 )P(τ1 > (t0 − r1 ))×
+                            t0 =0                                                    r1 =0
+                                                             Z t0 −r1                                                                                                d−1 #d0
+                                                                                                                                                              d−1
+                               P(R2 > (t0 − r1 )) +                          P(R2 = r2 )P(τ2 > (t0 − r1 − r2 )) [P(R3 > (t0 − r1 − r2 )) + . . .]                                dt0
+                                                               r2 =0
+                           Z ∞                        Z t0                                           Z t0 −r1
+                   =              λ2 e−λ2 t0 e−λ1 t0 +      λ1 e−λ1 r1 e−λ2 (t0 −r1 ) e−λ1 (t0 −r1 ) +          λ1 e−λ1 r2 e−λ2 (t0 −r1 −r2 ) ×
+                            0                                      0                                                           0
+                                                                  d−1     #d0
+                           h                             id−1
+                               e−λ1 (t0 −r1 −r2 ) + . . .     dr2      dr1     dt0                                                                                               (31)
+                           Z ∞                               Z t0                                                Z t0 −r1
+                                      −λ2 t0       −t0                     −r1 −λ2 (t0 −r1 )
+                   =              λ2 e             e      +            e         e                   e−(t0 −r1 ) +          e−r2 e−λ2 (t0 −r1 −r2 ) ×
+                            0                                  0                                                     0
+                                                             d−1     #d0
+                           h                        id−1
+                                −(t0 −r1 −r2 )
+                               e               + ...     dr2      dr1     dt0                                                                                                    (32)
+                           Z ∞                                        Z t0                                       Z t0 −r1
+                   =              λ2 e−t0 (λ2 +d0 ) 1 + e−t0 (λ2 +d−2)      er1 (λ2 +d−2) 1 + e−(t0 −r1 )(λ2 +d−2)          er2 (λ2 +d−2) ×
+                            0                                                                0                                              0
+                                                   id−1          d0
+                           [1 + . . .]d−1 dr2              dr1         dt0                                                                                                       (33)
+
+
+Figure 11: Probability of detection of the first-timestamp estimator, where d is the node degree. d0 denotes the degree of the
+source, which we eventually set to d0 = d − 1 for symmetry. We condition on the source’s reporting time τ0 = t0 . Ri denotes
+the delay of infection times between i’s parent and i.
+
+
+v ∗ = 0. Moreover, we let the source have a different de-                                                 Substituting into (35), we obtain the exact probability of
+gree d0 than the rest of tree for simplicity of calculation.                                              detection:
+We write the probability of detection explicitly in Figure                                                                   λ2 (log(λ2 + d − 2) − log(λ2 ))
+11. The expression starts by conditioning on the reporting                                                     P(τ0 < τm ) =                                 .
+                                                                                                                                         d−2
+time of the true source, τ0 , then conditions on the times at
+which other nodes receive the message. Recall that node i                                                 Letting λ2 = θ, we get
+receives the message at time Xi , and reports the message to                                                                          θ
+                                                                                                                                                  
+                                                                                                                                                      d+θ−2
+                                                                                                                                                              
+the adversary at time τi .                                                                                          P(τ0 < τm ) =        log                      ,              (36)
+                                                                                                                                     d−2                θ
+   Expression (33) can be written recursively. Define
+                        Z a                                                                               which is the final expression.
+  g(a) , e−a(λ2 +d−2)         eu(λ2 +d−2) [1 + g(a − u)]d−1 du.
+                                     0
+                                                                                                          B.5      Proof of Theorem 4.2
+                                                                                             (34)            To prove this claim, we analyze the (suboptimal) reporting
+                                                                                                          centrality estimator, which achieves condition (11). Our goal
+Letting s = a − u, we get                                                                                 is to show that under an eavesdropper adversary, reporting
+                  Z a
+                                                                                                          centrality has a strictly positive probability of detection as
+          g(a) =      e−s(λ2 +d−2) [1 + g(s)]d−1 ds.                                                      d → ∞.
+                            0
+                                                                                                             Let Rt = {v ∈ Vt |Rv (t) = 1} denote the set of reporting
+Substituting g(a) into Equation (33) gives                                                                centers at time t. We compute the probability of detection
+                 Z ∞                                                                                      by conditioning on the event v ∗ ∈ Rt . For brevity of no-
+   P(τ0 < τm ) =      λ2 e−t0 (λ2 +d0 ) [1 + g(t0 )]d0 dt0 ,                                 (35)         tation, we use v̂ to denote the reporting centrality source
+                           0
+                                                                                                          estimate in this proof. For any fixed time t, we have
+where d0 is the degree of the source. To make this expression
+symmetric with respect to the recursive function g(·), we                                                       P(MRC (τ , G) =v ∗ ) = P(v ∗ ∈ Rt ) ×
+                                                                                                                                       |    {z   }
+assume that the source has degree d − 2, and all other nodes                                                                                (a)
+have degree d, so d0 = d − 2. We subsequently compute the                                                                             P(M (τ , G) = v ∗ |v ∗ ∈ Rt ) .            (37)
+probability of detection by solving for g(t0 ), which can be                                                                          | RC       {z              }
+written as a differential equation:                                                                                                                   (b)
+
+               0
+              g (a)        = e      −a(λ2 +d−2)
+                                                       [1 + g(a)]    d−1
+                                                                             ,                            Note that the probability of detection is defined for a fixed
+                                                                                                          t. Our goal is to lower-bound this quantity as t → ∞. The
+with initial condition g(0) = 0. This separable, nonlinear                                                proof consists of three steps:
+differential equation can be solved exactly, giving                                                        (a) Show that lim inf t→∞ P(v ∗ ∈ Rt ) ≥ Cd > 0.
+                                                                        1
+                       
+                           (d − 2)e−a(λ2 +d−2) + λ2
+                                                                    − d−2                                 (b) Show that P(MRC (τ , G) = v ∗ |v ∗ ∈ Rt ) = 1.
+      g(a)    =                                                                  − 1.
+                                  λ2 + d − 2                                                               (c) Combine parts (a) and (b) to give the claim.
+
+
+                                                                                                     18
+For readability, we abbreviate our notation∗
+                                                 in this proof.               write the condition for being a reporting center as
+The number of nodes in the subtree Twv will be denoted                                 ?Y (t, ω)
+Nw (t) instead of NTwv∗ (t), and the number of reporting nodes                Yi (t, ω) <
+                                                                                            2
+in this subtree will be denoted Yw (t) instead of YTwv∗ (t).
+                                                                                 =⇒ Ni (t, ω)(αd,θ + i (t, ω))
+Thus N1 (t) denotes the number of infected nodes in the first                                            P
+subtree of v ∗ , and Y1 (t) denotes the number of reporting                          ? αd,θ N (t, ω)        j∈[d] j (t, ω)Nj (t, ω)
+                                                                                    <                +
+nodes in the first subtree of v ∗ .                                                           2                        2
+Part (a): Show that lim inf t→∞ P(v ∗ ∈ Rt ) ≥ Cd .                                           1
+                                                                                 =⇒ N (t, ω)( − δi (ω))(αd,θ + i (t, ω))
+We demonstrate this by conditioning on the event that v ∗                                   2                                                     
+is the unique rumor center in Gt . This happens if and                                 ? 1                     X                       1
+only if ∀w ∈ N (v ∗ ), Nw (t) < N (t)/2 [37], where N (v ∗ )                         <        αd,θ N (t, ω) +         j (t, ω)N (t, ω)( − δj (ω))
+                                                                                         2                                              2
+denotes the neighbors of v ∗ . We let Ct = {v ∈ Vt | v =                                                        j∈[d]
+
+rumor center of Gt }, which gives                                                                                1
+                                                                                                 P
+                                                                                                    j j (t, ω)( 2 − δj (ω)) ?
+                                                                                 =⇒ i (t, ω) −                                < αd,θ · δi (ω).
+P(v ∗ ∈ Rt ) ≥ P(v ∗ ∈ Ct , |Ct |= 1) P(v ∗ ∈ Rt |v ∗ ∈ Ct , |Ct |= 1)                                    1 − δi (ω)
+                                                                                                                  2
+               |        {z          }|               {z              }                                                                          (40)
+                         (a1 )                      (a2 )
+                                                                              Note that αd,θ and δi (ω) are both strictly positive, and
+Part (a1 ) is studied in Theorem 3.1 of [37], which shows that                                         P             1
+                                                                                                        j j (t, ω)( 2 − δj (ω))
+         lim inf          P(v ∗ ∈ Ct , |Ct |= 1)                                       lim i (t, ω) −                           = 0.
+          t→∞
+                                                                                      t→∞                     1 − δi (ω)
+                                                                                                                      2
+                                                 
+                                       1         1
+              =    1 − d 1 − I1/2 d−2    , 1 + d−2    ,         (38)          Therefore, for every outcome ω, there exists a time Tω such
+                                                                              that for all t > Tω , condition (40) is satisfied, so limt→∞ P(v ∗ ∈
+where I1/2 (a, b) is the regularized incomplete Beta function,                Rt |v ∗ ∈ Ct , |Ct |= 1) = 1.
+or the probability that a Beta random variable with param-                      Putting together parts (a1 ) and (a2 ), we get
+eters a and b takes a value in [0, 1/2).                                             lim inf P(v ∗ ∈ Rt )
+  For part (a2 ), we show that limt→∞ P(v ∗ ∈ Rt |v ∗ ∈ Ct , |Ct |=                    t→∞
+                                                                                                                                     
+1) = 1. Our approach is to first show that the fraction of                                                           1        1
+reporting nodes in each tree converges almost surely to a                                    ≥ 1 − d 1 − I1/2           ,1 +                .
+                                                                                                                    d−2      d−2
+constant as t → ∞. We subsequently show that if v ∗ is a
+unique rumor center, it is almost surely a reporting center                   Part (b): Show that P(MRC (τ , G) = v ∗ |v ∗ ∈ Rt ) = 1.
+as t → ∞.                                                                     We show this by demonstrating that if v ∗ is a reporting
+                                                                              center, no other reporting centers exist.
+  Lemma B.1. For all i ∈ [d], the following condition holds                     We show that there can be at most one reporting center
+as t → ∞:                                                                     by contradiction. Suppose there are two nodes, v ∗ and w,
+                   Yi (t) a.s.         θ                                      both of which are reporting centers. Consider the d subtrees
+                          −−→ αd,θ =       .                    (39)          adjacent to v ∗ . Suppose the neighbors of v ∗ are labelled
+                   Ni (t)            d+θ−2
+                                                                              w1 , . . . , wd .∗ Each of these neighbors is the root of an infected
+                                                                              subtree Twv i . Since v ∗ is a reporting center, we have two
+                                                                              properties:
+(Proof in Section B.5.1)
+    This lemma states that the ratio of reporting to infected                                           Y (t)
+                                                                                              Ywi (t) <            ∀i ∈ [d]                     (41)
+nodes in each subtree converges almost surely to a constant.                                              2
+                                                                                                       X
+The proof proceeds by describing the evolution of each sub-                                  Yv∗ (t) +     Ywi (t) = Y (t).                     (42)
+tree and the adversary’s observations as a generalized Pólya                                           i∈[d]
+urn process with negative coefficients. The ratio of balls in
+this urn process can be shown to converge almost surely,                        Now suppose another node u 6= v ∗ is also a reporting
+which implies the claim. Now we use Lemma B.1 to show                         center. We label the neighbors of u as z1 , . . . , zd . We will
+that v ∗ is a reporting center.                                               use This implies that
+    Since v ∗ is a unique rumor center, ∀i ∈ [d] (where [d] =                                            Y (t)
+{1, 2, . . . , d}), Ni (t) < N (t)/2 [36]. Because of this condi-                             YTzu (t) <            ∀i ∈ [d]                    (43)
+                                                                                                  i        2
+tioning and the fact that the infected subtree sizes (normal-                                          X
+ized by the total number of infected nodes) converge almost                                   Yu (t) +     YTzu (t) = Y (t).                    (44)
+                                                                                                                i
+surely [37], for any outcome ω of the underlying diffusion                                             i∈[d]
+                                             t→∞
+process, it holds that Ni (t, ω)/N (t, ω) −−−→ (1/2 − δi (ω)),                Suppose without loss of generality that z1 , w1 ∈ P (u, v ∗ ).
+for some δi (ω) > 0. Here Ni (t, ω) denotes the number of                     In order to satisfy condition (43), it must hold that Yv∗ (t) +
+infected nodes in subtree i at time t under outcome ω. We
+                                                                              Pd                  Y (t)
+                                                                                  i=2 Ywi (t) <     2
+                                                                                                        . Substituting this condition into (42),
+wish to show that for any given, feasible set of offsets δi (ω),              and using condition (41) implies that Yw1 (t) > Y 2(t) . This is
+i ∈ [d], v ∗ eventually becomes a reporting center w.p. 1.                    a contradiction because v ∗ is assumed to be an element of
+                           a.s.
+    Since Yi (t)/Ni (t) −−→ αd,θ , for a given outcome ω of the               Rt , which implies that Yw1 (t) < Y (t)/2. Therefore, there
+underlying process, we can write Yi (t, ω) = Ni (t, ω)(αd,θ +                 can be no more than one reporting center, so P(MRC (τ , G) =
+                                                      t→∞
+i (t, ω)), where i (t, ω) ∈ R. Note that i (t, ω) −−−→ 0. We               v ∗ |v ∗ ∈ Rt ) = 1.
+
+
+                                                                         19
+Part (c): Combine parts (a) and (b) to give the final claim.                condition holds as n → ∞:
+We wish to lower bound lim inf t→∞ P(MRC (τ , G) = v ∗ ). Re-                                 rn a.s.   θ
+                                                                                                 −−→        .                              (46)
+call from (37) that                                                                           sn      d+θ−2
+P(MRC (τ , G) = v ∗ ) ≥ P(v ∗ ∈ Rt )P(MRC (τ , G) = v ∗ |v ∗ ∈ Rt ).        To show this, we use the following result from [17], simplified
+We have bounds for each term:                                               for clarity:
+        lim inf P(v ∗ ∈ Rt )                                                   Theorem 3.21 from [17]. Consider a Pólya urn with re-
+          t→∞
+                                                                        placement matrix A. Assume the following conditions:
+                                          1        1
+             ≥ 1 − d 1 − I1/2                ,1 +                             1. For i, j ∈ [d], Aii ≥ −1, and Aij ≥ 0 for i 6= j.
+                                         d−2      d−2
+                             ∗   ∗
+        P(MRC (τ , G) = v |v ∈ Rt ) = 1,                                      2. Aij < ∞ for all i, j ∈ [d].
+                                                                              3. The largest real eigenvalue λA of A is positive, λA > 0.
+which gives
+                                                                          4. The largest real eigenvalue λA of A is simple.
+                                          1        1
+ lim inf P(v̂ = v ∗ ) ≥ 1 − d 1 − I1/2       ,1 +        ,                    5. The urn starts with at least one ball of a dominating
+   t→∞                                   d−2      d−2
+                                                                                 type. A dominating type is a type of ball that, when
+thereby proving the claim.                                                       drawn, produces balls of every other type.
+B.5.1     Proof of Lemma B.1                                                  6. λA belongs to the dominating type.
+   The evolution of the (partially unobserved) infected sub-                  7. The urn does not go extinct.
+                                                                                                      a.s.
+graph on regular trees can be described by a Pólya urn pro-                Then n−1 [sn rn ]| −−→ λA v, where | denotes the trans-
+cess with d colors of balls. Each ball represents one active                pose of a vector, λA is the largest eigenvalue of replacement
+edge between an infected and an uninfected node, and all                    matrix A, and v is the corresponding right eigenvector.
+active edges in the same source-adjacent subtree have the
+same color. At t = 0, we have one ball of each color, since                 Conditions 1 and 2 are satisfied by examination of A. The
+there are d active edges extending from the true source.                    eigenvalues of A are (d−2) and −θ, so conditions 3 and 4 are
+   Because of the memorylessness of spreading, each of the                  satisfied. Conditions 5 and 6 are met because λA belongs
+active edges in Gt is equally likely to spread the infection                to the class of solid balls (i.e., a dominating type), and the
+next. The urn evolves as follows: pick a ball uniformly                     urn starts with a solid ball by construction. Condition 7 is
+at random; the subtree corresponding to the drawn color                     met because solid balls are never removed, and we start with
+spreads the message over one of its active edges, infecting a               one solid ball. Thus, Theorem 3.21 from [16] applies, which
+                                                                                               a.s.
+neighbor w. Once w is infected, one active edge is removed                  implies that srnn −−→ vv21 = d+θ−2θ
+                                                                                                                 , since the eigenvector for
+from the subtree (i.e., the edge that just spread the mes-                  λA = (d − 2) is v = [d + θ − 2, θ].
+sage), and d − 1 new active edges are added (from w to its                     There is a one-to-one mapping between the evolution of
+uninfected neighbors). In our urn, this corresponds to re-                  such an urn and the spreading of the message. Without
+placing the drawn ball and adding d − 2 balls of the same                   loss of generality, we consider the evolution of the first sub-
+color. The replacement matrix for this urn can therefore be                 tree, N1 (t). Let βn denote the time at which the nth ball is
+written as A = (d − 2)Id , where Id denotes the d × d identity              drawn. We define s(t) = max{n:βn ≤t,βn+1 >t} sn and r(t) =
+matrix.                                                                     max{n:βn ≤t,βn+1 >t} rn . We can now map the number of re-
+   This Pólya urn is well-studied, and in the limit, the frac-             porting and infected nodes to the evolution of the Pólya urn:
+tion of balls of each color is known to converge to a Dirich-                                  s(t)     = 1 + (d − 2)N1 (t)
+let distribution [22]. In order to model the eavesdropper’s
+observations, we generalize the urn model by additionally                                      r(t)     = N1 (t) − Y1 (t).
+giving each ball a pattern: striped or solid. Each solid ball               Solving for Y1 (t) and N1 (t) and taking the limit gives
+corresponds to an active edge in the underlying diffusion                   limt→∞ N Y1 (t)
+                                                                                             = 1 − d−2           r(t)
+                                                                                                       limt→∞ s(t)−1        θ
+                                                                                                                      = d+θ−2   with prob-
+process, whereas each striped ball represents an active edge                           1 (t)        θ
+                                                                            ability 1, since both s(t) and r(t) tend to infinity as t → ∞.
+from an infected node to the adversary. When such an edge
+fires, the adversary observes the timestamp of the sending                  B.6      Proof of Corollary 5.1
+node.
+   We adapt the previous urn dynamics in two key ways.                        The outline of this proof is similar to that of Theorem 4.2.
+First, when a solid ball is drawn, we still add d−2 solid balls             One difference is that in the spy-based adversary, the true
+of the same color, but now we also add θ striped balls of the               source v ∗ never reports to the adversary, so Yv∗ (t) = 0. This
+same color. These represent the θ independent connections                   does not change the proof in any significant way. We again
+between the node and the adversary. Second, when a striped                  condition on the event that the true source v ∗ is a reporting
+ball is draw, we remove θ striped balls of the same color from              center, which gives.
+the urn (i.e., the adversary only uses the first timestamp it                     P(MRC (τ , G) =v ∗ ) = P(v ∗ ∈ Rt ) ×
+receives). Thus, the replacement matrix for a single subtree                                             |    {z   }
+                                                                                                               (a)
+looks like
+                                                                                                         P(M (τ , G) = v ∗ |v ∗ ∈ Rt ) .   (47)
+                                solid    stripe
+                                                                                                        | RC       {z              }
+                     solid       d−2       0                                                                          (b)
+              A=                                       .        (45)
+                    stripe        θ        −θ
+                                                                            Recall that Rt is the set of reporting centers at time t. For
+  Let sn and rn denote the number of solid and striped                      part (b), if v ∗ is a reporting center, then it is a unique report-
+balls, respectively, at the nth draw of the urn. The following              ing center (from Proof B.5), so the probability of detection
+
+
+                                                                       20
+is 1. Thus, the key is to characterize (a), P(v ∗ ∈ Rt ), as                    Claim B.2. For all i ∈ [d], the following condition holds
+t → ∞.                                                                        as t → ∞:
+   As before, we lower bound this quantity by conditioning                                            Yi (t) a.s.
+on the event that v ∗ is the unique rumor center in Gt . We                                                  −−→ p.                    (49)
+                                                                                                      Ni (t)
+let Ct = {v ∈ Vt | v = rumor center of Gt }, which gives
+P(v ∗ ∈ Rt ) ≥ P(v ∗ ∈ Ct , |Ct |= 1) P(v ∗ ∈ Rt |v ∗ ∈ Ct , |Ct |= 1)
+               |        {z          }|               {z              }
+                         (a1 )                      (a2 )
+                                                                                 This claim follows easily from the central limit theorem,
+We know from Proof B.5 that part (a1 ) gives                                  since the number of spy nodes (or reporting nodes) in the
+                                                                              ith subtree is simply a Binomial(Ni (t), p) random variable.
+         lim inf          P(v ∗ ∈ Ct , |Ct |= 1)                              Recall that Ni (t) denotes the number of infected nodes in the
+          t→∞
+                                 
+                                       1         1
+                                                                            ith subtree adjacent to v ∗ . Therefore, by the same argument
+              =    1 − d 1 − I1/2 d−2    , 1 + d−2    ,         (48)          as Proof B.5, if v ∗ is a unique rumor center, it is almost
+                                                                              surely also a reporting center as t → ∞.
+where I1/2 (a, b) is the regularized incomplete Beta function,
+                                                                                 This, in turn, implies the overall result:
+or the probability that a Beta random variable with param-
+eters a and b takes a value in [0, 1/2).
+  For part (a2 ), we show that limt→∞ P(v ∗ ∈ Rt |v ∗ ∈ Ct , |Ct |=                       lim inf P(MRC (τ , G) = v ∗ ) ≥ Cd > 0.
+                                                                                           t→∞
+1) = 1. This portion is the only real difference in proof be-
+tween the present corollary and Theorem 4.2. Again, we
+show that the fraction of reporting nodes (or spies) in each                  where
+tree converges almost surely to a constant as t → ∞. How-                                                             
+ever, unlike the eavesdropper adversary, the spy-based ad-                                             1        1
+                                                                              Cd = 1 − d 1 − I1/2         ,1 +               .
+versary does not require Pòlya urns to make this case.                                               d−2      d−2
+
+
+
+
+                                                                         21
+

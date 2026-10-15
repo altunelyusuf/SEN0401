@@ -1,0 +1,1096 @@
+Eclipse Attacks on Bitcoin’s Peer-to-Peer Network
+Ethan Heilman and Alison Kendler, Boston University; Aviv Zohar, The Hebrew University of
+            Jerusalem and MSR Israel; Sharon Goldberg, Boston University
+     https://www.usenix.org/conference/usenixsecurity15/technical-sessions/presentation/heilman
+
+
+
+
+              This paper is included in the Proceedings of the
+                     24th USENIX Security Symposium
+                           August 12–14, 2015 • Washington, D.C.
+                                      ISBN 978-1-939133-11-3
+
+
+
+                                                     Open access to the Proceedings of
+                                                   the 24th USENIX Security Symposium
+                                                          is sponsored by USENIX
+                     Eclipse Attacks on Bitcoin’s Peer-to-Peer Network
+
+               Ethan Heilman∗    Alison Kendler∗    Aviv Zohar†    Sharon Goldberg∗
+                      ∗ Boston University     † Hebrew University/MSR Israel
+
+
+
+
+                        Abstract                                    used to broadcast information between bitcoin nodes (see
+                                                                    Section 8). The bitcoin peer-to-peer network, which
+We present eclipse attacks on bitcoin’s peer-to-peer net-
+                                                                    is bundled into the core bitcoind implementation, aka.,
+work. Our attack allows an adversary controlling a suffi-
+                                                                    the Satoshi client, is designed to be open, decentralized,
+cient number of IP addresses to monopolize all connec-
+                                                                    and independent of a public-key infrastructure. As such,
+tions to and from a victim bitcoin node. The attacker can
+                                                                    cryptographic authentication between peers is not used,
+then exploit the victim for attacks on bitcoin’s mining
+                                                                    and nodes are identified by their IP addresses (Section 2).
+and consensus system, including N-confirmation double
+                                                                    Each node uses a randomized protocol to select eight
+spending, selfish mining, and adversarial forks in the
+                                                                    peers with which it forms long-lived outgoing connec-
+blockchain. We take a detailed look at bitcoin’s peer-
+                                                                    tions, and to propagate and store addresses of other po-
+to-peer network, and quantify the resources involved in
+                                                                    tential peers in the network. Nodes with public IPs also
+our attack via probabilistic analysis, Monte Carlo simu-
+                                                                    accept up to 117 unsolicited incoming connections from
+lations, measurements and experiments with live bitcoin
+                                                                    any IP address. Nodes exchange views of the state of the
+nodes. Finally, we present countermeasures, inspired by
+                                                                    blockchain with their incoming and outgoing peers.
+botnet architectures, that are designed to raise the bar for
+eclipse attacks while preserving the openness and decen-            Eclipse attacks. This openness, however, also makes it
+tralization of bitcoin’s current network architecture.              possible for adversarial nodes to join and attack the peer-
+                                                                    to-peer network. In this paper, we present and quantify
+                                                                    the resources required for eclipse attacks on nodes with
+1   Introduction                                                    public IPs running bitcoind version 0.9.3. In an eclipse
+                                                                    attack [27, 61, 62], the attacker monopolizes all of the
+While cryptocurrency has been studied since the                     victim’s incoming and outgoing connections, thus iso-
+1980s [22, 25, 28], bitcoin is the first to see widespread          lating the victim from the rest of its peers in the net-
+adoption.A key reason for bitcoin’s success is its baked-           work. The attacker can then filter the victim’s view
+in decentralization. Instead of using a central bank to             of the blockchain, force the victim to waste compute
+regulate currency, bitcoin uses a decentralized network             power on obsolete views of the blockchain, or coopt
+of nodes that use computational proofs-of-work to reach             the victim’s compute power for its own nefarious pur-
+consensus on a distributed public ledger of transactions,           poses (Section 1.1). We present off-path attacks, where
+aka., the blockchain. Satoshi Nakamoto [52] argues that             the attacker controls endhosts, but not key network in-
+bitcoin is secure against attackers that seek to shift the          frastructure between the victim and the rest of the bit-
+blockchain to an inconsistent/incorrect state, as long as           coin network. Our attack involves rapidly and repeatedly
+these attackers control less than half of the computa-              forming unsolicited incoming connections to the victim
+tional power in the network. But underlying this security           from a set of endhosts at attacker-controlled IP addresses,
+analysis is the crucial assumption of perfect information;          sending bogus network information, and waiting until the
+namely, that all members of the bitcoin ecosystem can               victim restarts (Section 3). With high probability, the
+observe the proofs-of-work done by their peers.                     victim then forms all eight of its outgoing connections to
+   While the last few years have seen extensive research            attacker-controlled addresses, and the attacker also mo-
+into the security of bitcoin’s computational proof-of-              nopolizes the victim’s 117 incoming connections.
+work protocol e.g., [14, 29, 36, 37, 45, 49, 50, 52, 58, 60],          Our eclipse attack uses extremely low-rate TCP con-
+less attention has been paid to the peer-to-peer network            nections, so the main challenge for the attacker is to
+
+
+                                                                1
+USENIX Association                                                                     24th USENIX Security Symposium 129
+obtain a sufficient number of IP addresses (Section 4).             1.1    Implications of eclipse attacks
+We consider two attack types: (1) infrastructure attacks,
+modeling the threat of an ISP, company, or nation-state             Apart from disrupting the bitcoin network or selectively
+that holds several contiguous IP address blocks and seeks           filtering a victim’s view of the blockchain, eclipse attacks
+to subvert bitcoin by attacking its peer-to-peer network,           are a useful building block for other attacks.
+and (2) botnet attacks, launched by bots with addresses in          Engineering block races. A block race occurs when
+diverse IP address ranges. We use probabilistic analysis,           two miners discover blocks at the same time; one block
+(Section 4) measurements (Section 5), and experiments               will become part of the blockchain, while the other “or-
+on our own live bitcoin nodes (Section 6) to find that              phan block” will be ignored, yielding no mining rewards
+while botnet attacks require far fewer IP addresses, there          for the miner that discovered it. An attacker that eclipses
+are hundreds of organizations that have sufficient IP re-           many miners can engineer block races by hording blocks
+sources to launch eclipse attacks (Section 4.2.1). For ex-          discovered by eclipsed miners, and releasing blocks to
+ample, we show how an infrastructure attacker with 32               both the eclipsed and non-eclipsed miners once a com-
+distinct /24 IP address blocks (8192 address total), or a           peting block has been found. Thus, the eclipsed miners
+botnet of 4600 bots, can always eclipse a victim with at            waste effort on orphan blocks.
+least 85% probability; this is independent of the number            Splitting mining power.        Eclipsing an x-fraction of
+of nodes in the network. Moreover, 400 bots sufficed in             miners eliminates their mining power from the rest of
+tests on our live bitcoin nodes. To put this in context,            the network, making it easier to launch mining attacks
+if 8192 attack nodes joined today’s network (containing             (e.g., the 51% attack [52]). To hide the change in min-
+≈ 7200 public-IP nodes [4]) and honestly followed the               ing power under natural variations [19], miners could be
+peer-to-peer protocol, they could eclipse a target with             eclipsed gradually or intermittently.
+                       8192
+probability about ( 7200+8192 )8 = 0.6%.
+   Our attack is only for nodes with public IPs; nodes              Selfish mining. With selfish mining [14,29,37,60], the
+with private IPs may be affected if all of their outgoing           attacker strategically withholds blocks to win more than
+connections are to eclipsed public-IP nodes.                        its fair share of mining rewards. The attack’s success
+                                                                    is parameterized by two values: α, the ratio of mining
+Countermeasures.           Large miners, merchant clients           power controlled by the attacker, and γ, the ratio of hon-
+and online wallets have been known to modify bit-                   est mining power that will mine on the attacker’s blocks
+coin’s networking code to reduce the risk of network-               during a block race. If γ is large, then α can be small. By
+based attacks. Two countermeasures are typically rec-               eclipsing miners, the attacker increases γ, and thus de-
+ommended [3]: (1) disabling incoming connections, and               creases α so that selfish mining is easier. To do this, the
+(2) choosing ‘specific’ outgoing connections to well-               attacker drops any blocks discovered by eclipsed miners
+connected peers or known miners (i.e., use whitelists).             that compete with the blocks discovered by the selfish
+However, there are several problems with scaling this to            miners. Next, the attacker increases γ by feeding only
+the full bitcoin network. First, if incoming connections            the selfish miner’s view of the blockchain to the eclipsed
+are banned, how do new nodes join the network? Sec-                 miner; this coopts the eclipsed miner’s compute power,
+ond, how does one decide which ‘specific’ peers to con-             using it to mine on the selfish-miner’s blockchain.
+nect to? Should bitcoin nodes form a private network?
+If so, how do they ensure compute power is sufficiently             Attacks on miners can harm the entire bitcoin ecosys-
+decentralized to prevent mining attacks?                            tem; mining pools are also vulnerable if their gateways
+   Indeed, if bitcoin is to live up to its promise as an open       to the public bitcoin network can be eclipsed. Eclipsing
+and decentralized cryptocurrency, we believe its peer-to-           can also be used for double-spend attacks on non-miners,
+peer network should be open and decentralized as well.              where the attacker spends some bitcoins multiple times:
+Thus, our next contribution is a set of countermeasures             0-confirmation double spend.          In a 0-confirmation
+that preserve openness by allowing unsolicited incom-               transaction, a customer pays a transaction to a mer-
+ing connections, while raising the bar for eclipse attacks          chant who releases goods to the customer before seeing
+(Section 7). Today, an attacker with enough addresses               a block confirmation i.e., seeing the transaction in the
+can eclipse any victim that accepts incoming connections            blockchain [18]. These transactions are used when it is
+and then restarts. Our countermeasures ensure that, with            inappropriate to wait the 5-10 minutes typically needed
+high probability, if a victim stores enough legitimate ad-          to for a block confirmation [20], e.g., in retail point-of-
+dresses that accept incoming connections, then the vic-             sale systems like BitPay [5], or online gambling sites like
+tim be cannot eclipsed regardless of the number of IP               Betcoin [57]. To launch a double-spend attack against
+addresses the attacker controls. Our countermeasures 1,             the merchant [46], the attacker eclipses the merchant’s
+2, and 6 have been deployed in bitcoind v0.10.1; we also            bitcoin node, sends the merchant a transaction T for
+developed a patch [40] with Countermeasures 3,4.                    goods, and sends transaction T  double-spending those
+
+
+                                                                2
+130 24th USENIX Security Symposium                                                                         USENIX Association
+bitcoins to the rest of the network. The merchant releases                    2.1    Propagating network information
+the goods to the attacker, but since the attacker controls
+                                                                              Network information propagates through the bitcoin net-
+all of the merchant’s connections, the merchant cannot
+                                                                              work via DNS seeders and ADDR messages.
+tell the rest of the network about T , which meanwhile
+confirms T  . The attacker thus obtains the goods with-                      DNS seeders.           A DNS seeder is a server that re-
+out paying. 0-confirmation double-spends have occurred                        sponds to DNS queries from bitcoin nodes with a (not
+in the wild [57]. This attack is as effective as a Finney                     cryptographically-authenticated) list of IP addresses for
+attack [39], but uses eclipsing instead of mining power.                      bitcoin nodes. The seeder obtains these addresses by pe-
+                                                                              riodically crawling the bitcoin network. The bitcoin net-
+N-confirmation double spend.           If the attacker has                    work has six seeders which are queried in two cases only.
+eclipsed an x-fraction of miners, it can also launch                          The first when a new node joins the network for the first
+N-confirmation double-spending attacks on an eclipsed                         time; it tries to connect to the seeders to get a list of active
+merchant. In an N-confirmation transaction, a merchant                        IPs, and otherwise fails over to a hardcoded list of about
+releases goods only after the transaction is confirmed in a                   600 IP addresses. The second is when an existing node
+block of depth N − 1 in the blockchain [18]. The attacker                     restarts and reconnects to new peers; here, the seeder is
+sends its transaction to the eclipsed miners, who incor-                      queried only if 11 seconds have elapsed since the node
+porate it into their (obsolete) view of the blockchain.                       began attempting to establish connections and the node
+The attacker then shows this view of blockchain to the                        has less than two outgoing connections.
+eclipsed merchant, receives the goods, and sends both the                     ADDR messages. ADDR messages, containing up to 1000
+merchant and eclipsed miners the (non-obsolete) view of                       IP address and their timestamps, are used to obtain net-
+blockchain from the non-eclipsed miners. The eclipsed                         work information from peers. Nodes accept unsolicited
+miners’ blockchain is orphaned, and the attacker ob-                          ADDR messages. An ADDR message is solicited only upon
+tains goods without paying. This is similar to an attack                      establishing a outgoing connection with a peer; the peer
+launched by a mining pool [10], but our attacker eclipses                     responds with up to three ADDR message each containing
+miners instead of using his own mining power.                                 up to 1000 addresses randomly selected from its tables.
+Other attacks exist, e.g., a transaction hiding attack on                     Nodes push ADDR messages to peers in two cases. Each
+nodes running in SPV mode [16].                                               day, a node sends its own IP address in a ADDR message to
+                                                                              each peer. Also, when a node receives an ADDR message
+                                                                              with no more than 10 addresses, it forwards the ADDR
+                                                                              message to two randomly-selected connected peers.
+2     Bitcoin’s Peer-to-Peer Network
+                                                                              2.2    Storing network information
+We now describe bitcoin’s peer-to-peer network, based
+on bitcoind version 0.9.3, the most current release from                      Public IPs are stored in a node’s tried and new tables.
+9/27/2014 to 2/16/2015, whose networking code was                             Tables are stored on disk and persist when a node restarts.
+largely unchanged since 2013. This client was origi-                          The tried table. The tried table consists of 64 buck-
+nally written by Satoshi Nakamoto, and has near univer-                       ets, each of which can store up to 64 unique addresses
+sal market share for public-IP nodes (97% of public-IP                        for peers to whom the node has successfully established
+nodes according to Bitnode.io on 2/11/2015 [4]).                              an incoming or outgoing connection. Along with each
+   Peers in the bitcoin network are identified by their IP                    stored peer’s address, the node keeps the timestamp for
+addresses. A node with a public IP can initiate up to                         the most recent successful connection to this peer.
+eight outgoing connections with other bitcoin nodes, and                         Each peer’s address is mapped to a bucket in tried by
+accept up to 117 incoming connections.1 A node with a                         taking the hash of the peer’s (a) IP address and (b) group,
+private IP only initiates eight outgoing connections. Con-                    where the group defined is the /16 IPv4 prefix containing
+nections are over TCP. Nodes only propagate and store                         the peer’s IP address.A bucket is selected as follows:
+public IPs; a node can determine if its peer has a public                      SK = random value chosen when node is born.
+IP by comparing the IP packet header with the bitcoin                          IP = the peer’s IP address and port number.
+VERSION message. A node can also connect via Tor; we                           Group = the peer’s group
+do not study this, see [16, 17] instead. We now describe
+how nodes propagate and store network information, and                         i = Hash( SK, IP ) % 4
+how they select outgoing connections.                                          Bucket = Hash( SK, Group, i ) % 64
+                                                                               return Bucket
+    1 This is a configurable. Our analysis only assumes that nodes have       Thus, every IP address maps to a single bucket in tried,
+8 outgoing connections, which was confirmed by [51]’s measurements.           and each group maps to up to four buckets.
+
+
+                                                                          3
+USENIX Association                                                                                 24th USENIX Security Symposium 131
+   When a node successfully connects to a peer, the                and ρ is the ratio between the number of addresses stored
+peer’s address is inserted into the appropriate tried              in tried and the number of addresses stored in new.
+bucket. If the bucket is full (i.e., contains 64 addresses),       (2) Select a random address from the table, with a bias
+then bitcoin eviction is used: four addresses are ran-             towards addresses with fresher timestamps: (i) Choose
+domly selected from the bucket, and the oldest is (1)              a random non-empty bucket in the table. (ii) Choose a
+replaced by the new peer’s address in tried, and then              random position in that bucket. (ii) If there is an address
+(2) inserted into the new table. If the peer’s address is          at that position, return the address with probability
+already present in the bucket, the timestamp associated                                                    r
+                                                                                                       1.2
+with the peer’s address is updated. The timestamp is                                  p(r, τ) = min(1, 1+τ )                 (2)
+also updated when an actively connected peer sends a
+VERSION, ADDR, INVENTORY, GETDATA or PING message                  else, reject the address and return to (i). The acceptance
+and more than 20 minutes elapsed since the last update.            probability p(r, τ) is a function of r, the number of ad-
+                                                                   dresses that have been rejected so far, and τ, the dif-
+The new table. The new table consists of 256 buck-                 ference between the address’s timestamp and the current
+ets, each of which can hold up 64 addresses for peers to           time in measured in ten minute increments.2
+whom the node has not yet initiated a successful connec-
+tion. A node populates the new table with information              (3) Connect to the address. If connection fails, go to (1).
+learned from the DNS seeders, or from ADDR messages.
+   Every address a inserted in new belongs to (1) a group,         3   The Eclipse Attack
+defined in our description of the tried table, and (2) a
+source group, the group the contains the IP address of     Our attack is for a victim with a public IP. Our attacker
+the connected peer or DNS seeder from which the node       (1) populates the tried table with addresses for its at-
+learned address a. The bucket is selected as follows:      tack nodes, and (2) overwrites addresses in the new ta-
+                                                           ble with “trash” IP addresses that are not part of the
+   SK = random value chosen when node is born.             bitcoin network. The “trash” addresses are unallocated
+   Group        = /16 containing IP to be inserted.        (e.g., listed as “available” by [56]) or as “reserved for
+   Src_Group = /16 containing IP of peer sending IP. future use” by [43] (e.g., 252.0.0.0/8). We fill new with
+                                                           “trash” because, unlike attacker addresses, “trash” is not
+   i = Hash( SK, Src_Group, Group ) % 32
+                                                           a scarce resource. The attack continues until (3) the
+   Bucket = Hash( SK, Src_Group, i) % 256
+   return Bucket                                           victim node restarts and chooses new outgoing connec-
+                                                           tions from the tried and new tables in its persistant stor-
+Each (group, source group) pair hashes to a single new     age (Section 2.3). With high probability, the victim es-
+bucket, while each group selects up to 32 buckets in new.  tablishes all eight outgoing connections to attacker ad-
+Each bucket holds unique addresses. If a bucket is full,   dresses; all eight addresses will be from tried, since the
+then a function called isTerrible is run over all 64 ad-   victim cannot connect to the “trash” in new. Finally, the
+dresses in the bucket; if any one of the addresses is ter- attacker (5) occupies the victim’s remaining 117 incom-
+rible, in that it is (a) more than 30 days old, or (b) has ing connections. We now detail each step of our attack.
+had too many failed connection attempts, then the terri-
+ble address is evicted in favor of the new address; other- 3.1 Populating tried and new
+wise, bitcoin eviction is used with the small change that
+the evicted address is discarded.                          The attacker exploits the following to fill tried and new:
+                                                               1. Addresses from unsolicited incoming connections
+                                                           are stored in the tried table; thus, the attacker can in-
+2.3 Selecting peers                                        sert an address into the victim’s tried table simply by
+New outgoing connections are selected if a node restarts   connecting to the victim from that address. Moreover,
+or if an outgoing connection is dropped by the network.    the bitcoin eviction discipline means that the attacker’s
+A bitcoin node never deliberately drops a connection, ex-  fresher addresses are likely to evict any older legitimate
+cept when a blacklisting condition is met (e.g., the peer  addresses stored in the tried table (Section 2.2).
+sends ADDR messages that are too large).                       2. A node accepts unsolicited ADDR messages; these
+   A node with ω ∈ [0, 7] outgoing connections selects     addresses     are inserted directly into the new table without
+           th
+the ω + 1 connection as follows:                           testing   their  connectivity (Section 2.2). Thus, when our
+                                                           attacker connects to the victim from an adversarial ad-
+(1) Decide whether to select from tried or new, where
+                                                           dress, it can also send ADDR messages with 1000 “trash”
+                                    √
+                                      ρ(9 − ω)                 2 The algorithm also considers the number of failed connections to
+    Pr[Select from tried] =              √             (1)
+                               (ω + 1) + ρ(9 − ω)          this address; we omit this because it does not affect our analysis.
+
+
+                                                               4
+132 24th USENIX Security Symposium                                                                          USENIX Association
+addresses. Eventually, the trash overwrites all legitimate         4. An f  -fraction addresses in tried are actively con-
+addresses in new. We use “trash” because we do not want            nected to the victim before the victim restarts. The times-
+to waste our IP address resources on overwriting new.              tamps on these legitimate addresses are updated every 20
+   3. Nodes only rarely solicit network information from           minute or more (Section 2.2). We assume these times-
+peers and DNS seeders (Section 2.1). Thus, while the at-           tamps are fresh (i.e., τ = 0) when the victim restarts; this
+tacker overwrites the victim’s tried and new tables, the           is the worst case for the attacker.
+victim almost never counteracts the flood of adversarial
+                                                                   5. The time invested in the attack τ is the time elapsed
+information by querying legitimate peers or seeders.
+                                                                   from the moment the adversary starts the attack, until
+                                                                   the victim restarts. If the victim did not obtain new le-
+3.2    Restarting the victim                                       gitimate network information during of the attack, then,
+                                                                   excluding the f  -fraction described above, the legitimate
+Our attack requires the victim to restart so it can con-
+                                                                   addresses in tried are older than τ .
+nect to adversarial addresses. There are several reasons
+why a bitcoin node could restart, including ISP outages,           Success probability.           If the adversary owns an f -
+power failures, and upgrades, failures or attacks on the           fraction of the addresses in tried, the probability that
+host OS; indeed, [16] found that a node with a public IP           an adversarial address is accepted on the first try is
+has a 25% chance of going offline after 10 hours. An-              p(1, τa ) · f where p(1, τa ) is as in equation (2); here we
+other predictable reason to restart is a software update;          use the fact that the adversary’s addresses are no older
+on 1/10/2014, for example, bitnodes.io saw 942 nodes               than τa , the length of the round. If r − 1 addresses were
+running Satoshi client version 0.9.3, and by 29/12/2014,           rejected during this attempt to select an address from
+that number had risen to 3018 nodes, corresponding to              tried, then the probability that an adversarial address
+over 2000 restarts. Since updating is often not optional,          is accepted on the rth try is bounded by
+especially when it corresponds to critical security issues;
+2013 saw three such bitcoin upgrades, and the heartbleed                                                r−1
+bug [53] caused one in 2014. Also, since the community                                 p(r, τa ) · f ∏ g(i, f , f  , τa , τ )
+                                                                                                        i=1
+needs to be notified about an upgrade in advance, the at-
+tacker could watch for notifications and then commence             where
+its attack [2]. Restarts can also be deliberately elicited
+via DDoS [47, 65], memory exhaustion [16], or packets-               g(i, f , f  , τa , τ ) = (1 − p(i, τa )) · f + (1 − p(i, 0)) · f 
+of-death (which have been found for bitcoind [6,7]). The
+bottom line is that the security of the peer-to-peer net-                                       + (1 − p(i, τ )) · (1 − f − f  )
+work should not rely on 100% node uptime.
+                                                                   is the probability that an address was rejected on the ith
+                                                                   try given that it was also rejected on the i − 1th try. An
+3.3    Selecting outgoing connections                              adversarial address is thus accepted with probability
+Our attack succeeds if, upon restart, the victim makes
+                                                                                                    ∞               r−1
+all its outgoing connections to attacker addresses. To
+do this, we exploit the bias towards selecting addresses
+                                                                      q( f , f  , τa , τ ) =     ∑ p(r, τa ) · f ∏ g(i, f , f  , τa , τ )
+                                                                                                   r=1              i=1
+with fresh timestamps from tried; by investing extra                                                                                       (3)
+time into the attack, our attacker ensures its addresses are       and the victim is eclipsed if all eight outgoing connec-
+fresh, while all legitimate addresses become increasingly          tions are to adversarial addresses, which happens with
+stale. We analyze this with few simple assumptions:                probability q( f , f  , τa , τ )8 . Figure 1 plots q( f , f  , τa , τ )8
+1. An f -fraction of the addresses in the victim’s tried           vs f for τa = 27 minutes and different choices of τ ;
+                                                                                                   8
+table are controlled by the adversary and the remaining            we assume that f  = 64×64            , which corresponds to a full
+1 − f -fraction are legitimate. (Section 4 analyzes how            tried table containing eight addresses that are actively
+many addresses the adversary therefore must control.)              connected before the victim restarts.
+2. All addresses in new are “trash”; all connections to            Random selection. Figure 1 also shows success proba-
+addresses in new fail, and the victim is forced to connect         bility if addresses were just selected uniformly at random
+to addresses from tried (Section 2.3).                             from each table. We do this by plotting f 8 vs f . Without
+3. The attack proceeds in rounds, and repeats each round           random selection, the adversary has a 90% success prob-
+until the moment that the victim restarts. During a single         ability even if it only fills f = 72% of tried, as long as
+round, the attacker connects to the victim from each of            it attacks for τ = 48 hours with τa = 27 minute rounds.
+its adversarial IP addresses. A round takes time τa , so all       With random selection, 90% success probability requires
+adversarial addresses in tried are younger than τa .                f = 98.7% of tried to be attacker addresses.
+
+                                                               5
+USENIX Association                                                                               24th USENIX Security Symposium 133
+                                                                        tion costs 377 bytes upstream and 377 bytes downstream,
+                                                                        and is maintained by ping-pong packets and TCP ACKs
+                                                                        consuming 164 bytes every 80 minutes.
+                                                                            We experimentally confirmed that a bitcoin node will
+                                                                        accept all incoming connections from the same IP ad-
+                                                                        dress. (We presume this is done to allow multiple nodes
+                                                                        behind a NAT to connect to the same node.) Main-
+                                                                        taining the default 117 incoming TCP connections costs
+                                                                        164×117
+                                                                          80×60 ≈ 4 bytes per second, easily allowing one com-
+                                                                        puter to monopolize multiple victims at the same time.
+                                                                        As an aside, this also allows for connection starvation
+                                                                        attacks [32], where an attacker monopolizes all the in-
+Figure 1: Probability of eclipsing a node q( f , f  , τa , τ )8       coming connections in the peer-to-peer network, making
+(equation (3)) vs f the fraction of adversarial addresses               it impossible for new nodes to connect to new peers.
+in tried, for different values of time invested in the at-
+                                                            8
+tack τ . Round length is τa = 27 minutes, and f  = 64×64      .
+The dotted line shows the probability of eclipsing a node               4     How Many Attack Addresses?
+if random selection is used instead.
+                                                                        Section 3.3 showed that the success of our attack depends
+                                                                        heavily on τ , the time invested in the attack, and f , the
+3.4    Monopolizing the eclipsed victim                                 fraction of attacker addresses in the victim’s tried ta-
+Figure 1 assumes that the victim has exactly eight out-                 ble. We now use probabilistic analysis to determine how
+going connections; all we require in terms of incoming                  many addresses the attacker must control for a given
+connections is that the victim has a few open slots to ac-              value of f ; it’s important to remember, however, that
+cept incoming TCP connections from the attacker.                        even if f is small, our attacker can still succeed by in-
+  While it is often assumed that the number of TCP                      creasing τ . Recall from Section 2.2 that bitcoin is care-
+connections a computer can make is limited by the OS                    ful to ensure that a node does not store too many IP
+or the number of source ports, this applies only when                   addresses from the same group (i.e., /16 IPv4 address
+OS-provided TCP sockets are used; a dedicated attacker                  block). We therefore consider two attack variants:
+can open an arbitrary number of TCP connections us-                     Botnet attack (Section 4.1). The attacker holds several
+ing a custom TCP stack. A custom TCP stack (see e.g.,                   IP addresses, each in a distinct group. This models at-
+zmap [35]) requires minimal CPU and memory, and is                      tacks by a botnet of hosts scattered in diverse IP address
+typically bottlenecked only by bandwidth, and the band-                 blocks. Section 4.1.1 explains why many botnets have
+width cost of our attack is minimal:                                    enough IP address diversity for this attack.
+Attack connections.        To fill the tried table, our                 Infrastructure attack (Section 4.2). The attacker con-
+attacker repeatedly connects to the victim from each of                 trols several IP address blocks, and can intercept bitcoin
+its addresses. Each connection consists of a TCP hand-                  traffic sent to any IP address in the block, i.e., the at-
+shake, bitcoin VERSION message, and then disconnec-                     tacker holds multiple sets of addresses in the same group.
+tion via TCP RST; this costs 371 bytes upstream and                     This models a company or nation-state that seeks to un-
+377 bytes downstream. Some attack connections also                      dermine bitcoin by attacking its network. Section 4.2.1
+send one ADDR message containing 1000 addresses; these                  discusses organizations that can launch this attack.
+ADDR messages cost 120087 bytes upstream and 437
+                                                                        We focus here on tried; Appendix B considers how to
+bytes downstream including TCP ACKs.
+                                                                        send “trash”-filled ADDR messages that overwrite new.
+Monopolizing connections.         If that attack succeeds,
+the victim has eight outgoing connections to the attack
+nodes, and the attacker must occupy the victim’s remain-                4.1      Botnet attack
+ing incoming connections. To prevent others from con-
+                                                                        The botnet attacker holds t addresses in distinct groups.
+necting to the victim, these TCP connections could be
+                                                                        We model each address as hashing to a uniformly-
+maintained for 30 days, at which point the victim’s ad-
+                                                                        random bucket in tried, so the number of addresses
+dress is terrible and forgotten by the network. While
+                                                                        hashing to each bucket is binomally distributed3 as
+bitcoin supports block inventory requests and the send-                       1
+                                                                        B(t, 64 ). How many of the 64 × 64 entries in tried
+ing of blocks and transactions, this consumes significant
+bandwidth; our attacker thus does not to respond to in-                     3 B(n, p) is a binomial distribution counting successes in a sequence
+
+ventory requests. As such, setting up each TCP connec-                  of n independent yes/no trials, each yielding ‘yes’ with probability p.
+
+
+                                                                    6
+134 24th USENIX Security Symposium                                                                                      USENIX Association
+                                                                    3. Random eviction. We again consider the attacker’s
+                                                                    worst case, where each bucket is full of legitimate ad-
+                                                                    dresses, but now we assume that each inserted address
+                                                                    evicts a randomly-selected address. (This is not what bit-
+                                                                    coin does, but we analyze it for comparison.) Applying
+                                                                    Lemma A.1 (Appendix A) we find the expected number
+                                                                    of adversarial addresses in all buckets is
+                                                                                                         t
+                                                                                        4096(1 − ( 4095
+                                                                                                   4096 ) )                 (8)
+Figure 2: Botnet attack: the expected number of ad-
+dresses stored in tried for different scenarios vs the              4. Exploiting multiple rounds. Our eclipse attack pro-
+number of addresses (bots) t. Values were computed                  ceeds in rounds; in each round the attacker repeatedly in-
+from equations (4), (7) and (8), and confirmed by Monte             serts each of his t addresses into the tried table. While
+Carlo simulations (with 100 trials/data point).                     each address always maps to the same bucket in tried
+                                                                    in each round, bitcoin eviction maps each address to a
+                                                                    different slot in that bucket in every round. Thus, an ad-
+can the attacker occupy? We model various scenarios,
+                                                                    versarial address that is not stored into its tried bucket
+and plot results in Figure 2.
+                                                                    at the end of one round, might still be successfully stored
+1. Initially empty. In the best case for the attacker, all          into that bucket in a future round. Thus far, this section
+64 buckets are initially empty and the expected number              has only considered a single round. But, more addresses
+of adversarial addresses stored in the tried table is               can be stored in tried by repeating the attack for multi-
+                                                                    ple rounds. After sufficient rounds, the expected number
+                                    1
+                  64E[min(64, B(t, 64 ))]                (4)        of addresses is given by equation (4), i.e., the attack per-
+                                                                    forms as in the best-case for the attacker!
+2. Bitcoin eviction. Now consider the worst case for
+the attacker, where each bucket i is full of 64 legitimate
+                                                                    4.1.1   Who can launch a botnet attack?
+addresses. These addresses, however, will be older than
+all Ai distinct adversarial addresses that the adversary at-        The ‘initially empty’ line in Figure 2 indicates that a bot-
+tempts to insert into to bucket i. Since the bitcoin evic-          net exploiting multiple rounds can completely fill tried
+tion discipline requires each newly inserted address to             with ≈ 6000 addresses. While such an attack cannot eas-
+select four random addresses stored in the bucket and to            ily be launched from a legitimate cloud service (which
+evict the oldest, if one of the four selected addresses is a        typically allocates < 20 addresses per tenant [1, 8, 9]),
+legitimate address (which will be older than all of the ad-         botnets of this size and larger than this have attacked
+versary’s addresses), the legitimate address will be over-          bitcoin [45, 47, 65]; the Miner botnet, for example, had
+written by the adversarial addresses.                               29,000 hosts with public IPs [54]. While some botnet in-
+    For a = 0....Ai , let Ya be the number of adversarial ad-       festations concentrate in a few IP address ranges [63],
+dresses actually stored in bucket i, given that the adver-          it is important to remember that our botnet attack re-
+sary inserted a unique addresses into bucket i. Let Xa = 1          quires no more than ≈ 6000 groups; many botnets are or-
+if the ath inserted address successfully overwrites a legit-        ders of magnitude larger [59]. For example, the Walow-
+imate address, and Xa = 0 otherwise. Then,                          dac botnet was mostly in ranges 58.x-100.x and 188.x-
+                                                                    233.x [63], which creates 42 × 28 + 55 × 28 = 24832
+                                         Y
+                                         4
+                E[Xa |Ya−1 ] = 1 − ( a−1
+                                     64 )                           groups. Randomly sampling from the list of hosts in
+                                                                    the Carna botnet [26] 5000 times, we find that 1250
+and it follows that                                                 bots gives on average 402 distinct groups, enough to at-
+                                                                    tack our live bitcoin nodes (Section 6). Furthermore, we
+                                             Y4
+             E[Ya |Ya−1 ] = Ya−1 + 1 − ( a−1
+                                         64 )            (5)        soon show in Figure 3 that an infrastructure attack with
+                   E[Y1 ] = 1                            (6)        s > 200 groups easily fills every bucket in tried; thus,
+                                                                    with s > 400 groups, the attack performs as in Figure 2,
+where (6) follows because the bucket is initially full of           even if many bots are in the same group. .
+legitimate addresses. We now have a recurrence relation
+for E[Ya ], which we can solve numerically. The expected            4.2     Infrastructure attack
+number of adversarial addresses in all buckets is thus
+                                                                    The attacker holds addresses in s distinct groups. We de-
+                      t
+                                                                    termine how much of tried can be filled by an attacker
+               64 ∑                      1
+                          E[Ya ] Pr[B(t, 64 ) = a]       (7)
+                  a=1
+                                                                    controlling s groups s containing t IP addresses/group.
+
+                                                                7
+USENIX Association                                                                      24th USENIX Security Symposium 135
+Figure 3: Infrastructure attack. E[Γ] (expected number            Figure 5: Histogram of the number of organizations with
+of non-empty buckets) in tried vs s (number of groups).           s groups. For the /24 data, we require t = 256 addresses
+                                                                  per group; for /23, we require t = 512.
+
+
+                                                                  rounds. The attacker is almost as effective in the bitcoin-
+                                                                  eviction scenario with only one round; meanwhile, one
+                                                                  round is much less effective with random eviction.
+
+                                                                  4.2.1   Who can launch an infrastructure attack?
+                                                                  Which organizations have enough IP address resources
+Figure 4: Infrastructure attack with s = 32 groups: the
+                                                                  to launch infrastructure attacks? We compiled data
+expected number of addresses stored in tried for dif-
+                                                                  mapping IPv4 address allocation to organizations, using
+ferent scenarios vs the number of addresses per group t.
+                                                                  CAIDA’s AS to organization dataset [23] and AS to pre-
+Results obtained by taking the product of equation (9)
+                                                                  fix dataset [24] from July 2014, supplementing our data
+and equations from the full version [41], and confirmed
+                                                                  with information from the RIPE database [55]. We de-
+by Monte Carlo simulations (100 trials/data point). The
+                                                                  termined how many groups (i.e., addresses in the same
+horizontal line assumes all E[Γ] buckets per (9) are full.
+                                                                  /16 IPv4 address block) and addresses per group are al-
+                                                                  located to each organization; see Figure 5. There are 448
+How many groups? We model the process of pop-                     organizations with over s = 32 groups and at least t = 256
+ulating tried (per Section 2.2) by supposing that four            addresses per group; if these organizations invest τ = 5
+independent hash functions map each of the s groups               hours into an attack with a τa = 27-minute round, then
+to one of 64 buckets in tried. Thus, if Γ ∈ [0, 64]               they eclipse the victim with probability greater than 80%.
+counts the number of non-empty buckets in tried, we                  National ISPs in various countries hold a sufficient
+use Lemma A.1 to find that                                        number of groups (s ≥ 32) for this purpose; for exam-
+                                            4s
+                                                                  ple, in Sudan (Sudanese Mobile), Columbia (ETB), UAE
+                               4s
+          E[Γ] = 64 1 − ( 63
+                          64 )      ≈ (1 − e− 64 ) (9)            (Etisalat), Guatemala (Telgua), Tunisia (Tunisia Tele-
+                                                                  com), Saudi Arabia (Saudi Telecom Company) and Do-
+Figure 3 plots E[Γ]; we expect to fill 55.5 of 64 buckets         minica (Cable and Wireless). The United States Depart-
+with s = 32, and all but one bucket with s > 67 groups.           ment of the Interior has enough groups (s = 35), as does
+How full is the tried table? The full version [41] de-            the S. Korean Ministry of Information and Communica-
+termines the expected number of addresses stored per              tion (s = 41), as do hundreds of others.
+bucket for the first three scenarios described in Sec-
+tion 4.1; the expected fraction E[ f ] of tried filled by         4.3     Summary: infrastructure or botnet?
+adversarial addresses is plotted in in Figure 4. The hori-
+zontal line in Figure 4 show what happens if each of E[Γ]         Figures 4, 2 show that the botnet attack is far superior
+buckets per equation (9) is full of attack addresses.             to the infrastructure attack. Filling f = 98% of the vic-
+   The adversary’s task is easiest when all buckets are           tim’s tried table requires a 4600 node botnet (attack-
+initially empty, or when a sufficient number of rounds            ing for a sufficient number of rounds, per equation (4)).
+are used; a single /24 address block of 256 addresses             By contrast, an infrastructure attacker needs 16, 000 ad-
+suffices to fill each bucket when s = 32 grouips is used.         dresses, consisting of s = 63 groups (equation (9)) with
+Moreover, as in Section 4.1, an attack that exploits mul-         t = 256 addresses per group. However, per Section 3.3,
+tiple rounds performs as in the ‘initially empty’ scenario.       if our attacker increases the time invested in the attack
+Concretely, with 32 groups of 256 addresses each (8192            τ , it can be far less aggressive about filling tried. For
+addresses in total) an adversary can expect to fill about         example, per Figure 1, attacking for τ = 24 hours with
+ f = 86% of the tried table after a sufficient number of          τa = 27 minute rounds, our success probability exceeds
+
+                                                              8
+136 24th USENIX Security Symposium                                                                       USENIX Association
+    oldest    #                     Age of addresses (in days)
+     addr    addr   % live   <1    1−5      5 − 10    10 − 30    > 30
+    38 d*    243     28%      36     71         28         79      29
+    41 d*    162     28%      23     29         27         44      39
+    42 d*    244     19%      25     45         29         95      50
+    42 d*    195     23%      23     40         23         64      45
+    43 d*    219     20%      66     57         23         50      23
+    103 d    4096     8%     722    645        236        819    1674
+    127 d    4096     8%      90    290        328        897    2491
+    271 d    4096     8%     750    693        356        809    1488
+    240 d    4096     6%     419    445         32         79    3121
+    373 d    4096     5%       9     14          1        216    3856
+
+Table 1: Age and churn of addresses in tried for our
+nodes (marked with *) and donated peers files.
+                                                                            Figure 6: (Top) Incoming + outgoing connections vs
+                                                                            time for one of our nodes. (Bottom) Number of addresses
+85% with just f = 72%; in the worst case for the attacker,                  in tried vs time for all our nodes.
+this requires only 3000 bots, or an infrastructure attack of
+s = 20 groups and t = 256 addresses per group (5120 ad-
+                                                                            our nodes, 17% of connections had lasted more than 15
+dresses). The same attack ( f = 72%, τa = 27 minutes)
+                                                                            days, and of these, 65.6% were to public IPs. On the
+running for just 4 hours still has > 55% success proba-
+                                                                            other hand, many bitcoin nodes restart frequently; we
+bility. To put this in context, if 3000 bots joined today’s
+                                                                            saw that 43% of connections lasted less than two days
+network (with < 7200 public-IP nodes [4]) and honestly
+                                                                            and of these, 97% were to nodes with private IPs. This
+followed the peer-to-peer protocol, they could eclipse a
+                                 3000                                       may explain why we see so few incoming connections
+victim with probability ≈ ( 7200+3000  )8 = 0.006%.
+                                                                            from public IPs; many public-IP nodes stick to their ma-
+                                                                            ture long-term peers, rather than our young-ish nodes.
+5       Measuring Live Bitcoin Nodes                                        Size of tried and new tables. In our worst case attack,
+                                                                            we supposed that the tried and new tables were com-
+We briefly consider how parameters affecting the success
+                                                                            pletely full of fresh addresses. While our Bitcoin nodes’
+of our eclipse attacks look on “typical” bitcoin nodes.
+                                                                            new tables filled up quite quickly (99% within 48 hours),
+We thus instrumented five bitcoin nodes with public IPs
+                                                                            Table 1 reveals that their tried tables were far from full
+that we ran (continuously, without restarting) for 43 days
+                                                                            of fresh addresses. Even after 43 days, the tried ta-
+from 12/23/2014 to 2/4/2015. We also analyze several
+                                                                            bles for our nodes were no more than 300/4096 ≈ 8%
+peers files that others donated to us on 2/15/2015. Note
+                                                                            full. This likely follows because our nodes had very few
+that there is evidence of wide variations in metrics for
+                                                                            incoming connections from public IPs; thus, most ad-
+nodes of different ages and in different regions [46]; as
+                                                                            dresses in tried result from successful outgoing con-
+such, our analysis (Section 3-4) and some of our experi-
+                                                                            nections to public IPs (infrequently) drawn from new.
+ments (Section 6) focus on the attacker’s worst-case sce-
+nario, where tables are initially full of fresh addresses.                  Freshness of tried.          Even those few addresses in
+Number of connections.           Our attack requires the                    tried are not especially fresh. Table 1 shows the age
+victim to have available slots for incoming connections.                    distribution of the addresses in tried for our nodes and
+Figure 6 shows the number of connections over time for                      from donated peers files. For our nodes, 17% of ad-
+one of our bitcoin nodes, broken out by connections to                      dresses were more than 30 days old, and 48% were more
+public or private IPs. There are plenty of available slots;                 than 10 days old; these addresses will therefore be less
+while our node can accommodate 125 connections, we                          preferred than the adversarial ones inserted during an
+never see more than 60 at a time. Similar measurements                      eclipse attack, even if the adversary does not invest much
+in [17] indicate that 80% of bitcoin peers allow at least                   time τ in attacking the victim.
+40 incoming connections. Our node saw, on average, 9.9                      Churn.       Table 1 also shows that a small fraction of
+connections to public IPs over the course of its lifetime;                  addresses in tried were online when we tried connect-
+of these, 8 correspond to outgoing connections, which                       ing to them on 2/17/2015.4 This suggests further vul-
+means we rarely see incoming connections from public                        nerability to eclipse attacks, because if most legitimate
+IPs. Results for our other nodes are similar.                               addresses in tried are offline when a victim resets, the
+Connection length.        Because public bitcoin nodes                      victim is likely to connect to an adversarial address.
+rarely drop outgoing connections to their peers (except                         4 For consistency with the rest of this section, we tested our nodes
+upon restart, network failure, or due to blacklisting, see
+                                                                            tables from 2/4/2015. We also repeated this test for tables taken from
+Section 2.3), many connections are fairly long lived.                       our nodes on 2/17/2015, and the results did not deviate more than 6%
+When we sampled our nodes on 2/4/2015, across all of                        from those of Table 1.
+
+
+                                                                        9
+USENIX Association                                                                                  24th USENIX Security Symposium 137
+                                     Attacker resources                                           Experiment                                Predicted
+                          grps   addrs/   total    τ , time     τa ,   Total pre-attack   Total post-attack  Attack addrs             Attack addrs
+    Attack Type              s    grp t addrs       invest     round      new tried          new     tried     new tried       Wins     new tried Wins
+    Infra (Worstcase)       32     256 8192          10 h      43 m     16384      4090    16384       4096 15871      3404    98%    16064     3501 87%
+    Infra (Transplant)      20     256 5120          1 hr      27 m     16380        278   16383       3087 14974      2947    82%    15040     2868 77%
+    Infra (Transplant)      20     256 5120          2 hr      27 m     16380        278   16383       3088 14920      2966    78%    15040     2868 87%
+    Infra (Transplant)      20     256 5120          4 hr      27 m     16380        278   16384       3088 14819      2972    86%    15040     2868 91%
+    Infra (Live)            20     256 5120          1 hr      27 m     16381        346   16384       3116 14341      2942    84%    15040     2868 75%
+    Bots (Worstcase)     2300        2 4600           5h       26 m     16080      4093    16384       4096 16383      4015   100%    16384     4048 96%
+    Bots (Transplant)     200        1     200       1 hr       74 s    16380        278   16384         448 16375      200    60%    16384      200 11%
+    Bots (Transplant)     400        1     400       1 hr       90 s    16380        278   16384         648 16384      400    88%    16384      400 34%
+    Bots (Transplant)     400        1     400       4 hr       90 s    16380        278   16384         650 16383      400    84%    16384      400 61%
+    Bots (Transplant)     600        1     600       1 hr      209 s    16380        278   16384         848 16384      600    96%    16384      600 47%
+    Bots (Live)           400        1     400       1 hr       90 s    16380        298   16384         698 16384      400    84%    16384      400 28%
+
+                                                         Table 2: Summary of our experiments.
+
+6      Experiments                                                                     tack for no longer than one hour on a freshly-born vic-
+                                                                                       tim node, filling tried and new with IP addresses from
+We now validate our analysis with experiments.                                         251.0.0.0/8, 253.0.0.0/8 and 254.0.0.0/8, which we des-
+Methodology.         In each of our experiments, the vic-                              ignate as “legitimate addresses”; these addresses are no
+tim (bitcoind) node is on a virtual machine on the at-                                 older than one hour when the attack starts. We then
+tacking machine; we also instrument the victim’s code.                                 restart the victim and commence attacking it.
+The victim node runs on the public bitcoin network (aka,                               2. Transplant case. In our transplant experiments, we
+mainnet). The attacking machine can read all the vic-                                  copied the tried and new tables from one of our five
+tim’s packets to/from the public bitcoin network, and                                  live bitcoin nodes on 8/2/2015, installed them in a fresh
+can therefore forge TCP connections from arbitrary IP                                  victim with a different public IP address, restarted the
+addresses. To launch the attack, the attacking machine                                 victim, waited for it to establish eight outgoing connec-
+forges TCP connections from each of its attacker ad-                                   tions, and then commenced attacking. This allowed us to
+dresses, making an incoming connection to the victim,                                  try various attacks with a consistent initial condition.
+sending a VERSION message and sometimes also an ADDR                                   3. Live case.      Finally, on 2/17/2015 and 2/18/2015
+message (per Appendix B) and then disconnecting; the                                   we attacked our live bitcoin nodes while they were con-
+attack connections, which are launched at regular inter-                               nected to the public bitcoin network; at this point our
+vals, rarely occupy all of the victim’s available slots for                            nodes had been online for 52 or 53 days.
+incoming connections. To avoid harming the public bit-
+coin network, (1) we use “reserved for future use” [43]                                Results (Table 2). Results are in Table 2. The first
+IPs in 240.0.0.0/8-249.0.0.0/8 as attack addresses, and                                five columns summarize attacker resources (the number
+252.0.0.0/8 as “trash” sent in ADDR messages, and (2) we                               of groups s, addresses per group t, time invested in the
+drop any ADDR messages the (polluted) victim attempts                                  attack τ , and length of a round τa per Sections 3-4). The
+to send to the public network.                                                         next two columns present the initial condition: the num-
+   At the end of the attack, we repeatedly restart the vic-                            ber of addresses in tried and new prior to the attack.
+tim and see what outgoing connections it makes, drop-                                  The following four columns give the size of tried and
+ping connections to the “trash” addresses and forging                                  new, and the number of attacker addresses they store, at
+connections for the attacker addresses. If all 8 outgo-                                the end of the attack (when the victim first restarts). The
+ing connections are to attacker addresses, the attack suc-                             wins columns counts the fraction of times our attack suc-
+ceeds, and otherwise it fails. Each experiment restarts the                            ceeds after restarting the victim 50 times.
+victim 50 times, and reports the fraction of successes. At                                The final three columns give predictions from Sec-
+each restart, we revert the victim’s tables to their state at                          tions 3.3, 4. The attack addrs columns give the expected
+the end of the attack, and rewind the victim’s system time                             number of addresses in new (Appendix B) and tried.
+to the moment the attack ended (to avoid dating times-                                 For tried, we assume that the attacker runs his attack
+tamps in tried and new). We restart the victim 50 times                                for enough rounds so that the expected number of ad-
+to measure the success rate of our (probabilistic) attack;                             dresses in tried is governed by equation (4) for the bot-
+in a real attack, the victim would only restart once.                                  net, and the ‘initially empty’ curve of Figure 4 for the
+                                                                                       infrastructure attack. The final column predicts success
+Initial conditions. We try various initial conditions:                                 per Section 3.3 using experimental values of τa , τ , f , f  .
+1. Worst case. In the attacker’s worst-case scenario,                                  Observations. Our results indicate the following:
+the victim initially has tried and new tables that are
+completely full of legitimate addresses with fresh times-                              1. Success in worst case. Our experiments confirm that
+tamps. To set up the initial condition, we run our at-                                 an infrastructure attack with 32 groups of size /24 (8192
+
+                                                                                  10
+138 24th USENIX Security Symposium                                                                                                    USENIX Association
+attack addresses total) succeeds in the worst case with                           to a legitimate peer before the attack, then the eclipse at-
+very high probability. We also confirm that botnets are                           tack fails if that peer accepts incoming connections when
+superior to infrastructure attacks; 4600 bots had 100%                            the victim restarts.
+success even with a worst-case initial condition.                                 1. Deterministic random eviction. Replace bitcoin
+2. Accuracy of predictions.           Almost all of our at-                       eviction as follows: just as each address deterministically
+tacks had an experimental success rate that was higher                            hashes to a single bucket in tried and new (Section 2.2),
+than the predicted success rate. To explain this, recall                          an address also deterministically hashes to a single slot
+that our predictions from Section 3.3 assume that legit-                          in that bucket. This way, an attacker cannot increase the
+imate addresses are exactly τ old (where τ is the time                          number of addresses stored by repeatedly inserting the
+invested in the attack); in practice, legitimate addresses                        same address in multiple rounds (Section 4.1). Instead,
+are likely to be even older, especially when we work with                         addresses stored in tried are given by the ‘random evic-
+tried tables of real nodes (Table 1). Thus, Section 3.3’s                         tion’ curves in Figures 2, 4, reducing the attack addresses
+predictions are a lower bound on the success rate.                                stored in tried.
+   Our experimental botnet attacks were dramatically                              2. Random selection.               Our attacks also exploit
+more successful than their predictions (e.g., 88% actual                          the heavy bias towards forming outgoing connections
+vs. 34% predicted), most likely because the addresses                             to addresses with fresh timestamps, so that an attacker
+initially in tried were already very stale prior to the at-                       that owns only a small fraction f = 30% of the victim’s
+tack (Table 1). Our infrastructure attacks were also more                         tried table can increase its success probability (to say
+successful then their predictions, but here the difference                        50%) by increasing τ , the time it invests in the attack
+was much less dramatic. To explain this, we look to the                           (Section 3.3). We can eliminate this advantage for the
+new table. While our success-rate predictions assume                              attacker if addresses are selected at random from tried
+that new is completely overwritten, our infrastructure at-                        and new; this way, a √  success rate of 50% always requires
+tacks failed to completely overwrite the new table;5 thus,                        the adversary to fill 8 0.5 = 91.7% of tried, which re-
+we have some extra failures because the victim made out-                          quires 40 groups in an infrastructure attack, or about
+going connections to addresses in new.                                            3680 peers in a botnet attack. Combining this with deter-
+                                                                                  ministic random eviction, the figure jumps to 10194 bots
+3. Success in a ‘typical’ case.      Our attacks are suc-
+                                                                                  for 50% success probability.
+cessful with even fewer addresses when we test them on
+our live nodes, or on tables taken from those live nodes.                            These countermeasures harden the network, but still
+Most strikingly, a small botnet of 400 bots succeeds with                         allow an attacker with enough addresses to overwrite all
+very high probability; while this botnet completely over-                         of tried. The next countermeasure remedies this:
+writes new, it fills only 400/650 = 62% of tried, and                             3. Test before evict. Before storing an address in its
+still manages to win with more than 80% probability.                              (deterministically-chosen) slot in a bucket in tried, first
+                                                                                  check if there is an older address stored in that slot. If
+                                                                                  so, briefly attempt to connect to the older address, and
+7    Countermeasures                                                              if connection is successful, then the older address is not
+                                                                                  evicted from the tried table; the new address is stored
+We have shown how an attacker with enough IP ad-                                  in tried only if the connection fails.
+dresses and time can eclipse any target victim, regardless                           We analyze these three countermeasures. Suppose that
+of the state of the victim’s tried and new tables. We                             there are h legitimate addresses in the tried table prior
+now present countermeasures that make eclipse attacks                             to the attack, and model network churn by supposing
+more difficult. Our countermeasures are inspired by bot-                          that each of the h legitimate addresses in tried is live
+net architectures (Section 8), and designed to be faithful                        (i.e., accepts incoming connections) independently with
+to bitcoin’s network architecture.                                                probability p. With test-before-evict, the adversary can-
+   The following five countermeasures ensure that: (1) If                         not evict p × h legitimate addresses (in expectation) from
+the victim has h legitimate addresses in tried before the                         tried, regardless of the number of distinct addresses it
+attack, and a p-fraction of them accept incoming connec-                          controls. Thus, even if the rest of tried is full of adver-
+tions during the attack when the victim restarts, then even                       sarial addresses, the probability of eclipsing the victim is
+an attacker with an unbounded number of addresses can-                            bounded to about
+not eclipse the victim with probability exceeding equa-                                                                        8
+                                                                                                                            p×h
+tion (10). (2) If the victim’s oldest outgoing connection is                                     Pr[eclipse] = f 8 < 1 − 64×64            (10)
+
+   5 The new table holds 16384 addresses and from 6th last column of              This is in stark contrast to today’s protocol, where at-
+Table 2 we see the new is not full for our infrastructure attacks. Indeed,        tackers with enough addresses have unbounded success
+we predict this in Appendix B.                                                    probability even if tried is full of legitimate addresses.
+
+
+                                                                             11
+USENIX Association                                                                                    24th USENIX Security Symposium 139
+                                                                      ing addresses of current outgoing connections and the
+                                                                      time of first connection to each address. Upon restart,
+                                                                      the node dedicates two extra outgoing connections to the
+                                                                      oldest anchor addresses that accept incoming connec-
+                                                                      tions. Now, in addition to defeating our other counter-
+                                                                      measures, a successful attacker must also disrupt anchor
+                                                                      connections; eclipse attacks fail if the victim connects to
+                                                                      an anchor address not controlled by the attacker.
+                                                                         Apart from these five countermeasures, a few other
+                                                                      ideas can raise the bar for eclipse attacks:
+                                                                      6. More buckets.           Among the most obvious coun-
+                                                                      termeasure is to increase the size of the tried and new
+                                                                      tables. Suppose we doubled the number of buckets in
+                                                                      the tried table. If we consider the infrastructure attack,
+                                                                                                                          4s
+Figure 7: The area below each curve corresponds to a                  the buckets filled by s groups jumps from (1 − e− 64 ) (per
+                                                                                                 4s
+number of bots a that can eclipse a victim with probabil-             equation (9) to (1 − e− 128 ). Thus, an infrastructure at-
+ity at least 50%, given that the victim initially has h legit-        tacker needs double the number of groups in order to ex-
+imate addresses in tried. We show one curve per churn                 pect to fill the same fraction of tried. Similarly, a botnet
+rate p. (Top) With test before evict. (Bottom) Without.               needs to double the number of bots. Importantly, how-
+                                                                      ever, this countermeasure is helpful only when tried
+                                                                      already contains many legitimate addresses, so that at-
+   We perform Monte-Carlo simulations assuming churn                  tacker owns a smaller fraction of the addresses in tried.
+p, h legitimate addresses initially stored in tried, and              However, if tried is mostly empty (or contains mostly
+a botnet inserting a addresses into tried via unsolicited             stale addresses for nodes that are no longer online), the
+incoming connections. The area below each curve in Fig-               attacker will still own a large fraction of the addresses
+ure 7 is the number of bots a that can eclipse a victim               in tried, even though the number of tried buckets
+with probability at least 50%, given that there are initially         has increased. Thus, this countermeasure should also
+h legitimate addresses in tried. With test-before-evict,
+                                                  √                   be accompanied by another countermeasure (e.g., feeler
+the curves plateau horizontally at h = 4096(1− 8 0.5)/p;              connections) that increases the number of legitimate ad-
+as long as h is greater than this quantity, even a botnet             dresses stored in tried.
+with an infinite number of addresses has success proba-
+bility bounded by 50%. Importantly, the plateau is ab-                7. More outgoing connections.            Figure 6 indicates
+sent without test-before-evict; a botnet with enough ad-              our test bitcoin nodes had at least 65 connections slots
+dresses can eclipse a victim regardless of the number of              available, and [17] indicates that 80% of bitcoin peers
+legitimate addresses h initially in tried.                            allow at least 40 incoming connections. Thus, we can
+   There is one problem, however. Our bitcoin nodes saw               require nodes to make a few additional outgoing con-
+high churn rates (Table 1). With a p = 28% churn rate,                nections without risking that the network will run out of
+for example, bounding the adversary’s success probabil-               connection capacity. Indeed, recent measurements [51]
+ity to 10% requires about h = 3700 addresses in tried;                indicate that certain nodes (e.g., mining-pool gateways)
+our nodes had h < 400. Our next countermeasure thus                   do this already. For example, using twelve outgoing con-
+adds more legitimate addresses to tried:                              nections instead of eight (in addition to the feeler connec-
+                                                                      tion and two anchor connections), decreases the attack’s
+4. Feeler Connections. Add an outgoing connection                     success probability from f 8 to f 12 ; to achieve 50% suc-
+that establish short-lived test connections to randomly-              cess probability the infrastructure attacker now needs 46
+selected addresses in new. If connection succeeds, the                groups, and the botnet needs 11796 bots.
+address is evicted from new and inserted into tried; oth-
+erwise, the address is evicted from new.                              8. Ban unsolicited ADDR messages.           A node could
+                                                                      choose not to accept large unsolicited ADDR messages
+   Feeler connections clean trash out of new while in-                (with > 10 addresses) from incoming peers, and only so-
+creasing the number of fresh address in tried that are                licit ADDR messages from outgoing connections when its
+likely to be online when a node restarts. Our fifth coun-             new table is too empty. This prevents adversarial incom-
+termeasure is orthogonal to those above:                              ing connections from flooding a victim’s new table with
+5. Anchor connections. Inspired by Tor entry guard                    trash addresses. We argue that this change is not harmful,
+rotation rates [33], we add two connections that persist              since even in the current network, there is no shortage of
+between restarts. Thus, we add an anchor table, record-               address in the new table (Section 5). To make this more
+
+                                                                 12
+140 24th USENIX Security Symposium                                                                           USENIX Association
+                                                                                        1
+concrete, note that a node request ADDR messages upon
+                                                                                       0.8
+establishing an outgoing connection. The peer responds
+
+
+
+
+                                                                         Pr[Eclipse]
+                                                                                       0.6
+with n randomly selected addresses from its tried and
+                                                                                       0.4
+new tables, where n is a random number between x and
+                                                                                       0.2
+2500 and x is 23% of the addresses the peer has stored.
+                                                                                        0
+If each peer sends, say, about n = 1700 addresses, then                                  0   0.5   1    1.5    2     2.5      3      3.5
+                                                                                                          Number of Addresses Inserted
+                                                                                                                                           4   4.5          5
+                                                                                                                                                            5
+                                                                                                                                                     x 10
+new is already 8n/16384 = 83% full the moment that the
+                                                                    Figure 8: Probability of eclipsing a node vs the number
+bitcoin node finishing establishing outgoing connections.
+                                                                    of addresses (bots) t for bitcoind v0.10.1 (with Counter-
+                                                                    measures 1,2 and 6) when tried is initially full of legit-
+9. Diversify incoming connections.           Today, a bit-
+                                                                    imate addresses per equation (11).
+coin node can have all of its incoming connections come
+from the same IP address, making it far too easy for a sin-
+gle computer to monopolize a victim’s incoming connec-              8   Related Work
+tions during an eclipse attack or connection-starvation at-
+tack [32]. We suggest a node accept only a limited num-             The bitcoin peer-to-peer (p2p) network. Recent work
+ber of connections from the same IP address.                        considers how bitcoin’s network can delay or prevent
+                                                                    block propagation [31] or be used to deanonymize bit-
+10. Anomaly detection.          Our attack has several spe-         coin users [16, 17, 48]. These works discuss aspects of
+cific “signatures” that make it detectable including: (1) a         bitcoin’s networking protocol, with [16] providing an ex-
+flurry of short-lived incoming TCP connections from di-             cellent description of ADDR message propagation; we fo-
+verse IP addresses, that send (2) large ADDR messages (3)           cus instead on the structure of the tried and new tables,
+containing “trash” IP addresses. An attacker that sud-              timestamps and their impact on address selection (Sec-
+denly connects a large number of nodes to the bitcoin               tion 2). [17] shows that nodes connecting over Tor can
+network could also be detected, as could one that uses              be eclipsed by a Tor exit node that manipulates both bit-
+eclipsing per Section 1.1 to dramatically decrease the              coin and Tor. Other work has mapped bitcoin peers to au-
+network’s mining power. Thus, monitoring and anomaly                tonomous systems [38], geolocated peers and measured
+detection systems that look for this behavior are also be           churn [34], and used side channels to learn the bitcoin
+useful; at the very least, they would force an eclipse at-          network topology [16, 51].
+tacker to attack at low rate, or to waste resources on over-
+writing new (instead of using “trash” IP addresses).                p2p and botnet architectures.             There has been
+                                                                    extensive research on eclipse attacks [27, 61, 62] in
+Status of our countermeasures.            We disclosed our          structured p2p networks built upon distributed hash ta-
+results to the bitcoin core developers in 02/2015. They             bles (DHTs); see [64] for a survey. Many proposals
+deployed Countermeasures 1, 2, and 6 in the bitcoind                defend against eclipse attacks by adding more struc-
+v0.10.1 release, which now uses deterministic random                ture; [61] constrains peer degree, while others use con-
+eviction, random selection, and scales up the number of             straints based on distance metrics like latency [42] or
+buckets in tried and new by a factor of four. To illus-             DHT identifiers [13]. Bitcoin, by contrast, uses an un-
+trate the efficacy of this, consider the worst-case scenario        structured network. While we have focused on exploiting
+for the attacker where tried is completely full of legiti-          specific quirks in bitcoin’s existing network, other works
+mate addresses. We use Lemma A.1 to estimate the suc-               e.g., [11, 15, 21, 44] design new unstructured networks
+cess rate of a botnet with t IP addresses as                        that are robust to Byzantine attacks. [44] blacklists mis-
+                                                                    behaving peers. Puppetcast’s [15] centralized solution is
+                                         
+                                         t 8                        based on public-key infrastructure [15], which is not ap-
+              Pr[Eclipse] ≈ 1 − ( 16383
+                                  16384 )              (11)
+                                                                    propriate for bitcoin. Brahms [21] is fully decentralized,
+                                                                    and instead constrains the rate at which peers exchange
+Plotting (11) in Figure 8, we see that this botnet requires         network information—a useful idea that is a significant
+163K addresses for a 50% success rate, and 284K ad-                 departure from bitcoin’s current approach. Meanwhile,
+dress for a 90% success rate. This is good news, but                our goals are also more modest than those in these works;
+we caution that ensuring that tried is full of legitimate           rather than requiring that each node is equally likely to
+address is still a challenge (Section 5), especially since          be sampled by an honest node, we just want to limit
+there may be fewer than 16384 public-IP nodes in the                eclipse attacks on initially well-connected nodes. Thus,
+bitcoin network at a given time. Countermeasures 3 and              our countermeasures are inspired by botnet architectures,
+4 are designed to deal with this, and so we have also de-           which share this same goal. Rossow et al. [59] finds that
+veloped a patch with these two countermeasures; see [40]            many botnets, like bitcoin, use unstructured peer-to-peer
+for our implementation and its documentation.                       networks and gossip (i.e., ADDR messages), and describes
+
+                                                               13
+USENIX Association                                                                                     24th USENIX Security Symposium 141
+how botnets defend against attacks that flood local ad-               [6] Bug bounty requested: 10 btc for huge dos bug in all current
+dress tables with bogus information. The Sality botnet                    bitcoin clients. Bitcoin Forum. https://bitcointalk.org/
+                                                                          index.php?topic=944369.msg10376763#msg10376763.
+refuses to evict “high-reputation” addresses; our anchor                  Accessed: 2014-06-17.
+countermeasure is similar (Section 7). Storm uses test-
+                                                                      [7] CVE-2013-5700: Remote p2p crash via bloom filters. https:
+before-evict [30], which we have also recommended for                     //en.bitcoin.it/wiki/Common_Vulnerabilities_and_
+bitcoin. Zeus [12] disallows connections from multiple                    Exposures. Accessed: 2014-02-11.
+IP in the same /20, and regularly clean tables by testing             [8] Microsoft azure ip address pricing.       http://
+if peers are online; our feeler connections are similar.                  azure.microsoft.com/en-us/pricing/details/
+                                                                          ip-addresses/. Accessed: 2014-06-18.
+                                                                      [9] Rackspace:         Requesting      additional  ipv4    ad-
+9   Conclusion                                                            dresses    for   cloud    servers.            http://www.
+                                                                          rackspace.com/knowledge_center/article/
+We presented an eclipse attack on bitcoin’s peer-to-peer                  requesting-additional-ipv4-addresses-for-cloud-servers.
+network that undermines bitcoin’s core security guaran-                   Accessed: 2014-06-18.
+tees, allowing attacks on the mining and consensus sys-              [10] Ghash.io and double-spending against betcoin dice, October 30
+                                                                          2013.
+tem, including N-confirmation double spending and ad-
+versarial forks in the blockchain. Our attack is for nodes           [11] A NCEAUME , E., B USNEL , Y., AND G AMBS , S. On the power
+                                                                          of the adversary to solve the node sampling problem. In Transac-
+with public IPs. We developed mathematical models of                      tions on Large-Scale Data-and Knowledge-Centered Systems XI.
+our attack, and validated them with Monte Carlo sim-                      Springer, 2013, pp. 102–126.
+ulations, measurements and experiments. We demon-                    [12] A NDRIESSE , D., AND B OS , H. An analysis of the zeus peer-to-
+strated the practically of our attack by performing it on                 peer protocol, April 2014.
+our own live bitcoin nodes, finding that an attacker with            [13] AWERBUCH , B., AND S CHEIDELER , C. Robust random number
+32 distinct /24 IP address blocks, or a 4600-node botnet,                 generation for peer-to-peer systems. In Principles of Distributed
+can eclipse a victim with over 85% probability in the at-                 Systems. Springer, 2006, pp. 275–289.
+tacker’s worst case. Moreover, even a 400-node botnet                [14] BAHACK , L. Theoretical bitcoin attacks with less than half of
+sufficed to attack our own live bitcoin nodes. Finally,                   the computational power (draft). arXiv preprint arXiv:1312.7013
+                                                                          (2013).
+we proposed countermeasures that make eclipse attacks
+more difficult while still preserving bitcoin’s openness             [15] BAKKER , A., AND VAN S TEEN , M. Puppetcast: A secure peer
+                                                                          sampling protocol. In European Conference on Computer Net-
+and decentralization; several of these were incorporated                  work Defense (EC2ND) (2008), IEEE, pp. 3–10.
+in a recent bitcoin software upgrade.
+                                                                     [16] B IRYUKOV, A., K HOVRATOVICH , D., AND P USTOGAROV, I.
+                                                                          Deanonymisation of clients in Bitcoin P2P network. In Proceed-
+Acknowledgements                                                          ings of the 2014 ACM SIGSAC Conference on Computer and
+                                                                          Communications Security (2014), ACM, pp. 15–29.
+We thank Foteini Baldimtsi, Wil Koch, and the USENIX                 [17] B IRYUKOV, A., AND P USTOGAROV, I. Bitcoin over tor isn’t a
+Security reviewers for comments on this paper, various                    good idea. arXiv preprint arXiv:1410.6079 (2014).
+bitcoin users for donating their peers files, and the bitcoin        [18] B ITCOIN W IKI. Confirmation. https://en.bitcoin.it/
+core devs for discussions and for implementing Counter-                   wiki/Confirmation, February 2015.
+measures 1,2,6. E.H., A.K., S.G. were supported in part              [19] B ITCOIN W ISDOM. Bitcoin difficulty and hash rate chart.
+by NSF award 1350733, and A.Z. by ISF Grants 616/13,                      https://bitcoinwisdom.com/bitcoin/difficulty,
+                                                                          February 2015.
+1773/13, and the Israel Smart Grid (ISG) Consortium.
+                                                                     [20] BLOCKCHAIN . IO.      Average transaction confirma-
+                                                                          tion  time.       https://blockchain.info/charts/
+References                                                                avg-confirmation-time, February 2015.
+                                                                     [21] B ORTNIKOV, E., G UREVICH , M., K EIDAR , I., K LIOT, G., AND
+ [1] Amazon web services elastic ip. http://aws.amazon.com/
+     ec2/faqs/#elastic-ip. Accessed: 2014-06-18.                          S HRAER , A. Brahms: Byzantine resilient random membership
+                                                                          sampling. Computer Networks 53, 13 (2009), 2340–2359.
+ [2] Bitcoin: Common vulnerabilities and exposures. https:
+                                                                     [22] B RANDS , S. Untraceable off-line cash in wallets with observers
+     //en.bitcoin.it/wiki/Common_Vulnerabilities_and_
+                                                                          (extended abstract). In CRYPTO (1993).
+     Exposures. Accessed: 2014-02-11.
+                                                                     [23] CAIDA. AS to Organization Mapping Dataset, July 2014.
+ [3] Bitcoin wiki: Double-spending. https://en.bitcoin.it/
+     wiki/Double-spending. Accessed: 2014-02-09.                     [24] CAIDA. Routeviews prefix to AS Mappings Dataset for IPv4
+                                                                          and IPv6, July 2014.
+ [4] Bitnode.io snapshot of reachable nodes. https://getaddr.
+     bitnodes.io/nodes/. Accessed: 2014-02-11.                       [25] C AMENISCH , J., H OHENBERGER , S., AND LYSYANSKAYA , A.
+                                                                          Compact e-cash. In EUROCRYPT (2005).
+ [5] Bitpay:    What is transaction speed?            https:
+     //support.bitpay.com/hc/en-us/articles/                         [26] C ARNA B OTNET.    Internet census 2012.    http:
+     202943915-What-is-Transaction-Speed-.          Accessed:             //internetcensus2012.bitbucket.org/paper.html,
+     2014-02-09.                                                          2012.
+
+
+                                                                14
+142 24th USENIX Security Symposium                                                                                 USENIX Association
+[27] C ASTRO , M., D RUSCHEL , P., G ANESH , A., ROWSTRON , A.,               [46] K ARAME , G., A NDROULAKI , E., AND C APKUN , S. Two bit-
+     AND WALLACH , D. S. Secure routing for structured peer-to-                    coins at the price of one? double-spending attacks on fast pay-
+     peer overlay networks. ACM SIGOPS Operating Systems Review                    ments in bitcoin. IACR Cryptology ePrint Archive 2012 (2012),
+     36, SI (2002), 299–314.                                                       248.
+[28] C HAUM , D. Blind signature system. In CRYPTO (1983).                    [47] K ING , L.         Bitcoin hit by ’massive’ ddos at-
+                                                                                   tack as tensions rise.           Forbes http: // www.
+[29] C OURTOIS , N. T., AND BAHACK , L. On subversive miner                        forbes. com/ sites/ leoking/ 2014/ 02/ 12/
+     strategies and block withholding attack in bitcoin digital cur-               bitcoin-hit-by-massive-ddos-attack-as-tensions-rise/
+     rency. arXiv preprint arXiv:1402.1718 (2014).                                 (December 2 2014).
+[30] DAVIS , C. R., F ERNANDEZ , J. M., N EVILLE , S., AND                    [48] KOSHY, P., KOSHY, D., AND M C DANIEL , P. An analysis of
+     M C H UGH , J. Sybil attacks as a mitigation strategy against the             anonymity in bitcoin using p2p network traffic. In Financial
+     storm botnet. In 3rd International Conference on Malicious and                Cryptography and Data Security. 2014.
+     Unwanted Software, 2008. (2008), IEEE, pp. 32–40.
+                                                                              [49] K ROLL , J. A., DAVEY, I. C., AND F ELTEN , E. W. The eco-
+[31] D ECKER , C., AND WATTENHOFER , R. Information propagation                    nomics of bitcoin mining, or bitcoin in the presence of adver-
+     in the bitcoin network. In IEEE Thirteenth International Confer-              saries. In Proceedings of WEIS (2013), vol. 2013.
+     ence on Peer-to-Peer Computing (P2P) (2013), IEEE, pp. 1–10.             [50] L ASZKA , A., J OHNSON , B., AND G ROSSKLAGS , J. When bit-
+[32] D ILLON , J. Bitcoin-development mailinglist: Protecting bitcoin              coin mining pools run dry. 2nd Workshop on Bitcoin Research
+     against network-wide dos attack. http://sourceforge.net/                      (BITCOIN) (2015).
+     p/bitcoin/mailman/message/31168096/, 2013. Accessed:                     [51] M ILLER , A., L ITTON , J., PACHULSKI , A., G UPTA , N., L EVIN ,
+     2014-02-11.                                                                   D., S PRING , N., AND B HATTACHARJEE , B. Discovering bit-
+[33] D INGLEDINE , R., H OPPER , N., K ADIANAKIS , G., AND M ATH -                 coin’s network topology and influential nodes. Tech. rep., Uni-
+     EWSON , N. One fast guard for life (or 9 months). In 7th Work-
+                                                                                   versity of Maryland, 2015.
+     shop on Hot Topics in Privacy Enhancing Technologies (HotPETs            [52] NAKAMOTO , S. Bitcoin: A peer-to-peer electronic cash system.
+     2014) (2014).                                                            [53] O PEN SSL. TLS heartbeat read overrun (CVE-2014-0160).
+[34] D ONET, J. A. D., P ÉREZ -S OLA , C., AND H ERRERA -                         https://www.openssl.org/news/secadv_20140407.txt,
+     J OANCOMART Í , J. The bitcoin p2p network. In Financial Cryp-               April 7 2014.
+     tography and Data Security. Springer, 2014, pp. 87–102.                  [54] P LOHMANN , D., AND G ERHARDS -PADILLA , E. Case study of
+                                                                                   the miner botnet. In Cyber Conflict (CYCON), 2012 4th Interna-
+[35] D URUMERIC , Z., W USTROW, E., AND H ALDERMAN , J. A.
+                                                                                   tional Conference on (2012), IEEE, pp. 1–16.
+     ZMap: Fast Internet-wide scanning and its security applications.
+     In Proceedings of the 22nd USENIX Security Symposium (Aug.               [55] RIPE.     Ripestat.    https://stat.ripe.net/data/
+     2013).                                                                        announced-prefixes, October 2014.
+[36] E YAL , I. The miner’s dilemma. arXiv preprint arXiv:1411.7099           [56] RIPE. Latest delegations. ftp://ftp.ripe.net/pub/stats/
+     (2014).                                                                       ripencc/delegated-ripencc-extended-latest, 2015.
+                                                                              [57] ROAD T RAIN. Bitcoin-talk: Ghash.io and double-spending
+[37] E YAL , I., AND S IRER , E. G. Majority is not enough: Bitcoin
+                                                                                   against betcoin dice. https://bitcointalk.org/index.
+     mining is vulnerable. In Financial Cryptography and Data Secu-
+                                                                                   php?topic=321630.msg3445371#msg3445371, 2013. Ac-
+     rity. Springer, 2014, pp. 436–454.
+                                                                                   cessed: 2014-02-14.
+[38] F ELD , S., S CH ÖNFELD , M., AND W ERNER , M. Analyzing the            [58] ROSENFELD , M. Analysis of hashrate-based double spending.
+     deployment of bitcoin’s p2p network under an as-level perspec-                arXiv preprint arXiv:1402.2009 (2014).
+     tive. Procedia Computer Science 32 (2014), 1121–1126.
+                                                                              [59] ROSSOW, C., A NDRIESSE , D., W ERNER , T., S TONE -G ROSS ,
+[39] F INNEY, H.     Bitcoin talk: Finney attack. https:                           B., P LOHMANN , D., D IETRICH , C. J., AND B OS , H. Sok:
+     //bitcointalk.org/index.php?topic=3441.msg48384#                              P2pwned-modeling and evaluating the resilience of peer-to-peer
+     msg48384, 2011. Accessed: 2014-02-12.                                         botnets. In IEEE Symposium on Security and Privacy (2013),
+[40] H EILMAN , E. Bitcoin: Added test-before-evict discipline in ad-              IEEE, pp. 97–111.
+     drman, feeler connections. https://github.com/bitcoin/                   [60] S HOMER , A. On the phase space of block-hiding strategies.
+     bitcoin/pull/6355.                                                            IACR Cryptology ePrint Archive 2014 (2014), 139.
+[41] H EILMAN , E., K ENDLER , A., Z OHAR , A., AND G OLDBERG ,               [61] S INGH , A., N GAN , T.-W. J., D RUSCHEL , P., AND WALLACH ,
+     S. Eclipse attacks on bitcoins peer-to-peer network (full ver-                D. S. Eclipse attacks on overlay networks: Threats and defenses.
+     sion). Tech. Rep. 2015/263, ePrint Cryptology Archive, http:                  In In IEEE INFOCOM (2006).
+     //eprint.iacr.org/2015/263.pdf, 2015.                                    [62] S IT, E., AND M ORRIS , R. Security considerations for peer-to-
+                                                                                   peer distributed hash tables. In Peer-to-Peer Systems. Springer,
+[42] H ILDRUM , K., AND K UBIATOWICZ , J. Asymptotically efficient
+                                                                                   2002, pp. 261–269.
+     approaches to fault-tolerance in peer-to-peer networks. In Dis-
+     tributed Computing. Springer, 2003, pp. 321–336.                         [63] S TOCK , B., G OBEL , J., E NGELBERTH , M., F REILING , F. C.,
+                                                                                   AND H OLZ , T. Walowdac: Analysis of a peer-to-peer botnet. In
+[43] IANA.     Iana ipv4 address space registry. http:                             European Conference on Computer Network Defense (EC2ND)
+     //www.iana.org/assignments/ipv4-address-space/                                (2009), IEEE, pp. 13–20.
+     ipv4-address-space.xhtml, January 2015.
+                                                                              [64] U RDANETA , G., P IERRE , G., AND S TEEN , M. V. A survey of
+[44] J ESI , G. P., M ONTRESOR , A., AND VAN S TEEN , M. Secure                    dht security techniques. ACM Computing Surveys (CSUR) 43, 2
+     peer sampling. Computer Networks 54, 12 (2010), 2086–2098.                    (2011), 8.
+[45] J OHNSON , B., L ASZKA , A., G ROSSKLAGS , J., VASEK , M.,               [65] VASEK , M., T HORNTON , M., AND M OORE , T. Empirical anal-
+     AND M OORE , T. Game-theoretic analysis of ddos attacks against               ysis of denial-of-service attacks in the bitcoin ecosystem. In Fi-
+     bitcoin mining pools. In Financial Cryptography and Data Secu-                nancial Cryptography and Data Security. Springer, 2014, pp. 57–
+     rity. Springer, 2014, pp. 72–86.                                              71.
+
+
+                                                                         15
+USENIX Association                                                                                   24th USENIX Security Symposium 143
+                                                                     B.1    Infrastructure strategy
+                                                                     In an infrastructure attack, the number of source groups s
+                                                                     is constrained, and the number of groups g is essentially
+                                                                     unconstrained. By Lemma A.1, the expected number of
+                                                                     buckets filled by a s source groups is
+                                                                                                           32s
+                                                                                     E[N] = 256(1 − ( 255
+                                                                                                      256 ) )               (13)
+
+Figure 9: E[N] vs s (the number of source groups) for dif-           We expect to fill ≈ 251 of 256 new buckets with s = 32.
+ferent choices of g (number of groups per source group)                 Each (group, source group) pair maps to a unique
+when overwriting the new table per equation (13).                    bucket in new, and each bucket in new can hold 64 ad-
+                                                                     dresses. Bitcoin eviction is used, and we suppose each
+                                                                     new bucket is completely full of legitimate addresses that
+A    A Useful Lemma                                                  are older than all the addresses inserted by the adversary
+                                                                     via ADDR messages. Since all a addresses in a particu-
+Lemma A.1. If k items are randomly and independently                 lar (group, source group) pair map to a single bucket, it
+inserted into n buckets, and X is a random variable                  follows that the number of addresses that actually stored
+counting the number of non-empty buckets, then                       in that bucket is given by E[Ya ] in the recurrence rela-
+                                                                     tion of equations of (5)-(6). With a = 125 addresses,
+                               
+          E[X] = n 1 − ( n−1  k              k
+                                  ≈ n(1 − e− n )        (12)         the adversary expects to overwrite E[Ya ] = 63.8 of the
+                          n )
+                                                                     64 legitimate addresses in the bucket. We thus require
+                                                                     each source group to have 32 peers, and each peer to
+Proof. Let Xi = 1 if bucket i is non-empty, and Xi = 0               send ADDR messages with 8 distinct groups of a = 125
+otherwise. The probability that the bucket i is empty after          addresses. Thus, there are g = 32 × 8 = 256 groups per
+the first item is inserted is ( n−1
+                                 n ). After inserting k items        source group, which is exactly the maximum number of
+                                      n−1 k                        groups available in our trash IP address block. Each peer
+                  Pr[Xi = 1] = 1 −      n                            sends exactly one ADDR message with 8×125 = 1000 ad-
+                                                                     dress, for a total of 256 × 125 × s distinct addresses sent
+It follows that                                                      by all peers. (There are 224 addresses in the 252.0.0.0/8
+                                                                     block, so all these addresses are distinct if s < 524.)
+             n           n
+    E[X] = ∑ E[Xi ] = ∑ Pr[Xi = 1] = n(1 − ( n−1 k
+                                              n ) )
+            i=1         i=1                                          B.2    Botnet strategy
+(12) follows since ( n−1    −1/n for n  1.                          In a botnet attack, each of the attacker’s t nodes is in
+                      n )≈e
+                                                                     a distinct source group. For s = t > 200, which is the
+                                                                     case for all our botnet attacks, equation (13) shows that
+B    Overwriting the New Table                                       the number of source groups s = t is essentially uncon-
+                                                                     strained. We thus require each peer to send a single
+How should the attacker send ADDR messages that over-                ADDR message containing 1000 addresses with 250 dis-
+write the new table with “trash” IP addresses? Our                   tinct groups of four addresses each. Since s = t is so
+“trash” is from the unallocated Class A IPv4 address                 large, we can model this by assuming that each (group,
+block 252.0.0.0/8, designated by IANA as “reserved for               source group) pair selects a bucket in new uniformly at
+future use” [43]; any connections these addresses will               random, and inserts 4 addresses into that bucket; thus, the
+fail, forcing the victim to choose an address from tried.            expected number of addresses inserted per bucket will be
+Next, recall (Section 2.2) that the pair (group, source              tightly concentrated around
+group) determines the bucket in which an address in an                                              1
+ADDR message is stored. Thus, if the attacker controls                               4 × E[B(250t, 256 ] = 3.9t
+nodes in s different groups, then s is the number of source
+                                                                     For t > 200, we expect at least 780 address to be inserted
+groups. We suppose that nodes in each source group can
+                                                                     into each bucket. From equations (5) and (6), we find
+push ADDR messages containing addresses from g distinct
+                                                                     E[Y780 ] ≈ 64, so that each new bucket is likely to be full.
+groups; the “trash” 252.0.0.0/8 address block give an up-
+per bound on g of 28 = 256. Each group contains a dis-
+tinct addresses. How large should s, g, and a be so that
+the new table is overwritten by “trash” addresses?
+
+
+                                                                16
+144 24th USENIX Security Symposium                                                                          USENIX Association
+

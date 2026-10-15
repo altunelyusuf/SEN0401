@@ -1,0 +1,1082 @@
+                                                Deanonymisation of clients in Bitcoin P2P network
+
+                                                        Alex Biryukov                     Dmitry Khovratovich                    Ivan Pustogarov
+                                                   University of Luxembourg              University of Luxembourg             University of Luxembourg
+                                                        alex.biryukov@uni.lu              dmitry.khovratovich@uni.lu             ivan.pustogarov@uni.lu
+
+
+
+
+                                       Abstract                                                           about 100,000 nowadays. The vast majority of these peers
+                                       Bitcoin is a digital currency which relies on a distributed        (we call them clients), about 90%, are located behind NAT
+arXiv:1405.7418v3 [cs.CR] 5 Jul 2014
+
+
+
+
+                                       set of miners to mint coins and on a peer-to-peer network          and do not allow any incoming connections, whereas they
+                                       to broadcast transactions. The identities of Bitcoin users         choose 8 outgoing connections to servers (Bitcoin peers with
+                                       are hidden behind pseudonyms (public keys) which are rec-          public IP).
+                                       ommended to be changed frequently in order to increase                In a Bitcoin transaction, the address of money sender(s)
+                                       transaction unlinkability.                                         or receiver(s) is a hash of his public key. We call such
+                                          We present an efficient method to deanonymize Bitcoin           address a pseudonym to avoid confusion with the IP ad-
+                                       users, which allows to link user pseudonyms to the IP ad-          dress of the host where transactions are generated, and the
+                                       dresses where the transactions are generated. Our tech-            latter will be called just address throughout the text. In
+                                       niques work for the most common and the most challenging           the current Bitcoin protocol the entire transaction history
+                                       scenario when users are behind NATs or firewalls of their          is publicly available so anyone can see how Bitcoins travel
+                                       ISPs. They allow to link transactions of a user behind a           from one pseudonym to another and potentially link differ-
+                                       NAT and to distinguish connections and transactions of dif-        ent pseudonyms of the same user together. A theoretical
+                                       ferent users behind the same NAT. We also show that a natu-        possibility of such attack was already mentioned in the orig-
+                                       ral countermeasure of using Tor or other anonymity services        inal Bitcoin paper [14]. Since then several papers [13, 16]
+                                       can be cut-off by abusing anti-DoS countermeasures of the          showed that it is indeed possible by analysing the transaction
+                                       Bitcoin network. Our attacks require only a few machines           graph to cluster pseudonyms to different users. Combined
+                                       and have been experimentally verified. We propose several          with some other sources (e.g. forum posts), the clusters
+                                       countermeasures to mitigate these new attacks1 .                   (and thus the users) can sometimes be mapped to real iden-
+                                                                                                          tities [15, 13]. Even so, these methods are not generic, and
+                                                                                                          the problem of how to tie a Bitcoin address to an actual
+                                       1.   INTRODUCTION                                                  identity remained unsolved.
+                                          Digital currency based on cryptography is not a new idea [8]       Evidently, studying the entire IP traffic of the Bitcoin
+                                       but till recently it did not attract much attention. It changed    peers would reveal the origins of each transaction and dis-
+                                       rapidly with introduction of Bitcoin [14]. Bitcoin is a decen-     close the identities of many users, but how much can be
+                                       tralized digital currency which does not rely on a trusted is-     achieved by an ordinary attacker with a few machines and
+                                       suing entity but rather on a peer-to-peer network with peers       no access to clients behind NAT has been unclear.
+                                       minting Bitcoins by brute-forcing double SHA-256 hash func-           Lerner [12] and Koshy et al. [11] were the first who at-
+                                       tion. To make the money generation process computation-            tempted an attack in this direction. A vulnerability which
+                                       ally hard, the Bitcoin protocol requires the minters to present    allowed to link IP addresses of clients to their bitciond wal-
+                                       the hash value of a data block with new portion of Bitcoins        lets’ addresses was reported by Lerner [12]. The vulnera-
+                                       and new transactions to have a certain number of zeros (an         bility exploited a protection against “penny-flooding” which
+                                       instance of the Proof-of-Work concept).                            prevents a transaction with very low fees and big size to be
+                                          Bitcoin is now accepted as a currency by many companies         forwarded or even stored by a Bitcoin peer. The protection
+                                       from online retailer Overstock to exotic Virgin Galactic [4].      tested if a transaction was from a wallet owned by the user,
+                                       One of its main advantages over bank transfers is it’s de-         and if it was the case, then the protection was skipped. This
+                                       centralized architecture and absence of intermediaries. This       allowed an attacker to test if a peer possessed a Bitcoin ad-
+                                       prevents shutting it down or seizing by a government. Bit-         dress by sending him specifically crafted transactions. The
+                                       coin money transfers are non-refundable, reasonably fast2          vulnerability required that the attacker had a connection to
+                                       and allow to send money to any part of the world. The Bit-         a peer (thus targeting either Bitcoin servers or clients which
+                                       coin peer network consists of homogeneous nodes and pro-           established connections to the attacker). This vulnerability
+                                       vides peer discovery and reputation mechanisms to achieve          was fixed since version 0.7.2.
+                                       stability. The number of Bitcoin peers is estimated to be             Koshy et al. [11] managed to deanonymize 1162 addresses
+                                                                                                          over the period of 5 months. Their approach, however, is
+                                       1
+                                        A simplified description of the attack can be found here.         limited to the transactions that expose anomalous behaviour
+                                       2
+                                        The network sees a transaction immediately, but the re-           like transactions relayed only once or transaction that were
+                                       ceiver has to wait for 1-2 hours to be sure that there is no       relayed multiple times by the same IP. Secondly, the pro-
+                                       double-spending.
+posed method only allows to get IP addresses of servers,                 to prohibit Bitcoin clients from using the Tor anonymity
+which constitute only 10% of the network, and not of the                 network by exploiting Bitcoin anti-DoS protection mech-
+clients. Finally, their paper does not discuss the case when             anism (Section 3).
+a Bitcoin peer protects himself by proxying his transactions
+through the Tor anonymity network.                                     • We show how to learn the connections of the Bitcoin
+                                                                         clients in Section 4.
+Our contributions.                                                     • We finally show how to identify the sender of a trans-
+   In this paper we describe a generic method to deanonymize             action (i.e. deanonymize him) in Section 5. We recover
+a significant fraction of Bitcoin users and correlate their              the public IP address of the sender and further differ-
+pseudonyms with public IP addresses. The method explic-                  entiate clients sharing the same public IP.
+itly targets the clients (i.e. peers behind NAT or firewalls)
+and can differentiate the nodes with the same public IP. Fur-          • We discuss how to choose parameters of the attack
+thermore, our method also handles the case when the clients              and its success rate and explain our experiments on
+use anonymity services like Tor. If a client uses two different          the test network. We also propose countermeasures to
+pseudonyms during a single session, and even if they are un-             mitigate the attack.
+related in the transaction graph so that the linkage would be
+                                                                       • As an extra result, we outline a strategy to lower the
+totally unachievable via the transaction graph analysis [13],
+                                                                         difficulty of the system by adding a properly selected
+our method is likely to catch it and glue the pseudonyms
+                                                                         value to the list of checkpoints nodes hard-coded in the
+together. The method is generic and might be used in other
+                                                                         client code. It can be used by the entire community
+P2P networks.
+                                                                         if the mining becomes unbearable and non-profitable,
+   The crucial idea is that each client can be uniquely iden-
+                                                                         or by malicious administrators who want to ruin the
+tified by a set of nodes he connects to (entry nodes). We
+                                                                         system (Section 8).
+show that this set can be learned at the time of connection
+and then used to identify the origin of a transaction.               Ethical considerations. All vulnerabilities described in this
+   Our attack requires only a few machines that establish a       paper were reported to Bitcoin core developers. When pos-
+certain number of connections by Bitcoin protocol and log         sible we carried out experiments in the Bitcoin test network.
+the incoming traffic. In a concrete example, an attacker with     To protect user privacy, we restricted from performing a full-
+a few GB of storage and no more than 50 connections to each       scale deanonymization in the real network. However, gath-
+Bitcoin server can disclose the sender’s IP address in 11% 3      ering some statistics required us conducting experiments on
+of all transactions generated in the Bitcoin network. If the      the main network, which did not cause disruption or expo-
+attacker allows a slight DoS of the network, he may achieve       sure of the main network.
+deanonymization rates up to 60%, which has been confirmed
+by the experiments in the Bitcoin test network. We estimate
+the cost of the attack on the full Bitcoin network to be under
+                                                                  2.    BACKGROUND
+1500 EUR per month.                                                  In this section we provide a basic overview of the Bitcoin
+   The computational power needed to disclose the sender          system. Originating from a proof-of-concept source code
+of a single transaction is negligible and is far smaller than     and an accompanying it white paper [14], the Bitcoin pro-
+the amount of work needed to process the transaction graph        tocol never had been fully documented, and is de-facto the
+in [15, 13]. For the best of our knowledge this is the first      functionality of the primary Bitcoin client, bitcoind [2]. In
+attack which targets Bitcoin peers behind NAT. Our attack         the following text we provide only the details of the protocol
+does not assume any anomaly in the behaviour of peers or in       that are crucial to our research. These details are accumu-
+the traffic and would work even if Bitcoin would encrypt the      lated from the source code of bitcoind and to a large extent
+connection. It might be applicable to other digital currencies    are explained in the informal wiki documentation [3].
+derived from Bitcoin.
+   As another interesting though unrelated to deanonymisa-        Block chain.
+tion idea we look at how to decrease block mining difficulty         Bitcoin operates on a list of blocks, the block chain. Each
+by creating an alternative blockchain reality. This becomes       block contains a header and transaction data4 . The 80-byte
+important since Bitcoin by design is not adaptive to rapid        header Head contains the 256-bit hash of the previous block
+drops in hash power of miners and might become necessary          Hi−1 , the timestamp (in seconds) Ti , the 32-bit nonce Ni
+in case of many miners quit mining. This is not just a hypo-      (used to generate blocks), the hash T Xi of the transaction
+thetical case, since Bitcoin exchange rate can fall suddenly      data , and the difficulty parameter di . To be valid, the
+and rapidly, making block mining unprofitable.                    double-hash of the block header must be smaller (as an in-
+                                                                  teger) than a certain value, which is a linear function of the
+Roadmap.                                                          difficulty parameter:
+  Our paper is structured as follows:                             Hi = SHA-256(SHA-256(Hi−1 ||Ti ||T Xi ||di ||Ni ||))) < f (di ).
+   • We give necessary background of how Bitcoin works            Currently it must be smaller than 2192 , i.e. have its 64 most
+     and the rules its peers follow to broadcast their ad-        significant bits equal to zero.
+     dresses and transactions.                                       The Bitcoin miners first collect all transactions not yet
+                                                                  included into a block. Then they generate the header fields
+   • As a first step towards deanonymization, we show how         and exhaustively try different nonces, timestamps, and other
+3                                                                 4
+  The actual fraction of deanonymized transactions depends          All these conditions are strictly enforced, and a block not
+on how stealthy an attacker wants to be.                          conforming to them is discarded immediately.
+parameters in order to obtain a valid block. They are re-
+warded by 25 BTC (about $14,000 by current market rate),
+which is the very first transaction in the attached transac-
+tion list. Whenever a block is created, a miner broadcasts it                                            ...
+to the network, so that each node attaches it into its internal
+block chain.                                                                                           ...
+   Payers and payees of the system are identified in the blockchain                                            ...
+by their Bitcoin addresses, or pseudonyms. A pseudonym is
+the base58-encoding of the hash of the corresponding public                                  Entry2 ...
+key. Whenever a payer wants to transfer his coins to another                        Entry1
+                                                                                                                     Entry8
+user, he generates a transaction and signs it with his private                                   ...
+key. Signed transactions are then added to the blockchain
+by miners. By checking the signature, other Bitcoin partic-                                      Client
+ipants can verify the new ownership of the coins.
+                                                                                   Figure 1: Bitcoin network
+Bitcoin P2P network
+Peers of the Bitcoin network connect to each other over an
+unencrypted TCP channel. There is no authentication func-
+tionality in the network, so each node just keeps a list of IP   (1) the total number of addresses in the corresponding ADDR
+addresses associated with its connections.                       message does not exceed 10, and (2) the attached timestamp
+   To avoid denial-of-service attacks, the Bitcoin protocol      is no older than 10 minutes. If either of these two checks
+minimizes the amount of information forwarded by peers.          fails, the address is not forwarded; otherwise the address is
+Valid blocks and transactions are relayed whereas invalid        scheduled for forwarding6 to two of the node’s neighbours
+blocks are discarded. Moreover, Bitcoin implements a reputation- in case the address is reachable and to one neighbour only
+based protocol with each node keeping a penalty score for        if it is non-reachable. An address is considered reachable
+every connection. Whenever a malformed message is sent to        by a node if the node has a network interface associated
+the node, the latter increases the penalty score of the con-     with same address family. Otherwise the address is marked
+nection and bans the “misbehaving” IP address for 24 hours       as unreachable. According to the current reference imple-
+when the penalty reaches the value of 100.                       mentation Bitcoin nodes recognize three types of addresses:
+   Though official Bitcoind software does not explicitly di-     IPv4, IPv6, and OnionCat addresses [7]. Limiting the num-
+vide its functionality between clients and servers, Bitcoin      ber of neighbours to which an address is forwarded reduces
+peers can be grouped into those which can accept incoming        the total amount of traffic in the Bitcoin P2P network.
+connections (servers) and those which can’t (clients), i.e.         In order to choose neighbours to which to forward an ad-
+peers behind NAT or firewall, etc. At the time of writing        dress, a Bitcoin node does the following. For each of its
+there were about 8,000 reachable servers while the estimated     neighbours it computes a hash of a value composed of the
+number of clients was about 100,000.                             following items: address to be forwarded, a secret salt, cur-
+   By default Bitcoin peers (both clients and servers) try       rent day, and the memory address of the data structure de-
+to maintain 8 outgoing connections. In addition, Bitcoin         scribing the neighbour. The exact expression for the hashed
+servers can accept up to 117 incoming connections (thus          value is of little importance for our attacks. The only thing
+having up to 125 connections in total). If any of the 8 out-     which we need to emphasize is that the hash stays the same
+going connections drop, a Bitcoin peer tries to replace them     for 24 hours. The peer then sorts the list of its neighbours
+with new connections. If none of the 8 outgoing connec-          based on the computed hashes and chooses the first entry
+tions drop, the peer will stay connected to them until it is     or two first entries (which depends on the reachability of
+restarted. In case of a client, we call the 8 nodes to which     the address). In the rest of the paper we call such nodes
+it establishes connections entry nodes (see Fig. 1). A Bit-      responsible nodes for the address.
+coin server accepts any number of connections from a single         The actual transmission of the scheduled ADDR messages
+IP address as long as the treshold for the total number of       does not happen immediately. Every 100 milliseconds one
+connections is not reached.                                      neighbour is randomly selected from the list off all peer’s
+                                                                 neighbours and the queue for outgoing ADDR messages is
+Address propagation.                                             flushed for this node only. We call the node chosen at the
+   The Bitcoin protocol implements an address propagation        beginning of a 100 milliseconds round trickle node and the
+mechanism to help peers to discover other peers in the P2P       procedure as a whole as trickling.
+network. Each Bitcoin peer maintains a list of addresses            Consider an example on Fig. 2. Assume that node n0 gets
+of other peers in the network and each address is given a        an  ADDR message with one address A0 from node n3 and that
+timestamp which determines its freshness. Peers can re-          node n0 schedules to forward it to nodes n1 and n2 (i.e. these
+quest addresses from this list from each other using GETADDR     nodes are responsible nodes for address A0 ). In round 1 node
+messages and unsolicitely advertise addresses known to them      n1 is chosen as a trickle node and the address is forwarded
+using ADDR messages5 . Whenever a Bitcoin node receives an       to this node while the delivery to n2 is still pending. After
+ADDR message it decides individually for each address in the     100 milliseconds in round 2 n3 is chosen as the trickle node
+message if to forward it to its neighbours. It first checks if   thus no actual transmission happens at this stage. After
+5                                                                     6
+ One ADDR message can contain any number of address, how-              By scheduling a transmission we mean that the node puts
+ever messages containing more than 1000 addresses are re-             the corresponding message to the outgoing queue but does
+jected on the remote side.                                            not yet make the actual transmission.
+another 100 milliseconds in round 3 n2 is chosen as the trickle         TORY message with the hash of the transactions. Second, the
+node and address A0 is finally sent to it. Choosing a trickle           receiver runs several checks on the transaction and if the
+node causes random delays at each hop during an address                 checks pass, it requests the actual transaction by sending a
+propagation.                                                            GETDATA message. The sender then transmits the transaction
+                                                                        in a TRANSACTION message. When the receiver gets the trans-
+                                                                        action he advertises it to its peers in an INVENTORY message.
+                                                                           When a client generates a transaction he schedules7 it for
+               N1                  N2        N1                    N2
+            (trickle)                                                   forwarding to all of its neighbours. It then computes a hash
+                             N0                               N0
+                                                                        of a value composed of the transaction hash and a secret salt.
+                                                                        If the computed hash has two last bits set to zero the trans-
+                                                                        action is forwarded8 immediately to all the 8 entry nodes.
+                                                                        Otherwise a queue of a neighbour for outgoing transactions
+                        N3                          N3 (trickle)
+                                                                        is flushed when the neighbour becomes the trickle node (the
+                   Round 1                          Round 2             same as with ADDR messages). Obviously 14 of all transaction
+                                                                        are forwarded immediately in average.
+                                                                           When a transaction is received it is scheduled for the de-
+                              N1                     N2                 livery to all peer’s neighbours as described above. As with
+                                                  (trickle)
+                                                                        ADDR messages, a Bitcoin peer maintains history of forwarded
+                                             N0                         transactions for each connection. If a transaction was al-
+                                                                        ready sent over a connection it will not be resent again. A
+                                                                        Bitcoin peer keeps all received transaction in a memory pool.
+                                        N3                              If the peer received a transaction with the same hash as one
+                                   Round 3                              in the pool or in a block in the main block chain, the received
+                                                                        transaction is rejected.
+         Figure 2: Trickling of ADDR messages
+                                                                        3.   DISCONNNECTING FROM TOR
+   Finally for each connection, a Bitcoin peer remembers ad-               In this section we explain the first phase of our attack.
+dresses that were forwarded over this connection. Before                We show how to prohibit the Bitcoin servers to accept con-
+a peer forwards an address, it first checks if the same ad-             nections via Tor and other anonymity services. This results
+dress was already sent over the connection. This history is             in clients using their actual IP addresses when connecting
+cleared every 24 hours. An important note is that the his-              to other peers and thus being exposed to the main phase of
+tory of sent addresses is kept per connection and not per IP,           our attack, which correlates pseudonyms with IP addresses.
+i.e. if a Bitcoin peer reconnects, its history will be cleared.         This phase is quite noticeable, so a stealthy attacker may
+The total number of addresses a Bitcoin peer can store is               want to skip it and deanonymize only non-Tor users.
+limited by 20480. Whenever new addresses arrive at a peer                  In the further text we discuss Tor, but the same method
+they replace old ones (according to specific rules which are            applies to other anonymity services with minor modifica-
+outside of the scope of this paper). In addtition when a peer           tions. Briefly, the Tor network [9] is a set of relays (5397 for
+receives a GETADDR messages it sends back 23% of the number             the time of writing) with the list of all Tor relays publicly
+of addresses it stores but not more than 2500 addresses.                available on-line. Whenever a user wants to establish a con-
+                                                                        nection to a service through Tor, he chooses a chain of three
+                                                                        Tor relays. The final node in the chain is called Tor Exit
+Peer discovery.
+                                                                        node and the service sees the connection as it was originated
+   After the startup a Bitcoin peer discovers its own IP ad-
+                                                                        from this Tor Exit node.
+dresses, which includes not only its network interfaces ad-
+                                                                           To separate Tor from Bitcoin, we exploit the Bitcoin built-
+dresses but also the IP address as it is seen from the Internet
+                                                                        in DoS protection. Whenever a peer receives a malformed
+(in the majority of cases for NAT users it resolves to an IP
+                                                                        message, it increases the penalty score of the IP address
+address of the peer’s ISP). In order to discover the latter,
+                                                                        from which the message came (if a client uses Tor, then the
+the peer issues a GET request to two hard-coded web-sites
+                                                                        message will obviously come from one of the Tor exit nodes).
+which reply with the address. For each address obtained
+                                                                        When this score exceeds 100, the sender’s IP is banned for 24
+by the discover procedure, the peer assigns a score. Local
+                                                                        hours. According to the bitcoind implementation, there are
+interfaces initially get score 1, the external IP address gets
+                                                                        many ways to generate a message which would cause penalty
+score of 4 (in case the external IP address coincides with one
+                                                                        of 100 and an immediate ban, e.g. one can send a block with
+of the local addresses the scores a summed). When a client
+                                                                        empty transactions list (the size of such a message is 81
+establishes an outgoing connection to a remote peer, they
+                                                                        bytes). It means that if a client proxied its connection over
+first exchange VERSION messages and the client advertises its
+                                                                        a Tor relay and sent a malformed message, the IP address
+address with the highest score. The remote peer then uses
+                                                                        of this relay will be banned.
+the addresses propagation algorithm described above. The
+                                                                           This allows to separate any target server from the entire
+client repeats the same procedure for the remaining 7 out-
+                                                                        Tor network. For that we connect to the target through as
+going connections.
+                                                                        7
+                                                                          By scheduling we mean that the node puts the transaction
+Transaction propagation.                                                into the outgoing queue of the corresponding connection.
+  Forwarding a transaction from one peer to another in-                 8
+                                                                          More precisely the peer sends an INVENTORY message with
+volves several steps. First the sender transmits an INVEN-              the hash of the transaction.
+many Tor nodes as possible. For the time of writing there          is quite common for the clients behind NAT or the client’s
+were 1008 Tor exit nodes. Thus the attack requires estab-          public IP is contained in a known list of IP addresses (e.g.
+lishing 1008 connections and sending a few MBytes in data.         within an IP range of a major ISP) which an attacker can
+This can be repeated for all Bitcoin servers, thus prohibit-       use. If an attacker knows Ca , he restricts its propagation
+ing all Tor connections for 24 hours at the cost of a million      using the following fact:
+connections and less than 1 GByte of traffic. In case an IP
+address of a specific Bitcoin node can be spoofed, it can be            • If the address had already been sent from A to B, it
+banned as well.                                                           will not be forwarded over this connection again;
+   As a proof of concept we used the described method to           This suggests broadcasting Ca (or all the addresses under
+isolate our Bitcoin node from a set of Tor exit relays.            investigation) to all servers we are connected to. We sug-
+                                                                   gest repeating this procedure every 10 minutes (see details
+Possible countermeasures.                                          below), though there could be other options. The adversary
+   It is desirable to allow the Bitcoin peers to use Tor and       expects that when the client reconnects, the entry nodes
+still to keep some blacklisting capability. We suggest making      will forward Ca to him, and even if they don’t, the address
+every connection time- or computation-consuming to radi-           propagation will stop before it reaches the adversary via a
+cally increase the attack cost. For instance, any peer that        non-entry node.
+initiates a connection might be required to present some              Eventually the attacker obtains the fraction paddr of client’s
+proof-of-work, e.g., a hash of its IP, the timestamp, and the      entry nodes. The exact value of paddr depends on the num-
+nonce that has a certain number of trailing zeros. If we re-       ber of attacker’s connections, and it is computed for some
+quire 32 zero bits, then to separate a single peer from the        parameters in Section 7.1. For instance, if an attacker es-
+Tor network would cost about 245 hash computations, which          tablishes 35 connections to each potential entry node, which
+takes several days on a modern PC.                                 all had 90 connections beforehand, then he identifies 4 entry
+   One may argue that some Bitcoin pools are powerful enough       nodes out of 8 on average.
+to afford that many hash calls. However, the vast majority of         Here are some details. When the attacker advertises the
+pool’s computing power is contained in custom-built ASIC           Ca , each Bitcoin server chooses two responsible nodes to for-
+miners, which implement only a specific instance of SHA-           ward the address. The attacker than establishes a number
+256 and can not be reconfigured for another hash function,         of connections to each server in the network hoping that her
+say, SHA-3. The exact fraction of GPU and CPU computing            nodes will replace some of the responsible nodes for address
+power is unknown, but at the time when these architectures         Ca . When client C connects to one of its entry nodes e1,
+were dominant, the total computing power was by several            it advertises its address. If one of attacker’s nodes replaced
+orders of magnitude smaller than now.                              one of the responsible nodes, then the attacker will learn
+                                                                   that client C might be connected to node e1. If the respon-
+4.     LEARNING TOPOLOGY                                           sible nodes did not change address Ca will not be propagated
+   Suppose that we have ruled out the case that the Bit-           further in the network.
+coin users, which we deanonymize, use Tor. Now we target              Since the attacker advertised Ca to node e1, responsible
+clients, i.e. nodes that do not accept incoming connections,       nodes of e1 might be replaced by some non-attacker nodes
+but have 8 outgoing connections to entry nodes. In this sec-       and the attack might fail. In Section 7 we show that the
+tion we show how to learn these entry nodes.                       probability of this event is actually quite low given that the
+   The method is based on the fact that whenever a client          attacker re-sends its list of addresses frequently enough.
+C establishes a connection to one of its entry nodes, it ad-
+vertises its address Ca as it is seen from the Internet (see       5.     DEANONYMIZATION
+section 2). If the attacker is already connected to an entry         We have prohibited Bitcoin servers from accepting Tor
+node, with some probability (which depends on the num-             connections and showed how to find the entry nodes of clients.
+ber of the attacker’s connections) the address Ca will be          Now we describe the main phase of the deanonomyzation at-
+forwarded to him. This suggests the following strategy:            tack.
+     1. Connect to W Bitcoin servers, where W is close to the        The main phase consists of four steps:
+        total number of servers.
+                                                                        1. Getting the list S of servers. This list is regularly
+     2. For each advertised Ca , log the set E 0 of servers that           refreshed.
+        forwarded Ca to attacker’s machines and designate it
+        as the entry node subset EC 0
+                                        .                               2. Composing a list C of Bitcoin clients for deanonymiza-
+                                      a
+                                                                           tion.
+There are two problems with this method. First, the entry
+node might send the client’s address to some non-attacker’s             3. Learning entry nodes of clients from C when they con-
+peer. Second a client does not connect to all his entry nodes              nect to the network.
+simultaneously, but there is a time gap between connections.
+                                                                        4. Listening to servers from S and mapping transactions
+In both cases, the advertised address reaches attacker’s ma-
+                                                                           to entry nodes and then to clients.
+chines via peers that are not entry nodes, which yields false
+                    0
+(noisy) entries in EC a
+                        .                                             Eventually we create a list I = {(IP, Id, P K)}, where IP
+                                                                   is the IP address of a peer or its ISP, Id distinguishes clients
+Noise reduction technique.                                         sharing the same IP, and P K is the pseudonym used in a
+   Our strategy of filtering noise assumes that either the         transaction (hash of a public key). Let us explain the steps
+client’s IP was already used in the Bitcoin network, which         in detail.
+Step 1. Getting the list of servers.                               tics to estimate the success of the attack. Even the first step
+   This phase of the attack is rather straightforward. An          is quite powerful. In our experiments on the testnet we es-
+attacker first collects the entire list of peers by quering all    tablished 50 connections to each server, obtained 6 out of 8
+known peers with a GETADDR message. Each address P in              entry nodes on average, and the 3-tuples were detected and
+the response ADDR message can be checked if it is online by        linked to the client in 60% of transactions (Section 6). In
+establishing a TCP connection and sending a VERSION mes-           the real network, where we can establish fewer connections
+sage. If it is, P is designated as a server. An attacker can       on average, our pessimistic estimate is 11% (Section 7), i.e.
+initiate the procedure by querying a small set of seed nodes       we identify 11% of transactions.
+and continue by querying the newly received IP addresses.             The 2-tuples may suggest several pairs. Each client has
+The adversary establishes m connections to each server (we         25 2-tuples of entry nodes, whereas the top-10 suggests 25.5
+suggest 50 for the size of the current Bitcoin network).           2-tuples. The matching probability is 2−26 , which implies
+                                                                   that the top-10 suggests 216.5+10.5−26 = 2 clients on average
+Step 2. Composing the deanonymization list.                        on the 2-tuple rule. The probability for the right client to
+   The attacker selects a set C of nodes whose identities          be detected we estimate as 0.28 in Section 7, which means
+he wants to reveal. The addresses may come from various            that each transaction suggests two clients, but only in 28%
+sources. The attacker might take IP ranges of major Inter-         cases the right one is among those two.
+net service providers, or collect addresses already advertised
+in the Bitcoin network. Finally, she might take some entries       Remark 1.
+from the list of peers she obtained at Step 1.                        Step 4 of the attack depends on that some entry nodes of
+                                                                   a client are among the first to forward the INVENTORY message
+Step 3. Mapping clients to their entry nodes.                      with the transaction’s hash. The intuition behind it is that it
+  Now the attacker identifies the entry nodes of the clients       takes a number of steps for a transaction to propagate to the
+that are connecting to the network. Equipped with the list         next hop. Fig. 3 shows steps that are required for a trans-
+C of addresses, the attacker runs the procedure described in       action to be propagated over two hops and received at peer
+Section 4. Let us estimate how many entry nodes are needed         A. When a transaction is received by a node it first runs a
+to uniquely identify the client.                                   number of checks and then schedules the transmission. The
+  Let us denote the set of entry nodes for P by EP . We            actual transmission will happen either immediately (for 25%
+stress that it is likely that EP1 6= EP2 even if P1 and P2 share   of transations) or with a random delay due to trickling (see
+the same IP address. For each P advertising its address in         Section 2). The time needed for an INVENTORY message to
+the network the attacker obtains a set of EP0 ⊆ EP . Since         be forwarded to the attacker’s node through node Entry is
+there are about 8 · 103 possible entry nodes out of 105 total      the sum of propagation delays of 4 messages (2xINVENTORY,
+peers (servers and clients together), the collisions in EP0 are    1xGETDATA, 1xTRANSACTION) plus the time node Entry needs to
+unlikely if every tuple has at least 3 entry nodes:                run 16 checks and possibly a random trickling delay. On the
+                                                                   other hand the time needed for the same INVENTORY message
+                        105 · 105                                  to be forwarded to the attacker’s node through peer A con-
+                                     1.
+                        (8 · 103 )3                                sists of 7 messages (3xINVENTORY, 2xGETDATA, 2xTRANSACTION),
+Therefore, 3 entry nodes uniquely identify a user, though          32 checks, and two random delays due to trickling. Finally
+two nodes also do this for a large percent of users.               since the majority of connections to a peer are coming from
+   An attacker adds EP to its database and proceeds to Step        clients, one more hop should be passed before the trans-
+4.                                                                 action reaches an attacker’s node through a wrong server.
+                                                                   Measurements of transaction propagation delays are given
+                                                                   in Appendix C.
+Step 4. Mapping transactions to entry nodes.
+   This step runs in parallel to steps 1-3. Now an attacker           Client                                                         Peer A
+                                                                                                    Entry
+tries to correlate the transactions appearing in the network
+with sets EP0 obtained in step 2. The attacker listens for                     Inventory(tx_hash)
+
+INVENTORY messages with transaction hashes received over all                   getdata(tx_hash)
+the connections that she established and for each transaction                    Transaction
+T she collects RT — the first q addresses of Bitcoin servers                                                16 Checks
+that forwarded the INVENTORY message. She then compares                                                     [Trickling]
+EP0 with RT (see details below), and the matching entries                                                       Inventory(tx_hash)
+suggest pairs (P, T ). In our experiments we take q = 10.
+                                                                                                                getdata(tx_hash)
+   There could be many variants for the matching procedure,
+                                                                                                                   Transaction
+and we suggest the following version.
+   • The attacker composes all possible 3-tuples from all
+     sets EP0 and looks for their appearances in RT . If there     Figure 3: Steps necessary to forward a transaction
+     is a match, he gets a pair (R, T );
+   • If there is no match, the attacker consider 2-tuples and
+     then 1-tuples. Several pairs {(Pi , T )} can be suggested       Based on this we expect that if a transaction generated by
+     at this stage, but we can filter them with later trans-       a client is forwarded to the entry nodes immediately, the en-
+     actions.                                                      try nodes will be the first nodes to forward the transaction.
+                                                                   In case when the transcation was sent sequentially with 100
+  We made a bunch of experiments and collected some statis-        ms between transmissions we still expect a fraction of entry
+nodes to be among the first 10 to forward corresponding IN-        10 minutes before they started to send their transactions.
+VENTORY message to one of the attacker’s nodes. This fraction      In total we (as clients) sent 424 transactions.
+obviously depends on the propagation delay between Bitcoin            In the first experiment we confirm our expectations that
+peers. The higher the propagation delay the less significant       transactions are first forwarded by entry nodes and analyse
+becomes delay of 100 ms in trickling. For example if the           the number of entry nodes that were among the first 10 to
+propagation delay is 300 ms between the client and each en-        forward the transactions (i.e. we assume that the attacker
+try node it’s likely that 3 entry nodes will be among the first    correctly identified all entry nodes). We splitted all trans-
+to forward the INVENTORY message (given that the attacker          actions into two sets: the first set contains 104 transactions,
+has enough connections to Bitcoin servers).                        which were forwarded to the entry nodes immediately; the
+                                                                   second set contains all other 320 transactions (i.e. for which
+Remark 2.                                                          trickling was used). Fig. 4 shows the number of entry nodes
+   The attack presented in this section requires from an at-       that were among the first 10 to forward the transaction to
+tacker only to be able to keep a significant number of connec-     the attacker’s nodes for these two sets. As expected if a
+tions to Bitcoin servers without sending large amount data.        transaction was immediately forwarded to all entry nodes
+In order to make the attack less detectable an attacker might      the attacker was able to “catch” three or more of them in
+decide to establish connection to a given Bitcoin server from      99% of cases. In case of transactions from the second set,
+different IP addresses, so that all connection look like they      the attacker was able to ”catch” 3 or more entry nodes in
+came from different unrelated clients. The same set of IP          70% of cases. We also observed that for the majority of
+addresses can be used for different servers.                       transactions the first two nodes to forward the transaction
+                                                                   to the attacker were the entry nodes.
+Remark 3.
+                                                                                          30
+   The technique considered in the section provides unique                                                                   Transmitted immediately
+                                                                                                                                          Trickled out
+identification of Bitcoin clients for the duration of a session,
+                                                                                          25
+and thus if a client makes multiple transactions during one
+session they can be linked together with very high proba-
+                                                                                          20
+bility. Note that this is done even if the client uses totally
+                                                                        %, transactions
+unrelated public keys/Bitcoin wallets, which have no rela-
+                                                                                          15
+tion in the Bitcoin transaction graph and thus such linkage
+would be totally unachievable via transaction graph analy-
+                                                                                          10
+sis [13, 16]. Moreover we can easily distinguish all the dif-
+ferent clients even if they come from the same ISPs, hidden
+                                                                                           5
+behind the same NAT or firewall address.
+                                                                                           0
+Countermeasures.                                                                               0   1          2        3         4       5       6      7   8
+   As a possible countermeasure against client de-anonymization                                        Intersection of 10 first senders and entry nodes
+we propose to change the client octet after every transac-
+tion and add some random delay after the transaction (to           Figure 4: Intersection of top-10 senders and entry
+avoid timing linkability attack). This will remove likability      nodes
+of transactions and will also prohibit distinguishing of differ-
+ent clients from the same ISP. This however will not prevent
+the attacker from learning the ISP of the client.                     In the second experiment we executed all steps of the at-
+                                                                   tack. In our experiment each client was successfully uniquely
+                                                                   identified by his own set of entry nodes and on average we
+6.   EXPERIMENTAL RESULTS                                          identified 6 entry nodes for each client. Assuming that 3
+   As a proof of concept we implemented and tested our at-         entry nodes is enough for unique identification of a client
+tack on the Bitcoin testnet. We did not perform a deanonymi-       we correctly linked 59.9% of all transactions to the corre-
+sation attack on real clients for ethical reasons. For our ex-     sponding IP address by matching entry nodes of clients and
+periments we built our own Bitcion client, which included          first 10 Bitcoin servers which forwarded the transaction. We
+functionality specific for our attack – sending specific Bit-      correctly glued together all transactions of the same client
+coin messages on request or establishing various numbers of        which were made during one session.
+parallel connections to the same Bitcoin server, etc. When            In a bit more conservative setting we added only 20 ad-
+imitating clients we used the main Bitcoin client. In order        ditional nodes in which case we successfully deanonymised
+to periodically get the list of all running Bitcoin servers we     41% of our transactions.
+used an open source crawler [5].
+   For the time of experiments (May 2014) the number of            7.                     ANALYSIS
+running Bitcoin servers in the testnet fluctuated between            The success rate of the attack presented above depends
+230 and 250, while the estimated average degree of the nodes       on a number of parameters, among which the most impor-
+was approximately 30. In our experiments we were imitating         tant is the fraction of attacker’s connections among all the
+several different users connecting to the testnet from the         connections of client’s entry nodes. The fewer the number of
+same ISP’s IP address and from different ISP’s at different        connections of entry nodes are, the more connections the at-
+times. As an attacker we added 50 additional connections to        tacker can establish and the higher chance is to deanonymise
+each Bitcoin server. For each experiment in the first phase        the client. In this section we analyze each step of the attack
+of the attack we propagated clients’ addresses in the testnet      and compute success rates for some parameter sets.
+7.1                       Number of connections to servers                           will be some random Bitcoin peers. If there is no 3-subset
+   Both mapping client to entry nodes and mapping entry                              of these 10 that match some entry node set, then such a
+nodes to transactions depends on the number of connections                           transaction is marked as unrecognized by an attacker. The
+the attacker can establish to the Bitcoin servers. Assuming                          probability that nodes accidentally match any set of Bitcoin
+the entry node had n connections and the attacker added                              entry nodes (we call this a collision) for a given transaction
+m new connections, thus the total number of connections is                           is
+                                                                                                              !         !  
+N = n+m, the probability to receive the address at the first                                               10        10        1
+                                                                                                                                   3
+                           n
+hop is paddr (n, N ) = 1 − N   n−1
+                              ·N    . For a transaction which                                       pc =        ×         ×
+                                 −1                                                                         3         3        N
+was not forwarded immediately to the peer’s neighbours the
+probability that one of attacker’s nodes is chosen as trickle                        where N is the number of Bitcoin servers in the network.
+node in the first round is ptx = m  N
+                                      . For n = 50, m = 50,                          Given that there are about 8000 Bitcoin servers and 100,000
+paddr = 0.75 and ptx = 0.50. For n = 90, m = 35, paddr =                             Bitcoin clients, the number of incorrectly assigned transac-
+0.49 and ptx = 0.28. The number of connections that the                              tions is negligible.
+adversary can establish is limited by the total number of 125                            We now estimate the probability that an attacker adds a
+connections a Bitcoin peer can have by default.                                      wrong entry node to the set of entry nodes of a particular
+   In order to see how many open connection slots Bitcoin                            client (we recall that according to the address propagation
+peers have we conducted the following experiment in April                            mechanism after receiving an address a peer forwards it to
+2014. For each Bitcoin server that we found we tried to es-                          only two randomly chosen responsible nodes). For this to
+tablish 50 parallel connections and check the actual number                          happen, one or more entry nodes should forward the client’s
+of established connections9 . Fig. 5 shows the distribution of                       address Ca over one of non-attacker’s connections, whence
+number of established connections. The experiment shows                              (since the attacker periodically propagates the client’s ad-
+                                                                                     dress) at least one of responsible nodes for address Ca should
+                          100                                                        change on an entry node after the attacker last propagated
+                                                                                     Ca .
+                          95
+                                                                                         In order to estimate this probability we collected statistics
+                          90                                                         from our Bitcoin peer for 60 days from March 10 till May
+                                                                                     10 2014. We collected information about 61,395 connections
+   % of bitcoin servers
+
+
+
+
+                          85
+                                                                                     in total. Assume that the attacker propagated Ca at time
+                          80                                                         t0 , the probability that a responsible node will be different
+                                                                                     at time t1 = t0 + ∆t depends on the number of new con-
+                          75
+                                                                                     nections the entry node has at t1 and number of nodes that
+                          70                                                         disconnected since t0 . Fig. 6 shows probability density func-
+                                                                                     tion of the number of new connections (i.e. the incoming
+                          65
+                                                                                     connections rate) for different values of ∆t.
+                          60
+                                50   40          30          20             10   0
+                                                                                                           90
+                                          Number of open connection slots                                                                       ∆t=60 seconds
+                                                                                                           80                                  ∆t=120 seconds
+                                                                                                                                               ∆t=180 seconds
+                                                                                                                                               ∆t=600 seconds
+                            Figure 5: Distribution of open slots                                           70                                 ∆t=1200 seconds
+
+                                                                                                           60
+                                                                                        % of experiments
+
+
+
+
+                                                                                                           50
+that 60% of peers allow 50 connections or more, and 80% of
+Bitcoin peers allowed up to 40 connections. Note that even                                                 40
+if sufficient number of connection cannot be established to a                                              30
+Bitcoin peer immediately they can be established in longer
+                                                                                                           20
+term since many Bitcoin clients will eventually disconnect
+and thus allow new connections (according to an example                                                    10
+disconnection rate as shown in Fig. 7 it might take several                                                0
+hours, but once an attacker got the required number of con-                                                     0   1   2      3        4      5        6       7   8
+nections she can keep them as long as needed). Also note                                                                    Number of new connections
+
+that Bitcoin servers allow any number of connections from
+a single IP address.                                                                 Figure 6: Probability density of number new con-
+   Finally the attacker does not send much traffic over the                          nections
+established connections but rather listens for messages. In-
+coming traffic is normally free of charge if one rents a server.
+                                                                                        Fig. 7 shows probability density function of the number of
+Thus in spite of the large number of connections that an at-
+                                                                                     disconnection (i.e. connection close rate) for different values
+tacker needs to establish the attack remains very cheap.
+                                                                                     of ∆t.
+7.2                       Estimating false positives                                    We use these distributions to simulate the address propa-
+                                                                                     gation and calculate the probability that the client’s address
+  Assume that some of the steps of that attack fail. Then
+                                                                                     is forwarded by an entry node over a non-attacker’s link af-
+the first 10 peers to report the transaction to the attacker
+                                                                                     ter time ∆t after the attacker sent this address over the
+9                                                                                    network. We obtained probabilities for different number of
+  We did not try establish more than 50 connections in order
+not to degrade the Bitcoin network performance.                                      attacker’s and non-attackers’s connections and for each con-
+                             90
+                                                                        ∆t=60 seconds
+                                                                                                      than 50 connections to avoid overloading servers, and we
+                             80                                        ∆t=120 seconds                 take a pessimistic estimation that 50 is the maximal number
+                                                                       ∆t=180 seconds
+                                                                       ∆t=600 seconds                 of attacker’s connections. This yields
+                             70                                       ∆t=1200 seconds
+
+                             60                                                                                               pAvg
+                                                                                                                               addr ≈ 0.34.
+   % of experiments
+
+
+
+
+                             50                                                                       Then we assume that both the testnet and the mainnet ex-
+                             40                                                                       hibit similar local topology so the probabilities P3 (L) for
+                                                                                                      the number L of entry nodes being in top-10 are almost the
+                             30
+                                                                                                      same (Figure 4). We calculate the probabilities P1 (R) for
+                             20                                                                       the number R of entry nodes being detected out of 8 as
+                             10                                                                       a function of pAvg
+                                                                                                                      addr . Then we compute the total probability
+                                                                                                      that the adversary detects at least M 3 = nodes among those
+                                 0
+                                     0   1     2      3        4       5          6        7      8   appeared in top-10, and we get the following estimation (de-
+                                                   Number of lost connections                         tails in Section A):
+                                                                                                                           Psuccess (3) ≈ 0.11.
+Figure 7: Probability density of number lost con-
+nections                                                                                              When we restrict to 2-tuples, the success rate increases to
+                                                                                                      0.35.
+                                                                                                         In the testnet we managed to achieve pAvg
+                                                                                                                                                addr = 0.86 and the
+nection setting and each ∆t we executed 10,000 runs of the                                            success rate for M = 3 being close to 60%. An attacker may
+model. Fig. 8 shows the obtained probabilities. The number                                            achieve such high rates if he first saturates servers’ connec-
+of attacker’s connections is denoted by m and the number                                              tions and then gradually replaces the expired connections
+of non-attacker’s connections by n.                                                                   from other nodes with his own ones. However, this may
+                                                                                                      cause degradation of QoS as some clients will be unable to
+                                                                                                      connect to all their entry nodes.
+                             8
+                                                                              n=50, m=20                 Thus a careful attacker that followes the 3-tuple rule only
+                                                                              n=50, m=50
+                             7                                                n=60, m=20              and establishes 50 connections at maximum to each server
+                                                                              n=90, m=35
+                                                                                                      can catch about 11% of transactions generated by clients.
+                             6
+   % of wrong propagations
+
+
+
+
+                                                                                                      Given 70,000 transactions per day, this results in 7,700 trans-
+                             5                                                                        actions per day. This also means that a user needs to send
+                                                                                                      9 transactions in average in order to reveal his public IP
+                             4
+                                                                                                      address.
+                             3
+
+                             2                                                                        8.   ALTERNATIVE REALITY
+                             1                                                                           In this section we show how to create and maintain an
+                                                                                                      alternative block chain while keeping the Bitcoin protocol,
+                             0                                                                        existing wallets and transactions untouched. This procedure
+                                 0       200       400       600        800        1000        1200
+                                                         Delay, seconds                               can be used by the Bitcoin community if the current diffi-
+                                                                                                      culty becomes too high and impossible to sustain. It can
+Figure 8: Percentage addresses forwarded by entry                                                     also be an attack vector for a malicious admininstrator of
+node over non-attacker connections                                                                    the Bitcoin code project.
+                                                                                                         For motivation, suppose that the mining stops being prof-
+                                                                                                      itable so that the most powerful miners quit the network in
+   As expected, the more connection a node has the less prob-                                         order to stop paying large electricity costs. As a result, the
+able that the responsible nodes for an address will change                                            total computational power drops and the network outputs
+after ∆t. Another observation is that the probability of a                                            blocks at a slower rate.
+node to forward the client’s address over one of the non-                                                The Bitcoin protocol is quite reactive to the rise of the
+attacker’s connections depends on the total number of con-                                            hashrate, but has large latency in the opposite case. The
+nections rather than on the fraction of attacker’s connec-                                            maximum difficulty drop is the factor of 4 and requires the
+tions. From Fig. 8 we conclude that resending client ad-                                              2016 blocks to be produced within at least 8 weeks. Not
+dresses over the Bitcoin network every 10 minutes seems to                                            only it is a long recovery period, but also the network might
+be a reasonable choice. Also note that even if a client’s ad-                                         be so slow that the necessary number of blocks might not be
+dress was forwarded over a non-attacker’s link, the further                                           produced at all. Our solution creates an alternative reality
+propagation of the address will likely stop at the next hop.                                          with lower difficulty and the same transaction history within
+                                                                                                      a small timeframe.
+7.3                          Overall success rate
+  The success rate Pc of the attack depends on a number of                                            Block construction rules.
+characteristics of the real network.We propose the following                                             It may happen that distinct miners create blocks almost
+method to estimate it. First, we assume that the attacker                                             simultaneously, which is called a fork. In this case the net-
+establishes all possible connections to Bitcoin servers. From                                         work temporarily splits into two parts, which try to generate
+the data used in Figure 5, we estimate the average value                                              a valid block at their own end of the fork. When a new block
+pAvg
+ addr of the parameter paddr . We did not establish more                                              is found by either part, a higher difficulty principle applies:
+the chain with higher total difficulty10 is accepted, and the
+one with lower is discarded. As a result, a new block at ei-
+ther end of the fork yields a chain with higher difficulty, and
+the chain is accepted by all the peers. Due to this short term
+uncertainty it is recommended to wait at least 6 blocks (i.e.
+about 60 minutes) as a confirmation that the transaction be-
+came part of the block chain. To further fix the block chain,
+the administrators of bitcoind routinely hard-code hashes of
+some blocks into the client (currently 12 checkpoint blocks,
+on average every 25,000-th, are hard-coded) code.
+   The Bitcoin protocol aims to sustain a constant rate of
+block production. Every 2016 blocks (about two weeks) the
+difficulty is recalculated so that blocks are generated every
+10 minutes. The exact rules are as follows:
+     • For block Xi , i 6= 2016k, the difficulty is equal to that
+       of Xi−1 ;
+                                                                     Figure 9: Schematic view of the alternate reality
+     • For block Xi , i = 2016k, we extract the time T2 of           creation over 8064 blocks. Vertical axis denotes the
+       block Xi−1 and the time T1 of block Xi−2016 . Let the         block index, horizontal axis denotes the timestamp
+       time difference ∆T = T2 − T1 be expressed in days.            (in days) and the difficulty.
+                                            14
+       Then the difficulty is multiplied by ∆T . The protocol
+       also enforces that the multiplier can not exceed 4 or
+       be smaller than 0.25.                                         current difficulty increase rate. Therefore, the difficulty may
+  Bitcoin enforces a number of additional restrictions to dis-       drop by the factor of 210 compared to the previous check-
+courage malicious miners to play with timestamps for their           point.
+own benefit. The following two rules are important for us:              As a result, we create an alternative reality where all the
+                                                                     participants have the same balance. However, the new chain
+     • The timestamp of Xi can not be older than the me-             is not accepted by clients since it would have the smaller to-
+       dian (i.e., the middle element of the sorted array) of        tal difficulty compared to the original chain. To finish the
+       11 previous timestamps.                                       switch to the new reality, a new checkpoint must be chosen
+     • The difficulty di of Xi can not be lower than the hy-         on the new chain and distributed among the clients. Alter-
+       pothetical difficulty yielded by reducing the last check-     natively, high-difficulty blocks can be added to the beginning
+       point difficulty by the factor of 4 every 8 weeks, i.e. the   of the alternate chain to make it more difficult than the orig-
+       minimal difficulty that is possible if the network slows      inal one. Higher granularity achieved by lower difficulty at
+       down.                                                         the end of the alternative chain would allow to surpass the
+                                                                     original chain even if the last checkpoint is not set.
+                                                                        Let us estimate the amount of computational power needed
+Alternative block chain.                                             for this operation. Suppose that we have waited for 25000
+   Alternative chain is constructed as follows. First, we select     blocks after the last checkpoint. This occurred in Dec 15th,
+the first block Xi after the last checkpoint such that 2016          2013 with the block 275000, with the checkpoint block 250000
+divides i: i = 2016k, i.e. the difficulty is recomputed at           generated on August 3d, i.e., 134 days before. It has diffi-
+this point. We create an alternative block with the same             culty smaller by the factor of 30, let us denote it by D. In
+transactions but the date changed to the current date, which         turn, the difficulty in our new history can be even lower by
+                                                                                       134
+will decrease the difficulty of the subsequent blocks by the         approximately 2 28 ≈ 30. To obtain that, we would have to
+factor of 4. The next 2015 blocks we create with arbitrary           create 2016 blocks with difficulty D/4 and 2016 blocks with
+times, possibly immediately one after another, with Xi+1             difficulty D/16. The other 23000 blocks must be created
+and later possibly close to Xi−1 .                                   with difficulty D/30. This amounts to about 1400 blocks
+   The date of block Xi+2016 we set again to the current time        with difficulty D, or less than 50 blocks with current dif-
+so that the total difficulty would drop as much as possible.         ficulty. This means that a mining pool with only 10% of
+The next blocks will be again older than Xi+2016 . We re-            the network computational power would need only 3 days
+peat this procedure further and further until the resulting          to make this happen.
+difficulty contradicts the difficulty of the checkpoint. If Tc is
+the date (in days) and Qc is the difficulty of the last check-
+point the client has in memory, T is the date and Q is the           9.   FURTHER LEARNING THE TOPOLOGY
+difficulty of the processed block, than the lower bound is             In this section we continue learning the topology of the
+                                  Qc                                 Bitcoin network and show how to learn server-to-server con-
+                          Q≥      .
+                                  T −Tc                              nections. Bitcoin peers share information only about other
+                          2         28
+                                                                     peers they know, but not about their direct connections. In
+ Currently, a new checkpoint is added every 25000 blocks,            this section we first provide a method to estimate a node’s
+which amounts to the period of about 140 days with the               degree (the number of connections) and then show how to
+10
+ The real formula is complicated, but the total computa-             determine to which servers it is connected to.
+tional complexity of generating the chain is a good approx-            Some of the attacks exploit the following feature of ad-
+imation.                                                             dress propagation mechanism. Each forwarded address is
+accompanied with a timestamp. If this timestamp is older               An attacker can enhance this method to reveal a peer’s
+than 10 minutes, the address is not retransmitted anymore.          connections by applying it to each node in the list of run-
+Thus in order to avoid false positives in some attacks de-          ning Bitcoin nodes (this information is available to the at-
+scribed below an attacker should set the timestamps of the          tacker since running nodes advertise their addresses). This
+marker addresses to values close to 10 minutes to the past.         is easily parallelized since the attacker needs to send marker
+                                                                    addresses just once. The drawbacks of the method is that it
+9.1    Estimating number of connections                             does not allow to reveal connections to nodes which don’t ac-
+   Our first method is based on the way a Bitcoin peer for-         cept incoming connection (e.g. located behind a NAT) since
+wards addresses received in ADDR messages (see section 2 for        an attacker cannot send GETADDR messages to such nodes.
+more details). Suppose that a Bitcoin node A is connected              Bitcoin network discovery protocol is designed in such a
+to k nodes P1 , P2 , . . . , Pk . We show now how to estimate k.    way so that newly advertised addresses should be delivered
+First, we connect our node X to peer A and send it a set            to the majority of the nodes. Thus one of the key ingredients
+of fake11 marker addresses S = {ip1 , ip2 , . . . , ipn } in por-   of the method proposed in this section is how to reduce the
+tions of 10 addresses per ADDR message. At the same time            propagation radius. This is achieved by that each forwarded
+we listen (either on the same connection or on a separate           address is accompanied with a timestamp. If this timestamp
+connection) for received marker addresses. As instructed by         is older than 10 minutes, the address is not retransmitted
+the Bitcoin protocol, node A forwards marker addresses to           anymore. Thus in order to avoid false positives an attacker
+its peers including X. As the number of marker addresses            should set the timestamps of the marker addresses to values
+increases the number of addresses received by X converges           close to 10 minutes to the past.
+     2                                                                 We implemented the method and carried out several ex-
+to 1+k  if marker addresses are considred reachable by A or
+  1
+     otherwise, from which we estimate k. We increase the           periments with our own Bitcoin nodes which had 59, 53, 73,
+1+k
+accuracy by 1) running several listening nodes, 2) repeating        and 81 connections. As a list of candidates we used 400 ran-
+the same experiment several times. We can reuse the same            domly chosen running Bitcoin nodes plus the nodes’ current
+marker addresses: when we reconnect our listening nodes,            connections. The results of the experiments are summarized
+peer A revokes their histories and allocates new data struc-        in Table 9.2. In all our experiments we had zero false posi-
+tures for this nodes. We note that all connections can be           tives.
+established from the same IP address.                                  In order to estimate how probable false positives are we
+   We implemented this method and carried out several ex-           chose 30 random Bitcoin nodes and sent them marker ad-
+periments. Our target nodes have 10, 30, 70, or 100 connec-         dresses with timestamps set to 9 minutes 58 seconds in the
+tions. For different number of connections we used different        past relative the nodes’ adjusted time. For each node we
+number of marker addresses and different number of listen-          generated a unique set of 1000 marker addresses. At the
+ing connections (2, 3, 7, and 10 correspondingly). For each         same time we were monitoring for received addresses at two
+number of connections we conducted a series of experiments;         of our nodes which had 83 and 85 connections. At the end
+Table 1 shows five random runs for each series.                     of the experiment no marker addresses arrived at our nodes
+                                                                    which indicated that false positives are quite unlikely.
+
+
+                                                                     Connections Not behind       Candidates     Discovered
+9.2    Determining connections between servers                                   NAT
+   The method to determine connections of a Bitcoin servers          59          25               459            25
+is similar to the method of estimating the node’s degree. It         53          22               453            22
+is based on sending marker addresses to a peer which should          73          8                473            8
+then forward them to its neighbours. The number of Bitcoin           81          17               481            17
+servers is estimated to be about 10% of the total number of
+Bitcoin peers. Note however that clients can connect to the            Table 2: Discovering Bitcoin node connections
+Bitcoin network only through connecting to servers which
+means that all Bitcoin messages even those generated by
+clients should travel along at least one link between two
+Bitcoin servers. We first describe a probabilistic method to          Finally in order to estimate the number of GETADDR mes-
+determine if two given peers A and B are connected which            sages sufficient to learn addresses known to a peer we adopt
+consists of two phases.                                             a finite state discrete time Markov Chain model [10]. Each
+   During the first phase the attacker estimates the number         state in the model represents number of addresses learned
+of connections of peer A. This number is used to compute the        by the attacker. At each step the attacker sends a GETADDR
+number of marker addresses that will be forwarded to the            message and gets back 2500 random addresses from the to-
+peer’s neighbours. In the second phase the attacker chooses         tal of maximum 20480 (note that some of those addresses
+a set of fake marker addresses S = {ip1 , ip2 , . . . , ipn } and   may already be known to the attacker from the previous
+sends them in ADDR messages to peer A (10 addresses per             requests). The chain has one absorbing state which is ”all
+message). She then sends GETADDR messages to peer B. If the         addresses are known to the attacker”. By computing funda-
+number of marker addresses known to B corresponds to the            mental matrix we get the average number of transitions be-
+number estimated in the first phase, node B is marked as a          fore the absorbing state is reached which corresponds to the
+neighbour.                                                          number of messages the attacker needs to send. If the max-
+                                                                    imum number of addresses stored at node is 20480, it takes
+11                                                                  in average approximately 80 GETADDR messages to learn all
+ By fake me mean that no Bitcoin nodes are running at
+these addresses.                                                    those addresses. Indeed, the probability for a single address
+                                                                     Estimates using our formula
+                Real connections (k)    Markers sent
+                                                       Try #1   Try #2 Try #3 Try #4 Try #5            Average
+                        10                 500          10.69    9.57      9.34      10.6     11.38     10.32
+                        30                 1000         31.92    30.88    35.47      36.26    30.48      33
+                        70                 1000         72.92    76.84    70.65      64.16    77.36     72.39
+                        100                2000        102.63   109.12    104.27    103.28    95.66      103
+
+                                       Table 1: Estimation of number of connections
+
+                                            2500 80      1
+                                                
+to not be discovered is upper bounded by 20480      ≈ 30000 .      Yet another feature is the lack of authentication within the
+This estimation shows however an upper bound of the num-         network, which requires the nodes to blacklist misbehaving
+ber of GETADDR messages. Our experiments showed that it          peers by IP. We figured out that very short messages may
+is sufficient to retrieve 5 ADDR message from a peer in or-      cause a day IP ban, which can be used to separate a given
+der to confirm that a connections exists, which significantly    node or the entire network from anonymity services such as
+reduces the number of GETADDR messages.                          proxy servers or Tor. If the Bitcoin community wishes to
+                                                                 use Tor, this part of the protocol must be reconsidered.
+                                                                   Finally, we showed that the routine procedure of adding
+10. CONCLUSION                                                   a checkpoint to the client code might be exploited to con-
+   We have presented the first method that correlates pseudonyms struct an alternate reality. While too noticable as an attack
+of Bitcoin users behind NAT with the public IP address of        scenario, this idea can be a solution in the case of unforeseen
+the host where the transaction is generated. The crucial         and unsustainable rise of difficulty.
+idea of our attack is to identify each client by an octet of
+outgoing connections it establishes. This octet of Bitcoin
+peers (entry nodes) serves as a unique identifier of a client
+                                                                 11. REFERENCES
+for the whole duration of a user session and will differenti-     [1] Best vpn’s using bitcoin?
+ate even those users who share the same NAT IP address.               https://bitcointalk.org?topic=247212.0, 2014.
+We showed that most of these connections can be learned if        [2] Bitcoin code project, v.0.8.6.
+the attacker maintains connections to a majority of Bitcoin           https://github.com/bitcoin/bitcoin, 2014.
+servers. Then we show that the transaction propagation            [3] Bitcoin wiki. https://en.bitcoin.it/wiki/, 2014.
+rules imply that the entry nodes will be among the first          [4] Bitcoins in space. http://www.virgin.com/
+that report the transaction to the attacker. As soon as the           richard-branson/bitcoins-in-space, 2014.
+attacker receives the transaction from just 2-3 entry nodes       [5] Bitnodes. https://github.com/ayeowch/bitnodes,
+he can with very high probability link the transaction to a           2014.
+specific client. Moreover a sequence of successfully mapped       [6] Blockchain.info. https://blockchain.info/charts,
+transactions can help the attacker to track dynamic changes           2014.
+in the entry node set, to keep the client identifier fresh. The   [7] Onioncat an anonymous vpn-adapter.
+cost of the deanonymisation attack on the full Bitcoin net-           https://www.onioncat.org/about-onioncat/, 2014.
+work is under 1500 EUR.                                           [8] D. Chaum, A. Fiat, and M. Naor. Untraceable
+   We demonstrate that the use of Tor does not rule out               electronic cash. In Proceedings on Advances in
+the attack as Tor connections can be prohibited for the en-           Cryptology, CRYPTO ’88, pages 319–327, New York,
+tire network. Our technique is orthogonal to the transac-
+                                                                      NY, USA, 1990. Springer-Verlag New York, Inc.
+tion graph de-anonymisation techniques and can be used in
+                                                                  [9] Roger Dingledine, Nick Mathewson, and Paul
+combination with them. It shows that the level of network
+                                                                      Syverson. Tor: The second-generation onion router.
+anonymity provided by Bitcoin is quite low. Several features
+                                                                      Technical report, 2004. http:
+of the Bitcoin protocol makes the attack possible. In partic-
+                                                                      //www.dtic.mil/dtic/tr/fulltext/u2/a465464.pdf.
+ular, we emphasize that the stable set of only 8 entry nodes
+is too small, as the majority of these nodes’ connections can    [10] J. Laurie. Grinstead, Charles M.; Snell. Introduction
+be captured by an attacker. A countermeasure could be to              to Probability. American Mathematical Society, 1997.
+randomize and regularly rotate these nodes, and to submit        [11] Philip  Koshy, Diana Koshy, and Patrick McDaniel. An
+transactions via another set of nodes.                                analysis of anonymity in bitcoin using p2p network
+   We also described a number of techniques that reveal the           traffic. 2014. to appear at Financial Cryptography’14.
+topology of the Bitcoin network. Some of them are used for       [12] Sergio Lerner. New vulnerability: know your peer
+our attack, but the entire set is interesting by themselves           public addresses in 14 minutes.
+and not only in the context of deanonymisation. For exam-             https://bitcointalk.org/?topic=135856, 2014.
+ple it can be used as a tool to better understand relations      [13] Sarah Meiklejohn, Marjori Pomarole, Grant Jordan,
+between Bitcoin peers (e.g. one can check if peers of major           Kirill Levchenko, Damon McCoy, Geoffrey M. Voelker,
+pools keep permanent connections between each other). As              and Stefan Savage. A fistful of bitcoins:
+another example, an adversary can find the minimal cut in             Characterizing payments among men with no names.
+the network graph and target those connections with denial-           In Proceedings of the 2013 Conference on Internet
+of-service attacks (an example of a memory exhaustion at-             Measurement Conference, IMC ’13, pages 127–140,
+tack that we discovered while digging through the Bitcoin             New York, NY, USA, 2013. ACM.
+source code can be found in the appendix). This would re-        [14] Satoshi Nakamoto. Bitcoin: A peer-to-peer electronic
+sult in splitting the network in two parts. Our results open          cash system. 2009.
+several directions for the future research.                           http://www.bitcoin.org/bitcoin.pdf.
+[15] Fergal Reid and Martin Harrigan. An analysis of             top-10 is as follows:
+     anonymity in the bitcoin system. In Security and
+                                                                                                Nodes    Probability
+     Privacy in Social Networks, pages 197–223. Springer,
+     2013.                                                                                        1          0.02
+                                                                                                  2         0.055
+[16] Dorit Ron and Adi Shamir. Quantitative analysis of
+                                                                                                  3        0.1225
+     the full bitcoin transaction graph. In Financial
+                                                                                  P3 (L) :        4         0.245
+     Cryptography and Data Security, pages 6–24. Springer,
+                                                                                                  5        0.2125
+     2013.
+                                                                                                  6        0.2125
+                                                                                                  7        0.0925
+                                                                                                  8            0
+APPENDIX                                                           We assume that both events are independent. Then the
+A.    ESTIMATING SUCCESS RATE: DETAILS                           probability that at least M out of these L nodes we have
+                                                                 detected (i.e. it belongs to the set of R entry nodes) is
+   In this section we describe a mathematical model that                          X XX
+allows us to estimate the success rate of the deanonymization    Psuccess (M ) =               P2 (q ; L, R, 8) · P1 (R; 8) · P3 (L);
+attack.                                                                            q≥M L≤8 R≤8
+   As inputs, we take the average probability paddr over the
+network, which is estimated in Section 7.1, and the distribu-    We have made some calculations and got the following re-
+tion of the number of entry nodes among the first 10 nodes       sults:
+reporting a transaction to attacker’s peers (Section 6). We                                                            L   Probability
+extrapolate the latter probability spectrum from the test                                                              1     0.366
+net to the main net, which assumes similar network perfor-       XX                                                    2     0.243
+                                                                           P2 (q ; L, R, 8) · P1 (R; 8) · P3 (L) :
+mance and the stability of the spectrum when the attacker                                                              3       0.9
+                                                                 L≤8 R≤8
+has more or fewer connections to servers. The correctness                                                              4      0.02
+of the extrapolation can be tested only by mounting a full-                                                            5     0.002
+scale attack on the network, which we chose not to perform
+for ethical reasons.                                                                                                   M   Probability
+   First, we introduce two combinatorial formulas. Suppose                                                             1     0.721
+that there are N balls. If each ball is red with probability                                                           2     0.355
+                                                                                                  Psuccess (M ) :
+pa , and green with probability 1 − pa , then the probability                                                          3     0.112
+that there are R red balls is                                                                                          4     0.022
+                                !                                                                                      5     0.002
+                              N j
+              P1 (R; N ) =       pa (1 − pa )N −R         (1)    Therefore, we expect to catch 3-tuples in 11% of transac-
+                              R                                  tions, and 2-tuples in 35% of transactions.
+                                                                    We applied this model to the testnet as well, and obtained
+  Now assume that there are R red balls and N − R green          that it fits our actual deanonymization results well:
+balls. Suppose that we select L balls at random out of N .         Estimated paddr           Deanonymization rate with 3-tuples
+The probability that there will be exactly q red balls among                                 Actual         Predicted
+L chosen is computed as follows:                                           0.64               41%              43%
+                                           N −R                          0.86              59.9%            65.6%
+                                      R
+                                      q     L−q
+                P2 (q ; L, R, N ) =        N
+                                                   .
+                                           L
+                                                                 B.    ATTACK COSTS
+  Now we get back to Bitcoin. If each entry node is detected        The expenses for the attack include two main components:
+with probability pAvg                                            (1) renting machines for connecting to Bitcoin servers and
+                   addr = 0.34 (Section 7.3), then according
+to Eq. (1) we detect R entry nodes out of 8 with the following   listening for INVENTORY messages; (2) periodically advertising
+probability spectrum:                                            potential client addresses in the network. Note that if an
+                                                                 attacker rents servers, the incoming traffic for the servers is
+                                                                 normally free of charge. Assuming that an attacker would
+                             Nodes    Probability                like to stay stealthy, she would want to have 50 different
+                               1         0.15                    IP addresses possibly from different subnetworks. Thus she
+                               2         0.27                    might want to rent 50 different servers. Assuming monthly
+                               3         0.28                    price per one server 25 EUR, this results in 1250 EUR per
+             P1 (R; 8) :       4         0.18                    month.
+                               5         0.07                       When advertising potential client addresses, the attacker
+                               6         0.02                    is interested in that the addresses propagate in the network
+                               7         0.002                   as fast as possible. In order to achieve this the attacker
+                               8        0.0002                   might try to advertise the addresses to all servers simulta-
+                                                                 neously. Given that there are 100,000 potential clients and
+According to our experiments on the Bitcoin test net (Sec-       the attacker needs to send 10 addresses per ADDR message,
+tion 6), the probability to have L entry nodes among the         this results in 10,000 ADDR messages of 325 bytes each per
+Bitcoin server or (given there are 8,000 Bitcoin servers) 24.2                                                                    100
+GB in total.
+   If an attacker advertises the addresses every 10 minutes
+                                                                                                                                  80
+and she is interested in continuously deanonymising trans-
+action during a month, it will require sending 104,544 GB
+of data from 50 servers. Given that 10,000 GB per server is
+
+
+
+
+                                                                                         % of connections
+                                                                                                                                  60
+included into the servers price and the price per additional
+1,000 GB is 2 EUR, the attacker would need to pay 109 EUR
+per month. As a result the total cost of the attack is esti-                                                                      40
+mated to be less than 1500 EUR per month of continuous
+deanonymisation.
+                                                                                                                                  20
+
+C.                   TRANSACTION PROPAGATION DELAY
+   In this section we measure transaction propagation de-                                                                          0
+                                                                                                                                        0      200        400         600       800        1000
+lays between our high-speed server (1 Gbit/s, Intel Core i7                                                                                                Time, seconds
+3GHz) located in Germany and 6,163 other Bitcoin servers.
+As was described in Section 2, it takes 3 steps to forward a
+                                                                                       Figure 11: Transaction propagation delay, cumula-
+transaction between two Bitcoin peers. As we are not able
+                                                                                       tive
+to obtain times when a remote peer sends an INVENTORY mes-
+sage, we skipped the first step (i.e. propagation delays of
+INVENTORY messages) and measured time differences between
+receptions of corresponding INVENTORY messages and recep-                                     • No data was sent over a connection for 1.5 hours.
+tions of the transactions. Note however that the size of an
+INVENTORY message is 37 bytes, while the size of a transac-
+                                                                                              • An Entry node goes offline.
+tion which transfers coins from one pseudonym to two other                             Given the number of transitions generated by the network[6],
+pseudonyms is 258 bytes. Thus the obtained results can                                 block generation rate, and addresses propagation, some data
+serve as a good approximation. For each Bitcoin server we                              is normally sent to and from the entry nodes within 1.5
+collected 70 transactions and combined them into a single                              hours.
+dataset (thus having 431,410 data points). Fig. 10 shows                                  In order to estimate the probability of an entry node go-
+probability density function of the transaction propagation                            ing off-line we we took data from http://getaddr.bitnodes.io
+delay between our node and other Bitcoin servers and Fig. 11                           which produces a list of running Bitcoin servers every five
+shows the corresponding cumulative distribution.                                       minutes. We analysed the data for two weeks. The proba-
+                                                                                       bility for a node to disconnect after specific amount of time
+                     12                                                                with 95% confidence interval is shown on Fig. 12.
+
+                     10                                                                                                            35
+
+                                                                                                                                   30
+                     8
+  % of connections
+
+
+
+
+                                                                                                        Disconnected servers, %
+
+
+
+
+                                                                                                                                   25
+
+                     6                                                                                                             20
+
+                                                                                                                                   15
+                     4
+
+                                                                                                                                   10
+                     2
+                                                                                                                                    5
+
+                     0                                                                                                              0
+                          0   50   100   150     200    250    300   350   400   450                                                    0      2      4            6        8         10
+                                               Time, seconds                                                                                               Time, hours
+
+
+Figure 10: Transaction propagation delay, density                                                                                       Figure 12: Bitcoin servers churn rate
+
+
+                                                                                          Fig. 12 shows that after 2.5 hours only one node would
+D.                   ON STABILITY OF THE FINGERPRINT                                   disconnect on average and only two nodes will disconnect
+                                                                                       after 10 hours. So for the typical duration of a client ses-
+  In this section we estimate the stability of a client’s fin-
+                                                                                       sion the fingerprint is very stable. In our experiment, after
+gerprint (the set of eight first-hop connections). According
+                                                                                       running our Bitcoin client for about 10 hours 3 nodes out of
+to the bitcoind source code (version v0.9.1), there are three
+                                                                                       eight have disconnected.
+reasons why an entry node can be disconnected from a client:
+                                                                                          The second point we address in this section is regard-
+       • The client switched off the computer/closed Bitcoin ap-                       ing the usage of VPN which is a popular recommendation
+         plication.                                                                    for preserving anonymity in Bitcoin [1]. While protecting
+a user’s IP, the stability of the fingerprint still allows an      Bitcoin’s peer discovery protocol has a mechanism which
+attacker to glue together different Bitcoin addresses of the    prevents multiple retransmissions of the same addresses: for
+same user. We checked the stability of the fingerprint on the   each connection it has, a Bitcoin node maintains a history
+Bitcoin testnet while connecting to the network:                (Implemented as an instance of std::set C++ class) of ad-
+                                                                dresses which were sent over this connection. This history
+  1. via public free VPNs (vpngate.net);
+                                                                is emptied once per every 24 hours and more importantly
+  2. via a non-free one (AirVPN).                               does not limit the number of elements it holds. In order to
+                                                                check if one can flood this container with fake addresses we
+  3. via our own VPN server.
+                                                                conducted a simplified experiment. We set up locally two
+For cases 2 and 3, the stability of the fingerprint was the     Bitcoin nodes so that when one of the nodes (the target) re-
+same as if no VPN was used. For case 1, connections to          ceives an ADDR message it forwards the addresses it contains
+entry nodes were dropped from time to time (about every         to just one neighbour. Both machines had Ubuntu 12.04
+20 mins for the main net and about every few minutes for the    installed with 2Gb of RAM and the same amount of swap
+testnet due too absence of traffic) by the VPN servers. It’s    memory. They were running bitcoind version 0.8.6.
+likely that free VPN servers were set with small inactivity        We were sending fake addresses with the rate of 30,000
+timeouts and some limits for connection durations.              addresses per second. After approximately 45 minutes, the
+                                                                response delay to the user’s interactions became significant
+                                                                and the node was unreachable for new Bitcoin connections.
+E.    DENIAL OF SERVICE                                         We also mounted a reduced version of this attack on our
+  In this section we analyse the security of Bitcoin network-   own Bitcoin node in the real network. We terminated the
+ing protocol against Denial of Services attacks.                experiment when the memory consumption increased by 100
+                                                                MB.
+E.1    Memory exhaustion by address flooding
+
