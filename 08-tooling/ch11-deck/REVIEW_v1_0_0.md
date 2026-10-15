@@ -1,0 +1,9 @@
+# Chapter 11 deck - three-role review record (v1.0.0)
+
+Source of truth: research commit 738662b (v1_0_1 corpus, data and verify files; the v1_0_0 examples had invalid text): 73 sources, 25 findings, 73 claims (69 leaves + 4 corpus checks); regtest run of Bitcoin Core 31.1; real blocks and heights saved from mempool.space on 2026-10-15; 4 stories. Title from the book's heading: The Blockchain. Same method and checks as chapters 8 to 10.
+
+- Teaching academician: three parts (the block and the chain; merkle trees; test blockchains), 26 slides, 17 console slides, 3 native charts, 4 stories, 10 everyday analogies, notes of 43 to 86 words.
+- Faculty reviewer: every console row is re-run off the finished file by deck_check (56 examples, 0 mismatches); the 13 stale fixtures and the control pass; Recorded is on exactly the slides that read the Core 31.1 record; NOT EXECUTED is on slides 19 (raw TCP to peers, mainnet download), 20 and 21 (testnet3 sync), 22 and 23 (signet block mining); stand-in pictures are labelled on slides 8, 21 and 23.
+- Student reader: every row is explained by a numbered beat; values of the book that moved are shown against the executed ones (the ratio of 10,000 is 7,576, testnet3 is 245 GB not 30, the prefixes of test addresses, the signet size, the empty-name createwallet).
+
+Deviations from the research package: PNG copies of the three JPEG pictures (stories v1_1_0, provenance v1_1_0, so that the re-encoding control can run); credits without dates and without the stand-in remark; YouTube watch pages answer 429 from here, so the Watch group uses embed URLs (200) whose titles were read through oEmbed (Blockchain 101, Anders Brownworth; What Actually Are Merkle Trees, Chainlink); the closing-slide box is narrowed by post_render_v1_0_0.py; the 73 claims are counted from the v1_0_1 data (69 leaves + 4 corpus checks). Chart values are taken literally from executed outputs (the loose-provenance rule refuses rounded forms).

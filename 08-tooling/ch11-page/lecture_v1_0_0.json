@@ -1,0 +1,188 @@
+{
+ "chapter": 11,
+ "deck": "SEN0401_Ch11_TheBlockchain_3e_v1_0_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 11: The Blockchain",
+   "say": "This deck explains the blockchain: the block and its 80-byte header, how a block is named and numbered, how blocks hold one another, how a merkle tree vouches for the transactions, and the test chains that practise all of it. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1 was run on a test network, so its answers are Recorded and only read back here. The research package for chapter 11 holds the sources and the claims.",
+   "concept": "What a block holds, how blocks are named and linked, how a merkle tree vouches for them, and the test chains. Bitcoin Core 31.1 results are Recorded."
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has three parts after the questions: the block and the chain, with its header, name, links and forks; the merkle tree that vouches for the transactions; and the test blockchains on which developers practise. Each part carries a true story or a correction of the book that a reader can check on the slide. The numbers in the list let a reader jump straight to a part.",
+   "concept": "Three parts, four true stories, and a list of what was not run"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The chapter asks two questions that this deck answers by computation: which of its statements can be checked, and what has changed since print. The three numbers are counted from the research package, which holds 73 sources, 25 findings and 73 executed claims. Each slide that follows shows the computation behind one claim.",
+   "concept": "Its own competency questions, and the numbers behind the answers"
+  },
+  {
+   "n": 4,
+   "kind": "section",
+   "title": "The block and the chain",
+   "say": "This part opens a block and looks at every field of its header. It then asks how a block is named, how it is numbered, and what links it to its parent, and it ends with the case of two children of one parent. The first block, with its newspaper headline, is the story of the part.",
+   "concept": "What a block holds, how it is named and numbered, and how blocks hold one another."
+  },
+  {
+   "n": 5,
+   "kind": "content",
+   "title": "A block is a header and its transactions",
+   "say": "A block is an 80-byte header, a count of transactions, and the transactions. The first block of the test chain measured 285 bytes: 80 for the header, 1 for the count and 204 for its one transaction. The size field shown in the book's table is not part of the block but a prefix that Bitcoin Core writes in front of each block in its block files, which since release 28.0 are scrambled with a random key.",
+   "concept": "A block is a header, a count and transactions; the size field is file storage"
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "The 80-byte header and its six fields",
+   "say": "The header holds six fields in 80 bytes: version, previous block hash, merkle root, time, bits and nonce, with numbers stored least significant byte first and hashes shown reversed. A block may be 4,000,000 bytes, so it can be 50,000 times its header. The version is no longer a counter: BIP 9 sets the top three bits to 001 for blocks that signal, and the remaining bits are flags.",
+   "concept": "Six fields fill 80 bytes, and the version is now a set of flags"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "Time, target and nonce",
+   "say": "The timestamp of a block must be greater than the median of the previous 11 block times and at most two hours ahead of the node's clock. The target is stored compactly in bits: 1d00ffff means a target of 0xffff followed by zeros, which is difficulty 1. Block 277,315 had a difficulty of 1,180,923,195, so its proof of work needed far more than the 4,294,967,296 values of the 32-bit nonce, which is why miners also change an extra nonce.",
+   "concept": "The median of 11 times is the floor; the nonce alone is too small"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "A headline nailed into the first block",
+   "say": "On 3 January 2009 Satoshi Nakamoto mined the first block and wrote into its coinbase a headline of The Times, 69 characters long, which shows that the block cannot be older than that day. The Chancellor of the Exchequer then was Alistair Darling. The chapter rebuilt the block from the constants in chainparams.cpp and hashed it to 000000000019d668, and a test node refused to give out its coinbase, because the first 50 coins can never be spent.",
+   "concept": "The story of 3 January 2009: who, where, when and what to read next"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "A block's name is the hash of its header",
+   "say": "The identifier of a block is the double SHA-256 of its 80-byte header, shown byte-reversed. The hash is not stored in the block itself: the 285 bytes of the first block contain it neither way round, and it is the next block's header that carries it. The leading zeros grow with the difficulty, from 10 hex digits in block 0 to 19 in block 840,000.",
+   "concept": "The name is computed from the header and carried by the next block"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Height, depth and coinbase maturity",
+   "say": "Height counts the blocks since the first, which has height 0, and it is not a unique name, because two blocks can share a height during a fork. Since BIP 34 the height is written at the start of the coinbase script. A reward can be spent only 100 blocks later, and the test node refused a spend at depth 99 with premature-spend-of-coinbase.",
+   "concept": "Height is a count, not a name; a reward matures after 100 blocks"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Back-links make the history hard to change",
+   "say": "Each header carries the hash of its parent, so the chain is a list in which every link depends on everything before it. On the test chain, ten consecutive headers linked correctly, and changing the fourth changed its hash, broke the link in the fifth, and meant that seven blocks would have to be mined again. The work of the chain is the sum of the work of its blocks, so the chain with the most work wins.",
+   "concept": "Changing one old block means mining it and all later blocks again"
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "Forks: two children, one parent",
+   "say": "Two miners can find a block at about the same time, and then one parent has two children at the same height. The test node held both and called the one with more work active and the other a valid fork, and a block on top of one child settled it. The chance that an attacker catches up falls quickly with the number of blocks: with 10 percent of the power it is 0.2045873 from one block behind and 0.0002428 from six.",
+   "concept": "A fork is settled by more work, and an old block is soon safe"
+  },
+  {
+   "n": 13,
+   "kind": "section",
+   "title": "Merkle trees",
+   "say": "This part is about the hash tree that sits between a block's transactions and its header. It shows how the root is built, how a short path proves that one transaction belongs, and where the tree is weak: a duplicated hash and a 64-byte transaction. The story is that of its inventor, Ralph Merkle.",
+   "concept": "How one 32-byte root vouches for every transaction in a block, and where the tree is weak."
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "The merkle tree: many transactions, one root",
+   "say": "The transaction ids of a block are hashed in pairs, level by level, until one hash is left, and that merkle root goes into the header. For four transactions the levels have 4, 2 and 1 hashes, and the test node's root matched our own. When a level has an odd count, its last hash is paired with itself, which is why a copy of the last transaction gives the same root.",
+   "concept": "Pairs are hashed upward; an odd hash is paired with itself"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "A merkle proof is a short path of hashes",
+   "say": "A light client can check that a transaction is in a block with only the hashes along its path to the root, one for each level. For transaction 10 of 16 that is 4 hashes, 128 bytes, and following them reproduced the root of the header. The path grows with the logarithm of the block, 448 bytes for 16,000 transactions, so with the header a proof is 528 bytes; the book's claim of almost 10,000 times smaller is really 7,576 times.",
+   "concept": "A proof is a few hashes, and the book's ratio of 10,000 is 7,576"
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Two weaknesses of the merkle tree",
+   "say": "Because an odd hash is paired with itself, a list with the last transactions repeated has the same root as the original, so two different blocks can share one header. Bitcoin Core refuses the mutated block with bad-txns-duplicate, and on the test chain it kept the original. The second weakness is that an inner node is the hash of 64 bytes, so a transaction of exactly 64 bytes could be mistaken for one, which BIP 54 forbids.",
+   "concept": "The tree has two known weaknesses, and the node defends against both"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "One small hash that vouches for a list",
+   "say": "Ralph Merkle patented the hash tree in 1979, and the United States patent 4309569 was published on 5 January 1982 with Stanford University as assignee. In 1980 he wrote about tree authentication, and Satoshi Nakamoto's paper hashes the transactions of a block in such a tree and keeps only the root in the header. The 40 transactions of block 277,315 hashed in pairs up six levels to the root in its header.",
+   "concept": "The story of 5 January 1982: who, where, when and what to read next"
+  },
+  {
+   "n": 18,
+   "kind": "section",
+   "title": "Test blockchains",
+   "say": "This part is about the chains on which developers practise. They run the same code as the main chain but with different rules, prefixes and ports, and each solved a problem of the one before it. The stories are the flooding of testnet3 and the signature that a signet block must carry.",
+   "concept": "Practice chains where coins cost nothing: testnet, signet and regtest, and their rules."
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Several chains, one code base",
+   "say": "The same program runs five chains, chosen by an option, each with its own data directory, port and address prefixes. The book's tip says that test addresses begin with m, n or tb1, but the test chains also use the prefix 2 for script addresses, and regtest uses bcrt1. Regtest halves its reward every 150 blocks, so 500 blocks earned 12,462.5 coins, as the book shows. No connection to a real network was made.",
+   "concept": "One program runs five chains; the prefixes are more than the book lists"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Testnet: flooded, then replaced",
+   "say": "Testnet coins are worth nothing, so nothing stops a miner from flooding the chain. Testnet3 lets a block use minimum difficulty after twenty idle minutes, and its height is 6.3 times what one block in ten minutes would give; the book's size of 30 GB is far out of date too. Testnet4, specified in BIP 94, has its own genesis block and rules against the flooding. The heights are public figures; no test network was synchronised here.",
+   "concept": "Testnet3 was flooded; testnet4 has rules against it"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "When the sandbox was flooded",
+   "say": "On 4 May 2024 Jameson Lopp published how the minimum-difficulty rule of testnet3 lets miners create hundreds of blocks in a day. Testnet4 had its genesis block on 3 May 2024, and BIP 94, written by Fabian Jahr, bounds the time of the first block of a period; Bitcoin Core 28.0 added the network. BIP 94 notes that three years of blocks were mined on testnet3 in a few weeks, and testnet3 is now 33 times as long as testnet4.",
+   "concept": "The story of 4 May 2024: who, where, when and what to read next"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "Signet: blocks need a signature",
+   "say": "On a signet a block is valid only if it carries a signature that satisfies a challenge script, so the operators decide who may make blocks and the chain stays calm. The default signet's challenge is a one-of-two multisig, which is why the book says two contributors run it; a signet with the challenge 51 can be signed by anyone and ran on the test node. The network magic is derived from the challenge, so every signet has its own.",
+   "concept": "A signet block needs a signature, so the chain stays calm"
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "A test network with a doorman",
+   "say": "BIP 325, Signet, was assigned on 20 March 2019 to Karl-Johan Alm and Anthony Towns: a block is valid only if it carries a solution to a challenge script, so the creators of a signet decide who may make blocks. Bitcoin Core 0.21.0 added the support, and personal signets are possible with the option -signetchallenge. The network magic is the start of the hash of the challenge, so every signet has its own, and the public one is 2.27 times as long as the book's listing.",
+   "concept": "The story of 20 March 2019: who, where, when and what to read next"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "concept": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the visual blockchain demo by Anders Brownworth, then the Optech topic on merkle tree vulnerabilities next to the chapter. The research package for chapter 11 lists all 73 sources with the passages used.",
+   "concept": "Watch the visual demo, then read the Optech topic beside the chapter"
+  },
+  {
+   "n": 26,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 11 holds the sources and the test records behind them.",
+   "concept": "And where each claim gets its proof"
+  }
+ ]
+}
