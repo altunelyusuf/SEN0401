@@ -1,0 +1,368 @@
+{
+ "_version": "1.0.0",
+ "_python": "3.14.6",
+ "FeeDiff": [
+  [
+   "t, a, w = L.parse_tx(R['fee_arith']['tx']['hex']), R['fee_arith'], R2['tamper']",
+   ""
+  ],
+  [
+   "'fee' in t, sorted(k for k in t if k in ('version', 'vin', 'vout', 'locktime'))",
+   "(False, ['locktime', 'version', 'vin', 'vout'])"
+  ],
+  [
+   "round(a['inputs_btc'] * 10 ** 8) - sum(o['value'] for o in t['vout'])",
+   "1900000000"
+  ],
+  [
+   "a['testmempoolaccept']['reject-reason']",
+   "'max-fee-exceeded'"
+  ],
+  [
+   "[w[k]['allowed'] for k in ('original', 'tampered')], w['tampered']['reject-reason'][:36]",
+   "([True, False], 'mempool-script-verify-flag-failed (S')"
+  ]
+ ],
+ "SizeRate": [
+  [
+   "x, u, t = R['rbf']['t1'], R['units'], L.parse_tx(R['rbf']['t1']['hex'])",
+   ""
+  ],
+  [
+   "t['base_size'], t['size'], t['weight'], t['vsize']",
+   "(113, 222, 561, 141)"
+  ],
+  [
+   "x['fee_sat'] / x['vsize'], round(x['vsize'] / x['weight'], 4)",
+   "(2.0, 0.2513)"
+  ],
+  [
+   "float(kvb('0.00006570')), float(kvb('0.00001225'))",
+   "(6.57, 1.225)"
+  ],
+  [
+   "u['fee_rate_sat_vb_10']['ok']['fee'] == u['feeRate_btc_kvb_0.0001']['ok']['fee']",
+   "True"
+  ],
+  [
+   "src('core_src_consensus_consensus.h', 'MAX_BLOCK_WEIGHT'), B['840000']['weight']",
+   "('4000000', 3993281)"
+  ]
+ ],
+ "MinFees": [
+  [
+   "m, d, w = R['minrelay'], R2['dust'], R2['wallet_min']",
+   ""
+  ],
+  [
+   "[(v['fee_sat'], v['result']['ok'][0]['allowed']) for v in list(m.values())[:3]]",
+   "[(8, False), (14, False), (15, True)]"
+  ],
+  [
+   "R2['mempool_min']['minrelaytxfee'] * 10 ** 8 / 1000",
+   "0.1"
+  ],
+  [
+   "['ok' in w[k] for k in ('fee_rate_0.5', 'fee_rate_0.1', 'fee_rate_1')]",
+   "[False, False, True]"
+  ],
+  [
+   "(31 + 67) * 3, (43 + 67) * 3, (13 + 67) * 3",
+   "(294, 330, 240)"
+  ],
+  [
+   "[d[k]['result']['allowed'] for k in list(d)[:6]]",
+   "[False, True, False, True, False, True]"
+  ]
+ ],
+ "Estimator": [
+  [
+   "E = R['estimate']['results']",
+   ""
+  ],
+  [
+   "R['estimate_fresh']['ok']['errors'][0], R['estimate']['rounds'], R['estimate']['sent']",
+   "('Insufficient data or no feerate found', 120, 2640)"
+  ],
+  [
+   "[round(E[k]['ok']['feerate'] * 10 ** 8 / 1000, 3) for k in ('2_default', '6_default', '25_default')]",
+   "[1.225, 1.173, 1.173]"
+  ],
+  [
+   "E['144_default']['ok']['blocks'], R['estimate']['tip']",
+   "(60, 231)"
+  ],
+  [
+   "all(E[f'{t}_default'] == E[f'{t}_economical'] for t in (2, 6, 25, 144))",
+   "True"
+  ],
+  [
+   "E['144_default'] == E['144_conservative']",
+   "False"
+  ]
+ ],
+ "Census": [
+  [
+   "a, b = L.census_stats(840000), L.census_stats(971489)",
+   ""
+  ],
+  [
+   "a['n'], a['median_rate'], b['median_rate']",
+   "(599, 1436.45, 3.02)"
+  ],
+  [
+   "[round(100 * B[h]['extras']['totalFees'] / B[h]['extras']['reward'], 2) for h in ('840000', '971489')]",
+   "[92.33, 0.46]"
+  ],
+  [
+   "[round(100 * z['signal_rbf'] / z['n']) for z in (a, b)]",
+   "[81, 46]"
+  ],
+  [
+   "[round(100 * z['locktime_prev_height'] / z['n']) for z in (a, b)]",
+   "[15, 6]"
+  ]
+ ],
+ "Halving": [
+  [
+   "e, g = B['840000']['extras'], B['971489']['extras']",
+   ""
+  ],
+  [
+   "e['totalFees'], e['reward'], e['reward'] - e['totalFees']",
+   "(3762561499, 4075061499, 312500000)"
+  ],
+  [
+   "[round(100 * z['totalFees'] / z['reward'], 2) for z in (e, g)]",
+   "[92.33, 0.46]"
+  ]
+ ],
+ "RbfRules": [
+  [
+   "L.rbf_signal([0xfffffffd]), L.rbf_signal([0xfffffffe]), L.rbf_signal([0xffffffff, 0xfffffffd])",
+   "(True, False, True)"
+  ],
+  [
+   "X['lower_fee']['fee_sat'], 'less fees than conflicting txs' in why(X['lower_fee']['result'])",
+   "(514, True)"
+  ],
+  [
+   "X['equal_fee']['fee_sat'], 'not enough additional fees to relay' in why(X['equal_fee']['result'])",
+   "(564, True)"
+  ],
+  [
+   "L.min_replacement_fee(564, 141), X['short_by_one']['fee_sat'], 'error' in X['short_by_one']['result']",
+   "(579, 578, True)"
+  ],
+  [
+   "X['exactly_enough']['fee_sat'], 'ok' in X['exactly_enough']['result']",
+   "(579, True)"
+  ]
+ ],
+ "FullRbf": [
+  [
+   "x, o = R['rbf'], R2['removed_option']",
+   ""
+  ],
+  [
+   "x['fullrbf_flag'], x['t1']['sequence'], 'ok' in x['t2']['result']",
+   "(True, 4294967295, True)"
+  ],
+  [
+   "o['exit_code'], 'Invalid parameter -mempoolfullrbf=0' in o['message']",
+   "(1, True)"
+  ],
+  [
+   "[L.census_stats(h)['signal_rbf'] for h in (840000, 971489)]",
+   "[485, 273]"
+  ]
+ ],
+ "Hazards": [
+  [
+   "h, p, i = R2['hazard'], R['pinning']['v2'], R2['hazard']['inputs']",
+   ""
+  ],
+  [
+   "h['payee_asked_sat'], h['payee_received_sat']",
+   "(40000000, 80000000)"
+  ],
+  [
+   "L.conflict(i['v0'], i['v1']), L.conflict(i['v1'], i['v2']), L.conflict(i['v0'], i['v2'])",
+   "(True, True, False)"
+  ],
+  [
+   "p['child']['vsize'], p['replacement_enough']['fee_sat'], p['parent']['fee_sat']",
+   "(90012, 450780, 705)"
+  ],
+  [
+   "round(p['replacement_enough']['fee_sat'] / p['parent']['fee_sat'])",
+   "639"
+  ],
+  [
+   "seen('optech_topic_replacement_cycling.html', 'especially concerning in protocols that use')",
+   "True"
+  ]
+ ],
+ "Cpfp": [
+  [
+   "a, l, p = A['cpfp_wins'], A['cpfp_loses'], R['package']",
+   ""
+  ],
+  [
+   "a['fees_sat']['P'], a['fees_sat']['C'], mined(a, 'P'), mined(a, 'C')",
+   "(141, 14100, True, True)"
+  ],
+  [
+   "round(chunk(a)['fees']['chunk'] * 10 ** 8 / (chunk(a)['chunkweight'] / 4), 2)",
+   "50.77"
+  ],
+  [
+   "round((l['fees_sat']['P'] + l['fees_sat']['C']) / (chunk(l)['chunkweight'] / 4), 2), mined(l, 'A'), mined(l, 'P')",
+   "(3.02, True, False)"
+  ],
+  [
+   "p['v2_parent']['fee_sat'], why(p['child_alone']), p['submitpackage_v2']['ok']['package_msg']",
+   "(8, 'bad-txns-inputs-missingorspent', 'success')"
+  ]
+ ],
+ "Truc": [
+  [
+   "v2, v3, t = R['pinning']['v2'], R['pinning']['v3'], R['truc']",
+   ""
+  ],
+  [
+   "v2['child']['vsize'], v2['replacement_enough']['fee_sat']",
+   "(90012, 450780)"
+  ],
+  [
+   "v3['child']['vsize'], v3['replacement_enough']['fee_sat']",
+   "(885, 5145)"
+  ],
+  [
+   "round(v2['replacement_enough']['fee_sat'] / v3['replacement_enough']['fee_sat'])",
+   "88"
+  ],
+  [
+   "t['big_child']['vsize'], 'TRUC-violation' in why(t['big_child']['result'])",
+   "(1350, True)"
+  ],
+  [
+   "t['child1']['vsize'], 'ok' in t['child1']['result']",
+   "(141, True)"
+  ],
+  [
+   "'sibling eviction' in why(t['sibling_same_rate']['result']), 'ok' in t['sibling_higher_rate']['result']",
+   "(True, True)"
+  ]
+ ],
+ "Anchors": [
+  [
+   "p = R['package']; t, c = L.parse_tx(p['truc_parent']['hex']), L.parse_tx(p['anchor_child']['hex'])",
+   ""
+  ],
+  [
+   "t['vout'][0]['spk'], t['vout'][0]['value'], t['version']",
+   "('51024e73', 0, 3)"
+  ],
+  [
+   "why(p['parent_alone']), p['submitpackage_truc']['ok']['package_msg']",
+   "('min relay fee not met, 0 < 13', 'success')"
+  ],
+  [
+   "[v['witness'] for v in c['vin']].count([]), p['anchor_child']['fee_sat']",
+   "(1, 10000)"
+  ],
+  [
+   "f = list(p['submitpackage_truc']['ok']['tx-results'].values())[0]['fees']",
+   ""
+  ],
+  [
+   "round(f['effective-feerate'] * 10 ** 8 / 1000, 1)",
+   "36.5"
+  ]
+ ],
+ "CarveOut": [
+  [
+   "src('core_src_policy_policy.h', 'EXTRA_DESCENDANT_TX_SIZE_LIMIT')",
+   "'10000'"
+  ],
+  [
+   "seen('book_ch09_fees.adoc', 'additional transaction up to 1,000 vbytes')",
+   "True"
+  ],
+  [
+   "seen('ml_corallo_2018-12_carveout.html', 'no greater than 1K')",
+   "True"
+  ],
+  [
+   "seen('core_relnotes_31.0.html', 'removed from the mempool logic')",
+   "True"
+  ]
+ ],
+ "Cluster": [
+  [
+   "c, o = R['cluster'], 'core_src_kernel_mempool_options.h'",
+   ""
+  ],
+  [
+   "c['mempoolinfo']['limitclustercount'], c['mempoolinfo']['limitclustersize']",
+   "(64, 101000)"
+  ],
+  [
+   "c['chain']['attempted'], c['chain']['accepted'], why(c['chain']['first_refusal'])",
+   "(65, 64, 'too-large-cluster')"
+  ],
+  [
+   "c['chain']['accepted_26th'], 25 ** 2, 50 ** 2",
+   "(True, 625, 2500)"
+  ],
+  [
+   "src(o, 'DEFAULT_MAX_MEMPOOL_SIZE_MB'), src(o, 'DEFAULT_MEMPOOL_EXPIRY_HOURS')",
+   "('300', '336')"
+  ],
+  [
+   "seen('core_relnotes_31.0.html', 'removed from the mempool logic')",
+   "True"
+  ]
+ ],
+ "Sniping": [
+  [
+   "s = R['sniping']['samples']; d = sorted(z['tip'] - z['locktime'] for z in s)",
+   ""
+  ],
+  [
+   "len(s), d.count(0), [z for z in d if z]",
+   "(60, 56, [6, 28, 35, 54])"
+  ],
+  [
+   "L.is_final(100001, 100001, [0xfffffffd]), R2['locktime_block']['mempool_next']['reject-reason']",
+   "(False, 'non-final')"
+  ],
+  [
+   "[round(100 * L.snipe_probability(x), 2) for x in (0.1, 0.3, 0.45)]",
+   "[1.23, 18.37, 66.94]"
+  ],
+  [
+   "[L.census_stats(h)['locktime_prev_height'] for h in (840000, 971489)]",
+   "[89, 33]"
+  ],
+  [
+   "seen('bip-0326.mediawiki', 'in place of their regular nLockTime anti-fee-sniping protection')",
+   "True"
+  ]
+ ],
+ "Instability": [
+  [
+   "seen('nakamoto_2008_bitcoin.pdf', 'added to the incentive value')",
+   "True"
+  ],
+  [
+   "seen('carlsten_2016_instability.pdf', 'actively fork the head of the')",
+   "True"
+  ],
+  [
+   "round(100 * L.snipe_probability(0.45), 2), L.snipe_probability(0.5)",
+   "(66.94, 1.0)"
+  ]
+ ]
+}

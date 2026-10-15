@@ -1,0 +1,1684 @@
+{
+ "meta": {
+  "title": "Chapter 9: Transaction Fees",
+  "sub": "SEN0401, third-edition redesign",
+  "version": "1.0.0",
+  "python": "3.14.6",
+  "total": 0,
+  "redesign": "2026-10-15, first deck from the committed research package (commit 2521ab3), to the CME look and feel; notes are short reader's prose",
+  "notes": "short reader's prose: 2-4 sentences, at most 100 words",
+  "honesty": {
+   "title": [
+    "Bitcoin Core 31.1",
+    "Recorded"
+   ],
+   "recorded": [
+    1,
+    5,
+    6,
+    7,
+    9,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    21,
+    22
+   ],
+   "notExecuted": [
+    15,
+    20,
+    22,
+    23
+   ],
+   "standin": {
+    "11": [
+     "Stand-in picture"
+    ],
+    "14": [
+     "Stand-in picture"
+    ],
+    "20": [
+     "Stand-in picture"
+    ]
+   },
+   "vectors": [
+    6,
+    10,
+    11,
+    20,
+    15,
+    21,
+    23
+   ]
+  },
+  "analogies": [
+   {
+    "concept": "transaction fee",
+    "analogy": "Like the change at a shop: the fee is what is left over, and nobody writes it on the note",
+    "slide": 5
+   },
+   {
+    "concept": "virtual size",
+    "analogy": "Like postage by volume: a bulky parcel pays for the space it takes, not its weight",
+    "slide": 6
+   },
+   {
+    "concept": "fee market",
+    "analogy": "Like seats on a bus that leaves every ten minutes: the highest bids board first.",
+    "slide": 8
+   },
+   {
+    "concept": "replace by fee",
+    "analogy": "Like raising your bid at an auction: it must beat the last bid by at least one step",
+    "slide": 13
+   },
+   {
+    "concept": "child pays for parent",
+    "analogy": "Like a friend who pays your fare with his own: the driver takes the pair that pays enough",
+    "slide": 16
+   },
+   {
+    "concept": "transaction pinning",
+    "analogy": "Like a lorry parked behind your car: moving it costs more the bigger it is",
+    "slide": 18
+   },
+   {
+    "concept": "anchor output",
+    "analogy": "Like a spare handle on a door: anyone can grab it, so whoever needs it can add the fee",
+    "slide": 19
+   },
+   {
+    "concept": "fee sniping",
+    "analogy": "Like a thief who rewrites the last page of a ledger to keep the best-paying lines",
+    "slide": 22
+   }
+  ]
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 9: Transaction Fees",
+   "sub": "Who pays a fee, how it is priced, replaced and bumped, and what moved since print. Bitcoin Core 31.1 results are Recorded.",
+   "items": [],
+   "notes": "This deck explains transaction fees: who pays them, how they are priced, how a payment is replaced or bumped, and what has changed since the book went to print. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1 was run on a test network, so its answers are Recorded and only read back here. The research package for chapter 9 holds the sources and the claims.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "The questions, then four parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 6.3,
+     "h": 3.4,
+     "fs": 12.0,
+     "items": [
+      "The chapter's questions  (slides 3-3)",
+      "Fee, size and fee rate: the price of space  (slides 4-7)",
+      "Estimating fees and the market today  (slides 8-11)",
+      "Replace, bump and relay: RBF and CPFP  (slides 12-16)",
+      "Pinning, anchors, clusters and sniping  (slides 17-26)"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.5,
+     "w": 2.45,
+     "h": 3.4,
+     "vert": true,
+     "items": [
+      {
+       "n": "26",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "4",
+       "label": "true stories, each with WHO / WHERE / WHEN / READ"
+      },
+      {
+       "n": "16",
+       "label": "live-run consoles, each shown with its result"
+      }
+     ]
+    }
+   ],
+   "notes": "The route has four parts after the questions: what a fee is and how it is priced, estimating fees and reading the market, replacing and bumping a transaction, and finally pinning, anchors, clusters and sniping. Each part carries a true story or a correction of the book that a reader can check on the slide. The numbers in the list let a reader jump straight to a part.",
+   "take": "Four parts, four true stories, and a list of what was not run",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions, and the numbers behind the answers",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 1.7,
+     "fs": 13,
+     "items": [
+      "Which claims of the chapter can be checked by computation, and what does the computation give?",
+      "What in the chapter has changed since the book went to print, and on what source?"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 0.5,
+     "y": 3.3,
+     "w": 9.0,
+     "h": 1.6,
+     "items": [
+      {
+       "n": "72",
+       "label": "sources, opened and read on 2026-10-15"
+      },
+      {
+       "n": "71",
+       "label": "claims, each recomputed by running code"
+      },
+      {
+       "n": "20",
+       "label": "findings, several of them corrections of the book"
+      }
+     ]
+    }
+   ],
+   "notes": "The chapter asks two questions that this deck answers by computation: which of its statements can be checked, and what has changed since print. The three numbers are counted from the research package, which holds 72 sources, 20 findings and 71 executed claims. Each slide that follows shows the computation behind one claim.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Who pays, and how a fee is priced",
+   "sub": "A fee is what is left over; size is counted in virtual bytes, and nodes and wallets set a floor.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 3,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "The fee is a difference"
+      },
+      {
+       "label": "Size and fee rate"
+      },
+      {
+       "label": "Minimums and dust"
+      }
+     ]
+    }
+   ],
+   "notes": "This part starts from the simplest fact, that a fee is the difference between inputs and outputs, and prices it in virtual bytes. It ends with the floors that nodes and wallets apply, and with the dust rule that bars tiny outputs. Each slide has a console that ran on the test node of Bitcoin Core 31.1.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "A fee is a difference, not a field",
+   "sub": "Like the change at a shop: the fee is what is left over, and nobody writes it on the note",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 11,
+     "steps": [
+      {
+       "label": "Inputs",
+       "sub": "20 BTC spent"
+      },
+      {
+       "label": "Outputs",
+       "sub": "1 BTC sent"
+      },
+      {
+       "label": "Fee",
+       "sub": "19 BTC left over",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.22,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "t, a, w = L.parse_tx(R['fee_arith']['tx']['hex']), R['fee_arith'], R2['tamper']",
+       ""
+      ],
+      [
+       "'fee' in t, sorted(k for k in t if k in ('version', 'vin', 'vout', 'locktime'))",
+       "(False, ['locktime', 'version', 'vin', 'vout'])"
+      ],
+      [
+       "round(a['inputs_btc'] * 10 ** 8) - sum(o['value'] for o in t['vout'])",
+       "1900000000"
+      ],
+      [
+       "a['testmempoolaccept']['reject-reason']",
+       "'max-fee-exceeded'"
+      ],
+      [
+       "[w[k]['allowed'] for k in ('original', 'tampered')], w['tampered']['reject-reason'][:36]",
+       "([True, False], 'mempool-script-verify-flag-failed (S')"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, parsed here by an independent parser"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Rows 1 and 2: the parser finds version, inputs, outputs and lock time, and no field called fee",
+      "Rows 3 and 4: inputs minus outputs is 1,900,000,000 satoshis; Core refuses it as max-fee-exceeded",
+      "Row 5: lowering an output after signing makes a bigger fee, and the signature no longer matches"
+     ]
+    }
+   ],
+   "notes": "A Bitcoin transaction has no fee field: the fee is what the inputs hold minus what the outputs take, and the miner of the block collects it. The console parses the raw bytes of a test transaction and finds only version, inputs, outputs and lock time. Core refused a transaction that forgot its change, because 19 bitcoins would have gone to the miner. Lowering an output after signing breaks the signature, so only the spender can set the fee.",
+   "bg": "light",
+   "take": "The fee exists only as inputs minus outputs, so only the signer can set it"
+  },
+  {
+   "kind": "content",
+   "title": "Virtual size and the fee rate",
+   "sub": "Like postage by volume: a bulky parcel pays for the space it takes, not its weight",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 11,
+     "steps": [
+      {
+       "label": "No witness",
+       "sub": "113 bytes"
+      },
+      {
+       "label": "With witness",
+       "sub": "222 bytes"
+      },
+      {
+       "label": "Weight",
+       "sub": "561 units"
+      },
+      {
+       "label": "Virtual size",
+       "sub": "141 vB",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.22,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "x, u, t = R['rbf']['t1'], R['units'], L.parse_tx(R['rbf']['t1']['hex'])",
+       ""
+      ],
+      [
+       "t['base_size'], t['size'], t['weight'], t['vsize']",
+       "(113, 222, 561, 141)"
+      ],
+      [
+       "x['fee_sat'] / x['vsize'], round(x['vsize'] / x['weight'], 4)",
+       "(2.0, 0.2513)"
+      ],
+      [
+       "float(kvb('0.00006570')), float(kvb('0.00001225'))",
+       "(6.57, 1.225)"
+      ],
+      [
+       "src('core_src_consensus_consensus.h', 'MAX_BLOCK_WEIGHT'), B['840000']['weight']",
+       "('4000000', 3993281)"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; block 840,000 is a saved block"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 2: 113 bytes without witness, 222 with it; weight is 3 x 113 + 222 = 561, and the virtual size is 141",
+      "Row 3: 282 satoshis over 141 vB is 2.0 sat/vB; the book's size over weight, 0.2513, is no price at all",
+      "Rows 4 and 5: 0.00006570 BTC per kvB is 6.57 sat/vB; a block may weigh 4,000,000 and block 840,000 weighed 3,993,281"
+     ]
+    }
+   ],
+   "notes": "Weight counts witness bytes once and other bytes four times, and the virtual size is the weight divided by four, rounded up. The console parses a test transaction and finds 113 bytes without witness, 222 with it, weight 561 and 141 virtual bytes. The fee rate is the fee divided by the virtual size, 2.0 satoshis per virtual byte here, whereas the book's size divided by weight is a pure number. The unit of estimatesmartfee is bitcoin per kilovirtual byte.",
+   "bg": "light",
+   "take": "The fee rate is the fee over virtual size; size over weight is no price"
+  },
+  {
+   "kind": "content",
+   "title": "Minimum fees and dust",
+   "sub": "Core 30.0 lowered the relay floor to 0.1 sat/vB; the wallet keeps its own floor of 1",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "relay floor 0.1 sat/vB",
+      "wallet floor 1 sat/vB",
+      "dust 294 / 330 / 240"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.15,
+     "w": 9.0,
+     "h": 1.98,
+     "rows": [
+      [
+       "m, d, w = R['minrelay'], R2['dust'], R2['wallet_min']",
+       ""
+      ],
+      [
+       "[(v['fee_sat'], v['result']['ok'][0]['allowed']) for v in list(m.values())[:3]]",
+       "[(8, False), (14, False), (15, True)]"
+      ],
+      [
+       "R2['mempool_min']['minrelaytxfee'] * 10 ** 8 / 1000",
+       "0.1"
+      ],
+      [
+       "['ok' in w[k] for k in ('fee_rate_0.5', 'fee_rate_0.1', 'fee_rate_1')]",
+       "[False, False, True]"
+      ],
+      [
+       "(31 + 67) * 3, (43 + 67) * 3, (13 + 67) * 3",
+       "(294, 330, 240)"
+      ],
+      [
+       "[d[k]['result']['allowed'] for k in list(d)[:6]]",
+       "[False, True, False, True, False, True]"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.38,
+     "w": 9.0,
+     "h": 0.6,
+     "fs": 10,
+     "items": [
+      "Rows 2 to 4: for 141 vB, 8 and 14 satoshis are refused and 15 accepted; the wallet refuses 0.5 and 0.1 and takes 1",
+      "Rows 5 and 6: dust is 3 sat/B times (size + 67): 294, 330 and 240; one satoshi less is refused each time"
+     ]
+    }
+   ],
+   "notes": "A node refuses a transaction below its minimum relay fee: since Bitcoin Core 30.0 that is 0.1 satoshi per virtual byte, so a 141-byte transaction needs 15 satoshis and the node refused 8 and 14. Bitcoin Core's wallet keeps its own minimum of 1 satoshi per virtual byte, ten times higher. An output is dust when it costs more to spend than it is worth: 294 satoshis for P2WPKH, 330 for P2WSH and 240 for pay to anchor.",
+   "bg": "light",
+   "take": "The node floor is 0.1 sat/vB; the wallet floor is ten times higher"
+  },
+  {
+   "kind": "section",
+   "title": "Estimating fees, and the market",
+   "sub": "Like seats on a bus that leaves every ten minutes: the highest bids board first.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 3,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "The estimator"
+      },
+      {
+       "label": "Two blocks compared"
+      },
+      {
+       "label": "The halving block"
+      }
+     ]
+    }
+   ],
+   "notes": "This part asks how a wallet guesses a good fee and what the market for block space looked like in two real blocks. The bus on the slide is the picture to keep: a block is a bus with a fixed number of seats, and a fee is a bid for one. The part ends with the story of the halving block, in which fees were almost the whole reward.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The estimator learns from blocks",
+   "sub": "A fresh node has no history, so the book's call needs time and traffic before it answers",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "120 blocks, 2,640 payments",
+      "1.225 sat/vB",
+      "144 blocks: 60 answered"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.15,
+     "w": 9.0,
+     "h": 1.98,
+     "rows": [
+      [
+       "E = R['estimate']['results']",
+       ""
+      ],
+      [
+       "R['estimate_fresh']['ok']['errors'][0], R['estimate']['rounds'], R['estimate']['sent']",
+       "('Insufficient data or no feerate found', 120, 2640)"
+      ],
+      [
+       "[round(E[k]['ok']['feerate'] * 10 ** 8 / 1000, 3) for k in ('2_default', '6_default', '25_default')]",
+       "[1.225, 1.173, 1.173]"
+      ],
+      [
+       "E['144_default']['ok']['blocks'], R['estimate']['tip']",
+       "(60, 231)"
+      ],
+      [
+       "all(E[f'{t}_default'] == E[f'{t}_economical'] for t in (2, 6, 25, 144))",
+       "True"
+      ],
+      [
+       "E['144_default'] == E['144_conservative']",
+       "False"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, estimatesmartfee on a chain of 231 blocks"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.38,
+     "w": 9.0,
+     "h": 0.6,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: no estimate at first; after 2,640 payments 1.225 sat/vB for 2 blocks and 1.173 for 6 and 25",
+      "Rows 4 to 6: a target of 144 was answered for 60 blocks; the default mode equals economical, and differs from conservative at 144"
+     ]
+    }
+   ],
+   "notes": "The call estimatesmartfee looks for the lowest fee rate at which most recent transactions confirmed within the target, so it needs history. A fresh test node answered Insufficient data; after 120 blocks and 2,640 payments of mixed fee rates it answered 1.225 satoshis per virtual byte. The target of 144 blocks was answered for only 60, because the node's history was that long. Since Bitcoin Core 28.0 the default mode is economical, not conservative.",
+   "bg": "light",
+   "take": "The estimator needs history; a fresh node answers with no estimate"
+  },
+  {
+   "kind": "content",
+   "title": "Two blocks, two fee markets",
+   "sub": "Median fee rate, fee share and replacement signals in two saved mainnet blocks",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10.5,
+     "items": [
+      "Row 2: the median fee rate of the first 599 transactions was 1,436.45 sat/vB in block 840,000 and 3.02 in block 971,489",
+      "Row 3: fees were 92.33 percent of the reward in the halving block and 0.46 percent in the later one",
+      "Row 4: 81 and 46 percent of those transactions signal replaceability"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Fee share of reward, and signals of 599, in %",
+     "dataLabels": true,
+     "dlFmt": "0.##",
+     "dlFs": 9,
+     "labels": [
+      "fees 2024",
+      "fees 2026",
+      "signals 2024",
+      "signals 2026"
+     ],
+     "series": [
+      {
+       "name": "percent",
+       "data": [
+        92.33,
+        0.46,
+        81,
+        46
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "a, b = L.census_stats(840000), L.census_stats(971489)",
+       ""
+      ],
+      [
+       "a['n'], a['median_rate'], b['median_rate']",
+       "(599, 1436.45, 3.02)"
+      ],
+      [
+       "[round(100 * B[h]['extras']['totalFees'] / B[h]['extras']['reward'], 2) for h in ('840000', '971489')]",
+       "[92.33, 0.46]"
+      ],
+      [
+       "[round(100 * z['signal_rbf'] / z['n']) for z in (a, b)]",
+       "[81, 46]"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on saved blocks: the census of 2026-10-15"
+    }
+   ],
+   "notes": "A census of the first 599 transactions after the coinbase of two real blocks shows how much the market moves. In the halving block of April 2024 the median fee rate was 1,436 satoshis per virtual byte and fees were 92.33 percent of the reward; in block 971,489, mined on 15 October 2026, the median was 3.02 and fees were 0.46 percent. The share of transactions that signal replaceability fell from 81 to 46 percent.",
+   "bg": "light",
+   "take": "Fees were 92.33 percent of the reward in 2024 and 0.46 percent in 2026"
+  },
+  {
+   "kind": "content",
+   "title": "The block where fees were nearly the reward",
+   "sub": "The story of 20 April 2024: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch09/assets/photo_bitcoin_mining_farm.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Bitcoin mining farm - Marko Ahtisaari, CC BY 2.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 20 April 2024 the pool ViaBTC mines block 840,000, the first after the fourth halving",
+      "The subsidy fell to 312,500,000 satoshis (row 2); the fees were 3,762,561,499, so 92.33 percent of the reward (row 3)",
+      "The book says the subsidy is much higher than the fees: true of block 971,489 at 0.46 percent, false here"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "e, g = B['840000']['extras'], B['971489']['extras']",
+       ""
+      ],
+      [
+       "e['totalFees'], e['reward'], e['reward'] - e['totalFees']",
+       "(3762561499, 4075061499, 312500000)"
+      ],
+      [
+       "[round(100 * z['totalFees'] / z['reward'], 2) for z in (e, g)]",
+       "[92.33, 0.46]"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on a saved block: fees and reward in satoshis"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "the mining pool ViaBTC, which found block 840,000, and the Bitcoin Core rule that halves the subsidy every 210,000 blocks",
+     "where": "the Bitcoin chain at height 840,000, the block of the fourth halving",
+     "when": "2024-04-20",
+     "link": "https://mempool.space/block/0000000000000000000320283a032748cef8227873ff4872689bf23f1cda83a5",
+     "linkText": "mempool.space"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: a mining farm, not this block."
+    }
+   ],
+   "notes": "On 20 April 2024 the pool ViaBTC found block 840,000, the first block after the fourth halving, which cut the subsidy to 312,500,000 satoshis. The fees in the same block were 3,762,561,499 satoshis, so the reward of 4,075,061,499 was 92.33 percent fees. In block 971,489 the fees were only 0.46 percent. The book's remark that the subsidy is much higher than fees is true of some blocks and not of others.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Replace, bump and relay",
+   "sub": "From replacing a payment to paying for a parent: what a wallet can do when the fee was set too low.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Replace by fee"
+      },
+      {
+       "label": "Full RBF, a story"
+      },
+      {
+       "label": "When it goes wrong"
+      },
+      {
+       "label": "Child pays for parent"
+      }
+     ]
+    }
+   ],
+   "notes": "This part covers what a sender or a receiver can do when a transaction pays too little and waits. The sender can replace it with a better-paying version, and the receiver can add a child that pays for both. The story shows how the default changed from opt-in to full replacement, and the hazards slide shows what that costs.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "A replacement must pay more than it replaces",
+   "sub": "Like raising your bid at an auction: it must beat the last bid by at least one step",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.4,
+     "fs": 10.5,
+     "items": [
+      "514 refused",
+      "564 refused",
+      "578 refused",
+      "579 accepted"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.05,
+     "w": 9.0,
+     "h": 1.95,
+     "rows": [
+      [
+       "L.rbf_signal([0xfffffffd]), L.rbf_signal([0xfffffffe]), L.rbf_signal([0xffffffff, 0xfffffffd])",
+       "(True, False, True)"
+      ],
+      [
+       "X['lower_fee']['fee_sat'], 'less fees than conflicting txs' in why(X['lower_fee']['result'])",
+       "(514, True)"
+      ],
+      [
+       "X['equal_fee']['fee_sat'], 'not enough additional fees to relay' in why(X['equal_fee']['result'])",
+       "(564, True)"
+      ],
+      [
+       "L.min_replacement_fee(564, 141), X['short_by_one']['fee_sat'], 'error' in X['short_by_one']['result']",
+       "(579, 578, True)"
+      ],
+      [
+       "X['exactly_enough']['fee_sat'], 'ok' in X['exactly_enough']['result']",
+       "(579, True)"
+      ]
+     ],
+     "fs": 9.1,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, replacing a payment of 564 satoshis (141 vB)"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 1: a transaction signals replaceability when an input sequence is below 0xfffffffe",
+      "Rows 2 and 3: 514 pays less than the 564 it replaces, and 564 pays nothing extra for the relay; both are refused",
+      "Rows 4 and 5: the extra is 0.1 sat/vB x 141, 15 satoshis, so 579 passes and 578 fails"
+     ]
+    }
+   ],
+   "notes": "Replace by fee lets a sender swap a waiting transaction for another that spends the same output. The replacement must pay at least the absolute fee of what it replaces, plus the incremental relay fee for its own size. On the test node a replacement of 514 satoshis was refused for paying less, 564 for paying nothing extra, 578 by one satoshi, and 579 was accepted. A transaction signals replaceability when an input has a sequence below 0xfffffffe.",
+   "bg": "light",
+   "take": "A replacement pays more in total and pays for its own relay too"
+  },
+  {
+   "kind": "content",
+   "title": "A node that only listens to replacements",
+   "sub": "The story of 12 December 2022: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch09/assets/photo_bitcoin_namecoin_accepted_here_sign.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Accepted Here sign - ninjarobot, CC0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 12 December 2022 Peter Todd posts a build of Bitcoin Core 24.0.1 with Antoine Riard's full-rbf peering code",
+      "Core 24.0.1 had added the option mempoolfullrbf, off by default; Core 28.0 made it the default and 29.0 removed it",
+      "On the 31.1 test node a transaction with a final sequence was replaced (row 2), and the old option stops the node (row 3)"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "x, o = R['rbf'], R2['removed_option']",
+       ""
+      ],
+      [
+       "x['fullrbf_flag'], x['t1']['sequence'], 'ok' in x['t2']['result']",
+       "(True, 4294967295, True)"
+      ],
+      [
+       "o['exit_code'], 'Invalid parameter -mempoolfullrbf=0' in o['message']",
+       "(1, True)"
+      ]
+     ],
+     "fs": 8.9,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Peter Todd, a Bitcoin developer who posted the build, and Antoine Riard, whose peering code it contains",
+     "where": "the bitcoin-dev mailing list, and the nodes of the public Bitcoin network that run Bitcoin Core 24.0.1",
+     "when": "2022-12-12",
+     "link": "https://mirror.b10c.me/lists/bitcoindev/Y5eSFbR61HleY6dw@petertodd.org",
+     "linkText": "mirror.b10c.me"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: a shop sign, not a node."
+    }
+   ],
+   "notes": "On 12 December 2022 Peter Todd posted to the bitcoin-dev list a build of Bitcoin Core 24.0.1 with Antoine Riard's full-rbf peering code, while the new option mempoolfullrbf was still off by default. Bitcoin Core 28.0 later made full replacement the default, and 29.0 removed the option. The test node of this chapter replaced a transaction that never signalled, and refused to start with the old option. Policy is what most nodes choose to relay.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "When replacement goes wrong",
+   "sub": "Three versions paid twice; a large child made a replacement 639 times dearer",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 10.5,
+     "steps": [
+      {
+       "label": "Version 0",
+       "sub": "spends A"
+      },
+      {
+       "label": "Version 1",
+       "sub": "spends A and B"
+      },
+      {
+       "label": "Version 2",
+       "sub": "spends B and C"
+      },
+      {
+       "label": "Payee receives",
+       "sub": "0.8 BTC for 0.4 BTC",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.2,
+     "w": 9.0,
+     "h": 1.88,
+     "rows": [
+      [
+       "h, p, i = R2['hazard'], R['pinning']['v2'], R2['hazard']['inputs']",
+       ""
+      ],
+      [
+       "h['payee_asked_sat'], h['payee_received_sat']",
+       "(40000000, 80000000)"
+      ],
+      [
+       "L.conflict(i['v0'], i['v1']), L.conflict(i['v1'], i['v2']), L.conflict(i['v0'], i['v2'])",
+       "(True, True, False)"
+      ],
+      [
+       "p['child']['vsize'], p['replacement_enough']['fee_sat'], p['parent']['fee_sat']",
+       "(90012, 450780, 705)"
+      ],
+      [
+       "round(p['replacement_enough']['fee_sat'] / p['parent']['fee_sat'])",
+       "639"
+      ],
+      [
+       "seen('optech_topic_replacement_cycling.html', 'especially concerning in protocols that use')",
+       "True"
+      ]
+     ],
+     "fs": 8.0,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.33,
+     "w": 9.0,
+     "h": 0.4,
+     "fs": 9.5,
+     "items": [
+      "Rows 2 and 3: a miner kept version 0, then mined version 2, so the payee was paid twice",
+      "Rows 4 and 5: a 90,012-byte child pins a 705-satoshi parent; replacing it costs 639 times its fee"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.77,
+     "w": 9.0,
+     "h": 0.24,
+     "fs": 10,
+     "body": "NOT EXECUTED: replacement cycling needs several peers; row 6 found its text in the saved Optech page."
+    }
+   ],
+   "notes": "Three versions of one payment of 0.4 bitcoin conflict in a chain: version 1 replaces version 0, and version 2 conflicts with version 1 but not with version 0. A miner that kept version 0 mined it and then version 2, so the payee received 0.8 bitcoin. A large child also pins a parent: replacing a 705-satoshi parent cost 450,780 satoshis. The replacement cycling attack of 2023 is described in the sources but was not run.",
+   "bg": "light",
+   "take": "Replacement is a hazard as well as a tool, and here it was measured"
+  },
+  {
+   "kind": "content",
+   "title": "Child pays for parent, and packages",
+   "sub": "Like a friend who pays your fare with his own: the driver takes the pair that pays enough",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 11,
+     "steps": [
+      {
+       "label": "Parent",
+       "sub": "pays 141 satoshis"
+      },
+      {
+       "label": "Child",
+       "sub": "pays 14,100"
+      },
+      {
+       "label": "Package",
+       "sub": "50.77 sat/vB",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.22,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "a, l, p = A['cpfp_wins'], A['cpfp_loses'], R['package']",
+       ""
+      ],
+      [
+       "a['fees_sat']['P'], a['fees_sat']['C'], mined(a, 'P'), mined(a, 'C')",
+       "(141, 14100, True, True)"
+      ],
+      [
+       "round(chunk(a)['fees']['chunk'] * 10 ** 8 / (chunk(a)['chunkweight'] / 4), 2)",
+       "50.77"
+      ],
+      [
+       "round((l['fees_sat']['P'] + l['fees_sat']['C']) / (chunk(l)['chunkweight'] / 4), 2), mined(l, 'A'), mined(l, 'P')",
+       "(3.02, True, False)"
+      ],
+      [
+       "p['v2_parent']['fee_sat'], why(p['child_alone']), p['submitpackage_v2']['ok']['package_msg']",
+       "(8, 'bad-txns-inputs-missingorspent', 'success')"
+      ]
+     ],
+     "fs": 8.7,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, a block with room for two of three transactions"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: parent and child were mined together; the pair pays 50.77 sat/vB, ahead of an unrelated transaction at 20",
+      "Row 4: a child at 5 sat/vB makes the pair 3.02, so the unrelated transaction was mined alone",
+      "Row 5: a parent of 8 satoshis is refused alone, its child too, and together they succeed"
+     ]
+    }
+   ],
+   "notes": "A receiver can pay for a stuck parent by spending its output in a child with a high fee, because miners rank a transaction together with its unconfirmed ancestors. In the run a parent paying 141 satoshis and a child paying 14,100 formed a package at 50.77 satoshis per virtual byte, and the node mined the pair before an unrelated transaction at 20. A child at 5 satoshis per virtual byte did not help. The submitpackage call took a parent of 8 satoshis with its child.",
+   "bg": "light",
+   "take": "A child can pay for its parent when the pair's fee rate is high enough"
+  },
+  {
+   "kind": "section",
+   "title": "Pinning, anchors, clusters, sniping",
+   "sub": "How a child can pin a parent, and what version 3, anchors and clusters changed.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Pinning and version 3"
+      },
+      {
+       "label": "Anchors"
+      },
+      {
+       "label": "Cluster mempool"
+      },
+      {
+       "label": "Sniping and incentives"
+      }
+     ]
+    }
+   ],
+   "notes": "This part is about the attacks and fixes that came after the book's model of fees. A large child can pin a parent, and version 3 transactions, anchor outputs and the cluster mempool of Core 31.0 are the answers. The last slides turn to fee sniping and to the question of what happens when the subsidy is gone.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "A large child can pin a parent",
+   "sub": "Like a lorry parked behind your car: moving it costs more the bigger it is",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10.5,
+     "items": [
+      "Row 2: an unrestricted child of 90,012 bytes made the replacement of its parent cost 450,780 satoshis",
+      "Row 3: with version 3 the child is at most 1,000 vB (885 here), and the same replacement cost 5,145: 88 times less",
+      "Row 4: a version-3 child of 1,350 vB is refused as a TRUC violation"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Recorded: satoshis to replace a pinned parent",
+     "dataLabels": true,
+     "dlFmt": "#,##0",
+     "dlFs": 9,
+     "labels": [
+      "child of 90,012 vB",
+      "child of 885 vB, version 3"
+     ],
+     "series": [
+      {
+       "name": "satoshis",
+       "data": [
+        450780,
+        5145
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "v2, v3, t = R['pinning']['v2'], R['pinning']['v3'], R['truc']",
+       ""
+      ],
+      [
+       "v2['child']['vsize'], v2['replacement_enough']['fee_sat']",
+       "(90012, 450780)"
+      ],
+      [
+       "v3['child']['vsize'], v3['replacement_enough']['fee_sat']",
+       "(885, 5145)"
+      ],
+      [
+       "t['big_child']['vsize'], 'TRUC-violation' in why(t['big_child']['result'])",
+       "(1350, True)"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    }
+   ],
+   "notes": "A counterparty can attach a very large child of modest fee rate to a payment, and then a replacement has to pay for the child too. In the run a child of 90,012 virtual bytes raised the price of replacing the parent to 450,780 satoshis. Version 3, the TRUC policy of Bitcoin Core 28.0, caps the child at 1,000 virtual bytes, and the same replacement cost 5,145 satoshis, 88 times less. A version-3 child of 1,350 bytes was refused.",
+   "bg": "light",
+   "take": "Version 3 caps the child, so replacing a pinned parent cost 88 times less"
+  },
+  {
+   "kind": "content",
+   "title": "Anchors: a fee added afterwards",
+   "sub": "Like a spare handle on a door: anyone can grab it, so whoever needs it can add the fee",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 10.5,
+     "steps": [
+      {
+       "label": "Parent",
+       "sub": "version 3, fee 0, anchor output"
+      },
+      {
+       "label": "Child",
+       "sub": "spends the anchor, pays 10,000"
+      },
+      {
+       "label": "Package",
+       "sub": "36.5 sat/vB",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.22,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "p = R['package']; t, c = L.parse_tx(p['truc_parent']['hex']), L.parse_tx(p['anchor_child']['hex'])",
+       ""
+      ],
+      [
+       "t['vout'][0]['spk'], t['vout'][0]['value'], t['version']",
+       "('51024e73', 0, 3)"
+      ],
+      [
+       "why(p['parent_alone']), p['submitpackage_truc']['ok']['package_msg']",
+       "('min relay fee not met, 0 < 13', 'success')"
+      ],
+      [
+       "[v['witness'] for v in c['vin']].count([]), p['anchor_child']['fee_sat']",
+       "(1, 10000)"
+      ],
+      [
+       "f = list(p['submitpackage_truc']['ok']['tx-results'].values())[0]['fees']",
+       ""
+      ],
+      [
+       "round(f['effective-feerate'] * 10 ** 8 / 1000, 1)",
+       "36.5"
+      ]
+     ],
+     "fs": 8.6,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, submitpackage"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: the anchor output is the script 51024e73 with value 0; the zero-fee parent is refused alone, 0 < 13",
+      "Rows 4 and 5: the child spends the anchor with an empty witness, so anyone could, and pays 10,000 satoshis",
+      "Row 6: submitted together, the package paid 36.5 sat/vB and was accepted"
+     ]
+    }
+   ],
+   "notes": "A pay-to-anchor output is a tiny output that anyone can spend, so whoever needs a transaction confirmed can attach a child and pay the fee then. In the run a version-3 parent paying nothing was refused alone with min relay fee not met, and accepted with its child through submitpackage at 36.5 satoshis per virtual byte. The child spent the anchor with an empty witness stack. Lightning commitment transactions use such anchors.",
+   "bg": "light",
+   "take": "An anchor lets whoever needs it add the fee after the transaction is signed"
+  },
+  {
+   "kind": "content",
+   "title": "Pre-signed transactions cannot guess fees",
+   "sub": "The story of 29 November 2018: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch09/assets/photo_lightning_network_logo.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Lightning Network logo - Ole Henrik Skogstrom, CC BY-SA 4.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 29 November 2018 Matt Corallo writes that pre-signed Lightning transactions cannot guess next week's fee",
+      "His carve-out lets one extra small child past the limits: he proposed 1K, Core 0.19.0.1 shipped 10,000 vB (row 1)",
+      "The book says 1,000 (row 2); Core 31.0 removed the carve-out (slide 21); NOT EXECUTED on an older node"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "src('core_src_policy_policy.h', 'EXTRA_DESCENDANT_TX_SIZE_LIMIT')",
+       "'10000'"
+      ],
+      [
+       "seen('book_ch09_fees.adoc', 'additional transaction up to 1,000 vbytes')",
+       "True"
+      ],
+      [
+       "seen('ml_corallo_2018-12_carveout.html', 'no greater than 1K')",
+       "True"
+      ]
+     ],
+     "fs": 8.6,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the saved sources; NOT EXECUTED: an older node"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Matt Corallo, a Bitcoin Core and Lightning developer, writing to the bitcoin-dev and lightning-dev lists",
+     "where": "the bitcoin-dev and lightning-dev mailing lists, cross-posted; the rule shipped in Bitcoin Core 0.19.0.1",
+     "when": "2018-11-29",
+     "link": "https://mirror.b10c.me/lists/bitcoindev/c3f68b73-84c6-7428-4bf6-b47802141392@mattcorallo.com",
+     "linkText": "mirror.b10c.me"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: the Lightning logo, not the proposal."
+    }
+   ],
+   "notes": "On 29 November 2018 Matt Corallo wrote that Lightning channels exchange pre-signed transactions that are broadcast much later, so their fee must be predicted or added afterwards by a child. His answer, the carve-out, allowed one extra small child beyond the usual limits: he proposed 1K, and Bitcoin Core 0.19.0.1 shipped 10,000 virtual bytes where the book says 1,000. The removal in Core 31.0 was found in the saved notes and not run on an older node.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Cluster mempool replaces the old limits",
+   "sub": "Release 31.0 groups connected transactions in clusters and drops the limits of 25",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "64 per cluster",
+      "101,000 vB per cluster",
+      "625 updates at 25"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.15,
+     "w": 9.0,
+     "h": 1.98,
+     "rows": [
+      [
+       "c, o = R['cluster'], 'core_src_kernel_mempool_options.h'",
+       ""
+      ],
+      [
+       "c['mempoolinfo']['limitclustercount'], c['mempoolinfo']['limitclustersize']",
+       "(64, 101000)"
+      ],
+      [
+       "c['chain']['attempted'], c['chain']['accepted'], why(c['chain']['first_refusal'])",
+       "(65, 64, 'too-large-cluster')"
+      ],
+      [
+       "c['chain']['accepted_26th'], 25 ** 2, 50 ** 2",
+       "(True, 625, 2500)"
+      ],
+      [
+       "src(o, 'DEFAULT_MAX_MEMPOOL_SIZE_MB'), src(o, 'DEFAULT_MEMPOOL_EXPIRY_HOURS')",
+       "('300', '336')"
+      ],
+      [
+       "seen('core_relnotes_31.0.html', 'removed from the mempool logic')",
+       "True"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, and the saved release notes"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.38,
+     "w": 9.0,
+     "h": 0.6,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: a cluster holds at most 64 transactions; a chain of 65 was accepted to 64, then refused",
+      "Rows 4 to 6: the 26th is accepted; 25 x 25 is 625 updates, 50 x 50 is 2,500; 300 MB for 336 hours; carve-out gone"
+     ]
+    }
+   ],
+   "notes": "The old limits of 25 ancestors or descendants existed because updating them was quadratic: 25 children of 25 ancestors need 625 package updates, and doubling the limit makes 2,500. Release 31.0 replaces them with clusters of at most 64 transactions and 101,000 virtual bytes, and the carve-out is removed. The test node accepted a chain of 64 and refused the 65th. The mempool keeps 300 megabytes and forgets a transaction after 336 hours, 14 days, not one day.",
+   "bg": "light",
+   "take": "Cluster limits replaced the 25-transaction limits and removed the carve-out"
+  },
+  {
+   "kind": "content",
+   "title": "Fee sniping and the lock time",
+   "sub": "Like a thief who rewrites the last page of a ledger to keep the best-paying lines",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10,
+     "items": [
+      "Rows 1 and 2: the wallet put the tip's height in 56 of 60 lock times; four were back-dated by 6, 28, 35 and 54 blocks",
+      "Row 3: a lock time equal to the next block's height is not final; the node says non-final",
+      "Row 4: a miner with share x wins with probability (x / (1 - x)) squared",
+      "NOT EXECUTED: BIP 326 would use the sequence, not the lock time"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Chance to win the re-mining race, in percent",
+     "dataLabels": true,
+     "dlFmt": "0.##",
+     "dlFs": 9,
+     "labels": [
+      "10 % of hash rate",
+      "30 %",
+      "45 %"
+     ],
+     "series": [
+      {
+       "name": "percent",
+       "data": [
+        1.23,
+        18.37,
+        66.94
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "s = R['sniping']['samples']; d = sorted(z['tip'] - z['locktime'] for z in s)",
+       ""
+      ],
+      [
+       "len(s), d.count(0), [z for z in d if z]",
+       "(60, 56, [6, 28, 35, 54])"
+      ],
+      [
+       "L.is_final(100001, 100001, [0xfffffffd]), R2['locktime_block']['mempool_next']['reject-reason']",
+       "(False, 'non-final')"
+      ],
+      [
+       "[round(100 * L.snipe_probability(x), 2) for x in (0.1, 0.3, 0.45)]",
+       "[1.23, 18.37, 66.94]"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, and a formula"
+    }
+   ],
+   "notes": "A miner who could re-mine the last block and take its fees might tempt others to build on the older block. A wallet defends by setting the lock time to the current height, so that such a transaction cannot be placed in an older block; in the run 56 of 60 transactions had the tip and four were back-dated. A transaction is final in a block when its lock time is below the height, which the book's chapter 6 gets off by one. BIP 326 for taproot was not executed.",
+   "bg": "light",
+   "take": "A lock time at the tip makes re-mining the last block pay less"
+  },
+  {
+   "kind": "content",
+   "title": "What if nobody got a subsidy?",
+   "sub": "The story of 21 October 2016: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch09/assets/photo_nassau_hall_princeton.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Nassau Hall, Princeton University - Smallbones, CC0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 21 October 2016 Arvind Narayanan announces the Princeton paper written with Carlsten, Kalodner and Weinberg",
+      "Their model: when fees are the main income a miner gains by undercutting a rival's block, so mining is less stable",
+      "NOT EXECUTED: the model; the passages are found in the saved copies (rows 1 and 2); a 45 percent miner wins 66.94 percent (row 3)"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "seen('nakamoto_2008_bitcoin.pdf', 'added to the incentive value')",
+       "True"
+      ],
+      [
+       "seen('carlsten_2016_instability.pdf', 'actively fork the head of the')",
+       "True"
+      ],
+      [
+       "round(100 * L.snipe_probability(0.45), 2), L.snipe_probability(0.5)",
+       "(66.94, 1.0)"
+      ]
+     ],
+     "fs": 8.8,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the saved papers and a formula; NOT EXECUTED: the model"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Miles Carlsten, Harry Kalodner, S. Matthew Weinberg and Arvind Narayanan, computer scientists at Princeton University",
+     "where": "Princeton University, New Jersey; the paper was presented at ACM CCS, the week after the announcement",
+     "when": "2016-10-21",
+     "link": "https://blog.citp.princeton.edu/2016/10/21/bitcoin-is-unstable-without-the-block-reward/",
+     "linkText": "blog.citp.princeton.edu"
+    }
+   ],
+   "notes": "On 21 October 2016 Arvind Narayanan announced a Princeton paper, written with Miles Carlsten, Harry Kalodner and Matt Weinberg, on the instability of Bitcoin without the block reward. Satoshi Nakamoto's paper had already said that fees can replace the subsidy. The authors show that when fees are the main income a miner can gain by undercutting a rival's block. The model was not recomputed here; the passages were found in the saved copies.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per part, each one provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 9.0,
+     "h": 3.4,
+     "fs": 12.5,
+     "items": [
+      "A fee is the difference between inputs and outputs, signed by the spender and priced in virtual bytes",
+      "Nodes relay from 0.1 sat/vB and wallets from 1; the estimator needs history, and the market moves from block to block",
+      "A replacement must pay more in total and for its own relay, and since Core 28.0 it need not signal",
+      "A child can pay for a parent; version 3, anchors and package submission make that safe, and clusters replace the old limits",
+      "A fee-only future needs stable fee rules, and the wallet's lock time answers fee sniping"
+     ]
+    }
+   ],
+   "notes": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "bg": "light",
+   "take": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Opened on 2026-10-15; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.45,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "Optech topic, replace by fee",
+         "https://bitcoinops.org/en/topics/replace-by-fee/"
+        ],
+        [
+         "Mastering Bitcoin, the book",
+         "https://aantonop.com/books/mastering-bitcoin/"
+        ],
+        [
+         "mempool.space, the explorer",
+         "https://mempool.space/"
+        ]
+       ]
+      },
+      {
+       "head": "Standards and papers",
+       "rows": [
+        [
+         "BIP 125, opt-in replace by fee",
+         "https://bips.dev/125/"
+        ],
+        [
+         "BIP 431, version 3 (TRUC)",
+         "https://bips.dev/431/"
+        ],
+        [
+         "Nakamoto, the Bitcoin paper",
+         "https://bitcoin.org/bitcoin.pdf"
+        ]
+       ]
+      },
+      {
+       "head": "Watch",
+       "rows": [
+        [
+         "Antonopoulos on fees (video)",
+         "https://www.youtube.com/embed/MPQMCVVhExY"
+        ],
+        [
+         "MIT OCW 15.S12 course",
+         "https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/"
+        ]
+       ]
+      },
+      {
+       "head": "Community",
+       "rows": [
+        [
+         "Bitcoin Optech newsletters",
+         "https://bitcoinops.org/en/newsletters/"
+        ],
+        [
+         "Delving Bitcoin, research forum",
+         "https://delvingbitcoin.org/"
+        ],
+        [
+         "The bitcoin-dev group",
+         "https://groups.google.com/g/bitcoindev"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the Antonopoulos video on fees, then the Optech topic on replace by fee next to the chapter. The research package for chapter 9 lists all 72 sources with the passages used.",
+   "bg": "light",
+   "take": "Watch the fees video, then read the Optech topic beside the chapter"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "Why a fee is a difference, and how it is priced in virtual bytes",
+      "What a replacement must pay, and what a child can pay for",
+      "What version 3, anchors and clusters changed for pinning",
+      "How the wallet answers fee sniping, and why fees must replace the subsidy"
+     ]
+    }
+   ],
+   "notes": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 9 holds the sources and the test records behind them.",
+   "bg": "dark"
+  }
+ ]
+}

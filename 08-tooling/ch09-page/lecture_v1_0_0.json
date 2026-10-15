@@ -1,0 +1,188 @@
+{
+ "chapter": 9,
+ "deck": "SEN0401_Ch09_TransactionFees_3e_v1_0_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 9: Transaction Fees",
+   "say": "This deck explains transaction fees: who pays them, how they are priced, how a payment is replaced or bumped, and what has changed since the book went to print. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1 was run on a test network, so its answers are Recorded and only read back here. The research package for chapter 9 holds the sources and the claims.",
+   "concept": "Who pays a fee, how it is priced, replaced and bumped, and what moved since print. Bitcoin Core 31.1 results are Recorded."
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has four parts after the questions: what a fee is and how it is priced, estimating fees and reading the market, replacing and bumping a transaction, and finally pinning, anchors, clusters and sniping. Each part carries a true story or a correction of the book that a reader can check on the slide. The numbers in the list let a reader jump straight to a part.",
+   "concept": "Four parts, four true stories, and a list of what was not run"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The chapter asks two questions that this deck answers by computation: which of its statements can be checked, and what has changed since print. The three numbers are counted from the research package, which holds 72 sources, 20 findings and 71 executed claims. Each slide that follows shows the computation behind one claim.",
+   "concept": "Its own competency questions, and the numbers behind the answers"
+  },
+  {
+   "n": 4,
+   "kind": "section",
+   "title": "Who pays, and how a fee is priced",
+   "say": "This part starts from the simplest fact, that a fee is the difference between inputs and outputs, and prices it in virtual bytes. It ends with the floors that nodes and wallets apply, and with the dust rule that bars tiny outputs. Each slide has a console that ran on the test node of Bitcoin Core 31.1.",
+   "concept": "A fee is what is left over; size is counted in virtual bytes, and nodes and wallets set a floor."
+  },
+  {
+   "n": 5,
+   "kind": "content",
+   "title": "A fee is a difference, not a field",
+   "say": "A Bitcoin transaction has no fee field: the fee is what the inputs hold minus what the outputs take, and the miner of the block collects it. The console parses the raw bytes of a test transaction and finds only version, inputs, outputs and lock time. Core refused a transaction that forgot its change, because 19 bitcoins would have gone to the miner. Lowering an output after signing breaks the signature, so only the spender can set the fee.",
+   "concept": "The fee exists only as inputs minus outputs, so only the signer can set it"
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Virtual size and the fee rate",
+   "say": "Weight counts witness bytes once and other bytes four times, and the virtual size is the weight divided by four, rounded up. The console parses a test transaction and finds 113 bytes without witness, 222 with it, weight 561 and 141 virtual bytes. The fee rate is the fee divided by the virtual size, 2.0 satoshis per virtual byte here, whereas the book's size divided by weight is a pure number. The unit of estimatesmartfee is bitcoin per kilovirtual byte.",
+   "concept": "The fee rate is the fee over virtual size; size over weight is no price"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "Minimum fees and dust",
+   "say": "A node refuses a transaction below its minimum relay fee: since Bitcoin Core 30.0 that is 0.1 satoshi per virtual byte, so a 141-byte transaction needs 15 satoshis and the node refused 8 and 14. Bitcoin Core's wallet keeps its own minimum of 1 satoshi per virtual byte, ten times higher. An output is dust when it costs more to spend than it is worth: 294 satoshis for P2WPKH, 330 for P2WSH and 240 for pay to anchor.",
+   "concept": "The node floor is 0.1 sat/vB; the wallet floor is ten times higher"
+  },
+  {
+   "n": 8,
+   "kind": "section",
+   "title": "Estimating fees, and the market",
+   "say": "This part asks how a wallet guesses a good fee and what the market for block space looked like in two real blocks. The bus on the slide is the picture to keep: a block is a bus with a fixed number of seats, and a fee is a bid for one. The part ends with the story of the halving block, in which fees were almost the whole reward.",
+   "concept": "Like seats on a bus that leaves every ten minutes: the highest bids board first."
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "The estimator learns from blocks",
+   "say": "The call estimatesmartfee looks for the lowest fee rate at which most recent transactions confirmed within the target, so it needs history. A fresh test node answered Insufficient data; after 120 blocks and 2,640 payments of mixed fee rates it answered 1.225 satoshis per virtual byte. The target of 144 blocks was answered for only 60, because the node's history was that long. Since Bitcoin Core 28.0 the default mode is economical, not conservative.",
+   "concept": "The estimator needs history; a fresh node answers with no estimate"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Two blocks, two fee markets",
+   "say": "A census of the first 599 transactions after the coinbase of two real blocks shows how much the market moves. In the halving block of April 2024 the median fee rate was 1,436 satoshis per virtual byte and fees were 92.33 percent of the reward; in block 971,489, mined on 15 October 2026, the median was 3.02 and fees were 0.46 percent. The share of transactions that signal replaceability fell from 81 to 46 percent.",
+   "concept": "Fees were 92.33 percent of the reward in 2024 and 0.46 percent in 2026"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "The block where fees were nearly the reward",
+   "say": "On 20 April 2024 the pool ViaBTC found block 840,000, the first block after the fourth halving, which cut the subsidy to 312,500,000 satoshis. The fees in the same block were 3,762,561,499 satoshis, so the reward of 4,075,061,499 was 92.33 percent fees. In block 971,489 the fees were only 0.46 percent. The book's remark that the subsidy is much higher than fees is true of some blocks and not of others.",
+   "concept": "The story of 20 April 2024: who, where, when and what to read next"
+  },
+  {
+   "n": 12,
+   "kind": "section",
+   "title": "Replace, bump and relay",
+   "say": "This part covers what a sender or a receiver can do when a transaction pays too little and waits. The sender can replace it with a better-paying version, and the receiver can add a child that pays for both. The story shows how the default changed from opt-in to full replacement, and the hazards slide shows what that costs.",
+   "concept": "From replacing a payment to paying for a parent: what a wallet can do when the fee was set too low."
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "A replacement must pay more than it replaces",
+   "say": "Replace by fee lets a sender swap a waiting transaction for another that spends the same output. The replacement must pay at least the absolute fee of what it replaces, plus the incremental relay fee for its own size. On the test node a replacement of 514 satoshis was refused for paying less, 564 for paying nothing extra, 578 by one satoshi, and 579 was accepted. A transaction signals replaceability when an input has a sequence below 0xfffffffe.",
+   "concept": "A replacement pays more in total and pays for its own relay too"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "A node that only listens to replacements",
+   "say": "On 12 December 2022 Peter Todd posted to the bitcoin-dev list a build of Bitcoin Core 24.0.1 with Antoine Riard's full-rbf peering code, while the new option mempoolfullrbf was still off by default. Bitcoin Core 28.0 later made full replacement the default, and 29.0 removed the option. The test node of this chapter replaced a transaction that never signalled, and refused to start with the old option. Policy is what most nodes choose to relay.",
+   "concept": "The story of 12 December 2022: who, where, when and what to read next"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "When replacement goes wrong",
+   "say": "Three versions of one payment of 0.4 bitcoin conflict in a chain: version 1 replaces version 0, and version 2 conflicts with version 1 but not with version 0. A miner that kept version 0 mined it and then version 2, so the payee received 0.8 bitcoin. A large child also pins a parent: replacing a 705-satoshi parent cost 450,780 satoshis. The replacement cycling attack of 2023 is described in the sources but was not run.",
+   "concept": "Replacement is a hazard as well as a tool, and here it was measured"
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Child pays for parent, and packages",
+   "say": "A receiver can pay for a stuck parent by spending its output in a child with a high fee, because miners rank a transaction together with its unconfirmed ancestors. In the run a parent paying 141 satoshis and a child paying 14,100 formed a package at 50.77 satoshis per virtual byte, and the node mined the pair before an unrelated transaction at 20. A child at 5 satoshis per virtual byte did not help. The submitpackage call took a parent of 8 satoshis with its child.",
+   "concept": "A child can pay for its parent when the pair's fee rate is high enough"
+  },
+  {
+   "n": 17,
+   "kind": "section",
+   "title": "Pinning, anchors, clusters, sniping",
+   "say": "This part is about the attacks and fixes that came after the book's model of fees. A large child can pin a parent, and version 3 transactions, anchor outputs and the cluster mempool of Core 31.0 are the answers. The last slides turn to fee sniping and to the question of what happens when the subsidy is gone.",
+   "concept": "How a child can pin a parent, and what version 3, anchors and clusters changed."
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "A large child can pin a parent",
+   "say": "A counterparty can attach a very large child of modest fee rate to a payment, and then a replacement has to pay for the child too. In the run a child of 90,012 virtual bytes raised the price of replacing the parent to 450,780 satoshis. Version 3, the TRUC policy of Bitcoin Core 28.0, caps the child at 1,000 virtual bytes, and the same replacement cost 5,145 satoshis, 88 times less. A version-3 child of 1,350 bytes was refused.",
+   "concept": "Version 3 caps the child, so replacing a pinned parent cost 88 times less"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Anchors: a fee added afterwards",
+   "say": "A pay-to-anchor output is a tiny output that anyone can spend, so whoever needs a transaction confirmed can attach a child and pay the fee then. In the run a version-3 parent paying nothing was refused alone with min relay fee not met, and accepted with its child through submitpackage at 36.5 satoshis per virtual byte. The child spent the anchor with an empty witness stack. Lightning commitment transactions use such anchors.",
+   "concept": "An anchor lets whoever needs it add the fee after the transaction is signed"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Pre-signed transactions cannot guess fees",
+   "say": "On 29 November 2018 Matt Corallo wrote that Lightning channels exchange pre-signed transactions that are broadcast much later, so their fee must be predicted or added afterwards by a child. His answer, the carve-out, allowed one extra small child beyond the usual limits: he proposed 1K, and Bitcoin Core 0.19.0.1 shipped 10,000 virtual bytes where the book says 1,000. The removal in Core 31.0 was found in the saved notes and not run on an older node.",
+   "concept": "The story of 29 November 2018: who, where, when and what to read next"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "Cluster mempool replaces the old limits",
+   "say": "The old limits of 25 ancestors or descendants existed because updating them was quadratic: 25 children of 25 ancestors need 625 package updates, and doubling the limit makes 2,500. Release 31.0 replaces them with clusters of at most 64 transactions and 101,000 virtual bytes, and the carve-out is removed. The test node accepted a chain of 64 and refused the 65th. The mempool keeps 300 megabytes and forgets a transaction after 336 hours, 14 days, not one day.",
+   "concept": "Cluster limits replaced the 25-transaction limits and removed the carve-out"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "Fee sniping and the lock time",
+   "say": "A miner who could re-mine the last block and take its fees might tempt others to build on the older block. A wallet defends by setting the lock time to the current height, so that such a transaction cannot be placed in an older block; in the run 56 of 60 transactions had the tip and four were back-dated. A transaction is final in a block when its lock time is below the height, which the book's chapter 6 gets off by one. BIP 326 for taproot was not executed.",
+   "concept": "A lock time at the tip makes re-mining the last block pay less"
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "What if nobody got a subsidy?",
+   "say": "On 21 October 2016 Arvind Narayanan announced a Princeton paper, written with Miles Carlsten, Harry Kalodner and Matt Weinberg, on the instability of Bitcoin without the block reward. Satoshi Nakamoto's paper had already said that fees can replace the subsidy. The authors show that when fees are the main income a miner can gain by undercutting a rival's block. The model was not recomputed here; the passages were found in the saved copies.",
+   "concept": "The story of 21 October 2016: who, where, when and what to read next"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "concept": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the Antonopoulos video on fees, then the Optech topic on replace by fee next to the chapter. The research package for chapter 9 lists all 72 sources with the passages used.",
+   "concept": "Watch the fees video, then read the Optech topic beside the chapter"
+  },
+  {
+   "n": 26,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 9 holds the sources and the test records behind them.",
+   "concept": "And where each claim gets its proof"
+  }
+ ]
+}
