@@ -1,0 +1,674 @@
+ 
+ Schnorr signature - Wikipedia 
+ Jump to content 
+ Main menu 
+ Main menu
+ move to sidebar 
+ hide 
+ Navigation
+ Main page 
+ Contents 
+ Current events 
+ Random article 
+ About Wikipedia 
+ Contact us 
+ Contribute
+ Help 
+ Learn to edit 
+ Community portal 
+ Recent changes 
+ Upload file 
+ Special pages 
+ Search 
+ Search 
+ Appearance 
+ Donate 
+ Create account 
+ Log in 
+ Personal tools 
+ Donate 
+ Create account 
+ Log in 
+ Contents
+ move to sidebar 
+ hide 
+ (Top)
+ 1 
+ Algorithm 
+ Toggle Algorithm subsection 
+ 1.1 
+ Choosing parameters 
+ 1.2 
+ Notation 
+ 1.3 
+ Key generation 
+ 1.4 
+ Signing 
+ 1.5 
+ Verifying 
+ 1.6 
+ Proof of correctness 
+ 1.7 
+ Key leakage from nonce reuse 
+ 1.8 
+ Security argument 
+ 2 
+ Short Schnorr signatures 
+ 3 
+ Implementations 
+ 4 
+ See also 
+ 5 
+ References 
+ 6 
+ External links 
+ Toggle the table of contents 
+ Schnorr signature 
+ 10 languages 
+ Čeština 
+ Deutsch 
+ Français 
+ עברית 
+ Italiano 
+ 한국어 
+ Polski 
+ Português 
+ Русский 
+ Türkçe 
+ Edit links 
+ Article 
+ Talk 
+ English 
+ Read 
+ Edit 
+ View history 
+ Tools 
+ Tools
+ move to sidebar 
+ hide 
+ Actions
+ Read 
+ Edit 
+ View history 
+ General
+ What links here 
+ Related changes 
+ Upload file 
+ Permanent link 
+ Page information 
+ Cite this page 
+ Get shortened URL 
+ Switch to legacy parser 
+ Print/export
+ Download as PDF 
+ Printable version 
+ In other projects
+ Wikidata item 
+ Appearance
+ move to sidebar 
+ hide 
+ From Wikipedia, the free encyclopedia
+ Digital signature scheme 
+ In cryptography , a Schnorr signature is a digital signature produced by the Schnorr signature algorithm that was invented by Claus Schnorr . It is known for its simplicity, among the first whose security is based on the intractability of certain discrete logarithm problems. It is efficient and generates short signatures. [ 1 ] It was covered by U.S. patent 4,995,082 which expired in February 2010.
+ Algorithm
+ [ edit ] 
+ Choosing parameters
+ [ edit ] 
+ All users of the signature scheme agree on a group 
+ G 
+ {\displaystyle G} 
+ of prime order 
+ q 
+ {\displaystyle q} 
+ with generator 
+ g 
+ {\displaystyle g} 
+ in which the discrete log problem is assumed to be hard. Typically a Schnorr group is used.
+ All users agree on a cryptographic hash function 
+ H 
+ : 
+ { 
+ 0 
+ , 
+ 1 
+ } 
+ ∗ 
+ → 
+ Z 
+ / 
+ q 
+ Z 
+ {\displaystyle H:\{0,1\}^{*}\rightarrow \mathbb {Z} /q\mathbb {Z} } 
+ .
+ Notation
+ [ edit ] 
+ In the following,
+ Exponentiation stands for repeated application of the group operation
+ Juxtaposition stands for multiplication on the set of congruence classes or application of the group operation (as applicable)
+ Subtraction stands for subtraction on the set of congruence classes
+ M 
+ ∈ 
+ { 
+ 0 
+ , 
+ 1 
+ } 
+ ∗ 
+ {\displaystyle M\in \{0,1\}^{*}} 
+ , the set of finite bit strings
+ s 
+ , 
+ e 
+ , 
+ e 
+ v 
+ , 
+ x 
+ , 
+ k 
+ ∈ 
+ Z 
+ / 
+ q 
+ Z 
+ {\displaystyle s,e,e_{v},x,k\in \mathbb {Z} /q\mathbb {Z} } 
+ , the set of congruence classes modulo 
+ q 
+ {\displaystyle q} 
+ y 
+ , 
+ r 
+ , 
+ r 
+ v 
+ ∈ 
+ G 
+ {\displaystyle y,r,r_{v}\in G} 
+ .
+ Key generation
+ [ edit ] 
+ Choose a private signing key 
+ x 
+ {\displaystyle x} 
+ from the allowed set.
+ The public verification key is 
+ y 
+ = 
+ g 
+ − 
+ x 
+ {\displaystyle y=g^{-x}} 
+ .
+ Signing
+ [ edit ] 
+ To sign a message 
+ M 
+ {\displaystyle M} 
+ :
+ Choose a random 
+ k 
+ {\displaystyle k} 
+ from the allowed set.
+ Let 
+ r 
+ = 
+ g 
+ k 
+ {\displaystyle r=g^{k}} 
+ .
+ Let 
+ e 
+ = 
+ H 
+ ( 
+ r 
+ ∥ 
+ M 
+ ) 
+ {\displaystyle e=H(r\parallel M)} 
+ , where 
+ ∥ 
+ {\displaystyle \parallel } 
+ denotes concatenation and 
+ r 
+ {\displaystyle r} 
+ is represented as a bit string.
+ Let 
+ s 
+ = 
+ k 
+ + 
+ x 
+ e 
+ {\displaystyle s=k+xe} 
+ .
+ The signature is the pair, 
+ ( 
+ s 
+ , 
+ e 
+ ) 
+ {\displaystyle (s,e)} 
+ .
+ Note that 
+ s 
+ , 
+ e 
+ ∈ 
+ Z 
+ / 
+ q 
+ Z 
+ {\displaystyle s,e\in \mathbb {Z} /q\mathbb {Z} } 
+ ; if 
+ q 
+ < 
+ 2 
+ 256 
+ {\displaystyle q<2^{256}} 
+ , then the signature representation can fit into 64 bytes.
+ Verifying
+ [ edit ] 
+ Let 
+ r 
+ v 
+ = 
+ g 
+ s 
+ y 
+ e 
+ {\displaystyle r_{v}=g^{s}y^{e}} 
+ Let 
+ e 
+ v 
+ = 
+ H 
+ ( 
+ r 
+ v 
+ ∥ 
+ M 
+ ) 
+ {\displaystyle e_{v}=H(r_{v}\parallel M)} 
+ If 
+ e 
+ v 
+ = 
+ e 
+ {\displaystyle e_{v}=e} 
+ then the signature is verified.
+ Proof of correctness
+ [ edit ] 
+ It is relatively easy to see that 
+ e 
+ v 
+ = 
+ e 
+ {\displaystyle e_{v}=e} 
+ if the signed message equals the verified message:
+ r 
+ v 
+ = 
+ g 
+ s 
+ y 
+ e 
+ = 
+ g 
+ k 
+ + 
+ x 
+ e 
+ g 
+ − 
+ x 
+ e 
+ = 
+ g 
+ k 
+ = 
+ r 
+ {\displaystyle r_{v}=g^{s}y^{e}=g^{k+xe}g^{-xe}=g^{k}=r} 
+ , and hence 
+ e 
+ v 
+ = 
+ H 
+ ( 
+ r 
+ v 
+ ∥ 
+ M 
+ ) 
+ = 
+ H 
+ ( 
+ r 
+ ∥ 
+ M 
+ ) 
+ = 
+ e 
+ {\displaystyle e_{v}=H(r_{v}\parallel M)=H(r\parallel M)=e} 
+ .
+ Public elements: 
+ G 
+ {\displaystyle G} 
+ , 
+ g 
+ {\displaystyle g} 
+ , 
+ y 
+ {\displaystyle y} 
+ , 
+ s 
+ {\displaystyle s} 
+ , 
+ e 
+ {\displaystyle e} 
+ , 
+ r 
+ {\displaystyle r} 
+ . Private elements: 
+ k 
+ {\displaystyle k} 
+ , 
+ x 
+ {\displaystyle x} 
+ .
+ This shows only that a correctly signed message will verify correctly; many other properties are required for a secure signature algorithm.
+ Key leakage from nonce reuse
+ [ edit ] 
+ Just as with the closely related signature algorithms DSA , ECDSA , and ElGamal , reusing the secret nonce value 
+ k 
+ {\displaystyle k} 
+ on two Schnorr signatures of different messages will allow observers to recover the private key. [ 2 ] In the case of Schnorr signatures, this simply requires subtracting 
+ s 
+ {\displaystyle s} 
+ values:
+ s 
+ ′ 
+ − 
+ s 
+ = 
+ ( 
+ k 
+ ′ 
+ − 
+ k 
+ ) 
+ + 
+ x 
+ ( 
+ e 
+ ′ 
+ − 
+ e 
+ ) 
+ {\displaystyle s'-s=(k'-k)+x(e'-e)} 
+ . 
+ If 
+ k 
+ ′ 
+ = 
+ k 
+ {\displaystyle k'=k} 
+ but 
+ e 
+ ′ 
+ ≠ 
+ e 
+ {\displaystyle e'\neq e} 
+ then 
+ x 
+ {\displaystyle x} 
+ can be simply isolated. In fact, even slight biases in the value 
+ k 
+ {\displaystyle k} 
+ or partial leakage of 
+ k 
+ {\displaystyle k} 
+ can reveal the private key, after collecting sufficiently many signatures and solving the hidden number problem. [ 2 ] 
+ Security argument
+ [ edit ] 
+ The signature scheme was constructed by applying the Fiat–Shamir transformation [ 3 ] to Schnorr's identification protocol. [ 4 ] [ 5 ] Therefore, (as per Fiat and Shamir's arguments), it is secure if 
+ H 
+ {\displaystyle H} 
+ is modeled as a random oracle .
+ Its security can also be argued in the generic group model , under the assumption that 
+ H 
+ {\displaystyle H} 
+ is "random-prefix preimage resistant" and "random-prefix second-preimage resistant". [ 6 ] In particular, 
+ H 
+ {\displaystyle H} 
+ does not need to be collision resistant .
+ In 2012, Seurin [ 1 ] provided an exact proof of the Schnorr signature scheme. In particular, Seurin shows that the security proof using the forking lemma is the best possible result for any signature schemes based on one-way group homomorphisms including Schnorr-type signatures and the Guillou–Quisquater signature schemes . Namely, under the ROMDL assumption, any algebraic reduction must lose a factor 
+ f 
+ ( 
+ ϵ 
+ F 
+ ) 
+ q 
+ h 
+ {\displaystyle f({\epsilon }_{F})q_{h}} 
+ in its time-to-success ratio, where 
+ f 
+ ≤ 
+ 1 
+ {\displaystyle f\leq 1} 
+ is a function that remains close to 1 as long as " 
+ ϵ 
+ F 
+ {\displaystyle {\epsilon }_{F}} 
+ is noticeably smaller than 1", where 
+ ϵ 
+ F 
+ {\displaystyle {\epsilon }_{F}} 
+ is the probability of forging an error making at most 
+ q 
+ h 
+ {\displaystyle q_{h}} 
+ queries to the random oracle.
+ Short Schnorr signatures
+ [ edit ] 
+ The aforementioned process achieves a t -bit security level with 4 t -bit signatures. For example, a 128-bit security level would require 512-bit (64-byte) signatures. The security is limited by discrete logarithm attacks on the group, which have a complexity of the square-root of the group size.
+ In Schnorr's original 1991 paper, it was suggested that since collision resistance in the hash is not required, shorter hash functions may be just as secure, and indeed recent developments suggest that a t -bit security level can be achieved with 3 t -bit signatures. [ 6 ] Then, a 128-bit security level would require only 384-bit (48-byte) signatures, and this could be achieved by truncating the size of e until it is half the length of the s bitfield.
+ Implementations
+ [ edit ] 
+ Schnorr signature is used by numerous products. A notable usage is the deterministic Schnorr's signature using the secp256k1 elliptic curve for Bitcoin transaction signature after the Taproot update. [ 7 ] 
+ See also
+ [ edit ] 
+ DSA 
+ EdDSA 
+ ElGamal signature scheme 
+ References
+ [ edit ] 
+ 1 2 Seurin, Yannick (2012-01-12). "On the Exact Security of Schnorr-Type Signatures in the Random Oracle Model" . Cryptology ePrint Archive . International Association for Cryptologic Research . Retrieved 2023-02-06 . 
+ 1 2 Tibouchi, Mehdi (2017-11-13). "Attacks on Schnorr signatures with biased nonces" (PDF) . ECC Workshop . Retrieved 2023-02-06 . 
+ ↑ \n","href":"./Template:Cite_conference"},"params":{"first1":{"wt":"Amos"},"last1":{"wt":"Fiat"},"authorlink1":{"wt":"Amos Fiat"},"first2":{"wt":"Adi"},"last2":{"wt":"Shamir"},"authorlink2":{"wt":"Adi Shamir"},"title":{"wt":"Advances in Cryptology"},"chapter":{"wt":"How to Prove Yourself: Practical Solutions to Identification and Signature Problems"},"conference":{"wt":"Conference on the Theory and Application of Cryptographic Techniques. Proceedings of CRYPTO '86"},"series":{"wt":"Lecture Notes in Computer Science"},"date":{"wt":"1987"},"volume":{"wt":"263"},"pages":{"wt":"186–194"},"doi":{"wt":"10.1007/3-540-47721-7_12"},"editor":{"wt":"Andrew M. Odlyzko"},"editor-link":{"wt":"Andrew Odlyzko"},"isbn":{"wt":"978-3-540-18047-0"},"s2cid":{"wt":"4838652"},"doi-access":{"wt":"free"}},"i":0}}]}'/> Fiat, Amos ; Shamir, Adi (1987). "How to Prove Yourself: Practical Solutions to Identification and Signature Problems". In Andrew M. Odlyzko (ed.). Advances in Cryptology . Conference on the Theory and Application of Cryptographic Techniques. Proceedings of CRYPTO '86. Lecture Notes in Computer Science. Vol. 263. pp. 186– 194. doi : 10.1007/3-540-47721-7_12 . ISBN 978-3-540-18047-0 . S2CID 4838652 . 
+ ↑ \n","href":"./Template:Cite_conference"},"params":{"first":{"wt":"C. P."},"last":{"wt":"Schnorr"},"author-link":{"wt":"Claus P. Schnorr"},"title":{"wt":"Advances in Cryptology"},"chapter":{"wt":"Efficient Identification and Signatures for Smart Cards"},"conference":{"wt":"Conference on the Theory and Application of Cryptographic Techniques. Proceedings of CRYPTO '89"},"series":{"wt":"Lecture Notes in Computer Science"},"date":{"wt":"1990"},"volume":{"wt":"435"},"pages":{"wt":"239–252"},"doi":{"wt":"10.1007/0-387-34805-0_22"},"isbn":{"wt":"978-0-387-97317-3"},"s2cid":{"wt":"5526090"},"editor":{"wt":"Gilles Brassard"},"editor-link":{"wt":"Gilles Brassard"},"doi-access":{"wt":"free"}},"i":0}}]}'/> Schnorr, C. P. (1990). "Efficient Identification and Signatures for Smart Cards". In Gilles Brassard (ed.). Advances in Cryptology . Conference on the Theory and Application of Cryptographic Techniques. Proceedings of CRYPTO '89. Lecture Notes in Computer Science. Vol. 435. pp. 239– 252. doi : 10.1007/0-387-34805-0_22 . ISBN 978-0-387-97317-3 . S2CID 5526090 . 
+ ↑ Schnorr, C. P. (1991). "Efficient signature generation by smart cards" . Journal of Cryptology . 4 (3): 161– 174. doi : 10.1007/BF00196725 . S2CID 10976365 . 
+ 1 2 Neven, Gregory; Smart, Nigel ; Warinschi, Bogdan. "Hash Function Requirements for Schnorr Signatures" . IBM Research . Retrieved 19 July 2012 . 
+ ↑ Wuille, Pieter; Nick, Jonas; Ruffing, Tim. "BIP340: Schnorr Signatures for secp256k1" . GitHub . Retrieved 2024-11-11 . 
+ External links
+ [ edit ] 
+ RFC 8235 
+ BIP 340: Schnorr Signatures for secp256k1 
+ v 
+ t 
+ e 
+ Public-key cryptography 
+ Algorithms 
+ Integer factorization 
+ Benaloh 
+ Blum–Goldwasser 
+ Cayley–Purser 
+ Damgård–Jurik 
+ GMR 
+ Goldwasser–Micali 
+ Naccache–Stern 
+ Paillier 
+ Rabin 
+ RSA 
+ Okamoto–Uchiyama 
+ Schmidt–Samoa 
+ Discrete logarithm 
+ BLS 
+ Cramer–Shoup 
+ DH 
+ DSA 
+ ECDH 
+ X25519 
+ X448 
+ ECDSA 
+ EdDSA 
+ Ed25519 
+ Ed448 
+ ECMQV 
+ EKE 
+ ElGamal 
+ signature scheme 
+ MQV 
+ Schnorr 
+ SPEKE 
+ SRP 
+ STS 
+ Lattice/SVP/CVP / LWE / SIS 
+ BLISS 
+ Kyber 
+ NewHope 
+ NTRUEncrypt 
+ NTRUSign 
+ RLWE-KEX 
+ RLWE-SIG 
+ Falcon 
+ Others 
+ AE 
+ CEILIDH 
+ EPOC 
+ HFE 
+ IES 
+ Lamport 
+ McEliece 
+ Merkle–Hellman 
+ Naccache–Stern knapsack cryptosystem 
+ Three-pass protocol 
+ XTR 
+ SQIsign 
+ SPHINCS + 
+ Theory 
+ Discrete logarithm cryptography 
+ Elliptic-curve cryptography 
+ Hash-based cryptography 
+ Non-commutative cryptography 
+ RSA problem 
+ Trapdoor function 
+ Tropical cryptography 
+ Standardization 
+ CRYPTREC 
+ IEEE P1363 
+ NESSIE 
+ NSA Suite B 
+ CNSA 
+ Post-Quantum Cryptography 
+ Topics 
+ Digital signature 
+ OAEP 
+ Fingerprint 
+ PKI 
+ Web of trust 
+ Key size 
+ Identity-based cryptography 
+ Post-quantum cryptography 
+ OpenPGP card 
+ v 
+ t 
+ e 
+ Cryptography 
+ General 
+ History of cryptography 
+ Outline of cryptography 
+ Classical cipher 
+ Cryptographic protocol 
+ Authentication protocol 
+ Cryptographic primitive 
+ Cryptanalysis 
+ Cryptocurrency 
+ Cryptosystem 
+ Cryptographic nonce 
+ Cryptovirology 
+ Hash function 
+ Cryptographic hash function 
+ Key derivation function 
+ Secure Hash Algorithms 
+ Digital signature 
+ Kleptography 
+ Key (cryptography) 
+ Key exchange 
+ Key generator 
+ Key schedule 
+ Key stretching 
+ Keygen 
+ Machines 
+ Ransomware 
+ Random number generation 
+ Cryptographically secure pseudorandom number generator (CSPRNG)
+ Pseudorandom noise (PRN)
+ Secure channel 
+ Insecure channel 
+ Subliminal channel 
+ Encryption 
+ Decryption 
+ End-to-end encryption 
+ Harvest now, decrypt later 
+ Information-theoretic security 
+ Plaintext 
+ Codetext 
+ Ciphertext 
+ Shared secret 
+ Trapdoor function 
+ Trusted timestamping 
+ Key-based routing 
+ Onion routing 
+ Garlic routing 
+ Kademlia 
+ Mix network 
+ Mathematics 
+ Cryptographic hash function 
+ Block cipher 
+ Stream cipher 
+ Symmetric-key algorithm 
+ Authenticated encryption 
+ Public-key cryptography 
+ Quantum key distribution 
+ Quantum cryptography 
+ Post-quantum cryptography 
+ Message authentication code 
+ Random numbers 
+ Steganography 
+ Category 
+ Retrieved from " https://en.wikipedia.org/w/index.php?title=Schnorr_signature&oldid=1373004677 "
+ Category : Digital signature schemes 
+ Hidden categories: Articles with short description 
+ Short description matches Wikidata 
+ This page was last edited on 3 September 2026, at 13:11 (UTC) .
+ Page was rendered with Parsoid .
+ Text is available under the Creative Commons Attribution-ShareAlike 4.0 License ;
+additional terms may apply. By using this site, you agree to the Terms of Use and Privacy Policy . Wikipedia® is a registered trademark of the Wikimedia Foundation, Inc. , a non-profit organization.
+ Privacy policy 
+ About Wikipedia 
+ Disclaimers 
+ Contact Wikipedia 
+ Legal & safety contacts 
+ Code of Conduct 
+ Developers 
+ Statistics 
+ Cookie statement 
+ Mobile view 
+ Search 
+ Search 
+ Toggle the table of contents 
+ Schnorr signature 
+ 10 languages 
+ Add topic 
+ 

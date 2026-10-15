@@ -1,0 +1,126 @@
+ 
+ Threshold signature | Bitcoin Optech 
+ About 
+ Publications 
+ Topics 
+ Workshops 
+ Matrix 
+ / home / topics / 
+ Threshold signature
+ A threshold signature is a digital signature that may have been created by an authorized subset of the private keys which were previously used to create the corresponding public key. Threshold signatures can be verified using only a single public key and a single signature.
+ Different algorithms exist for creating threshold signatures, but
+perhaps the simplest of these is a slight extension of a typical
+algorithm for creating a scriptless multisignature . This
+is easiest explained with an example: participants A, B, and C want to receive
+funds that can be spent by any two of them. They cooperate to create
+an ordinary multisignature public key for receiving the funds, then they
+each take the extra step of deriving two secret shares from their
+private key—one share for each of the other two participants. The
+shares are created so that any two shares can reconstitute the private
+key that created it. Each participant gives a different one of their
+secret shares to each other participant, so each participant ends up
+having to store their own private key plus one share for each other
+participant. Each participant is then able to verify that the shares
+they received were correctly derived (i.e. not fake) and are unique from
+the shares received by the other participants.
+ Later, A and B decide they want to create a signature
+without C. A and B
+share with each other the two shares they each have for C. This
+allows them to reconstitute C’s private key. A and B also
+have their own private keys, giving them all three of the keys necessary
+to create a multisignature.
+ The example above only covers the simplest of threshold signature
+algorithms. Other algorithms exist that reduce conceptual simplicity but provide
+additional features, such as reducing the number of steps required or providing increased
+resistance to communication problems.
+ Comparison to multisig scripts
+ Bitcoin’s Script language (including the tapscript modified alternative) allows providing a threshold k of
+signatures for a group of n keys, commonly called k-of-n multisig.
+This requires providing k signatures and n public keys in any
+onchain transactions.
+ By comparison, threshold signatures only require a single public key and
+single signature, no matter how many participants are involved.
+This can significantly reduce the
+size of transactions, correspondingly reducing the cost of their
+transaction fee. It also increases their privacy: nobody can tell which
+of the parties signed (or even that multiple parties needed to sign in
+the first place).
+ Signer privacy does create a problem for schemes that want
+third-party auditability of which parties signed.
+Auditing can be implemented using an independent system (e.g. having all
+communication between participants go through a logging server). It can
+also sometimes be implemented using clever constructions, such as for a
+2-of-3 threshold scheme in taproot where the usual
+signers (A and B) can use a 2-of-2 multisignature keypath spend and the
+two alternatives (A and C, or B and C) can be their own 2-of-2
+multisignatures in known positions in the merkle tree for scriptpath
+spending. By looking at the spend, the participants can determine
+exactly which two parties signed.
+ Terminology
+ The following table summarizes the differences between threshold
+signature and related terms.
+ Term 
+ Private keys 
+ Messages
+(e.g. tx inputs) 
+ Published pubkeys 
+ Signatures 
+ Signers required 
+ Notes 
+ Scripted multisig 
+ m 
+ 1 
+ m 
+ k where k<=m 
+ k 
+ Uses Bitcoin Script multisig opcodes 
+ Scriptless multisignatures 
+ m 
+ 1 
+ 1 
+ 1 
+ m 
+ Indistinguishable onchain from single-sig 
+ Threshold signature 
+ m 
+ 1 
+ 1 
+ 1 
+ k where k<=m 
+ Indistinguishable onchain from single-sig 
+ Optech newsletter and website mentions
+ 2025 
+ Frostsnap signing devices support k-of-n threshold signing 
+ FROSTR library for k-of-n signing and key management on nostr 
+ Updated ChillDKG draft for distributed key generation for FROST 
+ 2024 
+ BIP proposed for creating FROST scriptless threshold signatures for Bitcoin 
+ ChillDKG distributed key generation protocol for FROST 
+ 2023 
+ Idea for privacy enhanced transaction cosigning using FROST 
+ Experimental implementation of FROST announced 
+ 2022 
+ Transcripts of talks about the FROST and ROAST threshold signature schemes 
+ 2020 
+ Discussion about digital signatures schemes, including threshold signatures 
+ 2019 
+ Talk summary: The quest for practical threshold Schnorr signatures 
+ Talk summary: Secure Protocols on bip-taproot / threshold sigs with MuSig 
+ Cryptographic Vulnerabilities in Threshold Wallets 
+ 2018 
+ Paper published about ECDSA threshold signatures 
+ Pairing-based threshold signatures with signer auditability 
+ See also
+ Scriptless multisignature 
+ Previous Topic: 
+ Testnet 
+ Next Topic: 
+ Time warp 
+ Edit page 
+ Report Issue 
+ Bitcoin Optech
+ Bitcoin Optech
+ info@bitcoinops.org 
+ bitcoinops 
+ bitcoinoptech 
+ Helping Bitcoin-based businesses integrate scaling technology.

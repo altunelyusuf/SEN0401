@@ -1,0 +1,622 @@
+ 
+ New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ -->
+ Bitcoin Forum 
+ October 15, 2026, 02:00:27 AM 
+ Welcome, Guest . Please login or register . 
+ News : Serious possible issue involving Ledger hardware wallets and CryptoBilis 
+ Home 
+ Help 
+ Search 
+ Login 
+ Register 
+ More 
+ Bitcoin Forum > Bitcoin > Development & Technical Discussion > New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ Pages: [ 1 ] 
+ « previous topic next topic » 
+ Print 
+ Author 
+ Topic: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify (Read 17599 times)
+ Sergio_Demian_Lerner (OP) 
+ Hero Member
+ Activity: 555
+ Merit: 693
+ New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ January 30, 2013, 08:16:52 PM 
+Last edit: January 30, 2013, 09:06:56 PM by Sergio_Demian_Lerner 
+ Merited by vapourminer (8), LoyceV (8), BlackHatCoiner (8), ABCbits (3), darosior (2) 
+ � #1 
+ New Bitcoin vulnerability: A transaction that takes at least 3 minutes to be verified by a peer 
+What is the most CPU consuming transaction an attacker can create? (*)
+Don't keep reading. Take a minute to think about it...
+.
+.
+.
+.
+.
+.
+Most people will immediately look for a transaction that verifies as many signatures as possible. 
+One can achieve this by trying to spend many previous outputs that you own, with a single signature verification for each.
+But it turns out that that attack is quite expensive: given that each TxIn requires at least 100 bytes to hold a signature, 
+a 1Mb transaction would only hold 10K signatures. Assuming each signature verification takes 2 msec, processing the transaction
+would take 20 seconds. But even then we would need 10K previns ready to be spent, which would be quite hard to achieve.
+If the attacker is a miner, he can create a transaction that exposes 10K outputs (TxPrep), and follow it by the transaction that consumes them (TxAttack). But TxPrep would require an additional 340 Kbytes, so TxAttack would be shorter than expected.
+ Repeated SHA-256 hashing 
+There is a another way of forcing clients to do expensive computations with less resources, and that is by forcing clients to hash
+the transaction many times: by design each time a signature is verified, the whole transaction is hashed, with some minor modifications.
+(check https://en.bitcoin.it/wiki/OP_CHECKSIG and the beautiful accompanying graph made by Etotheipi)
+Using this fact, a miner can construct a transaction take takes more than 3 minutes to be verified (assuming 100 MiB/sec of SHA-256 hashing speed).
+First the attacker creates a a transaction that sends 1 satoshi to 100 outputs. Each output is not a standard scriptPub, but special scriptPub that consist of the opcodes: OP_CHECKSIG (200 times) OP_TRUE
+This script constains no more than 200 sigops, so is a valid script (200 is the limit).
+TxPrep takes aproximately 21 Kbytes from the 1M block.
+Then the attacker builds the transaction TxAttack which uses all these TxPrep outputs. 
+To make the transaction valid, each scriptSig is: OP_0 (201 times)
+The previn part of the Txattack transaction takes aproximately 24 Kbytes.
+The rest of the TxAttack transaction (upto 1Mb is filled) is made of a few outputs with long scripts (or a lot of outputs with short scripts). 
+This part of the transaction is almost 955 Kbytes long. (**)
+Now, to verify a single script (scriptSig+ScriptPub) the client tries to verify 200 signatures. 
+Obviously each of those verification return false, since 0x00 is neither a valid ECDSA public key nor a valid ECDSA signature.
+But the client has to rehash the 955 Kbytes of data 200 times.
+The total size hashed is 100*200*955000=19 100 000 000 bytes
+Assuming that OpenSSL code performance of SHA-256 hashing is 100 MiB/sec, then the hashing takes 191 seconds.
+The proposed attack requires that miners includes both TxPrep and TxAttack in blocks (but I may be different blocks).
+This could be achieved by any user by adding some BTC as fees (I think 1 BTC will do).
+Nevertheless, another attack can be constructed by using a standard transaction, that is relied normally from peer to peer.
+The attacker can use a standard multisignature transaction to try to pack more verifications in less space ( 1-in-3 OP_CHECKMULTISIG ).
+This attack is much more difficult, since it requires the attacker to prepare more than 6000 outputs to be used.
+ How this vulnerability could be used to perform an attack? 
+1. A miner that can mine one of these block every 10 blocks (having 10% of the network hashing power) can force the blockchain verification process to be a lot slower. Verifying a year of the blockchain would take more than 10 days of CPU time.
+2. A miner could use this attack combined by other idea gets a greater probability of finding a block the next block.
+3. A peer wants to DoS attack another peer. (but the penny-flooding protection must be bypassed somehow)
+4. If miners do not prevent these transactions from being included in their blocks, an attacker can create a TxPrep/TxAttack pair transaction for every block mined, and send the pair every 10 minutes, with a 1 BTC fee, to be included in the next block. Validating the blockchain would take almost half the time it takes to generate it, then the coin price would collapse, the attack becomes cheaper, ... dooms day. Obviously miners will stop including such transactions and nothing horrible really happens. But miners should have to reject tasty fees, and I don't know how the incentives will play for them. 
+ Not a Solution (without hard-forking) 
+Create a Transaction hash cache to temporarily store the last used hash during the evaluation of a script. 
+Note that the attack can still be executed by using independent outputs. 
+(TxPrep creates 20K outputs, using 200 Kbytes, then TxAttack consumes these 20K outputs, and requires 152 seconds to be verified)
+ Quite good Solution (without hard-forking) 
+Verify that the ECDSA signature and the ECDSA public key are well-formed before hashing the transaction.
+(this reduces the maximum CPU time to about 30 seconds, since now TxAttack wastes more bytes in signatures)
+ My Solution proposals 
+1. Soft-forking: Reduce the maximum transaction size to 100 Kbytes. (AGAIN Sergio !?!)
+2. Hard-forking: For script evaluation purposes Define 
+ Hash(Tx,previn-index) = Hash ( Hash(outputs) || Hash (Inputs-with-script-cleared) || <previn-index> )
+ (for SIGHASH_ALL)
+ This way the values "Hash(outputs)" and "Hash(Inputs-with-script-cleared)" can be cached and reused.
+Best regards,
+ Sergio.
+ (*) Note that I have excluded the hard-disk resource on purpose, since that's another story I'll be telling you in some time 
+ (**) I've not created and tested the transaction, but it seems to me that there is nothing in the protocol that stops it. 
+ Gavin Andresen 
+ Legendary
+ Activity: 1652
+ Merit: 2496
+ Chief Scientist
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ January 30, 2013, 09:50:11 PM
+ Merited by ABCbits (1) 
+ � #2 
+ Thanks Sergio!
+So: if the attacker creates a block with a transaction that takes 3 minutes to verify, and then broadcasts it, it will take a very long time for it to propagate across the network (because peers verify blocks before relaying them).
+And since this attack requires non-standard transactions, mining a block is the only way an attacker will be able to pull off this attack. So I don't think this is a practical attack on the production network: by the time the 3-minute-to-verify block got to 50% of the network the other half of the network will probably have produced a block (sure, the attacker could try to Sybil the network and send its block to a super-majority of mining nodes, but I bet all of the big mining pools are hiding their block-creating and share-accepting nodes behind multiple "front-end bitcoinds" by now to mitigate DDoS attacks).
+Fixing the OP_*SIG opcodes so they "look before they hash" is a good idea. We're actually moving towards that; see fStrictEncodings and the IsCanonicalSignature/IsCanonicalPubKey in the latest script.cpp code. The intent is to eventually roll out a 'soft-fork' that requires signatures and public keys be well-formed and canonical.
+Also, a nit: using OP_0 for the scriptSig wouldn't work for this attack (see if (vchSig.empty()) return false; in CheckSig()).
+ How often do you get the chance to work on a potentially world-changing project?
+ Sergio_Demian_Lerner (OP) 
+ Hero Member
+ Activity: 555
+ Merit: 693
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ January 31, 2013, 07:37:21 PM
+ Merited by ABCbits (3) 
+ � #3 
+ I realized that the "Quite Good" solution only does not work alone. It's not enough to verify that the arguments are well-formed.
+A complete solution requires that the last hash digest of the transaction is cached and reused in the following verifications of the same prevout.
+Here is a modified attack that verifies 19932 well-formed signatures against a well-formed public key.
+I use 151 inputs. Each input requires 132 verifications. That's 19932 verifications in total.
+ ScriptSig: 
+OP_PUSHDATA1
+<sig-size>
+<signature>
+OP_PUSHDATA1
+<pubkey-size>
+<pubkey>
+{ repeat the following part 66 times
+OP_2DUP
+OP_CHECKSIG
+OP_DROP
+}
+>> stack after execution of ScriptSig: 
+ [bottom] <signature> <pubkey-size> [top]
+ ScriptPub: 
+{ repeat the following part 66 times
+OP_2DUP
+OP_CHECKSIG
+OP_DROP
+}
+OP_DROP
+OP_DROP
+OP_TRUE
+>> stack after execution of ScriptPub: 
+ [bottom] <1> [top]
+The part that does not contribute to hashing is 76 Kbytes long, so the remaining 924500 bytes are hashed.
+The transaction takes at least 184 seconds to verify.
+Without the signature cache, it would take an additional 40 seconds.
+If the last hash of the transaction used while evaluation a script is cached, then only the first hash of each prevout is computed, and that will require only 151 evaluations (not 19932)
+Best regards! Sergio.
+ Sergio_Demian_Lerner (OP) 
+ Hero Member
+ Activity: 555
+ Merit: 693
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ January 31, 2013, 07:49:29 PM
+ � #4 
+ Quote from: Gavin Andresen on January 30, 2013, 09:50:11 PM 
+ And since this attack requires non-standard transactions, mining a block is the only way an attacker will be able to pull off this attack. 
+There is at least one mining pool that accepts direct connections to be used to send non-standard transactions. So the attack could in theory be done by anyone willing to pay some fees (that, right now, are very cheap).
+ DeathAndTaxes 
+ Donator
+ Legendary
+ Activity: 1218
+ Merit: 1380
+ Gerald Davis
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ January 31, 2013, 08:10:26 PM
+ � #5 
+ Quote from: Sergio_Demian_Lerner on January 31, 2013, 07:49:29 PM 
+ Quote from: Gavin Andresen on January 30, 2013, 09:50:11 PM 
+ And since this attack requires non-standard transactions, mining a block is the only way an attacker will be able to pull off this attack. 
+There is at least one mining pool that accepts direct connections to be used to send non-standard transactions. So the attack could in theory be done by anyone willing to pay some fees (that, right now, are very cheap).
+Well the nice things is there is an economic cost to the miner. If the miner starts to notice their orphan rate skyrocket then they may wish to investigate why their blocks are taking so long. Not sure how much it would increase the orphan rate but I would imagine a 3 minute (or even 30 second) verification time would destroy the pools competitiveness. Earn a lot of fees and lose the block worth 25 BTC isn't really worth it. When miners are willing to change pools over a 1% difference in orphan rates it shows how economically sensitive they are to anything which disrupts earnings.
+ Luke-Jr 
+ Legendary
+ Activity: 2604
+ Merit: 1201
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ January 31, 2013, 11:00:39 PM
+ � #6 
+ Quote from: Sergio_Demian_Lerner on January 31, 2013, 07:49:29 PM 
+ Quote from: Gavin Andresen on January 30, 2013, 09:50:11 PM 
+ And since this attack requires non-standard transactions, mining a block is the only way an attacker will be able to pull off this attack. 
+There is at least one mining pool that accepts direct connections to be used to send non-standard transactions. So the attack could in theory be done by anyone willing to pay some fees (that, right now, are very cheap).
+I presume you're referring to Eligius here. We can just disable non-standard transactions until I come up with a good long-term solution...
+Wouldn't this also be fixed by simply caching the transaction hash for the first OP_CHECKSIG ?
+ Donate: (PM me)
+My projects: Bitcoin Knots , Bitcoin Core , BFGMiner , Eloipool (pool software) , Tonal Bitcoin , and BitGit (Bitcoin code directory) 
+ Sergio_Demian_Lerner (OP) 
+ Hero Member
+ Activity: 555
+ Merit: 693
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ January 31, 2013, 11:32:52 PM 
+Last edit: February 01, 2013, 04:21:53 AM by Sergio_Demian_Lerner 
+ � #7 
+ I have good news and bad news .
+The good news (as I already said) is that it can be patched by caching the last tx hash AND checking the key/pubkey format before hashing (or at least check that the size of the arguments is correct)
+ The bad news is that I came across a new attack that can DESTROY the credibility of the network in a few days. So please Eligius, you better stop allowing non-standard transactions for a while until everybody upgrades or every miner in earth conforms to reject non-standard transactions. 
+ The idea is to make the splitting of TxPrep/TxAttack in such a way that the TxPrep part is non-standard, but it�s also small and will be included in blocks like the ones mined by Eligius.
+Then TxAttack is made standard, so IT WILL BE FORWARDED by nodes.
+An attacker can send many TxPrep(i) during a preparation phase (and also during the attack) interlaced with TxAttack(i). So the attacker can, at any time and for any amount of time, pose an enormous amount of work to the network for very little cost.
+The scripts look like this:
+ TxPrep: NON-STANDARD
+100 outputs:
+scriptPub:
+OP_0 { 199 times}
+OP_CHECKSIG {198 times}
+OP_DROP
+<pubKey> 
+OP_CHECKSIG
+{leaves the stack as: [BOTTOM] <pubKey> [TOP]}
+Size: 46 Kbytes. 
+ TxAttack: STANDARD
+100 inputs:
+scriptSig: <sig>
+Size of inputs: 10 Kbytes.
+Size of outputs: 990 Kbytes.
+Size of transaction: 1Mb 
+Time to verify: 990 Kbytes * 20000 / 100000000 = 198 secs
+Time to send the tx: 20 seconds. (at 50 Kbytes/sec)
+So imagine an attacker prepares the attack for a few days, by storing into the blockchain a hundred TxPrep(i), and the suddenly releases all of the TxAttack(i).
+I nobody finds a good reason not to, I will be changing the title of this thread to reflect the change in impact of the attack.
+Best regards,
+ Sergio.
+ Peter Todd 
+ Legendary
+ Activity: 1134
+ Merit: 1235
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ February 01, 2013, 12:04:41 AM 
+Last edit: February 01, 2013, 12:25:00 AM by retep 
+ � #8 
+ Has anyone tried this on testnet yet?
+EDIT: and while we're at it, you realize how you're going direct to disclosing this in public, right at a time when Avalon ASIC boxes are being shipped that can mine a block every 2 days on average? Frankly I think this is rather irresponsible of you. I did the whole responsible disclosure process for the silly little nLockTime oversight I found, and here you are putting everything in public for a problem that's potentially far more serious. The dev team could have easily snuck a fix into the upcoming 0.8 release.
+ BTC: 1FCYd7j4CThTMzts78rh6iQJLBRGPW9fWv PGP: 7FAB114267E4FA04 
+ Sergio_Demian_Lerner (OP) 
+ Hero Member
+ Activity: 555
+ Merit: 693
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ February 01, 2013, 12:47:00 AM
+ � #9 
+ Retep:
+First, when I first published the vulnerability, I thought I wasn't critical. Almost each time I do responsible disclosing (and I did it more than 5 times), the core devs disregard the issues, so I really thought it was another minor vuln. The fact that Gavin disregarded it in this thread means that I would have published it anyway, even after going through the undocumented process of responsible disclosing.
+Second, after I published the first details, the extension to standard tx would be pretty obvious to anybody willing to think about it a minute.
+So the best I could do was to tell the truth and protect the network from attackers telling miners to prepare from such attack.
+Third, anyone willing to invest 100K USD in ASIC will always be able to disrupt the network, so it's no difference before and after this vuln was disclosed.
+Protecting the network is very easy: don't include non-standard transactions in blocks.
+My final word is that the attack is not critical , nothing to start shouting everywhere, but it's real.
+Best regards, Sergio.
+ Gavin Andresen 
+ Legendary
+ Activity: 1652
+ Merit: 2496
+ Chief Scientist
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ February 01, 2013, 01:26:27 AM 
+Last edit: February 01, 2013, 02:14:54 AM by Gavin Andresen 
+ � #10 
+ Sergio:
+It would be more helpful if you either took a little bit more time and actually wrote a little bit of code to make sure the attack works, and started the conversation privately with "here's code that demonstrates a very expensive-to-verify transaction and a few suggestions on how you might fix it..."
+I created a simulation of TxPrep/TxAttack by adding them to src/test/data/script_valid.json and then running through the script_tests.cpp unit test in the debugger, and with the particular TxPrep you propose there is no problem with current code.
+Also, TxAttack is not standard with the latest code; see CTransaction::AreInputsStandard(), which checks the scriptPubKeys being spent.
+RE: undocumented process of responsible disclosing : good point. Where would you expect to find the process documented? We can fix that...
+ How often do you get the chance to work on a potentially world-changing project?
+ Luke-Jr 
+ Legendary
+ Activity: 2604
+ Merit: 1201
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ February 01, 2013, 02:02:54 AM
+ Merited by nutildah (3), vapourminer (1), stwenhao (1) 
+ � #11 
+ Quote from: Sergio_Demian_Lerner on February 01, 2013, 12:47:00 AM 
+ Protecting the network is very easy: don't include non-standard transactions in blocks.
+An attack like this just requires a hostile party to mine 1 block.
+That's still within reach of most people, even after ASIC hits on full.
+Blocking out "non-standard" transactions in general just harms potential innovation.
+ Donate: (PM me)
+My projects: Bitcoin Knots , Bitcoin Core , BFGMiner , Eloipool (pool software) , Tonal Bitcoin , and BitGit (Bitcoin code directory) 
+ Sergio_Demian_Lerner (OP) 
+ Hero Member
+ Activity: 555
+ Merit: 693
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ February 01, 2013, 03:55:03 AM
+ � #12 
+ Quote from: Luke-Jr on February 01, 2013, 02:02:54 AM 
+ Quote from: Sergio_Demian_Lerner on February 01, 2013, 12:47:00 AM 
+ Protecting the network is very easy: don't include non-standard transactions in blocks.
+An attack like this just requires a hostile party to mine 1 block.
+That's still within reach of most people, even after ASIC hits on full.
+Blocking out "non-standard" transactions in general just harms potential innovation.
+Even if a block containing a 3min tx is ever mined and buried into the blockchain, the 0.9 version of the Satoshi client could just check for the tx hash and, as an exception, set the transaction as verified without actually doing any verifications.
+As we already have good prevention measures in 0.8, as Gavin said, I really dubt that during the update process a 3min transaction will be mined. The time window is short and the attackers benefit, almost none (for a single tx mined). 
+The real problem starts is if a hundred 3min transactions are mined, not just one.
+I would say miners have at least a month to upgrade. 
+ Sergio_Demian_Lerner (OP) 
+ Hero Member
+ Activity: 555
+ Merit: 693
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ February 01, 2013, 04:00:03 AM
+ � #13 
+ Quote from: Gavin Andresen on February 01, 2013, 01:26:27 AM 
+ Sergio:
+It would be more helpful if you either took a little bit more time and actually wrote a little bit of code to make sure the attack works
+I respect very much all the hard work all the core devs do designing and writing code. I have no time to code, so my contribution is to think.
+ Sergio_Demian_Lerner (OP) 
+ Hero Member
+ Activity: 555
+ Merit: 693
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ February 01, 2013, 04:10:01 AM
+ � #14 
+ Quote from: Gavin Andresen on February 01, 2013, 01:26:27 AM 
+Also, TxAttack is not standard with the latest code; see CTransaction::AreInputsStandard(), which checks the scriptPubKeys being spent.
+Great! 
+So, to clear this issue: Gavin stated there is NO WAY OF MAKING TxAttack STANDARD.
+That's relieving.
+ Peter Todd 
+ Legendary
+ Activity: 1134
+ Merit: 1235
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ February 02, 2013, 07:10:02 AM
+ � #15 
+ Quote from: Sergio_Demian_Lerner on February 01, 2013, 04:00:03 AM 
+ I respect very much all the hard work all the core devs do designing and writing code. I have no time to code, so my contribution is to think.
+Often coding actually takes less time to solve a problem than just thinking, because by coding you let the computer help you find out if you are wrong much faster than trying to use reason to determine if you are wrong.
+ BTC: 1FCYd7j4CThTMzts78rh6iQJLBRGPW9fWv PGP: 7FAB114267E4FA04 
+ Luke-Jr 
+ Legendary
+ Activity: 2604
+ Merit: 1201
+ Re: New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ February 28, 2013, 06:36:06 AM
+ � #16 
+ For reference, this is assigned CVE-2013-2292
+ Donate: (PM me)
+My projects: Bitcoin Knots , Bitcoin Core , BFGMiner , Eloipool (pool software) , Tonal Bitcoin , and BitGit (Bitcoin code directory) 
+ Pages: [ 1 ] 
+ Print 
+ Bitcoin Forum > Bitcoin > Development & Technical Discussion > New Bitcoin vulnerability: A transaction that takes at least 3 minutes to verify 
+ « previous topic next topic » 
+ Jump to: 
+ 0 && this.options[this.selectedIndex].value) window.location.href = smf_scripturl + this.options[this.selectedIndex].value.substr(smf_scripturl.indexOf('?') == -1 || this.options[this.selectedIndex].value.substr(0, 1) != '?' ? 0 : 1);">
+ Please select a destination: 
+ ----------------------------- 
+ Bitcoin 
+ ----------------------------- 
+ => Bitcoin Discussion 
+ ===> Legal 
+ ===> Press 
+ ===> Meetups 
+ ===> Important Announcements 
+ => Development & Technical Discussion 
+ ===> Wallet software 
+ =====> Electrum 
+ =====> Bitcoin Wallet for Android 
+ =====> BitcoinJ 
+ =====> Armory 
+ =====> Mycelium 
+ =====> Hardware wallets 
+ => Mining 
+ ===> Mining support 
+ ===> Pools 
+ ===> Mining software (miners) 
+ ===> Hardware 
+ =====> Group buys 
+ ===> Mining speculation 
+ => Bitcoin Technical Support 
+ => Project Development 
+ ----------------------------- 
+ Economy 
+ ----------------------------- 
+ => Economics 
+ ===> Speculation 
+ => Marketplace 
+ ===> Goods 
+ =====> Computer hardware 
+ =====> Digital goods 
+ =======> Invites & Accounts 
+ =====> Collectibles 
+ ===> Services 
+ ===> Currency exchange 
+ ===> Gambling 
+ =====> Games and rounds 
+ =====> Investor-based games 
+ =====> Gambling discussion 
+ ===> Lending 
+ =====> Long-term offers 
+ ===> Securities 
+ ===> Auctions 
+ ===> Service Announcements 
+ =====> Micro Earnings 
+ ===> Service Discussion 
+ =====> Web Wallets 
+ =====> Exchanges 
+ => Trading Discussion 
+ ===> Scam Accusations 
+ ===> Reputation 
+ ----------------------------- 
+ Other 
+ ----------------------------- 
+ => Meta 
+ ===> Bitcoin Wiki 
+ => Politics & Society 
+ => Beginners & Help 
+ => Off-topic 
+ => Serious discussion 
+ ===> Ivory Tower 
+ => Archival 
+ ===> New forum software 
+ ===> Корзина 
+ ===> CPU/GPU Bitcoin mining hardware 
+ ===> Chinese students 
+ ===> Obsolete (buying) 
+ ===> Obsolete (selling) 
+ ===> MultiBit 
+ ----------------------------- 
+ Alternate cryptocurrencies 
+ ----------------------------- 
+ => Altcoin Discussion 
+ => Announcements (Altcoins) 
+ ===> Tokens (Altcoins) 
+ => Mining (Altcoins) 
+ ===> Pools (Altcoins) 
+ => Marketplace (Altcoins) 
+ ===> Service Announcements (Altcoins) 
+ ===> Service Discussion (Altcoins) 
+ ===> Bounties (Altcoins) 
+ => Speculation (Altcoins) 
+ ----------------------------- 
+ Local 
+ ----------------------------- 
+ => العربية (Arabic) 
+ ===> العملات البديلة (Altcoins) 
+ =====> النقاشات 
+ ===> إستفسارات و أسئلة المبتدئين 
+ ===> التعدين 
+ ===> النقاشات الأخرى 
+ ===> منصات التبادل 
+ => Bahasa Indonesia (Indonesian) 
+ ===> Marketplace (Bahasa Indonesia) 
+ ===> Mining (Bahasa Indonesia) 
+ ===> Altcoins (Bahasa Indonesia) 
+ ===> Trading dan Spekulasi 
+ ===> Ekonomi, Politik, dan Budaya 
+ ===> Topik Lainnya 
+ => Espa�ol (Spanish) 
+ ===> Mercado y Econom�a 
+ =====> Servicios 
+ =====> Trading y especulaci�n 
+ ===> Hardware y Miner�a 
+ ===> Esquina Libre 
+ ===> Mercadillo 
+ =====> Mexico 
+ =====> Argentina 
+ =====> Espa�a 
+ =====> Centroamerica y Caribe 
+ ===> Primeros pasos y ayuda 
+ ===> Altcoins (criptomonedas alternativas) 
+ =====> Miner�a de altcoins 
+ =====> Servicios 
+ =====> Tokens (Espa�ol) 
+ => 中文 (Chinese) 
+ ===> 跳蚤市场 
+ ===> 山寨币 
+ ===> 媒体 
+ ===> 挖矿 
+ ===> 离题万里 
+ => Hrvatski (Croatian) 
+ ===> Trgovina 
+ ===> Altcoins (Hrvatski) 
+ =====> Announcements (Hrvatski) 
+ ===> Off-topic (Hrvatski) 
+ => Deutsch (German) 
+ ===> Anf�nger und Hilfe 
+ ===> Mining (Deutsch) 
+ ===> Trading und Spekulation 
+ ===> Projektentwicklung 
+ ===> Off-Topic (Deutsch) 
+ ===> Treffen 
+ ===> Presse 
+ ===> Altcoins (Deutsch) 
+ =====> Announcements (Deutsch) 
+ ===> Marktplatz 
+ =====> Auktionen 
+ =====> Suche 
+ =====> Biete 
+ => Ελληνικά (Greek) 
+ ===> Αγορά 
+ ===> Mining Discussion (Ελληνικά) 
+ ===> Altcoins (Ελληνικά) 
+ =====> Altcoin Announcements (Ελληνικά) 
+ =====> Altcoin Mining (Ελληνικά) 
+ => עברית (Hebrew) 
+ => Fran�ais 
+ ===> Actualit� et News 
+ ===> D�butants 
+ ===> Discussions g�n�rales et utilisation du Bitcoin 
+ ===> Mining et Hardware 
+ ===> �conomie et sp�culation 
+ ===> Place de march� 
+ =====> �changes 
+ =====> Produits et services 
+ =====> Petites annonces 
+ ===> Le Bitcoin et la loi 
+ ===> Wiki, documentation et traduction 
+ ===> D�veloppement et technique 
+ ===> Vos sites et projets 
+ ===> Hors-sujet 
+ ===> Altcoins (Fran�ais) 
+ =====> Annonces 
+ => India 
+ ===> Mining (India) 
+ ===> Marketplace (India) 
+ ===> Regional Languages (India) 
+ ===> Press & News from India 
+ ===> Alt Coins (India) 
+ ===> Buyer/ Seller Reputations (India) 
+ ===> Off-Topic (India) 
+ => Italiano (Italian) 
+ ===> Guide (Italiano) 
+ ===> Progetti 
+ ===> Discussioni avanzate e sviluppo 
+ ===> Trading, analisi e speculazione 
+ ===> Mercato 
+ =====> Mercato valute 
+ =====> Beni 
+ =====> Servizi 
+ =====> Esercizi commerciali 
+ =====> Hardware/Mining (Italiano) 
+ =====> Gambling (Italiano) 
+ ===> Accuse scam/truffe 
+ ===> Mining (Italiano) 
+ ===> Alt-Currencies (Italiano) 
+ =====> Annunci 
+ ===> Raduni/Meeting (Italiano) 
+ ===> Crittografia e decentralizzazione 
+ ===> Off-Topic (Italiano) 
+ => 日本語 (Japanese) 
+ ===> アルトコイン 
+ => Nederlands (Dutch) 
+ ===> Markt 
+ ===> Gokken/lotterijen 
+ ===> Mining (Nederlands) 
+ ===> Beurzen 
+ ===> Alt Coins (Nederlands) 
+ ===> Off-topic (Nederlands) 
+ ===> Meetings (Nederlands) 
+ => Nigeria (Naija) 
+ ===> Politics and society (Naija) 
+ ===> Off-topic (Naija) 
+ => 한국어 (Korean) 
+ ===> 대체코인 Alt Coins (한국어) 
+ => Pilipinas 
+ ===> Altcoins (Pilipinas) 
+ =====> Altcoin Announcements (Pilipinas) 
+ ===> Pamilihan 
+ ===> Others (Pilipinas) 
+ => Polski 
+ ===> Tablica ogłoszeń 
+ ===> Alternatywne kryptowaluty 
+ =====> Nowe kryptowaluty i tokeny 
+ =====> Tablica ogłoszeń (altcoiny) 
+ => Portugu�s (Portuguese) 
+ ===> Primeiros Passos (Iniciantes) 
+ ===> Economia & Mercado 
+ ===> Minera��o em Geral 
+ ===> Desenvolvimento & Discuss�es T�cnicas 
+ ===> Criptomoedas Alternativas 
+ ===> Brasil 
+ ===> Portugal 
+ => Русский (Russian) 
+ ===> Новички 
+ ===> Cepвиcы 
+ =====> Барахолка 
+ =====> Обменники 
+ ===> Идеи 
+ ===> Кодеры 
+ ===> Майнеры 
+ ===> Политика 
+ ===> Трейдеры 
+ ===> Альтернативные криптовалюты 
+ =====> Токены 
+ =====> Бayнти и aиpдpoпы 
+ ===> Хайпы 
+ ===> Работа 
+ ===> Разное 
+ ===> Oбcyждeниe Bitcoin 
+ =====> Новости 
+ =====> Юристы 
+ => Rom�nă (Romanian) 
+ ===> Anunturi importante 
+ ===> Offtopic 
+ ===> Market 
+ =====> Discutii Servicii 
+ ===> Minerit 
+ ===> Tutoriale 
+ ===> Bine ai venit! 
+ ===> Presa 
+ ===> Altcoins (Monede Alternative) 
+ =====> Anunturi Monede Alternative 
+ => Skandinavisk 
+ => T�rk�e (Turkish) 
+ ===> Bitcoin Haberleri 
+ ===> Pazar Alanı 
+ ===> Madencilik 
+ ===> Ekonomi 
+ ===> Servisler 
+ =====> Fonlar 
+ ===> Proje Geliştirme 
+ ===> Alternatif Kripto-Paralar 
+ =====> Madencilik (Alternatif Kripto-Paralar) 
+ =====> Duyurular (Alternatif Kripto-Paralar) 
+ ===> Konu Dışı 
+ ===> Yeni Başlayanlar & Yardım 
+ ===> Buluşmalar 
+ => Other languages/locations 
+ Powered by SMF 1.1.19 | 
+ SMF © 2006-2009, Simple Machines 
+ Loading...
+ 
