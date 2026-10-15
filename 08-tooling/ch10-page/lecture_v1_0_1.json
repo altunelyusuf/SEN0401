@@ -1,0 +1,345 @@
+{
+ "chapter": 10,
+ "deck": "SEN0401_Ch10_TheBitcoinNetwork_3e_v1_0_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 10: The Bitcoin Network",
+   "say": "This deck explains the Bitcoin network: who the nodes are, how they find each other and shake hands, how blocks and transactions travel, and how light clients and encryption changed since the book went to print. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1 was run on a test network, so its answers are Recorded and only read back here. The research package for chapter 10 holds the sources and the claims.",
+   "concept": "FlatNetwork",
+   "takeaway": "How nodes find each other, pass blocks and payments, and what moved since print. Bitcoin Core 31.1 results are Recorded.",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has three parts after the questions: who is on the network and how two nodes meet, how peers, blocks and payments are found and relayed, and finally light clients, privacy and the encrypted wire. Each part carries a true story or a correction of the book that a reader can check on the slide. The numbers in the list let a reader jump straight to a part.",
+   "concept": "FlatNetwork",
+   "takeaway": "Three parts, five true stories, and a list of what was not run"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The chapter asks two questions that this deck answers by computation: which of its statements can be checked, and what has changed since print. The three numbers are counted from the research package, which holds 85 sources, 24 findings and 67 executed claims. Each slide that follows shows the computation behind one claim.",
+   "concept": "FlatNetwork",
+   "takeaway": "Its own competency questions, and the numbers behind the answers"
+  },
+  {
+   "n": 4,
+   "kind": "section",
+   "title": "Who is on the network",
+   "say": "This part asks who is on the network and how two nodes meet. The village market on the slide is the picture to keep: no manager, and every stall deals with its neighbours. The census of the real network is saved, and the handshake was run on a test node of Bitcoin Core 31.1.",
+   "concept": "NetworkAndNodes",
+   "takeaway": "Like a village market with no manager: every stall only talks to its neighbours"
+  },
+  {
+   "n": 5,
+   "kind": "content",
+   "title": "Who is on the network today",
+   "say": "A census of the reachable network shows a flat peer-to-peer system of equals, as the book says, but its numbers have moved. The saved snapshot lists 25,361 reachable nodes, and nearly half of them are onion services, so only 8,664 can be reached over the ordinary internet. More than 99 percent run code derived from Bitcoin Core, and the service bits tell a client which nodes keep the whole chain and which keep only the last 288 blocks.",
+   "concept": "NodeKinds",
+   "takeaway": "The network is flat and open, and nearly half of its nodes sit behind Tor"
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "The handshake: version, verack, services",
+   "say": "Two nodes meet by exchanging a version message, a few option messages and a verack, each framed with four magic bytes, a command, a length and a checksum. A script that knew only the wire format introduced itself to a test node of Bitcoin Core 31.1 and was answered as an equal with protocol version 70016, not the 70002 of the book. The services field says what a node offers: a pruned node does not set NETWORK but only NETWORK_LIMITED.",
+   "concept": "Handshake",
+   "takeaway": "Two nodes meet as equals: version, options, verack, then requests",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 7,
+   "kind": "section",
+   "title": "Peers, blocks and transactions",
+   "say": "This part follows a node from its first start to the data it relays. It finds peers through DNS seeds and gossip, keeps a few outbound connections of different kinds, and learns about blocks and transactions from them. A story about an attack on those connections and a story about compact blocks sit in the middle.",
+   "concept": "MempoolRelay",
+   "takeaway": "Finding peers, choosing connections, and passing blocks and payments along."
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "Finding peers: DNS seeds and addr",
+   "say": "A new node asks the DNS seeds named in its code for a few addresses, connects to some of them, and then asks those peers for more with addr messages. In the run the eight seeds answered with 20 to 29 addresses each, 182 different ones, but the test node could not connect to any mainnet peer, so that step was not run. The newer addrv2 message can carry the long addresses of Tor, I2P and CJDNS, which the old four-byte format could not.",
+   "concept": "Discovery",
+   "takeaway": "Peers are found by DNS seeds first, then by gossip",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "NOT EXECUTED",
+     "text": "connections to mainnet peers; row 3 shows the probe did not connect."
+    }
+   ]
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "Who connects to whom: connection types",
+   "say": "A node does not treat all its peers alike. It keeps eight outbound links that carry everything and two that carry only blocks, so that an attacker who sees its payment traffic still cannot see those two. Short feeler and address-fetch links test and learn addresses, and up to 125 connections are allowed in all. On the test network a peer that said it wanted no payments received none.",
+   "concept": "Connections",
+   "takeaway": "Two of a node's links carry blocks only, and hide from payment traffic",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Eight connections, one liar",
+   "say": "On 12 August 2015 Ethan Heilman and his colleagues presented the eclipse attack at the USENIX Security Symposium in Washington, D.C. An adversary that controls enough addresses can take over all of a node's connections and then feed it a false view of the chain. Bitcoin Core now keeps anchor connections and two block-relay-only links. The attack and the routing attack of 2017 were not run here; the passages were found in the saved papers.",
+   "concept": "NetworkAttacks",
+   "takeaway": "The story of 12 August 2015: who, where, when and what to read next",
+   "labels": [
+    {
+     "kind": "NOT EXECUTED",
+     "text": "the attack itself; the papers' claims are found in the saved copies (rows 2 and 3)"
+    },
+    {
+     "kind": "Stand-in picture",
+     "text": "an eclipse, not the paper."
+    }
+   ]
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Compact blocks: send only what is missing",
+   "say": "A node already holds most transactions of a new block in its mempool, so the block can travel as a header, a six-byte short id for each transaction, and the few transactions the receiver cannot have, always including the coinbase. In the run a block of 13 transactions took 332 bytes instead of 3,062, and the receiver asked for the two transactions it lacked. A node sends compact blocks unasked to at most three high-bandwidth peers.",
+   "concept": "CompactBlocks",
+   "takeaway": "A compact block is a header and short ids: a ninth of the bytes",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "Sending a block as a list of short codes",
+   "say": "On 27 April 2016 the number 152 was assigned to the proposal for compact block relay by Matt Corallo, and Bitcoin Core 0.13.0 lists the code of Suhas Daftuar. The book dates the feature to 2015, which is a year too early. Corallo had earlier built a relay network for miners, and its successor FIBRE adds forward error correction, so that a lost packet can be rebuilt. The demonstration rebuilds one lost piece of four; FIBRE itself was not run.",
+   "concept": "PrivateRelay",
+   "takeaway": "The story of 27 April 2016: who, where, when and what to read next",
+   "labels": [
+    {
+     "kind": "NOT EXECUTED",
+     "text": "FIBRE"
+    },
+    {
+     "kind": "Stand-in picture",
+     "text": "optical fibre, not the BIP."
+    }
+   ]
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "Syncing: headers first, then blocks",
+   "say": "A node that is catching up first asks for headers, at most 2,000 in one reply, and checks that each links to the one before. Only then does it fetch blocks, inside a window of 1,024 and at most 16 in flight from one peer. In the run a second node synced 2,105 blocks from the first and ended on the same chain. A peer that sent sendheaders is told of new blocks by their headers instead of an inv message.",
+   "concept": "HeadersFirst",
+   "takeaway": "Headers come first, then blocks, so a liar is caught cheaply",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Relaying payments, and orphans",
+   "say": "Transactions are announced by their wtxid, and a peer's feefilter keeps cheaper ones from being announced to it. The mempool is local to each node whereas the set of unspent outputs is shared, and the run shows a node with six waiting payments next to a neighbour with none that nevertheless holds the same 107 outputs. A child that arrives before its parent waits in the orphan pool, and the node asks its peers for the parent.",
+   "concept": "MempoolRelay",
+   "takeaway": "The mempool is local; the set of unspent outputs is shared",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "NOT EXECUTED",
+     "text": "Erlay; row 6 shows that BIP 330 is off by default, so announcements are still flooded."
+    }
+   ]
+  },
+  {
+   "n": 15,
+   "kind": "section",
+   "title": "Light clients, privacy, transport",
+   "say": "This part is about the nodes that do not keep the chain. A light client checks a payment with headers and a short proof, asks a full node for what concerns it, and has to hide what it asks. Two stories show how the first answer, the Bloom filter, leaked and how the second turned the question around, and a third shows how the wire itself was encrypted.",
+   "concept": "LightClients",
+   "takeaway": "How a phone checks a payment without the chain, what it leaked, and how the wire became private."
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "A light client verifies with headers",
+   "say": "A light client keeps only the 80-byte block headers, which are about ten thousand times smaller than the chain. To check one payment it asks a full node for the Merkle path from that payment to the root in the header, and the test run needed three hashes for a block of five payments, 215 bytes against a block of 4,448. Nakamoto's formula gives the odds that an attacker catches up after six blocks: 0.0002428 for a tenth of the power.",
+   "concept": "Spv",
+   "takeaway": "Headers and a short Merkle path are enough to check one payment",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "Bloom filters: a fuzzy guest list",
+   "say": "A Bloom filter is a short row of bits that answers either definitely not or probably yes, so a light client can send a full node a filter of its addresses and receive only matching payments. The toy filter of the chapter missed nothing and gave a few false hits, and the encoding of BIP 37 matches its published vector. The test node sent one matching payment as a 215-byte merkleblock, but a default node no longer offers the service.",
+   "concept": "BloomFilters",
+   "takeaway": "A Bloom filter says definitely not or probably yes, and it leaked",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "The filter that told on the wallet",
+   "say": "On 24 October 2012 BIP 37 was assigned to Mike Hearn and Matt Corallo: a light client would send a Bloom filter of its addresses to a full node. In 2014 Arthur Gervais and his colleagues at ETH Zurich showed that the reliance on Bloom filters leaks considerable information about the addresses of the user. Bitcoin Core 0.19.0.1 switched the service off by default, and the test node hung up on a peer that sent filterload.",
+   "concept": "BloomFilters",
+   "takeaway": "The story of 24 October 2012: who, where, when and what to read next",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Block filters turn the question around",
+   "say": "A block filter reverses the Bloom filter: the full node builds one small filter for every block, and the light client downloads it and tests its own scripts locally, so it never reveals them. The filter stores the sorted differences with Golomb-Rice coding, about 21 bits for each element, not the 64 bits of the book. The chapter's own code reproduced all ten published vectors of BIP 158, and the filter and header of the test node.",
+   "concept": "BlockFilters",
+   "takeaway": "A block filter is tested on the client, so nothing is revealed",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "An anonymous post turned the filter around",
+   "say": "On 9 May 2016 a developer writing as bfd posted to the bitcoin-dev list the idea of committed Bloom filters, one small filter for each block, so that the client tests its own addresses and reveals nothing. Olaoluwa Osuntokun and Alex Akselrod wrote it as BIP 157 and 158, and Lightning Labs built the light client Neutrino on it. A node of Bitcoin Core 31.1 served three filters on request, and one started without the option hung up.",
+   "concept": "BlockFilters",
+   "takeaway": "The story of 9 May 2016: who, where, when and what to read next",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "Stand-in picture",
+     "text": "Solomon Golomb, namesake of the coding."
+    }
+   ]
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "Transport v2: from postcard to envelope",
+   "say": "In the old transport every message began with the same four magic bytes and the command name, so anyone on the path could read the traffic. The version 2 transport of BIP 324 hides all of that: in the run its stream showed neither the magic bytes nor the word version and looked like random bytes, and both ends derived the same session id. It encrypts but does not authenticate, so an active man in the middle remains possible.",
+   "concept": "EncryptedTransport",
+   "takeaway": "The book says the wire is plain, but v2 has been the default since 27.0",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "From a closed proposal to the default",
+   "say": "Jonas Schnelli proposed encrypting peer connections in BIP 151 in 2016, and the proposal was closed after mixed comments. On 8 March 2019 BIP 324 was assigned to Dhruv Mehta, Tim Ruffing, Jonas Schnelli and Pieter Wuille, and it replaces BIP 151. Bitcoin Core 26.0 added it as an option and 27.0 made it the default, so that 21,768 of the 25,361 nodes of the census now offer it.",
+   "concept": "EncryptedTransport",
+   "takeaway": "The story of 8 March 2019: who, where, when and what to read next",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "Stand-in picture",
+     "text": "an Enigma machine, not the protocol."
+    }
+   ]
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Hiding who you are: Tor, I2P, CJDNS",
+   "say": "Bitcoin Core can run over five networks, and the book knows only Tor. Tor version 3 and addrv2 came with release 0.21.0, I2P with 22.0 and CJDNS with 23.0, and the saved census shows 12,488 onion nodes, 4,208 I2P nodes and a single CJDNS node. The test node marked onion as reachable when given a proxy setting, but no Tor, I2P or CJDNS router was run, so no traffic was sent through them.",
+   "concept": "AnonymityNetworks",
+   "takeaway": "Onion nodes are about half of the network, I2P a sixth, CJDNS one node",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1 on this slide were produced by one run of the Bitcoin Core 31.1 nodes on private chains and are read back here; no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "NOT EXECUTED",
+     "text": "Tor, I2P and CJDNS routers; the proxy setting only marks a network reachable, and no traffic ran through it."
+    }
+   ]
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "concept": "FlatNetwork",
+   "takeaway": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the USENIX talk on eclipse attacks, then the Optech topic on compact block relay next to the chapter. The research package for chapter 10 lists all 85 sources with the passages used.",
+   "concept": "NodeKinds",
+   "takeaway": "Watch the eclipse talk, then read the Optech topic beside the chapter"
+  },
+  {
+   "n": 26,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 10 holds the sources and the test records behind them.",
+   "concept": "FlatNetwork",
+   "takeaway": "And where each claim gets its proof"
+  }
+ ],
+ "_note": "lecture_v1_0_0.json plus the deck's honesty labels per slide (labels), made by lecture_make_v1_0_1.py from the deck plan and the deck's review record; the slide text is unchanged; concept now holds the id of the page concept the slide is about (the deck's one-line takeaway is kept as takeaway)."
+}
