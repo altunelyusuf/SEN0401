@@ -1,0 +1,188 @@
+{
+ "chapter": 12,
+ "deck": "SEN0401_Ch12_MiningAndConsensus_3e_v1_0_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 12: Mining and Consensus",
+   "say": "This deck explains mining and consensus: the reward and its halving, the checklists that every node runs on a block, the nonce lottery of proof of work and its retargeting, the pools and attacks that follow, and the soft forks that change the rules. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1 was run on a test network, so its answers are Recorded and only read back here. The research package for chapter 12 holds the sources and the claims.",
+   "concept": "How new coins are made, how every node checks a block, why proof of work is a lottery, and how the rules change. Bitcoin Core 31.1 results are Recorded."
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has three parts after the questions: rewards, rules and the block, with the subsidy, the checklists, the chain of most work and the coinbase; proof of work, with its lottery, difficulty and retargeting; and competition and rule changes, with pools, attacks and forks. Each part carries a true story or a correction of the book that a reader can check on the slide. The numbers in the list let a reader jump straight to a part.",
+   "concept": "Three parts, four true stories, and a list of what was not run"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The chapter asks two questions that this deck answers by computation: which of its statements can be checked, and what has changed since print. The three numbers are counted from the research package, which holds 91 sources, 27 findings and 69 executed claims. Each slide that follows shows the computation behind one claim.",
+   "concept": "Its own competency questions, and the numbers behind the answers"
+  },
+  {
+   "n": 4,
+   "kind": "section",
+   "title": "Rewards, rules and the block",
+   "say": "This part is about money and rules. It starts with the subsidy that halves every 210,000 blocks and the fees that are added to it, then follows the checklists that every node runs on a transaction and a block, the rule that the chain with the most work wins, and the special first transaction of a block, the coinbase. The story of the part is the block in which fees beat the subsidy twelve times.",
+   "concept": "Where new coins come from, who may claim them, and the rules a block must pass."
+  },
+  {
+   "n": 5,
+   "kind": "content",
+   "title": "Halving and the 21 million limit",
+   "say": "The subsidy is 50 coins shifted right by one bit for every 210,000 blocks, and four real blocks show it: 25, 12.5, 6.25 and 3.125 coins. Summed in whole satoshis the 33 non-zero rewards stop 2,310,000 satoshis short of 21 million coins, and the last reward of one satoshi is in block 6,929,999, about the year 2140. The book's script has an error: its float division makes Python 3 print 2100000000000000.0 and not the figure of the text.",
+   "concept": "The reward halves every 210,000 blocks, so supply stops just below 21 million"
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "A block's reward is subsidy plus fees",
+   "say": "A block may claim at most the subsidy plus the fees of its transactions. The test node's template paid 345,369 satoshis, made of the subsidy and 40,194 of fees; a block that claimed one satoshi less was accepted and one that claimed one satoshi more was refused as bad-cb-amount. In block 840,000 the fees were 12.04 times the subsidy, which makes the book's remark that fees are usually a small percentage of income a description of its time and not a law.",
+   "concept": "Reward is subsidy plus fees, and fees can be 12 times the subsidy"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "The block where tips beat the wage 12 times",
+   "say": "Block 840,000 was mined by ViaBTC at 00:09:27 UTC on 20 April 2024 and was the first to pay the new subsidy of 3.125 coins. Its 3,050 transactions paid 3,762,561,499 satoshis in fees, 12.04 times the subsidy, so the reward of 4,075,061,499 satoshis was made mostly of tips. The coinbase carries the tag /ViaBTC/, which is how the statistics of pools are made. The book says that fees are usually a small percentage of income, and this block is an exception.",
+   "concept": "The story of 20 April 2024: who, where, when and what to read next"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "Node checklists for transactions and blocks",
+   "say": "Consensus is a set of checks, and each one has a name. On a Bitcoin Core 31.1 test node, fourteen transaction cases and fourteen block cases each produced one reason: a repeated input, a negative output, a coinbase spent before 100 blocks, a reward one satoshi too high, no height in the coinbase, a wrong merkle root, a time not above the median or two hours ahead, and a version 1. The one valid block was accepted.",
+   "concept": "Every rule has a name, and a node reports the first one a block breaks"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "The best chain has the most work",
+   "say": "A node follows the chain with the most cumulative proof of work, which is not always the longest. On two test nodes a branch with chainwork 208 replaced one with 206, and a payment of 49.999 coins that had one confirmation went to minus two, so the receiver held nothing until the payment was mined again. The losing branch stays on record as a valid fork. The blocks were handed over by RPC and not relayed over the network.",
+   "concept": "The chain with the most work wins, and a payment can fall back to zero"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Coinbase fields and reserved weight",
+   "say": "The first transaction of a block, the coinbase, has no real input. Since BIP 34 its script begins with the height, so block 2,204 starts with 029c08, and the coinbase of Bitcoin Core 31.1 also sets its locktime to the height minus one, its sequence to 0xfffffffe and ends the script with OP_0, none of which is in the book's table. Core now reserves 8,000 weight units for it, so its blocks stay below 3,992,000, and block 840,000 with 3,993,281 came from other software.",
+   "concept": "The coinbase begins with the height; Core reserves 8,000 weight units for it"
+  },
+  {
+   "n": 11,
+   "kind": "section",
+   "title": "Proof of work",
+   "say": "This part explains proof of work. It starts with a toy lottery in which a counter is hashed until the result is small enough, then asks how small the target must be and how much work that means in days. It ends with the rule that sets the target every 2,016 blocks, and with the story of Adam Back's Hashcash, from which the idea comes.",
+   "concept": "A lottery whose odds the network sets, and a thermostat that keeps it fair."
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "Proof of work is a nonce lottery",
+   "say": "Proof of work is a lottery in which anyone can check a winning ticket at once. In the book's toy version the phrase Hello, world with a counter first gives a hash that starts with a zero at 32; two zeros took 228 tries and three took 3,460. The book prints the phrase with a capital W, and that spelling gives a different hash, 6bbe6a3d; only the lowercase one gives 09cb91f8. Nothing was mined on a public network.",
+   "concept": "A hash below the target is a winning ticket that anyone can check"
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "Difficulty, hash rate and a 1 TH/s miner",
+   "say": "Difficulty tells how many hashes a block takes on average: difficulty times 2 to the 32. At the difficulty of block 277,316, 1,180,923,195, a miner doing a trillion hashes a second needs 58.7 days, which is 8,453 blocks; the book says 8,496 blocks, an error of about half a percent. Today's hash rate, from the last adjustment and from mempool.space, is about 10 to the 21 per second, 121,738 times that of the book's example.",
+   "concept": "At 1 TH/s a block takes 8,453 blocks of waiting, not the book's 8,496"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Retargeting every 2,016 blocks",
+   "say": "Every 2,016 blocks the target is scaled by the time the period took against two weeks, and never by more than a factor of four either way. From the headers of blocks 838,656 and 840,671, which are 1,186,047 seconds apart, the formula computes the bits 170331db, and that is what block 840,672 really carries. Counting 2,015 gaps and not 2,016 makes the aim 0.05 percent faster than ten minutes. Regtest does not retarget, so no real Bitcoin Core retarget was run.",
+   "concept": "The formula reproduces a real adjustment; a swing is clamped to four times"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "The BIP 94 branch and recent adjustments",
+   "say": "The book's listing of the retarget function has no branch for testnet4, but Bitcoin Core 31.1 has one: when enforce_BIP94 is true, the new target is built from the bits of the first block of the period, which may not use the minimum-difficulty exception. It is true on testnet4 and false on the main chain. Regtest sets fPowNoRetargeting and keeps its bits forever. In the last two years there were 52 adjustments, from 0.888 to 1.147 times.",
+   "concept": "Core has a BIP 94 branch that the book's retarget listing lacks"
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "The stamp that made email cost something",
+   "say": "Proof of work did not start with Bitcoin. Cynthia Dwork and Moni Naor proposed in 1992 that a user should compute a moderately hard function to fight junk mail, and Adam Back proposed Hashcash in 1997 and described it in a paper dated 1 August 2002. Satoshi Nakamoto's paper says that Bitcoin needs a proof of work similar to Back's Hashcash, and the book's toy search is the same idea in small.",
+   "concept": "The story of 1 August 2002: who, where, when and what to read next"
+  },
+  {
+   "n": 17,
+   "kind": "section",
+   "title": "Competition and rule changes",
+   "say": "This part is about competition and change. When the 32-bit nonce is used up a miner changes other fields, miners join pools to smooth their luck, and a pool with enough power can attack. Rule changes then come as soft forks, which only tighten, or hard forks, which split. The two stories are the chain split of March 2013 and the activation of taproot.",
+   "concept": "What miners do when the lottery gets harder, how attackers fare, and how the rules change."
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "When the 32-bit nonce runs out",
+   "say": "The nonce has only 4,294,967,296 values, and today's hash rate uses them up 240 billion times a second, so miners change something else. The extra nonce in the coinbase script changes the transaction id and the merkle root, which gives 2 to the 96 values. Version rolling lets miners also change 16 bits of the version, which gives 65,536 times as many nonces; on the test chain a block with a rolled version was accepted.",
+   "concept": "A miner changes the extra nonce or the version bits when the nonce runs out"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Mining pools: who finds the blocks",
+   "say": "Mining by oneself is a lottery with long waits, so most miners join a pool that shares the reward by the shares of work each one sends. In the last year four pools found 68.6 percent of 52,371 blocks, with Foundry USA at 28.2 percent. The book's remark that a miner with 1 percent finds more than a block a day is right at 1.44, while one with 0.01 percent waits 69 days. No live pool or Stratum connection was made.",
+   "concept": "Four pools found two thirds of the blocks; a small miner waits for months"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "How much power an attack needs",
+   "say": "An attacker does not need 51 percent to do harm. Nakamoto's table gives a 10 percent attacker, six blocks behind, a chance of 0.0002428, and the chance grows fast with power: 0.1321 at 30 percent and 0.766 at 45 percent. The paper on selfish mining shows that a pool profits from hiding blocks above one third of the power, or one quarter if half of the honest miners follow its blocks, and the top pool holds 0.2816. No attack was run on a public chain.",
+   "concept": "An attacker needs less than a majority; the top pool is below 1/3"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "Soft forks tighten, hard forks split",
+   "say": "A soft fork only tightens the rules, so old nodes still accept the new blocks; a hard fork loosens them and splits the chain. On two test nodes a lax node accepted a block with no height in its coinbase and a strict node refused it, and the strict node could not follow the lax chain. BIP 9 let miners signal in a window: with a period of 144 and a threshold of 108, the deployment went from defined to started, locked in and active. On the main chain the threshold is 1,916 of 2,016.",
+   "concept": "A soft fork only tightens; BIP 9 lets miners signal, lock in and activate"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "The day Bitcoin had two histories",
+   "say": "On 11 March 2013 a block of 797 transactions, number 225,430, was accepted by nodes of Bitcoin 0.8 and rejected by some older ones. BIP 50, written by Gavin Andresen, explains that versions before 0.8 had too few Berkeley DB locks for a large but valid block, which had become a rule by accident. The pools of Slush and BTCGuild went back to 0.7 so that the old chain had the most work, and the split lasted 24 blocks, about six hours.",
+   "concept": "The story of 11 March 2013: who, where, when and what to read next"
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Taproot: a 90 percent vote on a clock",
+   "say": "Taproot was activated by a variant of BIP 9 called Speedy Trial, which opened on 24 April 2021, timed out on 11 August 2021 and needed 1,815 of 2,016 blocks, 90 percent, instead of 1,916. It also set a minimum activation height of 709,632, so that nodes had time to upgrade. Block 709,632 was mined by F2Pool on 14 November 2021 with the version 0x20200004, in which bit 2 is the signal for taproot.",
+   "concept": "The story of 14 November 2021: who, where, when and what to read next"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "concept": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the 3Blue1Brown video on how bitcoin works, then the Optech topic on soft fork activation next to the chapter. The research package for chapter 12 lists all 91 sources with the passages used.",
+   "concept": "Watch the proof-of-work video, then read the Optech topic beside the chapter"
+  },
+  {
+   "n": 26,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 12 holds the sources and the test records behind them.",
+   "concept": "And where each claim gets its proof"
+  }
+ ]
+}
