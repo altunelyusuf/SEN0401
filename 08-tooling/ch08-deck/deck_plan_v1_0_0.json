@@ -1,0 +1,1836 @@
+{
+ "meta": {
+  "title": "Chapter 8: Digital Signatures",
+  "sub": "SEN0401, third-edition redesign",
+  "version": "1.0.0",
+  "python": "3.14.6",
+  "total": 0,
+  "redesign": "2026-10-15, first deck from the committed research package (commit 4102ded), to the CME look and feel; notes are short reader's prose",
+  "notes": "short reader's prose: 2-4 sentences, at most 100 words",
+  "honesty": {
+   "title": [
+    "Bitcoin Core 31.1.0",
+    "Recorded"
+   ],
+   "recorded": [
+    1,
+    7,
+    8,
+    18,
+    22
+   ],
+   "notExecuted": [
+    12,
+    23
+   ],
+   "standin": {
+    "17": [
+     "Stand-in picture"
+    ],
+    "19": [
+     "Stand-in picture"
+    ]
+   },
+   "vectors": [
+    8,
+    12,
+    13,
+    17,
+    18,
+    21,
+    23
+   ]
+  },
+  "analogies": [
+   {
+    "concept": "digital signature",
+    "analogy": "Like a wax seal: anyone can compare it with the ring's pattern, but only the ring's owner can press a new one.",
+    "slide": 5
+   },
+   {
+    "concept": "modulus",
+    "analogy": "Like a clock: fifteen hours after noon reads three. A dial for points and a dial for scalars are different clocks with different sizes, p and n.",
+    "slide": 6
+   },
+   {
+    "concept": "SIGHASH flags",
+    "analogy": "Think of a cheque: ALL fills in every line, NONE leaves the payee blank.",
+    "slide": 4
+   },
+   {
+    "concept": "key aggregation",
+    "analogy": "Like mixing paints: anyone can add colours, but a partner who sees yours first can choose a colour that hides it.",
+    "slide": 13
+   },
+   {
+    "concept": "Shamir sharing",
+    "analogy": "Like a treasure map torn in three: any two pieces show the place, one piece shows nothing.",
+    "slide": 14
+   },
+   {
+    "concept": "nonce reuse",
+    "analogy": "Like a one-time pad used twice: two signatures under one nonce can be subtracted to leave the key",
+    "slide": 19
+   }
+  ]
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 8: Digital Signatures",
+   "sub": "What a signature commits to, how schnorr and ECDSA work, and what moved since print. Bitcoin Core 31.1.0 results are Recorded.",
+   "items": [],
+   "notes": "This deck explains how a Bitcoin signature works and what it commits to. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1.0 was run once on a test network, so its answers are Recorded and only read back here. The full text of every slide is in the research package for chapter 8.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "The questions, then four parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 6.3,
+     "h": 3.4,
+     "fs": 12.0,
+     "items": [
+      "The chapter's questions  (slides 3-3)",
+      "What a signature proves and signs  (slides 4-8)",
+      "Schnorr: proof, BIP340, MuSig2, threshold  (slides 9-14)",
+      "ECDSA: encoding, nonces, Android  (slides 15-19)",
+      "Segwit, taproot, policy, what moved since print  (slides 20-26)"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.5,
+     "w": 2.45,
+     "h": 3.4,
+     "vert": true,
+     "items": [
+      {
+       "n": "26",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "3",
+       "label": "true stories, each with WHO / WHERE / WHEN / READ"
+      },
+      {
+       "n": "17",
+       "label": "live-run consoles, each shown with its result"
+      }
+     ]
+    }
+   ],
+   "notes": "The route has four parts after the questions: what a signature proves and signs, schnorr signatures, ECDSA with its encoding and its nonce, and finally segwit, taproot and what moved since the book. Each part ends in a story or a correction of the book that a reader can check on the slide. The numbers in the list let a reader jump straight to a part.",
+   "take": "Four parts, three true stories, and a list of what was not run",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions, and the numbers behind the answers",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 1.7,
+     "fs": 13,
+     "items": [
+      "Which examples, figures and statements of the chapter can be reproduced by execution, by the standards' own test vectors and by Bitcoin Core, and what does the execution give?",
+      "What in the chapter differs from the standards or from Bitcoin Core as it is now, or has changed status since the book went to print, and on what source?"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 0.5,
+     "y": 3.3,
+     "w": 9.0,
+     "h": 1.6,
+     "items": [
+      {
+       "n": "66",
+       "label": "sources, opened and read on 2026-10-15"
+      },
+      {
+       "n": "91",
+       "label": "claims, each recomputed by running code"
+      },
+      {
+       "n": "20",
+       "label": "findings, several of them corrections of the book"
+      }
+     ]
+    }
+   ],
+   "notes": "The chapter asks two questions that this deck answers by computation: which of its statements can be reproduced, and which have changed since print. The three numbers below them are counted from the research package, which holds 66 sources, 20 findings and 91 executed claims. Each slide that follows shows the computation behind its claim.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "What a signature proves and signs",
+   "sub": "Sign and verify, the two moduli and the SIGHASH flags. Think of a cheque: ALL fills in every line, NONE leaves the payee blank.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Sign, verify, break"
+      },
+      {
+       "label": "Moduli n and p"
+      },
+      {
+       "label": "Flags and commitments"
+      },
+      {
+       "label": "The SINGLE bug"
+      }
+     ]
+    }
+   ],
+   "notes": "This part starts from the verification function, with three inputs and one answer. It then separates the two numbers that the book calls modulus, and shows how the SIGHASH flags choose what a signature covers. The cheque on the slide is the picture to keep: a signature is only as strong as the fields it covers.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Anyone can verify a signature, no secret needed",
+   "sub": "Three inputs go in and yes or no comes out; change any one and it turns to no",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 0.62,
+     "fs": 11.5,
+     "steps": [
+      {
+       "label": "Message",
+       "sub": "a hash of part of the transaction"
+      },
+      {
+       "label": "Public key and signature",
+       "sub": "published with the transaction"
+      },
+      {
+       "label": "Verify",
+       "sub": "answers yes or no",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.45,
+     "w": 5.7,
+     "h": 1.95,
+     "rows": [
+      [
+       "d, pk = L.ecdsa_sign(K.SK, K.MSG), L.pubkey_create(K.SK)",
+       ""
+      ],
+      [
+       "len(d), L.ecdsa_verify(pk, K.MSG, d)",
+       "(70, True)"
+      ],
+      [
+       "L.ecdsa_verify(pk, bytes([K.MSG[0] ^ 1]) + K.MSG[1:], d)",
+       "False"
+      ],
+      [
+       "L.ecdsa_verify(L.pubkey_create(K.SK + 1), K.MSG, d)",
+       "False"
+      ],
+      [
+       "K.two_parties_two_inputs()",
+       "[True, True, False, False]"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: sign, verify, and two ways to break it"
+    },
+    {
+     "t": "beats",
+     "x": 6.4,
+     "y": 2.15,
+     "w": 3.1,
+     "h": 2.3,
+     "fs": 10.5,
+     "items": [
+      "Row 1: sign a message hash with the private key",
+      "Row 2: verify with the public key: 70 bytes, True",
+      "Row 3: flip one bit of the message: False",
+      "Row 4: use the neighbour's public key: False",
+      "Row 5: two inputs, two owners; swapping fails"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.7,
+     "w": 9.0,
+     "h": 0.3,
+     "fs": 11,
+     "body": "Like a wax seal: anyone can compare it with the ring's pattern, but only the ring's owner can press a new one."
+    }
+   ],
+   "notes": "A signature check needs only a message, a public key and a signature, so any node can run it without a secret or a link to the signer. The console signs a message hash, verifies it, and then shows two ways to break it: a message changed by one bit and a neighbour's key. The last row shows that two owners can sign two inputs of one transaction independently, and that swapping their signatures fails.",
+   "bg": "light",
+   "take": "Anyone can verify a signature; only the owner of the key can make one"
+  },
+  {
+   "kind": "content",
+   "title": "Scalars live modulo n, coordinates modulo p",
+   "sub": "The book says everything is modulo p; the signature equation needs the group order n",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.05,
+     "w": 5.5,
+     "h": 1.85,
+     "rows": [
+      [
+       "5 % 3",
+       "2"
+      ],
+      [
+       "K.toy()",
+       "[15, 35, 40, 200, 165, True, 3]"
+      ],
+      [
+       "K.scalar_modulus()",
+       "[True, False, True, True, True]"
+      ],
+      [
+       "L.P - L.N > 2 ** 128, L.P.bit_length(), L.N.bit_length()",
+       "(True, 256, 256)"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: a clock, a toy, and the real curve"
+    },
+    {
+     "t": "beats",
+     "x": 6.2,
+     "y": 1.75,
+     "w": 3.3,
+     "h": 2.5,
+     "fs": 10.5,
+     "items": [
+      "Row 1: five divided by three leaves two; that is all modulus 3 means",
+      "Row 2: plain integers, x 3, G 5, k 7, e 11: s is 40 and both sides give 200; dividing xG by G gives 3 back",
+      "Row 3: on secp256k1, reduce s modulo n and the check holds; modulo p it fails",
+      "Row 4: p exceeds n by more than 2 to the power 128; both have 256 bits"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.35,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 11.5,
+     "body": "Like a clock: fifteen hours after noon reads three. A dial for points and a dial for scalars are different clocks with different sizes, p and n."
+    }
+   ],
+   "notes": "The book says the arithmetic is done modulo p, but the scalars of the signature equation are reduced modulo n, the order of the group. The console shows the toy equation with plain integers, where division would reveal the key, and then the real curve, where the equation holds modulo n and fails modulo p. The two numbers are different and both have 256 bits.",
+   "bg": "light",
+   "lede": "The equation sG = kG + eX holds only when s is reduced modulo n, the order of the group of points, and not modulo p.",
+   "take": "Scalars wrap at the group order n; only the coordinates wrap at the prime p"
+  },
+  {
+   "kind": "content",
+   "title": "A flag chooses what the signature commits to",
+   "sub": "Only plain ALL covers other inputs' sequence numbers; ACP means ANYONECANPAY",
+   "items": [
+    {
+     "t": "text",
+     "x": 0.5,
+     "y": 1.32,
+     "w": 4.6,
+     "h": 0.25,
+     "fs": 11,
+     "bold": true,
+     "color": "dark",
+     "body": "Computed: which fields change the hash"
+    },
+    {
+     "t": "text",
+     "x": 5.2,
+     "y": 1.32,
+     "w": 4.3,
+     "h": 0.25,
+     "fs": 11,
+     "bold": true,
+     "color": "dark",
+     "body": "Recorded: Core's own signatures, edited here"
+    },
+    {
+     "t": "table",
+     "x": 0.5,
+     "y": 1.6,
+     "w": 4.6,
+     "colW": [
+      0.95,
+      0.7,
+      0.7,
+      0.8,
+      0.75,
+      0.7
+     ],
+     "rows": [
+      [
+       "Flag",
+       "Others' outpoints",
+       "Others' sequences",
+       "Same-index output",
+       "Other outputs",
+       "Own sequence"
+      ],
+      [
+       "ALL",
+       "yes",
+       "yes",
+       "yes",
+       "yes",
+       "yes"
+      ],
+      [
+       "NONE",
+       "yes",
+       "-",
+       "-",
+       "-",
+       "yes"
+      ],
+      [
+       "SINGLE",
+       "yes",
+       "-",
+       "yes",
+       "-",
+       "yes"
+      ],
+      [
+       "ALL+ACP",
+       "-",
+       "-",
+       "yes",
+       "yes",
+       "yes"
+      ],
+      [
+       "NONE+ACP",
+       "-",
+       "-",
+       "-",
+       "-",
+       "yes"
+      ],
+      [
+       "SINGLE+ACP",
+       "-",
+       "-",
+       "yes",
+       "-",
+       "yes"
+      ]
+     ],
+     "fs": 8,
+     "rowH": [
+      0.4,
+      0.19,
+      0.19,
+      0.19,
+      0.19,
+      0.19,
+      0.19
+     ]
+    },
+    {
+     "t": "table",
+     "x": 5.2,
+     "y": 1.6,
+     "w": 4.3,
+     "colW": [
+      1.15,
+      1.05,
+      1.05,
+      1.05
+     ],
+     "rows": [
+      [
+       "Flag",
+       "Same-index output edited",
+       "Other output edited",
+       "Other input changed"
+      ],
+      [
+       "ALL",
+       "broken",
+       "broken",
+       "broken"
+      ],
+      [
+       "NONE",
+       "valid",
+       "valid",
+       "broken"
+      ],
+      [
+       "SINGLE",
+       "broken",
+       "valid",
+       "broken"
+      ],
+      [
+       "ALL+ACP",
+       "broken",
+       "broken",
+       "valid"
+      ],
+      [
+       "NONE+ACP",
+       "valid",
+       "valid",
+       "valid"
+      ],
+      [
+       "SINGLE+ACP",
+       "broken",
+       "valid",
+       "valid"
+      ]
+     ],
+     "fs": 8,
+     "rowH": [
+      0.4,
+      0.19,
+      0.19,
+      0.19,
+      0.19,
+      0.19,
+      0.19
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.62,
+     "w": 9.0,
+     "h": 1.08,
+     "rows": [
+      [
+       "{h: ''.join('Y' if x else '.' for x in v) for h, v in K.commitments_table().items()}",
+       "{'0x1': 'YYYYY', '0x2': 'Y...Y', '0x3': 'Y.Y.Y', '0x81': '..YYY', '0x82': '....Y', '0x83': '..Y.Y'}"
+      ],
+      [
+       "yn(K.core_signature_survives_changes())",
+       "'ALL .. | NONE YY | SINGLE .Y | ALL|ANYONECANPAY .. | NONE|ANYONECANPAY YY | SINGLE|ANYONECANPAY .Y'"
+      ],
+      [
+       "yn(K.core_anyonecanpay_survives_other_input_change())",
+       "'ALL . | NONE . | SINGLE . | ALL|ANYONECANPAY Y | NONE|ANYONECANPAY Y | SINGLE|ANYONECANPAY Y'"
+      ]
+     ],
+     "fs": 7.2,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: the fields per flag; Recorded: do Core's signatures survive an edit?"
+    }
+   ],
+   "notes": "Each flag removes fields from the hash, and the left table shows which of five fields change it, found by changing one field at a time. The right table asks the same question of signatures that Bitcoin Core 31.1.0 made on a test network, which are Recorded here and edited and verified again on this machine. The two tables agree, and the book's wording about all inputs holds for outpoints but not for the other inputs' sequence numbers.",
+   "bg": "light",
+   "take": "NONE signs no outputs, SINGLE one, ALL all; ANYONECANPAY frees other inputs"
+  },
+  {
+   "kind": "content",
+   "title": "SIGHASH_SINGLE with no matching output",
+   "sub": "The book is silent: the legacy hash becomes the number 1, and Core 31.1 refuses to sign",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.05,
+     "w": 6.0,
+     "h": 1.75,
+     "rows": [
+      [
+       "K.single_bug_hash()  # input 1, no output 1",
+       "'0100000000000000000000000000000000000000000000000000000000000000'"
+      ],
+      [
+       "K.single_bug_equals_uint256_one()",
+       "True"
+      ],
+      [
+       "K.sighash_json_vectors()",
+       "(500, 500, 8)"
+      ],
+      [
+       "K.core_refuses_single_bug_signature()",
+       "[False, True]"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on published vectors; the last row is Recorded"
+    },
+    {
+     "t": "beats",
+     "x": 6.7,
+     "y": 1.75,
+     "w": 2.8,
+     "h": 2.5,
+     "fs": 10.5,
+     "items": [
+      "Row 1: the legacy hash when input 1 has no output 1",
+      "Row 2: it is the 32-byte number one, 01 then 31 zero bytes",
+      "Row 3: Core's 500 published hash vectors reproduce here",
+      "Row 4: Core refuses to sign (False), but signs when each input has an output (True)"
+     ]
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 4.2,
+     "w": 9.0,
+     "h": 0.4,
+     "fs": 10.5,
+     "items": [
+      "legacy hash only",
+      "500 of 500 vectors",
+      "Core 31.1.0 refuses"
+     ]
+    }
+   ],
+   "notes": "The book does not say what SIGHASH_SINGLE signs when the input has no output with its index. In the legacy algorithm the value that is signed is then the number one, which the first rows print and which Core's own source marks as a bug. The last row is Recorded: Core 31.1.0 refuses to sign such an input, and signs the same transaction once each input has an output.",
+   "bg": "light",
+   "lede": "Input 1 of a SINGLE signature has no output 1 to commit to, so the value that is signed is the constant one.",
+   "take": "SINGLE with no matching output signs the number one; Core refuses it"
+  },
+  {
+   "kind": "section",
+   "title": "Schnorr signatures",
+   "sub": "From a proof of identity to the 64-byte signature of taproot, and what its linearity allows",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Prove, then sign"
+      },
+      {
+       "label": "The patent story"
+      },
+      {
+       "label": "BIP340 in practice"
+      },
+      {
+       "label": "Keys that add up"
+      }
+     ]
+    }
+   ],
+   "notes": "This part follows Schnorr's idea from a three-move proof of identity to the 64-byte signature that taproot uses. It then shows what the signature's linearity allows, from adding keys to sharing a secret among three people. A story about a patent explains why Bitcoin began with ECDSA instead.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "From a proof of identity to a signature",
+   "sub": "The verifier's random challenge is replaced by a hash of the commitment, key and message",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.72,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 11.5,
+     "steps": [
+      {
+       "label": "Commit",
+       "sub": "prover sends kG"
+      },
+      {
+       "label": "Challenge",
+       "sub": "verifier sends e"
+      },
+      {
+       "label": "Respond",
+       "sub": "prover sends s = k + e x",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.0,
+     "w": 5.6,
+     "h": 1.74,
+     "rows": [
+      [
+       "K.toy()  # a small field first",
+       "[15, 35, 40, 200, 165, True, 3]"
+      ],
+      [
+       "K.identity_round_secp256k1(), K.identity_wrong_s()",
+       "(True, False)"
+      ],
+      [
+       "K.impersonation_without_x()",
+       "True"
+      ],
+      [
+       "K.fiat_shamir_signature()",
+       "[True, False]"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: the toy, the curve, a cheat, a signature"
+    },
+    {
+     "t": "beats",
+     "x": 6.3,
+     "y": 2.62,
+     "w": 3.2,
+     "h": 2.2,
+     "fs": 10.5,
+     "items": [
+      "Row 1: toy numbers, s is 40 and sG equals kG + e xG",
+      "Row 2: the round verifies; a response one too large fails",
+      "Row 3: told the challenge first, a cheat passes without x",
+      "Row 4: a hash for the verifier: the right message verifies, another fails"
+     ]
+    }
+   ],
+   "notes": "The prover commits to a nonce, the verifier answers with a random challenge, and the prover responds so that one equation can be checked. The console runs the toy numbers, the real curve round, a response that is wrong by one, and a cheat who is told the challenge in advance and passes without the key. Replacing the verifier by a hash of the commitment, the key and the message gives a signature that verifies for its own message and fails for another.",
+   "bg": "light",
+   "lede": "Commit, challenge, respond: the verifier checks sG = kG + eX, and a hash can play the verifier.",
+   "take": "A schnorr signature is a three-move proof in which a hash plays the verifier"
+  },
+  {
+   "kind": "content",
+   "title": "The signature that was patented for two decades",
+   "sub": "The story of 19 February 1991: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch08/assets/ch08_schnorr.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 3.3,
+     "h": 2.45,
+     "cap": "Claus-Peter Schnorr, Oberwolfach, 1986 - Konrad Jacobs, MFO, CC BY-SA 2.0 de, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 4.1,
+     "y": 1.4,
+     "w": 5.4,
+     "h": 1.45,
+     "fs": 12,
+     "items": [
+      "On 19 February 1991 the United States publishes patent 4,995,082 for Claus-Peter Schnorr's scheme, filed in 1990",
+      "Cryptographers wanted a free alternative and built DSA and ECDSA, the only signature Bitcoin knew until 2021",
+      "The term was the greater of 17 years from grant and 20 from filing; Wikipedia says it ended in February 2010"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 4.1,
+     "y": 3.15,
+     "w": 5.4,
+     "h": 1.2,
+     "rows": [
+      [
+       "K.patent_dates()  # filed, granted, expired",
+       "['2008-02-19', '2010-02-23', True, True, True]"
+      ],
+      [
+       "K.schnorr_to_taproot_years()",
+       "[30, 32]"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: both patent end dates, then the years to taproot"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Claus-Peter Schnorr, the cryptographer who invented the signature; the company Public Key Partners",
+     "where": "the United States patent office for United States patent 4,995,082, applied for on 23 February 1990 with a priority date of 24 February 1989",
+     "when": "1991-02-19",
+     "link": "https://en.wikipedia.org/wiki/Schnorr_signature",
+     "linkText": "en.wikipedia.org"
+    }
+   ],
+   "notes": "On 19 February 1991 the United States published Claus-Peter Schnorr's patent 4,995,082, filed in 1990 for a scheme he had presented at Crypto 89. The patent kept the algorithm out of open standards, so ECDSA became the signature Bitcoin used from its first release until the taproot soft fork. The console computes both possible end dates, 19 February 2008 and 23 February 2010, and Wikipedia states that the patent expired in February 2010.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "BIP340 in practice: 64 bytes, x-only keys",
+   "sub": "Checked against the published vectors; the batch speed-up is NOT EXECUTED",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.75,
+     "w": 4.9,
+     "h": 2.45,
+     "rows": [
+      [
+       "K.bip340_vectors()  # published tests",
+       "[19, 19, 8, 8]"
+      ],
+      [
+       "K.signature_sizes()",
+       "[(64, True), (65, True)]"
+      ],
+      [
+       "K.xonly_even_y()",
+       "[32, 0, True]"
+      ],
+      [
+       "K.bip340_default_signing_deterministic()",
+       "[True, True, True]"
+      ],
+      [
+       "K.related_key_attack()",
+       "[True, False]"
+      ],
+      [
+       "K.batch_equation()",
+       "[9, True, False]"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: the published vectors and the format"
+    },
+    {
+     "t": "beats",
+     "x": 5.6,
+     "y": 1.45,
+     "w": 3.9,
+     "h": 2.75,
+     "fs": 9.5,
+     "items": [
+      "Row 1: 19 published vectors; 19 verdicts match, and 8 secret keys reproduce key and signature",
+      "Row 2: 64 bytes, or 65 with an explicit hash type; both verify",
+      "Row 3: keys are 32 bytes; the signer negates the key when y is odd",
+      "Row 4: default signing is deterministic; another aux value still verifies",
+      "Row 5: without key prefixing a forgery works for P + aG; with it, it fails",
+      "Row 6: nine valid signatures pass one equation; one swapped fails the batch"
+     ]
+    },
+    {
+     "t": "text",
+     "x": 0.5,
+     "y": 4.5,
+     "w": 9.0,
+     "h": 0.45,
+     "fs": 11,
+     "bold": true,
+     "color": "orange",
+     "body": "NOT EXECUTED: the speed-up of batch verification. The equation is run; the library lists no batch interface, so nothing was timed."
+    }
+   ],
+   "notes": "BIP340 signatures are 64 bytes, public keys are 32 bytes, and the published test vectors all reproduce here. Signing is deterministic by default, and hashing the public key into the challenge stops a related-key forgery that works without it. A combined equation accepts nine valid signatures and rejects the batch when one is swapped, but the claimed speed-up is NOT EXECUTED because the library lists no batch interface.",
+   "bg": "light",
+   "take": "One equation checks one signature or a batch; the speed-up was not measured"
+  },
+  {
+   "kind": "content",
+   "title": "Keys that add up, and the trap in it",
+   "sub": "Adding keys gives one signature for two people; MuSig2 closes the cancellation hole",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.75,
+     "w": 4.5,
+     "h": 2.1,
+     "rows": [
+      [
+       "K.linearity()  # keys add, so do signatures",
+       "[True, True]"
+      ],
+      [
+       "K.naive_multisig()",
+       "[True, True]"
+      ],
+      [
+       "K.key_cancellation()",
+       "[True, True]"
+      ],
+      [
+       "K.musig2_keyagg_vectors()",
+       "[4, 4]"
+      ],
+      [
+       "K.musig2_blocks_cancellation()",
+       "False"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: add keys, cancel a key, MuSig2"
+    },
+    {
+     "t": "beats",
+     "x": 5.2,
+     "y": 1.45,
+     "w": 4.3,
+     "h": 2.45,
+     "fs": 10,
+     "items": [
+      "Row 1: signing is linear in the key: additive and homogeneous",
+      "Row 2: two keys and two responses added give one valid signature",
+      "Row 3: Bob publishes zG minus yG; the sum is zG and Bob signs alone",
+      "Row 4: BIP327's four published key aggregation vectors reproduce",
+      "Row 5: the same attack on MuSig2 keys gives Bob no control"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.5,
+     "fs": 11.5,
+     "body": "Like mixing paints: anyone can add colours, but a partner who sees yours first can choose a colour that hides it."
+    }
+   ],
+   "notes": "Adding private keys adds public keys, and signing is linear, so two people can make one signature for a sum key. The naive protocol has a hole: a partner who sees your key first can publish a key that cancels it and then sign alone, which the console reproduces. MuSig2 weights each key by a hash, so the same attack no longer gives the attacker the aggregate, and its four published key vectors reproduce.",
+   "bg": "light",
+   "take": "Plain key addition invites cancellation; MuSig2 hashed weights stop it"
+  },
+  {
+   "kind": "content",
+   "title": "Threshold signatures: any two of three",
+   "sub": "Shamir's line through points; no BIP for a threshold scheme has a number yet",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.75,
+     "w": 9.0,
+     "h": 0.7,
+     "fs": 11.5,
+     "steps": [
+      {
+       "label": "Split",
+       "sub": "a secret on a line, shares at x = 1, 2, 3"
+      },
+      {
+       "label": "Combine",
+       "sub": "any two shares rebuild the secret"
+      },
+      {
+       "label": "Hide",
+       "sub": "one share fits every secret",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.1,
+     "w": 5.0,
+     "h": 1.62,
+     "rows": [
+      [
+       "K.shamir_any_two_of_three()  # any 2 pieces",
+       "[31337, 31337, 31337]"
+      ],
+      [
+       "K.single_share_hides_secret()",
+       "True"
+      ],
+      [
+       "K.shamir_manipulation()",
+       "[True, True, True]"
+      ],
+      [
+       "K.no_threshold_bip_in_index()",
+       "[False, 1, True, True]"
+      ]
+     ],
+     "fs": 9.1,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: shares, secrecy, a trick, the BIP index"
+    },
+    {
+     "t": "beats",
+     "x": 5.7,
+     "y": 2.65,
+     "w": 3.8,
+     "h": 2.2,
+     "fs": 10,
+     "items": [
+      "Row 1: all three pairs rebuild 31337",
+      "Row 2: one share is consistent with every secret",
+      "Row 3: Bob tells each partner the other is away and collects both partial keys",
+      "Row 4: the index has no FROST row, one use of the word threshold; Optech lists a FROST BIP"
+     ]
+    }
+   ],
+   "notes": "Shamir's scheme hides a secret as the point where a line crosses an axis, so any two of three shares rebuild it and one share shows nothing. The book's threshold protocol has a weakness that the console reproduces: a partner can tell each of the others that the other is away and collect both partial keys. The BIP index has no number for a threshold scheme, although Optech lists a FROST proposal.",
+   "bg": "light",
+   "lede": "Like a treasure map torn in three: any two pieces show the place, one piece shows nothing.",
+   "take": "Any two of three shares rebuild the secret, and one share shows nothing"
+  },
+  {
+   "kind": "section",
+   "title": "ECDSA, DER and the nonce",
+   "sub": "The signature Bitcoin used until 2021: formulas, encoding, a real signature and the number that must never repeat",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Formulas and low S"
+      },
+      {
+       "label": "A signature in a block"
+      },
+      {
+       "label": "Deterministic nonces"
+      },
+      {
+       "label": "Weak randomness"
+      }
+     ]
+    }
+   ],
+   "notes": "This part is about ECDSA, the signature Bitcoin used until 2021. It covers the formulas, the two forms of one signature, the DER encoding and a real signature from the chain, and then the nonce, which must never repeat. Two stories belong here, one about a signature printed in the book and one about weak random numbers on Android.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "ECDSA: the formulas, and two forms of one signature",
+   "sub": "(R, s) and (R, n - s) both verify; the low form is the one the relay policy wants",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.05,
+     "w": 5.5,
+     "h": 1.62,
+     "rows": [
+      [
+       "K.ecdsa_book_formulas()  # the book, run",
+       "[True, False, True]"
+      ],
+      [
+       "K.malleability()",
+       "[True, True, True]"
+      ],
+      [
+       "K.lib_signature_low_s_and_strict()",
+       "[True, True, [70, 71]]"
+      ],
+      [
+       "K.own_variants_digests()",
+       "[True, True, True]"
+      ]
+     ],
+     "fs": 9.1,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: formulas, the second form, 200 signatures"
+    },
+    {
+     "t": "beats",
+     "x": 6.2,
+     "y": 1.75,
+     "w": 3.3,
+     "h": 2.2,
+     "fs": 10.5,
+     "items": [
+      "Row 1: the formulas verify (True), fail for another hash (False), and R is the x of kG (True)",
+      "Row 2: the second form verifies too (True), and exactly one form is low (True)",
+      "Row 3: 200 signatures: all strict DER, all low S; 70 or 71 bytes"
+     ]
+    },
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 3.95,
+     "w": 9.0,
+     "h": 0.5,
+     "fs": 10,
+     "items": [
+      "30 sequence",
+      "45 length",
+      "02 21 R",
+      "02 20 s",
+      "01 SIGHASH_ALL"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.5,
+     "w": 9.0,
+     "h": 0.4,
+     "fs": 11,
+     "body": "The pieces of DER, from the book's example: the next slide splits the real bytes."
+    }
+   ],
+   "notes": "ECDSA computes s from the hash, the key, the nonce and the point R, and the check recomputes R from s. The console verifies the book's formulas, shows that a second signature with s replaced by n minus s also verifies, and checks that 200 library signatures are low-S and strictly DER encoded. The two forms are the malleability that the low-S rule addresses.",
+   "bg": "light",
+   "lede": "ECDSA signs with s = k^-1 (hash + x R) mod n; replacing s by n - s gives a second valid signature.",
+   "take": "One signature has two valid forms; only the low form passes the relay policy"
+  },
+  {
+   "kind": "content",
+   "title": "The signature on the page is a real payment",
+   "sub": "The story of 27 December 2013: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch08/assets/ch08_bitcoinlogo.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 3.3,
+     "h": 2.45,
+     "cap": "Bitcoin logo - Grayliptrot, public domain, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 4.1,
+     "y": 1.4,
+     "w": 5.4,
+     "h": 1.45,
+     "fs": 12,
+     "items": [
+      "27 December 2013, 23:11:54 UTC: block 277,316 holds the transaction whose signature the book prints",
+      "Its 72 bytes split into nine DER elements, and Core's strict-encoding rule accepts them",
+      "The legacy hash is recomputed: the signature verifies; with the flag changed to NONE it fails"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 4.1,
+     "y": 3.15,
+     "w": 5.4,
+     "h": 1.2,
+     "rows": [
+      [
+       "K.book_sample_in_mainnet_tx()",
+       "[True, 277316, 1388185914]"
+      ],
+      [
+       "K.book_der_sample()  # the book bytes",
+       "[72, 69, '30', '45', '21', '20', '01', 9, True]"
+      ],
+      [
+       "K.book_sample_verifies()",
+       "[65, 1, True, False, 72]"
+      ]
+     ],
+     "fs": 8.3,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the saved transaction record"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "the unnamed sender of a transaction mined in block 277,316 on 27 December 2013; Andreas M. Antonopoulos and David A. Harding",
+     "where": "block 277,316 of the Bitcoin main chain; the signature appears in the DER section of chapter 8 of the 3rd edition",
+     "when": "2013-12-27",
+     "link": "https://mempool.space/tx/0627052b6f28912f2703066a912ea577f2ce4da4caa5a5fbd8a57286c345c2f2",
+     "linkText": "mempool.space"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.26,
+     "w": 3.3,
+     "h": 0.32,
+     "fs": 9,
+     "body": "Stand-in picture: the Bitcoin logo, not the sender or the transaction."
+    }
+   ],
+   "notes": "The long signature that the book uses to explain DER is a real one, from block 277,316 on 27 December 2013. The console finds it in the saved transaction record, splits it into its nine elements, recomputes the legacy signature hash and verifies it against the 65-byte public key; the same check fails when the flag byte is changed to NONE. Its R value begins with 0x88, so a padding zero makes it 72 bytes, which Bitcoin Core avoids today by grinding for a small R.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Deterministic nonces and small signatures",
+   "sub": "RFC 6979 removes the random number; Core also grinds R small",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.75,
+     "w": 4.8,
+     "h": 2.25,
+     "rows": [
+      [
+       "K.rfc6979_p256_vector()",
+       "[True, '0xa6e3c57d']"
+      ],
+      [
+       "K.rfc6979_deterministic()",
+       "[True, True]"
+      ],
+      [
+       "K.core_ecdsa_deterministic_and_schnorr_aux_zero()",
+       "[True, True]"
+      ],
+      [
+       "K.library_signatures_high_r_share()",
+       "[400, 197, True]"
+      ],
+      [
+       "dict(K._core()['lengths']['sig_lengths'])",
+       "{'71': 298, '70': 2}"
+      ],
+      [
+       "K.core_signatures_low_r()",
+       "[300, 300]"
+      ]
+     ],
+     "fs": 9.0,
+     "cap": "run under Python 3.14.6",
+     "label": "executed, and Recorded rows from Core 31.1.0"
+    },
+    {
+     "t": "chart",
+     "x": 5.5,
+     "y": 1.4,
+     "w": 4.0,
+     "h": 2.6,
+     "ctype": "bar",
+     "title": "Recorded: 300 signatures by length (bytes)",
+     "dataLabels": true,
+     "dlFmt": "0",
+     "dlFs": 10,
+     "labels": [
+      "70 bytes",
+      "71 bytes"
+     ],
+     "series": [
+      {
+       "name": "signatures",
+       "data": [
+        2,
+        298
+       ]
+      }
+     ]
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.33,
+     "w": 9.0,
+     "h": 0.62,
+     "fs": 10,
+     "items": [
+      "Rows 1 to 3: the standard's published nonce reproduces; one message signs the same way twice; Core does too",
+      "Rows 4 to 6: unground library signatures are high-R about half the time; all 300 of Core's are low-R"
+     ]
+    }
+   ],
+   "notes": "The nonce can be derived from the key and the message with RFC 6979, so no random number generator is needed at signing time. The console reproduces the standard's published nonce, and the Recorded rows show that Bitcoin Core signs deterministically and grinds the nonce until R is small. All 300 signatures in one Core transaction are low-R, 298 of 71 bytes and 2 of 70, while about half of the library's unground signatures are not.",
+   "bg": "light",
+   "take": "A nonce derived from key and message needs no random generator"
+  },
+  {
+   "kind": "content",
+   "title": "When the phone's random numbers were not random",
+   "sub": "The story of 11 August 2013: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch08/assets/ch08_android.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 3.3,
+     "h": 2.45,
+     "cap": "The Android robot - Google Inc., designed by Irina Blok, CC BY 3.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 4.1,
+     "y": 1.4,
+     "w": 5.4,
+     "h": 1.45,
+     "fs": 12,
+     "items": [
+      "2013-08-11: Bitcoin.org warns of critical weaknesses in Android's secure random generator; four wallets are named",
+      "14 August: Android engineer Alex Klyubin blames improper initialization of the generator",
+      "Like a one-time pad used twice: two signatures under one nonce can be subtracted to leave the key"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 4.1,
+     "y": 3.15,
+     "w": 5.4,
+     "h": 1.2,
+     "rows": [
+      [
+       "K.nonce_reuse()  # same k twice",
+       "[True, True, True]"
+      ],
+      [
+       "K.nonce_not_reused_is_safe()",
+       "False"
+      ],
+      [
+       "K.rfc6979_matches_library_nonce()",
+       "True"
+      ]
+     ],
+     "fs": 8.3,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: reuse a nonce, use two nonces, check RFC 6979"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Alex Klyubin, the Android security engineer who explained the cause; the Bitcoin Wallet, blockchain.info",
+     "where": "Android phones worldwide, and the Bitcoin.org network alert; Android Developers Blog, 14 August 2013",
+     "when": "2013-08-11",
+     "link": "https://bitcoin.org/en/alert/2013-08-11-android",
+     "linkText": "bitcoin.org"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.26,
+     "w": 3.3,
+     "h": 0.32,
+     "fs": 9,
+     "body": "Stand-in picture: the platform, not the incident."
+    }
+   ],
+   "notes": "On 11 August 2013 Bitcoin.org warned that Android's secure random number generator was weak, and four wallets were named. The sources say the generator was improperly initialized but not which flaw was exploited. The console shows why this is fatal for ECDSA: two signatures with one nonce give away the key, while two different nonces do not, and a deterministic nonce removes the dependence on randomness. The picture is the Android robot, a stand-in for the platform.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Segwit, taproot and since the book",
+   "sub": "What segwit changed in what is signed, how a node judges a signature, and what moved after print",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Hashing and amounts"
+      },
+      {
+       "label": "Policy and consensus"
+      },
+      {
+       "label": "Taproot hash types"
+      },
+      {
+       "label": "Since the book"
+      }
+     ]
+    }
+   ],
+   "notes": "This part covers what segwit changed in what is signed, how a node judges a signature and what has moved since the book was printed. It uses the Recorded answers of Bitcoin Core for policy and consensus, and the saved sources for the status of proposals. It closes with a plain list of what this deck did not run.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Segwit hashes less and signs amounts",
+   "sub": "Legacy signing re-hashes the transaction per input; BIP143 and BIP341 commit to amounts",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.75,
+     "w": 4.8,
+     "h": 2.0,
+     "rows": [
+      [
+       "K.hashing_bytes()[1:3]",
+       "[[10, 5150, 2670], [100, 420500, 25530]]"
+      ],
+      [
+       "K.hashing_growth()",
+       "[97.8, 10.0]"
+      ],
+      [
+       "K.bip143_commits_to_amount()",
+       "True"
+      ],
+      [
+       "K.bip341_commits_to_all_spent_amounts()",
+       "[True, True]"
+      ],
+      [
+       "K.first_taproot_spend()",
+       "[709635, 1, 64, True]"
+      ]
+     ],
+     "fs": 9.4,
+     "cap": "run under Python 3.14.6",
+     "label": "executed: bytes hashed, amounts, a real taproot spend"
+    },
+    {
+     "t": "chart",
+     "x": 5.5,
+     "y": 1.4,
+     "w": 4.0,
+     "h": 2.6,
+     "ctype": "bar",
+     "title": "Bytes hashed by all signatures of a transaction",
+     "dataLabels": true,
+     "dlFmt": "#,##0",
+     "dlFs": 9,
+     "labels": [
+      "legacy, 10 inputs",
+      "BIP143, 10 inputs",
+      "legacy, 100 inputs",
+      "BIP143, 100 inputs"
+     ],
+     "series": [
+      {
+       "name": "bytes",
+       "data": [
+        5150,
+        2670,
+        420500,
+        25530
+       ]
+      }
+     ]
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.1,
+     "w": 9.0,
+     "h": 0.85,
+     "fs": 10,
+     "items": [
+      "Rows 1 and 2: ten times the inputs make legacy signing hash 97.8 times the bytes, BIP143 only 10.0 times",
+      "Rows 3 to 5: a version 0 signature commits to the amount, taproot to all spent amounts unless ANYONECANPAY; block 709,635, saved here, holds the first taproot key-path spend, verified here"
+     ]
+    }
+   ],
+   "notes": "Legacy signing hashes a copy of the transaction for each input, so ten times the inputs cost almost a hundred times the bytes; BIP143 keeps the cost linear. The chart shows 10 and 100 inputs, and the console shows the growth factors, 97.8 and 10.0. A version 0 signature also commits to the amount being spent, and a taproot signature commits to all spent amounts unless ANYONECANPAY is used. Block 709,635 holds the first taproot key-path spend, which verifies here.",
+   "bg": "light",
+   "take": "Segwit signing cost grows with the inputs, not their square, and covers amounts"
+  },
+  {
+   "kind": "content",
+   "title": "What a node accepts: policy, consensus, taproot",
+   "sub": "Recorded: Core 31.1.0 on regtest. High S is policy; strict DER is consensus",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 4.4,
+     "h": 1.22,
+     "rows": [
+      [
+       "ok(K.core_policy_verdicts())  # Recorded",
+       "'Y...'"
+      ],
+      [
+       "K.core_high_s_consensus()",
+       "[True, False, True]"
+      ],
+      [
+       "K.own_variants_digests()",
+       "[True, True, True]"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: policy, consensus, the two forms"
+    },
+    {
+     "t": "code",
+     "x": 5.1,
+     "y": 1.7,
+     "w": 4.4,
+     "h": 1.22,
+     "rows": [
+      [
+       "K.bip341_valid_hash_types()",
+       "['0x0', '0x1', '0x2', '0x3', '0x81', '0x82', '0x83']"
+      ],
+      [
+       "ok(K.core_taproot_verdicts())",
+       "'YY....'"
+      ],
+      [
+       "K.core_node_identity()",
+       "[310100, '/Satoshi:31.1.0/', 'regtest']"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: hash types and verdicts"
+    },
+    {
+     "t": "table",
+     "x": 0.5,
+     "y": 3.28,
+     "w": 4.4,
+     "colW": [
+      1.5,
+      2.9
+     ],
+     "rows": [
+      [
+       "Signature variant",
+       "Core's policy answer"
+      ],
+      [
+       "valid low s",
+       "accepted"
+      ],
+      [
+       "high s",
+       "Non-canonical signature: S value is unnecessarily high"
+      ],
+      [
+       "non minimal der",
+       "Non-canonical DER signature"
+      ],
+      [
+       "signed other message",
+       "Signature must be zero for failed CHECK(MULTI)SIG operation"
+      ]
+     ],
+     "fs": 8,
+     "rowH": [
+      0.22,
+      0.22,
+      0.22,
+      0.22,
+      0.22
+     ]
+    },
+    {
+     "t": "table",
+     "x": 5.1,
+     "y": 3.28,
+     "w": 4.4,
+     "colW": [
+      1.4,
+      3.0
+     ],
+     "rows": [
+      [
+       "Taproot variant",
+       "Core's answer"
+      ],
+      [
+       "default 64",
+       "accepted"
+      ],
+      [
+       "explicit all 65",
+       "accepted"
+      ],
+      [
+       "explicit zero 65",
+       "Invalid Schnorr signature hash type"
+      ],
+      [
+       "short 63",
+       "Invalid Schnorr signature size"
+      ],
+      [
+       "flipped bit",
+       "Invalid Schnorr signature"
+      ],
+      [
+       "hash type mismatch",
+       "Invalid Schnorr signature"
+      ]
+     ],
+     "fs": 8,
+     "rowH": [
+      0.22,
+      0.22,
+      0.22,
+      0.22,
+      0.22,
+      0.22,
+      0.22
+     ]
+    }
+   ],
+   "notes": "A node can accept a signature in a block that it would not relay. Core 31.1.0 on a test network refuses a high-S signature in its memory pool but mines it into a block, while a signature that is not strictly DER encoded makes the block invalid. For taproot, the explicit hash type byte 0x00 is invalid and the default is the absence of the byte; the tables show Core's own error for each case.",
+   "bg": "light",
+   "take": "Policy decides what is relayed, consensus what is valid"
+  },
+  {
+   "kind": "content",
+   "title": "Since the book: what moved after print",
+   "sub": "Status read from the saved BIP index; Core 30.0 and 31.0; libsecp256k1 0.8.0",
+   "items": [
+    {
+     "t": "chart",
+     "x": 0.45,
+     "y": 1.35,
+     "w": 3.8,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "BIPs of this chapter by status",
+     "dataLabels": true,
+     "dlFmt": "0",
+     "dlFs": 10,
+     "labels": [
+      "Deployed",
+      "Draft",
+      "Complete",
+      "Closed"
+     ],
+     "series": [
+      {
+       "name": "BIPs",
+       "data": [
+        6,
+        4,
+        2,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "t": "beats",
+     "x": 4.5,
+     "y": 1.35,
+     "w": 5.0,
+     "h": 1.75,
+     "fs": 9.5,
+     "items": [
+      "Core 30.0 caps legacy signature operations at 2,500 in policy; BIP54, Complete, would make it a rule",
+      "MuSig2 is Deployed; Core supports the musig() descriptor from 30.0 and signing from 31.0",
+      "BIP118 is still Draft, as are BIP461 and BIP361; libsecp256k1 0.8.0 renamed schnorrsig_sign",
+      "NOT EXECUTED: ECDSA's full security proof, quantum attacks, any Core release but 31.1.0"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.44,
+     "w": 9.0,
+     "h": 1.28,
+     "rows": [
+      [
+       "dict(__import__('collections').Counter(K.bips_status().values()))",
+       "{'Deployed': 6, 'Draft': 4, 'Closed': 1, 'Complete': 2}"
+      ],
+      [
+       "K.core_musig_support(), K.libsecp_changes()",
+       "([True, True, True, True, True], [True, True, True])"
+      ],
+      [
+       "K.sigops_limit_in_core_and_bip54(), [K.bips_status()[n] for n in (118, 461, 361)]",
+       "([2500, True], ['Draft', 'Draft', 'Draft'])"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the saved sources: BIP status, Core support, limits"
+    }
+   ],
+   "notes": "The book is a snapshot of 2023. Most of the proposals it names are Deployed, but BIP118 is still a Draft, BIP461 and BIP361 are new drafts, and Core 30.0 caps legacy signature operations at 2,500 in policy. Several things were not run here and are marked NOT EXECUTED on the slide: the security proof of ECDSA, quantum attacks and any Core release other than 31.1.0.",
+   "bg": "light",
+   "take": "The book is a snapshot; check the BIP index and Core's notes for changes"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per part, each one provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 9.0,
+     "h": 3.4,
+     "fs": 12.5,
+     "items": [
+      "A signature is checked from a message, a public key and the signature itself, and its scalars live modulo n, not p",
+      "A SIGHASH flag chooses what is signed, and SINGLE with no matching output signs the number one",
+      "Schnorr turns a three-move proof into a 64-byte signature; linearity gives MuSig2 and threshold schemes, and key prefixing blocks related-key forgery",
+      "ECDSA signatures have two forms, travel in DER and are only as safe as their nonce: reuse leaks the key, RFC 6979 removes the risk",
+      "Segwit made signing linear and amount-aware; consensus bans bad DER, policy bans high S, and the status of proposals has moved since print"
+     ]
+    }
+   ],
+   "notes": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "bg": "light",
+   "take": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Opened on 2026-10-15; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.45,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "BIP 340, schnorr signatures",
+         "https://bips.dev/340/"
+        ],
+        [
+         "Mastering Bitcoin, the book",
+         "https://aantonop.com/books/mastering-bitcoin/"
+        ],
+        [
+         "Bitcoin Wiki, OP_CHECKSIG",
+         "https://en.bitcoin.it/wiki/OP_CHECKSIG"
+        ]
+       ]
+      },
+      {
+       "head": "Standards and papers",
+       "rows": [
+        [
+         "BIP 327, MuSig2",
+         "https://bips.dev/327/"
+        ],
+        [
+         "RFC 6979, deterministic nonces",
+         "https://www.rfc-editor.org/rfc/rfc6979.txt"
+        ],
+        [
+         "Schnorr, 1991, the seminal paper",
+         "https://link.springer.com/article/10.1007/BF00196725"
+        ]
+       ]
+      },
+      {
+       "head": "Watch",
+       "rows": [
+        [
+         "MIT OCW 15.S12, Blockchain and Money",
+         "https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/"
+        ],
+        [
+         "Optech Schnorr Taproot workshop videos",
+         "https://bitcoinops.org/en/schnorr-taproot-workshop/"
+        ]
+       ]
+      },
+      {
+       "head": "Community",
+       "rows": [
+        [
+         "Bitcoin Optech newsletters",
+         "https://bitcoinops.org/en/newsletters/"
+        ],
+        [
+         "Delving Bitcoin, research forum",
+         "https://delvingbitcoin.org/"
+        ],
+        [
+         "The bitcoin-dev group",
+         "https://groups.google.com/g/bitcoindev"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the Optech workshop videos on schnorr and MuSig, then BIP340 read next to the chapter. The research package for chapter 8 lists all 66 sources with the passages used.",
+   "bg": "light",
+   "take": "Watch the Optech workshop, then read BIP340 beside the chapter"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "What a signature needs to be checked, and why scalars are modulo n",
+      "What each SIGHASH flag commits to, and what SINGLE does with no match",
+      "How schnorr, MuSig2 and ECDSA signatures are made, and why the nonce matters",
+      "What a node accepts as policy and as consensus, and what moved since print"
+     ]
+    }
+   ],
+   "notes": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 8 holds the sources and the test vectors behind them.",
+   "bg": "dark"
+  }
+ ]
+}

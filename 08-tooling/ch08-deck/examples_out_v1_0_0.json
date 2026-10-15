@@ -1,0 +1,324 @@
+{
+ "_version": "1.0.0",
+ "_python": "3.14.6",
+ "SignVerify": [
+  [
+   "d, pk = L.ecdsa_sign(K.SK, K.MSG), L.pubkey_create(K.SK)",
+   ""
+  ],
+  [
+   "len(d), L.ecdsa_verify(pk, K.MSG, d)",
+   "(70, True)"
+  ],
+  [
+   "L.ecdsa_verify(pk, bytes([K.MSG[0] ^ 1]) + K.MSG[1:], d)",
+   "False"
+  ],
+  [
+   "L.ecdsa_verify(L.pubkey_create(K.SK + 1), K.MSG, d)",
+   "False"
+  ],
+  [
+   "K.two_parties_two_inputs()",
+   "[True, True, False, False]"
+  ]
+ ],
+ "Moduli": [
+  [
+   "5 % 3",
+   "2"
+  ],
+  [
+   "K.toy()",
+   "[15, 35, 40, 200, 165, True, 3]"
+  ],
+  [
+   "K.scalar_modulus()",
+   "[True, False, True, True, True]"
+  ],
+  [
+   "L.P - L.N > 2 ** 128, L.P.bit_length(), L.N.bit_length()",
+   "(True, 256, 256)"
+  ]
+ ],
+ "Flags": [
+  [
+   "{h: ''.join('Y' if x else '.' for x in v) for h, v in K.commitments_table().items()}",
+   "{'0x1': 'YYYYY', '0x2': 'Y...Y', '0x3': 'Y.Y.Y', '0x81': '..YYY', '0x82': '....Y', '0x83': '..Y.Y'}"
+  ]
+ ],
+ "CoreFlags": [
+  [
+   "yn(K.core_signature_survives_changes())",
+   "'ALL .. | NONE YY | SINGLE .Y | ALL|ANYONECANPAY .. | NONE|ANYONECANPAY YY | SINGLE|ANYONECANPAY .Y'"
+  ],
+  [
+   "yn(K.core_anyonecanpay_survives_other_input_change())",
+   "'ALL . | NONE . | SINGLE . | ALL|ANYONECANPAY Y | NONE|ANYONECANPAY Y | SINGLE|ANYONECANPAY Y'"
+  ]
+ ],
+ "SingleBug": [
+  [
+   "K.single_bug_hash()  # input 1, no output 1",
+   "'0100000000000000000000000000000000000000000000000000000000000000'"
+  ],
+  [
+   "K.single_bug_equals_uint256_one()",
+   "True"
+  ],
+  [
+   "K.sighash_json_vectors()",
+   "(500, 500, 8)"
+  ],
+  [
+   "K.core_refuses_single_bug_signature()",
+   "[False, True]"
+  ]
+ ],
+ "Fiat": [
+  [
+   "K.toy()  # a small field first",
+   "[15, 35, 40, 200, 165, True, 3]"
+  ],
+  [
+   "K.identity_round_secp256k1(), K.identity_wrong_s()",
+   "(True, False)"
+  ],
+  [
+   "K.impersonation_without_x()",
+   "True"
+  ],
+  [
+   "K.fiat_shamir_signature()",
+   "[True, False]"
+  ]
+ ],
+ "PatentStory": [
+  [
+   "K.patent_dates()  # filed, granted, expired",
+   "['2008-02-19', '2010-02-23', True, True, True]"
+  ],
+  [
+   "K.schnorr_to_taproot_years()",
+   "[30, 32]"
+  ],
+  [
+   "K.bip340_vectors()",
+   "[19, 19, 8, 8]"
+  ]
+ ],
+ "Bip340": [
+  [
+   "K.bip340_vectors()  # published tests",
+   "[19, 19, 8, 8]"
+  ],
+  [
+   "K.signature_sizes()",
+   "[(64, True), (65, True)]"
+  ],
+  [
+   "K.xonly_even_y()",
+   "[32, 0, True]"
+  ],
+  [
+   "K.tagged_hash_prefix_len()",
+   "[64, True]"
+  ],
+  [
+   "K.bip340_default_signing_deterministic()",
+   "[True, True, True]"
+  ],
+  [
+   "K.related_key_attack()",
+   "[True, False]"
+  ],
+  [
+   "K.batch_equation()",
+   "[9, True, False]"
+  ]
+ ],
+ "KeyAgg": [
+  [
+   "K.linearity()  # keys add, so do signatures",
+   "[True, True]"
+  ],
+  [
+   "K.naive_multisig()",
+   "[True, True]"
+  ],
+  [
+   "K.key_cancellation()",
+   "[True, True]"
+  ],
+  [
+   "K.musig2_keyagg_vectors()",
+   "[4, 4]"
+  ],
+  [
+   "K.musig2_blocks_cancellation()",
+   "False"
+  ]
+ ],
+ "Threshold": [
+  [
+   "K.shamir_any_two_of_three()  # any 2 pieces",
+   "[31337, 31337, 31337]"
+  ],
+  [
+   "K.single_share_hides_secret()",
+   "True"
+  ],
+  [
+   "K.shamir_manipulation()",
+   "[True, True, True]"
+  ],
+  [
+   "K.no_threshold_bip_in_index()",
+   "[False, 1, True, True]"
+  ]
+ ],
+ "EcdsaMath": [
+  [
+   "K.ecdsa_book_formulas()  # the book, run",
+   "[True, False, True]"
+  ],
+  [
+   "K.malleability()",
+   "[True, True, True]"
+  ],
+  [
+   "K.lib_signature_low_s_and_strict()",
+   "[True, True, [70, 71]]"
+  ],
+  [
+   "K.own_variants_digests()",
+   "[True, True, True]"
+  ]
+ ],
+ "BookSignature": [
+  [
+   "K.book_der_sample()  # the book bytes",
+   "[72, 69, '30', '45', '21', '20', '01', 9, True]"
+  ],
+  [
+   "K.book_sample_in_mainnet_tx()",
+   "[True, 277316, 1388185914]"
+  ],
+  [
+   "K.book_sample_verifies()",
+   "[65, 1, True, False, 72]"
+  ],
+  [
+   "K.book_sample_s_low()",
+   "[True, True, 64]"
+  ],
+  [
+   "K.timestamp_of_book_tx()",
+   "'2013-12-27 23:11:54'"
+  ]
+ ],
+ "NonceDet": [
+  [
+   "K.rfc6979_p256_vector()",
+   "[True, '0xa6e3c57d']"
+  ],
+  [
+   "K.rfc6979_deterministic()",
+   "[True, True]"
+  ],
+  [
+   "K.core_ecdsa_deterministic_and_schnorr_aux_zero()",
+   "[True, True]"
+  ],
+  [
+   "K.library_signatures_high_r_share()",
+   "[400, 197, True]"
+  ],
+  [
+   "dict(K._core()['lengths']['sig_lengths'])",
+   "{'71': 298, '70': 2}"
+  ],
+  [
+   "K.core_signatures_low_r()",
+   "[300, 300]"
+  ]
+ ],
+ "NonceReuse": [
+  [
+   "K.nonce_reuse()  # same k twice",
+   "[True, True, True]"
+  ],
+  [
+   "K.nonce_not_reused_is_safe()",
+   "False"
+  ],
+  [
+   "K.rfc6979_matches_library_nonce()",
+   "True"
+  ]
+ ],
+ "Hashing": [
+  [
+   "K.hashing_bytes()[1:3]",
+   "[[10, 5150, 2670], [100, 420500, 25530]]"
+  ],
+  [
+   "K.hashing_growth()",
+   "[97.8, 10.0]"
+  ],
+  [
+   "K.bip143_commits_to_amount()",
+   "True"
+  ],
+  [
+   "K.bip341_commits_to_all_spent_amounts()",
+   "[True, True]"
+  ],
+  [
+   "K.first_taproot_spend()",
+   "[709635, 1, 64, True]"
+  ]
+ ],
+ "PolicyConsensus": [
+  [
+   "ok(K.core_policy_verdicts())  # Recorded",
+   "'Y...'"
+  ],
+  [
+   "K.core_high_s_consensus()",
+   "[True, False, True]"
+  ],
+  [
+   "K.own_variants_digests()",
+   "[True, True, True]"
+  ]
+ ],
+ "TaprootTypes": [
+  [
+   "K.bip341_valid_hash_types()",
+   "['0x0', '0x1', '0x2', '0x3', '0x81', '0x82', '0x83']"
+  ],
+  [
+   "ok(K.core_taproot_verdicts())",
+   "'YY....'"
+  ],
+  [
+   "K.core_node_identity()",
+   "[310100, '/Satoshi:31.1.0/', 'regtest']"
+  ]
+ ],
+ "SinceBook": [
+  [
+   "dict(__import__('collections').Counter(K.bips_status().values()))",
+   "{'Deployed': 6, 'Draft': 4, 'Closed': 1, 'Complete': 2}"
+  ],
+  [
+   "K.core_musig_support(), K.libsecp_changes()",
+   "([True, True, True, True, True], [True, True, True])"
+  ],
+  [
+   "K.sigops_limit_in_core_and_bip54(), [K.bips_status()[n] for n in (118, 461, 361)]",
+   "([2500, True], ['Draft', 'Draft', 'Draft'])"
+  ]
+ ]
+}
