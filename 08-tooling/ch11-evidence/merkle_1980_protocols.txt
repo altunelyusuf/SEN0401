@@ -1,0 +1,702 @@
+                                   PROTOCOLS FOR PUBUC KEY CRYPTOSYSTEMS
+
+
+
+                                                   Ralph C. Merkle
+                                                 ELXSi International
+                                                                                                                                  ......
+                                                   Sunnyvale, Ca.
+
+
+                                                                ing both          public      key     and   conventional
+                       Abstract
+                                                                systems.
+
+       New cryptographic          protocols       which                The reader is assumed to                  be           fami-
+
+take    full     advantage of the unique pro-                   liar        with the general ideas behind pub-
+
+perties of public key cryptosystems                 are         lic key cryptosystems, as                   described            in
+
+now    evolving.        Several     protocols       for         [1,10].
+public key distribution and for                 dig~tal                 For many of the following                 examples
+
+signatures       are    briefly     compared       with         we     assume       there      are two communicants,
+
+each other and with the conventional al-                        called A and B, and an                 opponent       E.          A
+ternative.                                                      and     B     will attempt to send secret mes-                             t,
+                                                                                                                                           i
+                                                                sages and sign contracts, while                       E       will
+1. Introduction                                                 attempt           to discover the keys, learn the
+                                                                secrets,          and   forge        contracts.               Some-
+                                                                times,        A will          attempt to evade a con-
+       The special strengths of public key
+systems    are        briefly considered by exa-
+                                                     .          tract he signed with B, or                   B   will           at-
+                                                                tempt        to     forge      A~s    signature to a new
+mining cryptographic protocols              for     key
+                                                                contract.
+distribution          and digital signatures us-
+                                                                        A and B will need to apply one                          way
+                                                                functions           to various arguments of vari-
+This work was partially supported                under          ous sizes, so we assume we                     have       a     one
+NSF    Grant     ENG    10173,    and much of the               way     function        F which can be applied to
+work was       done    at   Stanford     University             arguments of            any     size     and     produce          a
+ISL.   The author would also like to ack-                       fixed        size output.            For a more complete
+nowledge the support of BNR              Inc,    where
+                                                                discussion of            one     way     functions,             see
+much of the work reported here was done.                        [2,9,13,19].
+An extended version has           been     submitted
+to CACM.
+
+
+
+                                                          122
+p
+
+
+
+                                                                                      The major drawback of this protocol
+            2. Centralized Key Distribution
+                                                                               is its vulnerability to both centralized
+                                                                               loss of security and centralized loss of
+
+                    Centralized key distribution                 using         function.     Theft of the central keys, or
+
+            conventional           encryption     functions        was         bribery of personnel at the central site
+
+            the only reasonable method              of     handling            will compromise all users of the system.
+
+            key distribution in a mUlti-user network                           Similarly, .destruction          of      the    central
+
+            environment before the discovery of pub-                           keys     destroys        the     key     distribution
+
+            lic key distribution methods.                Only con-             mechanism for all users.
+                                                                                      The    security     and      reliability         of
+            ventional encryption functions                 need     be
+            used,        which     presently offers a perfor-                  centralized      key distribution can be in-
+
+            mance advantage.              (Presently known        pub-         creased by using two           or      more    centers,
+                                                                               each with its own keys [1].               Destruction
+            lic     key systems are less efficient than
+                                                                               or compromise of a         single        center        will
+            conventional            cryptographic          systems.
+            Whether or not this will continue is not                           not affect the other centers.
+                                           I
+
+            now known.           Discovery of new public           key                security can also            be   improved        if
+
+            systems        seems     almost     inevitable,        and         all     the   user keys are encrypted with a
+                                                                               master key by the         center.         The     master
+            discovery of more efficient              ones        prob-
+                                                                               key    must    still be stored securely (and
+            able.)
+                    In centralized key distribution, A,                        suitable provision made for its backup),
+    t
+    1
+            B,     and     all     other system users somehow                  but     the   (encrypted)        user     keys can be
+    t,                                                                          stored anywhere.        This approach is              used
+            deposit a conventional cryptographic key
+     !,
+            with        a central key distribution center.                      by IBM (23).
+
+            If A wishes to communicate with                 B,     the                 This protocol does not fully               solve
+
+            key distribution center will send a com-                            the    key distribution problem: some sort
+                                                                                of key distribution method must be                    used
+            mon (session) key to A and B                 using     the
+                                                                                between      each user and the center to es-
+            previously           agreed    on   central keys.        A
+                                                                                tablish the original keys.               This problem
+            and     B     can     then    communicate      with     no
+                                                                                is nontrivial because no electronic com-
+            further        assistance from the key distri-
+            bution center.                                                      munications can be used and                  inexpensive
+                                                                                physical methods, e.g., registered mail,
+                    This protocol          is   simple     and     re-
+                                                                                offer only moderate security.                   The     use
+            quires         only      conventional        encryption
+                                                                                of      couriers    is        reasonably         secure,
+            functions.           Its use has been defended in
+                                                                                although more expensive.
+            the literature [17,18,20].
+
+
+        I
+        I                                                                123
+                                                                               The disadvantage of          this     protocol
+                                                                       is    that E might actively interfere with
+3. Simple Public Key Distribution
+                                                                       the exchange of keys.           Worse yet, E             can
+                                                                       force a known k on both A and B.
+        This is the most basic                 application
+of     public key systems [1,5,6,7,8].                     Its
+purpose is to allow A and B to agree                        on
+                                                                       4. Authenticated Public Key Distribution
+a     common key k without any prior secret
+arrangements, even                 though     E   overhears
+all messages.           A randomly computes enci-                              The now classic        protocol       [1]        for
+phering and deciphering keys EA and                    DA,             secure        and authenticated communications
+and     sends EA to B (and E).                 B picks the             between A and B is:           A and B generate EA
+random key, k, and transmits EA(k) to                        A         and EB and make them public, while keep-
+(and     E).         A computes DA(EA(k»            = k.     A         ing DA and DB secret.           The public          enci-
+then discards both EA and DA, and B dis-                               phering keys of all users are entered in
+cards        EA.    The key in future communica-                       a public file, allowing easy and authen-
+tions is k.           It is used to           encrypt      all         ticated access to EX for any user,                  x.
+further        messages        using        a conventional                     If A and B wish to agree on a                com-
+encryption function.                Once A and B have                  mon     key     k, then each sends a (session)
+finished           talking,        they both discard k.                key to the other by enqrypting                it     with
+If they later           resume        the    conversation              the     others       public   key.      The two keys
+the     process        is     repeated to agree o~ a                   thus agreed on are combined and used                      to
+new key k~.                                                            encrypt further messages.
+        This protocol is very                simple,       and                 At the end of this protocol, A and
+has      a     great        deal     to     recommend      it.         B have agreed on a common key, k, which
+First, no keys and no                 secret      materials            is both secret and authenticated.
+exist        before     A and B start communicat-                              This     protocol     suffers       from         two
+ing, and nothing is retained after                      they           weaknesses.          First, entries in the pub-
+have     finished.            It is impossible for E                   lic file might be altered.              This can         be
+to compromise any keys either before the                               dealt with both by good physical securi-
+conversation takes place, or after it is                               ty, or by using new protocols (see                   sec-
+over, for the keys exist only during the                               tions     5    and     6) for authenticating the
+conversation.                                                          entries in the public file.
+
+
+
+
+                                                                 124
+p
+
+
+
+
+                                                                                               ECA can be published in                newspapers
+                    Second, secret deciphering keys can                                and     magazines, and sent over all avail-
+
+            be     lost.        This problem must ultimately                           able     communication             channels:     blocking
+            be solved by good physical security.                                       its correct reception would be yery dif-
+                                                                                       ficult.
+                                                                                               If DCA is compromised, then                it     is
+                                                                                       no     longer. possible to authenticate the
+            5. Public Key Distribution with Certifi-
+                                                                                       users of the system and their public en-
+                                                                                       ciphering          keys.       The    certificates are
+                                                                                       now worthless because the (unauthorized)
+
+                    Kohnfelder [3] first suggested that                                person       who       has learned DCA can produce
+            entries        in the public file be authenti-                             false certificates at will.
+
+            cated by having a Central Authority (CA)
+            sign     them       with        DCA.     He     called such
+            signed entries certificates.
+                                                                                       6. Public Key Distribution with ~ Au-
+                    The protocol with                certificates           is
+                                                                                       thentication
+            the     same as the authenticated protocol,
+
+I           except that A and B can
+            entries        in
+                                                      now
+                                    the public file by checking
+                                                               check       the
+                                                                                               Key distribution with            certificates
+
+            each other~s certificates.                     This       proto-           was vulnerable to the criticism that DCA
+
+\           col     assures         A and B that each has the                          can be compromised, resulting in                   system
+
+    t       other~s    public enciphering key, and                         not         wide loss of authentication.               This prob-
+
+            the     public          enciphering key of some im-                        lem can be solved by using tree                   authen-
+
+            poster.                                                                    tication [13].
+
+                    The security of this protocol rests                                        Again, this          protocol    attempts         to
+
+            on the assumptions that the secret deci-                                   authenticate entries in the public file.
+
+            phering keys of A, B, and                     CA    have       not         However, instead of signing               each         entry
+
+            been     compromised~             that     A and          B   have         in    the     public         file, this protocol ap-
+
+            correct copies             of     ECA     (to      check       the         plies a one way hash function, H, to the
+
+            signed     certificates);                and       that CA has             entire       public        file.     Even though H is
+
+            not issued          a     bad     certificate,            either           applied to the entire public                   file,     the
+
+            deliberately               because         it       was        un-         output      of     H    is    only    100 or 200 bits
+
+            trustworthy, or accidentally because                            it         long.       The (small) output of H will                 be
+    .....
+            was tricked.                                                               called       the root, R, of the public file.
+
+
+
+
+                                                                                 125
+
+      ..
+                                                                                                                                             ..
+
+If all users .of the syst~m know R,                            then
+all     users can authenticate the correct-                                         Where F is a one way function.
+ness of the (whole) public file by                             com-                 If A wishes to confirm                  B#s    public
+puting         R    = H(public file).                 Any attempt           enciphering          key,     then A need only know
+to introduce            changes           into        the    public         the     first       half     of     the       public     file,
+file        will      imply        R ; H(altered public                     (which is where YB appears) and H(second
+file), an easily detected fact.                                             half of public file) which is                     only     100
+        This method effectively                        eliminates           bits long.          A can compute H(public file)
+the     possibility of compromising DCA be-                                 knowing only this information, and yet A
+cause no secret deciphering key exists.                                     only knew half the entries in the public
+       Because the public file wi.ll be sub-                                file.
+jected         to     the    harsh            glare    of public                    In a similar fashion,                 A does       not
+scrutiny, and because making alterations                                    really       need     to     know     all of the first
+in the public file is effectively impos-                                    half of the public file, for
+sible after it               has     been          published,     a
+             ..'
+high        degree      of     assurance              that    it is          H(first half of public file)                    =
+correct can be attained.                                                          F( H(first quarter of public file),
+        This method is impractical as stat-                                       H(second quarter of public file)
+ed.         Fortunately,            it        is    possible     to
+selectively authenticate individual                             en-         All A needs to know is the first quarter
+tries        in the public file without having                              of     the    public file (which has YB), and
+to know the whole publi~ file                           by    using         H(second quarter of public file).
+Merkle#s -tree authentication,- [13].                                               By applying this concept recursive-
+        The essence of tree                        authentication           ly,     A can confirm YB in the public file
+is     to      authenticate              the       entire public            knowing      only      R,     1092        n    intermediate
+file by Rdivide and conquer.- If we                             de-         values,       and YB itself.              The information
+fine     Y         = public file = Yl , Y2 ,                    Yn'         needed to authenticate YB, given :hat                        R
+(so the ith entry in the public file                             is         has     already       been        authenticated,         lies
+denoted Yi' and B#s entry is YB); we can                                    along the path from R to YB and will                        be
+define H(public file)                    = H(!) as:                         called the authentication path.
+                                                                                    These definitions             are       illustrated
+      H(!) = F( H(first half of !),                                         in figure 1, which shows the authentica-
+      H(second half of !)                 )                                 tion path for Ys .
+
+
+
+
+                                                                      126
+-----------------------------
+                                                                                  The        only     practical           method      of
+          For a more detailed discussion                   the
+                                                                        compromising                this     protocol         is      to
+   reader is referred to [13].
+                                                                        compromise DA or OS.                 A user's        security
+          Using tree authentication,             user        A
+                                                                        is     thus dependent on himself and no one
+   has     an authentication path which can be
+                                                                        else.
+   used to authenticate user A's public en-
+   ciphering       key, provided only that R has
+   already been authenticated.                An "authen-
+   tication path" is a new form of certifi-                             7. Digital Signatures
+
+   cate, with ECA replaced by R.
+           This protocol can only be             comprom-
+                                                                                  The use of public key cryptosystems
+   ised     if: DA or Os is compromised, or if
+                                                                        to     provide          digital signatures was sug-
+   R is not correctly known by A or                S,       or
+                                                                        gested          by     Diffie      and      Hellman         [1] •
+   if there is a false and misleading entry
+                                                                        Rivest, Shamir and Adleman [8) have sug-
+   in the public file.
+                                                                        gested          an     attractive          implementation.
+           The latter two are           easily    detect-
+                                                                        Signature             tech'
+                                                                                                 nlques          b ased   on methods
+   able.     If either A or S has the wrong R,
+                                                                        other than public key cryp t osystems have
+   they will be unable to complete the pro-
+                                                                        been       suggested          by    Lamport       and Diffie
+   tocol with any other legitimate user who
+                                                                        [l,24}, Rabin [15}, and Merkle (13).
+   has the correct R, a fact that                will       be
+                                                                                  Digital signatures,               whether        based
+   quickly detected.
+                                                                        on conventional encryption functions, on
+           Secause the        public     file    is       both
+                                                                        public key cryptosystems, on probabilis-
+   open to public scrutiny and unalterable,
+                                                                        tic computations, or on other techniques
+   false or misleading entries can                 be      ra-
+                                                                        share several               important       properties        in
+   pidly     detected.         In    practice,        a     few
+                                                                        common.          These       common        properties       are
+   users     concerned        with     correctness          can
+                                                                        best illustrated by                 the     f ollowing      now
+   verify      that     the    public file satisfies
+                                                                        classic example.
+   some     simple     global        properties,          i.e.,
+                                                                                  A wishes to place a purchase                   order
+   each     user      name    appears     once and once
+                                                                        with       his       stock      broker      S.     A, on the
+    only in the entire public file;                indivi-
+                                                                        Riviera, cannot send a written order                          to
+    dual     users     can     then verify that their
+                                                                        S    in    New York in time.                All that A can
+    own entry is correct, and need not both-
+                                                                        quickly send to S is information,                        l.e.,
+                                                                                                                                 .
+    er     examining     the     rest    of     the public
+                                                                        a    sequence          of bits, but S is concerned
+    file.
+                                                                        that A may later disclaim the order.                           A
+
+
+
+
+                                                                  127
+    must somehow generate a sequence of bits                                                                                                  1°
+                                                                                  disputes        ~    different.          Failure       to
+    (a digital signature)                       whlch        will    con-
+                                                                                  understand        this point has led to confu-
+    vince        B (and if need be a judge) that A
+                                                                                  sion in the literature [17,20].
+    authorized the order.                       It must        be    easy
+                                                                                          We now      turn     to    specific      digital
+    for B to validate the digital signature,
+                                                                                  signature protocols.
+    but impossible for him (or anyone                               other
+    than        A)     to        generate        it     (to     prevent
+    charges that B was dabbling in the mark-
+    et illegally with A~s money).                                                 8. ~ Conventional Signature Protocol
+
+            There are digital signature schemes
+    which        do        not     involve public key cryp-                               A conventional ftsignature W protocol
+
+    tosystems but it will be convenient                               no-         relies     on the observation that if A and
+
+    tationally              to     let     A sign message m by                    B trust some central authority                  CA,   and
+
+    computing the signature, DA(m).                             Check-            if   A and B have a secure method of com-
+
+    ing     a        signature           will    then be done by                  municating with CA, then A can "sign n                  a
+                                                                                  message     simply         by sending it to CA and
+
+    produces           an        illegible       message (random                  relying on CA         to     adjudicate        disputes.
+
+    bits) then the signature is rejected                               as         This approach is defended by some [17].
+
+    invalid.                This     notation           is    somewhat                    This protocol         is     subject     to   the
+
+    misleading because the actual method                              of          weaknesses       of centralized key distribu-
+
+    generating and validating signatures can                                      tion (described earlier).
+
+    be very different from this model; it is
+    retained           because it is widely known"and
+    because we will not discuss the                            differ-
+    ences        among different digital signature
+    methods, only their common properties.
+            Digital signature protocols are na-
+    turally           divided        into       three        parts:     a
+    method of signing messages used by A,                               a         9.   The Basic Digital Signature Protocol
+
+    method           for     authenticating °a signature
+    used by B, and a                method        for         resolving
+                                                                                          The first public key based               digital
+    disputes,              used by the judge.                It is im-
+                                                                                  signature        protocol         [1],   proceeded     by
+    portant to note that two protocols                              that
+                                                                                  having A sign        message         m by      computing
+    differ           only        in the method of resolving
+                                                                                  DA(m)     and    giving it to B as the signed
+
+
+
+
+                                                                            128
+
+
+
+
+m
+pi
+
+
+
+
+      message.       B (or        a     judge)           can     compute         been confused with each other             for     this
+                             m,       thus      confirming           the         reason.        Some criticism of "the" public
+      correctness of the signed message.                            A is         key digital signature protocol has actu-
+      held responsible for a signed message if                                   ally     been    of this second protocol, and
+      and only if it can be verified by apply-                                   failed to consider the first protocol at
+      ing A's public enciphering key to it.                                      all.
+              This    protocol           can        be     criticized                    If we.assume that A knows DA,             then
+      [16,17,20]       on     two        grounds: First, the                     under     the second protocol A can make DA
+      public file       might           have        been       tampered          public     and    effectively      disavow         the
+      with.        Methods    of         authenticating              the         signed     message.      For this reason, some
+      public file, discussed previously                           under          critics have argued that           this    protocol
+      key     distribution            protocols, solve this                      is inadequate.
+      problem.                                                                           If we assume that A does          not     know
+              A second criticism is that A has no                                DA, then he is unable to disavow his
+      recourse       should       his secret deciphering                         signature under this protocol. It is
+      key     be    compromised          and        made        public.          easy to design a system in which this is
+it   Anyone        can sign any message they desire                              the case.
+I    with A's compromised D , and A will                             be                  The major     difference     between       the
+
+I1
+     held responsible.
+            It seems clear
+                           A
+
+
+                                        that        A will         only
+                                                                                 second     protocol and the first is in the
+                                                                                 division of risk:        in the second          proto-
+     agree to this digital signature protocol                                    col     B will      be left holding the bag if
+     if he can       provide          very      good           physical          A's signing key is compromised.                 Clear-
+     security for DA•             The loss to A if DA is                         ly, B must be given assurances that this
+     compromised can be substantial.                                             condition is unlikely before he will                be
+            A different method of solving                          this          willing to use this protocol.
+     problem       is to alter the dispute resolu-
+                                                                                 10.     The Time-Stamp Protocol
+     tion protocol so             that      A is           not     held
+     responsible       for        his       signature            if his
+     secret deciphering               key      is        compromised                    A protocol that would        allow       A to
+     and made public.                                                            report     loss or theft of DA and disclaim
+            The fact that altering the                         di&pute           messages signed after the reported                loss
+     resolution procedure creates a different                                    yet     force A to acknowledge the validity
+     protocol has not been fully appreciated,                                    of signatures made before          the    reported
+     and    the     preceding         two      protocols have                    loss    must     involve the concept of time.
+
+
+
+
+                                                                           129
+We introduce              time       into     the           following               been dealt with fairly.
+protocol        by        using time-keepers who can                                        The major disadvantage of this pro-
+digitally time-stamp                   information                    given         tocol,        as compared with the basic digi-
+to     them.         We        assume that both A and B                             tal signature protocol, is the                             require-
+have     agreed           on     a    set     of        acceptable                  ment that B obtain both a time-stamp and
+time-keepers              whose       time-stamps will be                           a     validity-check,                    presumably        in    real
+accepted in dispute resolution.                                                     time.         These requirements force the use
+        If A can report that                      DA        has        been         of a communications network, which                               both
+lost,     then        he must report this fact to                                   increases           expense              and decreases relia-
+some agent who will be                      responsible                 for         bility.
+answering            queries          about        the           current                    If     B     is           willing        to    obtain     the
+status of D , i.e., has it been lost or                                             time-stamp           and the validity-check after
+           A
+not.   For simplicity, we shall assume                                              the     transaction                 has        been     completed,
+this role is played by the                    t    central              au-         i.e.,        within           a     few        days, an off-line
+thority,       CA.         CA        will     sign          messages                system can be used.                       This modified          pro-
+stating that A's secret deciphering                                     key         tocol        could        be        used        by B either as a
+has     not     been       compromised                 as        of     the         fail-soft protocol during communications
+current        time.           These        signed          messages                outages,           or as the standard protocol if
+will be called "validity-checks."                                                   communication costs are too high.
+        In the time stamp protocol, user                                  A                 Off-line operation is                         cheaper     ahd
+signs     message          m by computing DA(m) and                                 more     reliable, but it exposes B to some
+sending it to B.                 B    then        has        a        time-         risk:        A might              have     recently        reported
+keeper        time        stamp       the message and ob-                           the     loss        of        DA     and        B would not know
+tains a validity-check from CA.                                                     about        it.         If        physical           security    for
+has already been reported lost B rejects                                            secret        deciphering                 keys        is good, this
+the signature, otherwise he accepts.                                                risk should be minimal.
+        In dispute              resolution,             the           judge
+holds     that        a     message has been validly
+signed if and only if it can be                                  checked
+                                                                                    11.     Witnessed Digital Signatures
+by     applying           A's public enciphering key
+AND it has been                 time-stamped                prior        to
+any reported loss of DA•                                                                    If the value of                    a     transaction       is
+        This protocol                provides           very           good         high     enough,              it     might be desirable to
+assurance        to all parties that they have                                      have a witness physically confirm that A
+
+
+
+
+                                                                              130
+signed message m.          The witness, W, would             vious solution is for updates to be                 di-
+compute DW("I, W, physically saw A agree                     gitally signed by an appropriate network
+to     and    sign message m.n).      It would be            administrator,        and     for    the   nodes     to
+necessary for A and B to          agree    in    ad-         check the digital signature prior to ex-
+vance on acceptable witnesses.                               ecuting them.
+        The primary advantage of this           pro-                 This     example     leads    naturally      to
+tocol        is that it reduces B~s risk.        The         another        ap~lication    of     digital signa-
+primary disadvantage is that it forces A                     tures in operating system             security.       A
+
+to     find    a (physically present) witness                major risk to the security of an operat-
+to confirm the transaction.                                  ing system is the possibility              that     the
+                                                             system     code     that it is executing today
+                                                             is not the same that           it    was   executing
+                                                             yesterday: someone might have put a trap
+12.     Digital Signature Applications           ~
+                                                             door into the operating system that lets
+Involving Dispute
+                                                             them     do anything they please.           To guard
+                                                             against this possibility, the              operating
+        Not    all     applications   of   digital           system     could refuse to execute any code
+signatures involve contracts between two                     in privileged mode unless that code                 had
+potentially disputing parties.             Digital           been     properly     signed.        Carried to its
+signatures       are    also an ideal method of              logical conclusion, the operating system
+broadcasting authenticated messages from                     would     check     the    digital     signature of
+a central source which must be confirmed                     privileged programs each time they                 were
+by many separate recipients, or            repeat-           loaded into central memory If this check
+edly     confirmed by the same recipient at                  were implemented in hardware,              it   would
+different times to insure that the              mes-         be     impossible     for any software changes
+sage has not been modified.                                  to subvert it.        The     machine      would    be
+        One example of such an        application            physically        incapable     of executing code
+is     the distribution of network software                  in privileged mode unless that code                was
+to individual nodes of a .communications                     signed.
+network.        It   would be clearly undesir-                      If privileged programs are digital-
+able for any node to start executing the                     ly   signed      by the programmer who origi-
+wrong     software.       On the other hand, it              nally wrote them, as well as by             various
+is very desirable to send updates to the                     supervisory       levels, and if the computer.
+nodes    over the network itself.          The ob-           is physically unable to execute unsigned
+
+
+
+
+                                                       131
+code in privileged mode, then it is pos-                           15.     BIBLIOGRAPHY
+
+sible to have           complete   assurance          that
+the     privileged        programs running on the
+computer Tight now have not
+fied     since
+                                          been
+                   they were given there final
+checkout and signed by             the    programmer.
+                                                     modi-         1.    Diffie,     W.,     and
+                                                                   directions in cryptography.
+                                                                                                    Hellman,
+
+
+                                                                   on Inform. IT-22, 6(Nov. 1976), 644-654.
+                                                                                                                M.
+                                                                                                           IEEE Trans.
+                                                                                                                      New
+
+                                                                                                                             I
+                                                                                                                             :1
+                                                                                                                              I
+Of     course,     this     does    not necessarily
+mean     that     the     operating       system        is         2.    Evans A., Kantrowitz, W., and Weiss,
+secure,     but     it     does eliminate a major                  E.    A user authentication system not re-
+class of worries.                                                  quiring secrecy in the computer.                  Comm.
+                                                                   ACM 17, 8(Aug. 1974),437-442.
+
+
+                                                                   3.    Kohnfelder, L.M. Towards a practical
+13.     Conclusions
+                                                                   public-key         cryptosystem.            MIT      EE
+                                                                   Bachelor~s      thesis.
+        This paper has briefly described                 a
+number of cryptographic protocols.                    Cer-         4.    Lipton, S.M., and Matyas, S.M.               Mak-
+tainly, these are not the only ones pos-                           ing     the   digital       signature    legal--and
+sible;     however, they are valuable tools                        safeguarded.        Data Communications           (Feb.
+
+to the system designer:             they illustrate                1978), 41-52.
+
+what     can be achieved and provide feasi-
+ble solutions to problems                of    recur$ing           5.     McEliece, R.J.        A public-key         cryp-
+
+interest.                                                          tosystem        based       on   algebraic    coding
+        Further constructive work               in    this         theory.       DSN Progress Report, JPL, (Jan.
+area is very much needed.                                          and Feb. 1978), 42-44.
+
+14.     ACKNOWLEDGEMENTS                                           6.      Merkle,     R.     Secure    Communications
+                                                                   over     Insecure        Channels.   Comm. ACM 21,
+        It is a great pleasure for the                 au-         4(Apr. 1978), 294-299.
+thor to acknowledge the pleasant and in-
+formative conversations he had with                    Dov         7.     Merkle, R., and Hellman, M.            Hiding
+Andelman, Whitfield Diffie, Martin Hell-                           information       and      signatures in trapdoor
+man,      Raynold       Kahn   Loren          Kohnfelder,          knapsacks.        IEEE Trans. on        Inform.     IT-
+Frank Olken, and Justin Reyneri.                                   24, 5(Sept. 1978), 525-530.
+
+
+
+
+                                                             132
+•
+
+
+     8.     Rives t, R.L ., Shamir, A., a nd                    Ad l e -         16 .     Sa lt ze r, J. On Digital         Signatures,
+
+     man,     L.     A method f or obtaining digital                             private communication .
+
+     sig natur es and public - key cryptosystems.
+
+     Comm . ACM 21 , 2 (Feb . 1978) , 120-1 26 .                                 17.      Popek G.J. and Klin e , C . S.          Encryp-
+
+                                                                                 tion      Protocols ,    Public Key Algori thms,
+
+     9.     Wilkes, M. V. , Time- Sharing                 Computer               and Digital Sig natur es in Computer                Net-
+
+     Systems . El sev i e r, New York, 1972.                                     works ; in Foundations of Secu r e Computa-
+
+                                                                                 tion pp . 133-153 .
+
+     10 .    Diffie ,        W.,     and      Hellman ,         M.E. ,
+
+    Privacy and authenticat i o n: an introduc -                                 18.      Needham R. M.      a nd    Schroeder,      M.D .
+
+    tion to cryptography, Proc e edings of the                                   US ing     Encryptio n      for Authenticatio n in
+
+    IEEE      Vo l. 67, No.3, Ma r . 1979 pp . 397 -                             Large Networks o f Comput ers .            CACM 21,12
+
+    42 7.                                                                        Dec . 1978 pp . 993 - 999 .
+
+
+
+    11. Squires, J.                Russ    monitor        of     U. S,           19 .     Me r kl e , R. Secrecy, authentication ,
+
+    pho ne s,      Ch ic ago       Tribune       pp. 123, J u ne                 a nd     public key sys tems .       S tanford El ec .
+
+    25, 1975.                                                                    Eng . Ph . D. Thesis , ISL SEL 79 - 017 , 1979.
+
+
+
+    12. Davi s , R. Remedies sought to                         defeat            20 .     Popek , G. J ., and Klin e ,      C.S.      En-
+
+    Soviet eavesdropping on microwave links,                                     crypt ion      and   Secure Compu ter networks.
+
+    Microwave Syst ., vo l. 8 , no. 6 , pp .                      1 7-           Computing Surveys           11 ,4   Dec.    1979     pp.
+
+    20, Ju ne 1978.                                                              331- 356 .
+
+
+
+    13.     Merkle , R.C.           A     certified       digi tal               2 1.     Simmons, G.J . Symmetric          and     Asym-
+
+    signatur e, to appear, CACM.                                                 me tric      Encryption .      Computing         Surveys
+
+                                                                                 11,4 Dec. 1979 pp . 305-3 30.
+
+    14.      Kahn,      D.     The        Code br eake rs,       New
+    York: Macmillan. 1967 .                                                      22.      Lamport , L. Time, clocks,          and     the
+
+                                                                                 o rdering of eve nts in a distributed sys -
+
+    15.      Rab in,     M.O. ,         Digitalized        5ig na-               t ern.    CACM 21,7 Jul 1978 pp . 558 - 565.
+
+    tures, in Foundation s o f Secure Computa-
+    ti on , ed . DemilIo ,           R. A.,     et.   a].        pp.
+    155-166.
+
+
+
+
+                                                                           133
+23.   Ehrsam, W.F., Matyas, S.M.,    Meyer,
+C.H., and Tuchma~ W.L.    A cryptographic
+key management scheme    for   implementing
+the   data encryption standard.     IBM sys.
+Jour. 17,2 1978 pp. 106-125.
+
+
+24. Lamport,   L.,   Constructing    digital
+signatures from a one way function.      SRI
+Int1. CSL - 98
+
+
+
+
+                                        no.   1
+
+
+
+
+                                                  134
+

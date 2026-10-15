@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html class="client-nojs" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<title>Block hashing algorithm - Bitcoin Wiki</title>
+<script type="dbf36551ac11b3fa186b0c2e-text/javascript">(function(){var className="client-js";var cookie=document.cookie.match(/(?:^|; )db_bitcoin_enmwclientpreferences=([^;]+)/);if(cookie){cookie[1].split('%2C').forEach(function(pref){className=className.replace(new RegExp('(^| )'+pref.replace(/-clientpref-\w+$|[^\w-]+/g,'')+'-clientpref-\\w+( |$)'),'$1'+pref+'$2');});}document.documentElement.className=className;}());RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":"64229eaab3dd258bc9e64231","wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Block_hashing_algorithm","wgTitle":"Block hashing algorithm","wgCurRevisionId":68439,"wgRevisionId":68439,"wgArticleId":98,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":["Pages using deprecated source tags","Technical"],"wgPageViewLanguage":"en","wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"Block_hashing_algorithm","wgRelevantArticleId":98,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgCiteReferencePreviewsActive":true};
+RLSTATE={"site.styles":"ready","user.styles":"ready","user":"ready","user.options":"loading","ext.pygments":"ready","skins.vector.styles.legacy":"ready"};RLPAGEMODULES=["ext.pygments.view","site","mediawiki.page.ready","skins.vector.legacy.js","zzz.customizations","ext.moderation.notify","ext.moderation.notify.desktop"];</script>
+<script type="dbf36551ac11b3fa186b0c2e-text/javascript">(RLQ=window.RLQ||[]).push(function(){mw.loader.impl(function(){return["user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});
+}];});});</script>
+<link rel="stylesheet" href="/w/load.php?lang=en&amp;modules=ext.pygments%7Cskins.vector.styles.legacy&amp;only=styles&amp;skin=vector">
+<script async="" src="/w/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector" type="dbf36551ac11b3fa186b0c2e-text/javascript"></script>
+<meta name="ResourceLoaderDynamicStyles" content="">
+<link rel="stylesheet" href="/w/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector">
+<meta name="generator" content="MediaWiki 1.43.11">
+<meta name="robots" content="max-image-preview:standard">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=1120">
+<link rel="search" type="application/opensearchdescription+xml" href="/w/rest.php/v1/search" title="Bitcoin Wiki (en)">
+<link rel="EditURI" type="application/rsd+xml" href="https://en.bitcoin.it/w/api.php?action=rsd">
+<link rel="license" href="http://creativecommons.org/licenses/by/3.0/">
+<link rel="alternate" type="application/atom+xml" title="Bitcoin Wiki Atom feed" href="/w/index.php?title=Special:RecentChanges&amp;feed=atom">
+</head>
+<body class="skin-vector-legacy mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-0 ns-subject page-Block_hashing_algorithm rootpage-Block_hashing_algorithm skin-vector action-view"><div id="mw-page-base" class="noprint"></div>
+<div id="mw-head-base" class="noprint"></div>
+<div id="content" class="mw-body" role="main">
+	<a id="top"></a>
+	<div id="siteNotice"></div>
+	<div class="mw-indicators">
+	</div>
+	<h1 id="firstHeading" class="firstHeading mw-first-heading"><span class="mw-page-title-main">Block hashing algorithm</span></h1>
+	<div id="bodyContent" class="vector-body">
+		<div id="siteSub" class="noprint">From Bitcoin Wiki</div>
+		<div id="contentSub"><div id="mw-content-subtitle"></div></div>
+		<div id="contentSub2"></div>
+		
+		<div id="jump-to-nav"></div>
+		<a class="mw-jump-link" href="#mw-head">Jump to navigation</a>
+		<a class="mw-jump-link" href="#searchInput">Jump to search</a>
+		<div id="mw-content-text" class="mw-body-content"><div class="mw-content-ltr mw-parser-output" lang="en" dir="ltr"><p>Bitcoin mining uses the <a href="/wiki/Hashcash" title="Hashcash">hashcash</a> proof of work function; the hashcash algorithm requires the following parameters: a service string, a nonce, and a counter.  In bitcoin the service string is encoded in the block header data structure, and includes a version field, the hash of the previous block, the root hash of the merkle tree of all transactions in the block, the current time, and the difficulty.  Bitcoin stores the nonce in the extraNonce field which is part of the coinbase transaction, which is stored as the left most leaf node in the merkle tree (the coinbase is the special first transaction in the block).  The counter parameter is small at 32-bits so each time it wraps the extraNonce field must be incremented (or otherwise changed) to avoid repeating work.
+The basics of the hashcash algorithm are quite easy to understand and it is described in more detail <a href="/wiki/Hashcash" title="Hashcash">here</a>.
+When mining bitcoin, the hashcash algorithm repeatedly hashes the block header while incrementing the counter &amp; extraNonce fields.  Incrementing the extraNonce field entails recomputing the merkle tree, as the coinbase transaction is the left most leaf node.  The block is also occasionally updated as you are working on it. 
+</p><p>A block header contains these fields:
+</p>
+<table class="wikitable">
+
+<tbody><tr>
+<th>Field
+</th>
+<th>Purpose
+</th>
+<th>Updated when...
+</th>
+<th>Size (Bytes)
+</th></tr>
+<tr>
+<td>Version
+</td>
+<td>Block version number
+</td>
+<td>You upgrade the software and it specifies a new version
+</td>
+<td>4
+</td></tr>
+<tr>
+<td>hashPrevBlock
+</td>
+<td>256-bit hash of the previous block header
+</td>
+<td>A new block comes in
+</td>
+<td>32
+</td></tr>
+<tr>
+<td>hashMerkleRoot
+</td>
+<td>256-bit hash based on all of the transactions in the block
+</td>
+<td>A transaction is accepted
+</td>
+<td>32
+</td></tr>
+<tr>
+<td>Time
+</td>
+<td>Current <a href="/wiki/Block_timestamp" title="Block timestamp">block timestamp</a> as seconds since 1970-01-01T00:00 UTC
+</td>
+<td>Every few seconds
+</td>
+<td>4
+</td></tr>
+<tr>
+<td>Bits
+</td>
+<td>Current <a href="/wiki/Target" title="Target">target</a> in compact format
+</td>
+<td>The <a href="/wiki/Difficulty" title="Difficulty">difficulty</a> is adjusted
+</td>
+<td>4
+</td></tr>
+<tr>
+<td>Nonce
+</td>
+<td>32-bit number (starts at 0)
+</td>
+<td>A hash is tried (increments)
+</td>
+<td>4
+</td></tr></tbody></table>
+<p>The body of the block contains the transactions. These are hashed only indirectly through the Merkle root. Because transactions aren't hashed directly, hashing a block with 1 transaction takes exactly the same amount of effort as hashing a block with 10,000 transactions.
+</p><p>The compact format of target is a special kind of floating-point encoding using 3 bytes mantissa, the leading byte as exponent (where only the 5 lowest bits are used) and its base is 256.
+Most of these fields will be the same for all users. There might be some minor variation in the timestamps. The nonce will usually be different, but it increases in a strictly linear way. "Nonce" starts at 0 and is incremented for each hash. Whenever Nonce overflows (which it does frequently), the extraNonce portion of the generation transaction is incremented, which changes the Merkle root.
+</p><p>Moreover, it is extremely unlikely for two people to have the same Merkle root because the first transaction in your block is a generation "sent" to one of <i>your</i> unique Bitcoin addresses. Since your block is different from everyone else's blocks, you are (nearly) guaranteed to produce different hashes. Every hash you calculate has the same chance of winning as every other hash calculated by the network.
+</p><p>Bitcoin uses: SHA256(SHA256(Block_Header)) but you have to be careful about byte-order.
+</p><p>For example, this python code will calculate the hash of the block with the smallest hash as of June 2011, <a rel="nofollow" class="external text" href="http://blockexplorer.com/block/00000000000000001e8d6829a8a21adc5d38d0a473b144b6765798e61f98bd1d">Block 125552</a>.  The header is built from the six fields described above, concatenated together as little-endian values in hex notation:
+</p>
+<div class="mw-highlight mw-highlight-lang-python mw-content-ltr" dir="ltr"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">binascii</span><span class="w"> </span><span class="kn">import</span> <span class="n">unhexlify</span><span class="p">,</span> <span class="n">hexlify</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">header_hex</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;01000000&quot;</span> <span class="o">+</span>
+ <span class="s2">&quot;81cd02ab7e569e8bcd9317e2fe99f2de44d49ab2b8851ba4a308000000000000&quot;</span> <span class="o">+</span>
+ <span class="s2">&quot;e320b6c2fffc8d750423db8b1eb942ae710e951ed797f7affc8892b0f1fc122b&quot;</span> <span class="o">+</span>
+ <span class="s2">&quot;c7f5d74d&quot;</span> <span class="o">+</span>
+ <span class="s2">&quot;f2b9441a&quot;</span> <span class="o">+</span>
+ <span class="s2">&quot;42a14695&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">header_bin</span> <span class="o">=</span> <span class="n">unhexlify</span><span class="p">(</span><span class="n">header_hex</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">header_bin</span><span class="p">)</span><span class="o">.</span><span class="n">digest</span><span class="p">())</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hexlify</span><span class="p">(</span><span class="nb">hash</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+<span class="s1">&#39;1dbd981fe6985776b644b173a4d0385ddc1aa2a829688d1e0000000000000000&#39;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hexlify</span><span class="p">(</span><span class="nb">hash</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+<span class="s1">&#39;00000000000000001e8d6829a8a21adc5d38d0a473b144b6765798e61f98bd1d&#39;</span>
+</pre></div>
+<h2><span class="mw-headline" id="Endianess">Endianess</span></h2>
+<p>Note that the hash, which is a 256-bit number, has lots of leading zero bytes when stored or printed as a big-endian hexadecimal constant, but it has trailing zero bytes when stored or printed in little-endian. For example, if interpreted as a string and the lowest (or start of) the string address keeps lowest significant byte, it is little-endian.
+</p><p>The output of <a rel="nofollow" class="external text" href="http://blockexplorer.com">blockexplorer</a> displays the hash values as big-endian numbers; notation for numbers is usual (leading digits are the most significant digits read from left to right).
+</p><p>For another example, <a rel="nofollow" class="external text" href="http://pastebin.com/bW3fQA2a">here</a> is a version in plain C without any optimization, threading or error checking.
+</p><p>Here is the same example in plain PHP without any optimization.
+</p>
+<div class="mw-highlight mw-highlight-lang-php mw-content-ltr" dir="ltr"><pre><span></span><span class="o">&lt;?</span>
+  <span class="c1">//This reverses and then swaps every other char</span>
+  <span class="k">function</span> <span class="nf">SwapOrder</span><span class="p">(</span><span class="nv">$in</span><span class="p">){</span>
+      <span class="nv">$Split</span> <span class="o">=</span> <span class="nb">str_split</span><span class="p">(</span><span class="nb">strrev</span><span class="p">(</span><span class="nv">$in</span><span class="p">));</span>
+      <span class="nv">$x</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">;</span>
+      <span class="k">for</span> <span class="p">(</span><span class="nv">$i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$i</span> <span class="o">&lt;</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$Split</span><span class="p">);</span> <span class="nv">$i</span><span class="o">+=</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nv">$x</span> <span class="o">.=</span> <span class="nv">$Split</span><span class="p">[</span><span class="nv">$i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="nv">$Split</span><span class="p">[</span><span class="nv">$i</span><span class="p">];</span>
+      <span class="p">}</span> 
+      <span class="k">return</span> <span class="nv">$x</span><span class="p">;</span>
+  <span class="p">}</span>
+  
+  <span class="c1">//makes the littleEndian</span>
+  <span class="k">function</span> <span class="nf">littleEndian</span><span class="p">(</span><span class="nv">$value</span><span class="p">){</span>
+      <span class="k">return</span> <span class="nb">implode</span> <span class="p">(</span><span class="nb">unpack</span><span class="p">(</span><span class="s1">&#39;H*&#39;</span><span class="p">,</span><span class="nb">pack</span><span class="p">(</span><span class="s2">&quot;V*&quot;</span><span class="p">,</span><span class="nv">$value</span><span class="p">)));</span>
+  <span class="p">}</span>
+  
+  <span class="nv">$version</span> <span class="o">=</span> <span class="nx">littleEndian</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="nv">$prevBlockHash</span> <span class="o">=</span> <span class="nx">SwapOrder</span><span class="p">(</span><span class="s1">&#39;00000000000008a3a41b85b8b29ad444def299fee21793cd8b9e567eab02cd81&#39;</span><span class="p">);</span>
+  <span class="nv">$rootHash</span> <span class="o">=</span> <span class="nx">SwapOrder</span><span class="p">(</span><span class="s1">&#39;2b12fcf1b09288fcaff797d71e950e71ae42b91e8bdb2304758dfcffc2b620e3&#39;</span><span class="p">);</span>
+  <span class="nv">$time</span> <span class="o">=</span> <span class="nx">littleEndian</span><span class="p">(</span><span class="mi">1305998791</span><span class="p">);</span>
+  <span class="nv">$bits</span> <span class="o">=</span> <span class="nx">littleEndian</span><span class="p">(</span><span class="mi">440711666</span><span class="p">);</span> 
+  <span class="nv">$nonce</span> <span class="o">=</span> <span class="nx">littleEndian</span><span class="p">(</span><span class="mi">2504433986</span><span class="p">);</span> 
+  
+  <span class="c1">//concat it all</span>
+  <span class="nv">$header_hex</span> <span class="o">=</span> <span class="nv">$version</span> <span class="o">.</span> <span class="nv">$prevBlockHash</span> <span class="o">.</span> <span class="nv">$rootHash</span> <span class="o">.</span> <span class="nv">$time</span> <span class="o">.</span> <span class="nv">$bits</span> <span class="o">.</span> <span class="nv">$nonce</span><span class="p">;</span>
+  
+  <span class="c1">//convert from hex to binary </span>
+  <span class="nv">$header_bin</span>  <span class="o">=</span> <span class="nb">hex2bin</span><span class="p">(</span><span class="nv">$header_hex</span><span class="p">);</span>
+  <span class="c1">//hash it then convert from hex to binary </span>
+  <span class="nv">$pass1</span> <span class="o">=</span> <span class="nb">hex2bin</span><span class="p">(</span>  <span class="nb">hash</span><span class="p">(</span><span class="s1">&#39;sha256&#39;</span><span class="p">,</span> <span class="nv">$header_bin</span> <span class="p">)</span>  <span class="p">);</span>
+  <span class="c1">//Hash it for the seconded time</span>
+  <span class="nv">$pass2</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="s1">&#39;sha256&#39;</span><span class="p">,</span> <span class="nv">$pass1</span><span class="p">);</span>
+  <span class="c1">//fix the order</span>
+  <span class="nv">$FinalHash</span> <span class="o">=</span> <span class="nx">SwapOrder</span><span class="p">(</span><span class="nv">$pass2</span><span class="p">);</span>
+  
+  <span class="k">echo</span>   <span class="nv">$FinalHash</span><span class="p">;</span>
+<span class="cp">?&gt;</span>
+</pre></div>
+<!-- 
+NewPP limit report
+Cached time: 20261015020035
+Cache expiry: 86400
+Reduced expiry: false
+Complications: []
+CPU time usage: 0.031 seconds
+Real time usage: 3.968 seconds
+Preprocessor visited node count: 16/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 2/100
+Expensive parser function count: 2/100
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 7964/5000000 bytes
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 -total
+-->
+
+<!-- Saved in parser cache with key db_bitcoin_en:pcache:idhash:98-0!canonical and timestamp 20261015020035 and revision id 68439. Rendering was triggered because: page-view
+ -->
+</div>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://en.bitcoin.it/w/index.php?title=Block_hashing_algorithm&amp;oldid=68439">https://en.bitcoin.it/w/index.php?title=Block_hashing_algorithm&amp;oldid=68439</a>"</div></div>
+		<div id="catlinks" class="catlinks" data-mw="interface"><div id="mw-normal-catlinks" class="mw-normal-catlinks"><a href="/wiki/Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="/w/index.php?title=Category:Pages_using_deprecated_source_tags&amp;action=edit&amp;redlink=1" class="new" title="Category:Pages using deprecated source tags (page does not exist)">Pages using deprecated source tags</a></li><li><a href="/wiki/Category:Technical" title="Category:Technical">Technical</a></li></ul></div></div>
+	</div>
+</div>
+
+<div id="mw-navigation">
+	<h2>Navigation menu</h2>
+	<div id="mw-head">
+		
+<nav id="p-personal" class="mw-portlet mw-portlet-personal vector-user-menu-legacy vector-menu" aria-labelledby="p-personal-label"  >
+	<h3
+		id="p-personal-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="pt-createaccount" class="mw-list-item"><a href="/w/index.php?title=Special:CreateAccount&amp;returnto=Block+hashing+algorithm" title="You are encouraged to create an account and log in; however, it is not mandatory"><span>Create account</span></a></li><li id="pt-login" class="mw-list-item"><a href="/w/index.php?title=Special:UserLogin&amp;returnto=Block+hashing+algorithm" title="You are encouraged to log in; however, it is not mandatory [o]" accesskey="o"><span>Log in</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+		<div id="left-navigation">
+			
+<nav id="p-namespaces" class="mw-portlet mw-portlet-namespaces vector-menu-tabs vector-menu-tabs-legacy vector-menu" aria-labelledby="p-namespaces-label"  >
+	<h3
+		id="p-namespaces-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Namespaces</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="ca-nstab-main" class="selected mw-list-item"><a href="/wiki/Block_hashing_algorithm" title="View the content page [c]" accesskey="c"><span>Page</span></a></li><li id="ca-talk" class="mw-list-item"><a href="/wiki/Talk:Block_hashing_algorithm" rel="discussion" title="Discussion about the content page [t]" accesskey="t"><span>Discussion</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+			
+<nav id="p-variants" class="mw-portlet mw-portlet-variants emptyPortlet vector-menu-dropdown vector-menu" aria-labelledby="p-variants-label"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-variants-label"
+	>
+	<label
+		id="p-variants-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			
+		</ul>
+		
+	</div>
+</nav>
+
+		</div>
+		<div id="right-navigation">
+			
+<nav id="p-views" class="mw-portlet mw-portlet-views vector-menu-tabs vector-menu-tabs-legacy vector-menu" aria-labelledby="p-views-label"  >
+	<h3
+		id="p-views-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Views</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="ca-view" class="selected mw-list-item"><a href="/wiki/Block_hashing_algorithm"><span>Read</span></a></li><li id="ca-viewsource" class="mw-list-item"><a href="/w/index.php?title=Block_hashing_algorithm&amp;action=edit" title="This page is protected.&#10;You can view its source [e]" accesskey="e"><span>View source</span></a></li><li id="ca-history" class="mw-list-item"><a href="/w/index.php?title=Block_hashing_algorithm&amp;action=history" title="Past revisions of this page [h]" accesskey="h"><span>View history</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+			
+<nav id="p-cactions" class="mw-portlet mw-portlet-cactions emptyPortlet vector-menu-dropdown vector-menu" aria-labelledby="p-cactions-label"  title="More options" >
+	<input type="checkbox"
+		id="p-cactions-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-cactions"
+		class="vector-menu-checkbox"
+		aria-labelledby="p-cactions-label"
+	>
+	<label
+		id="p-cactions-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">More</span>
+	</label>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			
+		</ul>
+		
+	</div>
+</nav>
+
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<h3 >Search</h3>
+	<form action="/w/index.php" id="searchform" class="vector-search-box-form">
+		<div id="simpleSearch"
+			class="vector-search-box-inner"
+			 data-search-loc="header-navigation">
+			<input class="vector-search-box-input"
+				 type="search" name="search" placeholder="Search Bitcoin Wiki" aria-label="Search Bitcoin Wiki" autocapitalize="sentences" title="Search Bitcoin Wiki [f]" accesskey="f" id="searchInput"
+			>
+			<input type="hidden" name="title" value="Special:Search">
+			<input id="mw-searchButton"
+				 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search the pages for this text" value="Search">
+			<input id="searchButton"
+				 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+		</div>
+	</form>
+</div>
+
+		</div>
+	</div>
+	
+<div id="mw-panel" class="vector-legacy-sidebar">
+	<div id="p-logo" role="banner">
+		<a class="mw-wiki-logo" href="/wiki/Main_Page"
+			title="Visit the main page"></a>
+	</div>
+	
+<nav id="p-navigation" class="mw-portlet mw-portlet-navigation vector-menu-portal portal vector-menu" aria-labelledby="p-navigation-label"  >
+	<h3
+		id="p-navigation-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Navigation</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="n-mainpage-description" class="mw-list-item"><a href="/wiki/Main_Page" title="Visit the main page [z]" accesskey="z"><span>Main page</span></a></li><li id="n-Bitcoin-FAQ" class="mw-list-item"><a href="/wiki/Help:FAQ"><span>Bitcoin FAQ</span></a></li><li id="n-Editing-help" class="mw-list-item"><a href="/wiki/Bitcoin_Wiki:Help"><span>Editing help</span></a></li><li id="n-Forums" class="mw-list-item"><a href="/wiki/Forums"><span>Forums</span></a></li><li id="n-Chatrooms" class="mw-list-item"><a href="/wiki/IRC_channels"><span>Chatrooms</span></a></li><li id="n-Recent-changes" class="mw-list-item"><a href="/wiki/Special:RecentChanges"><span>Recent changes</span></a></li><li id="n-Page-index" class="mw-list-item"><a href="/wiki/Special:AllPages"><span>Page index</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+	
+<nav id="p-tb" class="mw-portlet mw-portlet-tb vector-menu-portal portal vector-menu" aria-labelledby="p-tb-label"  >
+	<h3
+		id="p-tb-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Tools</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="t-whatlinkshere" class="mw-list-item"><a href="/wiki/Special:WhatLinksHere/Block_hashing_algorithm" title="A list of all wiki pages that link here [j]" accesskey="j"><span>What links here</span></a></li><li id="t-recentchangeslinked" class="mw-list-item"><a href="/wiki/Special:RecentChangesLinked/Block_hashing_algorithm" rel="nofollow" title="Recent changes in pages linked from this page [k]" accesskey="k"><span>Related changes</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="/wiki/Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-permalink" class="mw-list-item"><a href="/w/index.php?title=Block_hashing_algorithm&amp;oldid=68439" title="Permanent link to this revision of this page"><span>Permanent link</span></a></li><li id="t-info" class="mw-list-item"><a href="/w/index.php?title=Block_hashing_algorithm&amp;action=info" title="More information about this page"><span>Page information</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+<nav id="p-Sister_projects" class="mw-portlet mw-portlet-Sister_projects vector-menu-portal portal vector-menu" aria-labelledby="p-Sister_projects-label"  >
+	<h3
+		id="p-Sister_projects-label"
+		
+		class="vector-menu-heading "
+	>
+		<span class="vector-menu-heading-label">Sister projects</span>
+	</h3>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			
+			<li id="n-Essays" class="mw-list-item"><a href="/wiki/Bitcoin_Wiki:Essay_main_page"><span>Essays</span></a></li><li id="n-Source" class="mw-list-item"><a href="/wiki/Bitcoin_Wiki:Source_main_page"><span>Source</span></a></li>
+		</ul>
+		
+	</div>
+</nav>
+
+	
+</div>
+
+</div>
+
+<footer id="footer" class="mw-footer" >
+	<ul id="footer-info">
+	<li id="footer-info-lastmod"> This page was last edited on 20 February 2021, at 17:55.</li>
+	<li id="footer-info-copyright">Content is available under <a class="external" rel="nofollow" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0</a> unless otherwise noted.</li>
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="/wiki/Bitcoin_Wiki:Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="/wiki/Bitcoin_Wiki:About">About Bitcoin Wiki</a></li>
+	<li id="footer-places-disclaimers"><a href="/wiki/Bitcoin_Wiki:General_disclaimer">Disclaimers</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/" class="cdx-button cdx-button--fake-button cdx-button--size-large cdx-button--fake-button--enabled"><img src="/w/resources/assets/poweredby_mediawiki.svg" alt="Powered by MediaWiki" width="88" height="31" loading="lazy"></a></li>
+</ul>
+
+</footer>
+
+<script type="dbf36551ac11b3fa186b0c2e-text/javascript">(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgBackendResponseTime":90,"wgPageParseReport":{"limitreport":{"cputime":"0.031","walltime":"3.968","ppvisitednodes":{"value":16,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":2,"limit":100},"expensivefunctioncount":{"value":2,"limit":100},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":7964,"limit":5000000},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"timestamp":"20261015020035","ttl":86400,"transientcontent":false}}});});</script>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="dbf36551ac11b3fa186b0c2e-|49" defer></script></body>
+</html>
