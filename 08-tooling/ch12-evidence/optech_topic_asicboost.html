@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>ASICBoost | Bitcoin Optech</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="ASICBoost" />
+<meta name="author" content="Bitcoin Optech" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="ASICBoost is a technique for specially constructing a Bitcoin block header in order to reduce by about 15% the number of operations necessary to find a certain amount of proof of work." />
+<meta property="og:description" content="ASICBoost is a technique for specially constructing a Bitcoin block header in order to reduce by about 15% the number of operations necessary to find a certain amount of proof of work." />
+<link rel="canonical" href="https://bitcoinops.org/en/topics/asicboost/" />
+<meta property="og:url" content="https://bitcoinops.org/en/topics/asicboost/" />
+<meta property="og:site_name" content="Bitcoin Optech" />
+<meta property="og:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-10-15T03:53:42+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="twitter:title" content="ASICBoost" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Bitcoin Optech"},"dateModified":"2026-10-15T03:53:42+00:00","datePublished":"2026-10-15T03:53:42+00:00","description":"ASICBoost is a technique for specially constructing a Bitcoin block header in order to reduce by about 15% the number of operations necessary to find a certain amount of proof of work.","headline":"ASICBoost","image":"https://bitcoinops.org/img/logos/optech-notext.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://bitcoinops.org/en/topics/asicboost/"},"url":"https://bitcoinops.org/en/topics/asicboost/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://bitcoinops.org/feed.xml" title="Bitcoin Optech" /></head>
+
+
+  <body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">
+      <img src="/img/logos/optech-horiz.png" alt="OpTech Logo">
+    </a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/en/about/">About</a>
+            <a class="page-link" href="/en/publications/">Publications</a>
+            <a class="page-link" href="/en/topics/">Topics</a>
+            <a class="page-link" href="/en/workshops/">Workshops</a>
+            <a class="page-link" href="/en/matrix/">Matrix</a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+
+
+<article class="post">
+  <header class="post-header">
+    
+    <p class="center">/ <a href="/">home</a> / <a href="/en/topics/">topics</a> / </p>
+
+
+    <h1 class="post-title">ASICBoost</h1>
+    
+  </header>
+
+  <div class="post-content">
+    
+
+
+<!-- Actual page content -->
+
+<p class="center"><em>Also covering Overt ASICBoost and Covert ASICBoost</em></p>
+
+<p><strong>ASICBoost</strong> is a technique for specially constructing a Bitcoin block header in order to reduce by about 15% the number of operations necessary to find a certain amount of proof of work.</p>
+
+<p>ASICBoost can be implemented in two forms:</p>
+
+<ul>
+  <li id="overt-asicboost" class="anchor-list">
+    <p><a href="#overt-asicboost" class="anchor-list-link">●</a> <strong>Overt ASICBoost</strong> requires manipulating the nVersion field of a
+block header.  This is clearly visible on the block chain.  Miners
+wishing to use overt ASICBoost are recommended to use the version bits
+reserved for general purpose use by <a href="https://github.com/bitcoin/bips/blob/master/bip-0320.mediawiki">BIP320</a>.</p>
+  </li>
+  <li id="covert-asicboost" class="anchor-list">
+    <p><a href="#covert-asicboost" class="anchor-list-link">●</a> <strong>Covert ASICBoost</strong> requires manipulating part of the merkle root
+field of a block header.  This can be done undetectably, although
+naive implementations often leave clues.</p>
+
+    <p>Covert ASICBoost is not compatible with blocks that contain
+secondary commitments to their transactions, as is the case with any
+block that contains a segwit transaction.  This produced
+<a href="/en/topics/soft-fork-activation/#2016-7-bip9-bip148-and-bip91-the-bip141143-segwit-activation">controversy</a> when it was discovered that a mining
+hardware manufacturer who strongly objected to segwit had secretly
+designed features into their ASICs to use covert ASICBoost.</p>
+  </li>
+</ul>
+
+<h2 id="primary-code-and-documentation">Primary code and documentation</h2>
+
+<ul>
+  <li><a href="https://arxiv.org/abs/1604.00575">AsicBoost—A Speedup for Bitcoin Mining</a></li>
+</ul>
+
+<h2 id="optech-newsletter-and-website-mentions">Optech newsletter and website mentions</h2>
+
+<p><strong>2021</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2021/04/28/#why-does-the-mined-block-differ-so-much-from-the-block-template">Question about block templates versus actual blocks: ASICBoost explains one difference</a></li>
+</ul>
+
+<p><strong>2019</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2019/03/05/#bitcoin-core-15471">Bitcoin Core #15471 removes warning falsely triggered by use of overt ASICBoost</a></li>
+</ul>
+
+<p><strong>2018</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2018/10/30/#overt-asicboost-support-for-s9-miners">Overt ASICBoost support for S9 miners</a></li>
+</ul>
+
+<h2 id="see-also">See also</h2>
+
+<ul>
+  <li>
+    <p><a href="https://github.com/bitcoin/bips/blob/master/bip-0320.mediawiki">BIP320: nVersion bits for general purpose use</a></p>
+
+    <p><br /></p>
+  </li>
+</ul>
+
+<p class="float-left">
+
+<strong>Previous Topic:</strong><br /><a href="/en/topics/ark/">Ark protocol</a>
+
+</p>
+<p class="float-right">
+
+<strong>Next Topic:</strong><br /><a href="/en/topics/assumeutxo/">AssumeUTXO</a>
+
+</p>
+
+<p class="center"><a href="https://github.com/bitcoinops/bitcoinops.github.io/edit/master/_topics/en/asicboost.md">Edit page</a><br />
+  <a href="https://github.com/bitcoinops/bitcoinops.github.io/issues/new?body=Source file: _topics/en/asicboost.md">Report Issue</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Bitcoin Optech</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Bitcoin Optech</li><li><a class="u-email" href="mailto:info@bitcoinops.org">info@bitcoinops.org</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/bitcoinops"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">bitcoinops</span></a></li><li><a href="https://www.twitter.com/bitcoinoptech"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">bitcoinoptech</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Helping Bitcoin-based businesses integrate scaling technology.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

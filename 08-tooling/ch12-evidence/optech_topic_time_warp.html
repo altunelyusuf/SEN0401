@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Time warp | Bitcoin Optech</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="Time warp" />
+<meta name="author" content="Bitcoin Optech" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Time warp is an exploit of Bitcoin’s difficulty adjustment algorithm that allows miners controlling a large amount of hashrate to prevent difficulty from increasing even as the rate of block production increases." />
+<meta property="og:description" content="Time warp is an exploit of Bitcoin’s difficulty adjustment algorithm that allows miners controlling a large amount of hashrate to prevent difficulty from increasing even as the rate of block production increases." />
+<link rel="canonical" href="https://bitcoinops.org/en/topics/time-warp/" />
+<meta property="og:url" content="https://bitcoinops.org/en/topics/time-warp/" />
+<meta property="og:site_name" content="Bitcoin Optech" />
+<meta property="og:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-10-15T03:53:42+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://bitcoinops.org/img/logos/optech-notext.png" />
+<meta property="twitter:title" content="Time warp" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Bitcoin Optech"},"dateModified":"2026-10-15T03:53:42+00:00","datePublished":"2026-10-15T03:53:42+00:00","description":"Time warp is an exploit of Bitcoin’s difficulty adjustment algorithm that allows miners controlling a large amount of hashrate to prevent difficulty from increasing even as the rate of block production increases.","headline":"Time warp","image":"https://bitcoinops.org/img/logos/optech-notext.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://bitcoinops.org/en/topics/time-warp/"},"url":"https://bitcoinops.org/en/topics/time-warp/"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://bitcoinops.org/feed.xml" title="Bitcoin Optech" /></head>
+
+
+  <body>
+<header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">
+      <img src="/img/logos/optech-horiz.png" alt="OpTech Logo">
+    </a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+            <a class="page-link" href="/en/about/">About</a>
+            <a class="page-link" href="/en/publications/">Publications</a>
+            <a class="page-link" href="/en/topics/">Topics</a>
+            <a class="page-link" href="/en/workshops/">Workshops</a>
+            <a class="page-link" href="/en/matrix/">Matrix</a>
+        </div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <link rel="stylesheet" href="/assets/css/main.css">
+
+
+
+<article class="post">
+  <header class="post-header">
+    
+    <p class="center">/ <a href="/">home</a> / <a href="/en/topics/">topics</a> / </p>
+
+
+    <h1 class="post-title">Time warp</h1>
+    
+  </header>
+
+  <div class="post-content">
+    
+
+
+<!-- Actual page content -->
+
+<p><strong>Time warp</strong> is an exploit of Bitcoin’s difficulty adjustment algorithm that allows miners controlling a large amount of hashrate to prevent difficulty from increasing even as the rate of block production increases.</p>
+
+<p>Ignoring some technical details, Bitcoin’s difficulty adjustment
+algorithm (DAA) attempts to keep an average of ten minutes between
+new blocks by adjusting the difficulty of the proof of work (PoW) that
+blocks must demonstrate in order to be valid.  This depends on miners
+including the (approximate) current time in the block headers they
+create, so that the Bitcoin consensus protocol can calculate how much the
+recent inter-block average differs from the ideal of ten minutes.</p>
+
+<p>Consensus rules prevent a single miner, or small number of miners, from
+claiming they created a block far in the past by requiring that
+any time in a block header must be greater than the median time of the
+previous 11 blocks, called the <em>median time past</em> (MTP) rule.</p>
+
+<p>However, miners controlling a majority of hashrate (or a sub-majority of
+miners using an attack that gives them influence over other miners, such
+as <em>selfish mining</em>), can gain precise control over the header time of
+each block.  For almost all blocks, they can set this to the minimum
+increase of one second greater than the median.  But, for the last block
+in a difficulty adjustment period, they can set it to the current time.
+Using small numbers for illustrative purposes below, we can see a series
+of header times suddenly advance far in the apparent future and then
+return to the past, giving the attack its <em>time warp</em> name:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[0, 1, 2, 1795594, 3, 4, 5, ...]
+</code></pre></div></div>
+
+<p>Bitcoins DAA only adjusts difficulty once every 2016 blocks.  Miners who
+begin a time warp attack cannot significantly affect difficulty for the
+first 2016-block epoch because both the first and last blocks in that
+epoch will need to have approximately accurate times.  For the second
+epoch, miners can make it appear that the first block was mined four
+weeks in the past and the last block was mined at present, giving an
+average of about 20 minutes per block and causing the DAA to halve the
+difficulty.  Miners will then by able to complete the next epoch twice
+as fast and yet make it seem like it took about 25 minutes per block,
+lowering difficulty further.  They can repeat the attack indefinitely
+until they’re producing <a href="https://bitcoin.stackexchange.com/q/123698">six blocks per second</a>, the lower bound allowed by
+the MTP rule.</p>
+
+<h2 id="consequences">Consequences</h2>
+
+<p>The original reason to fear the attack was that miners could use it to
+quickly claim all remaining block subsidy.  The attack takes about a
+month of publicly visible preparation before it really gets going, at
+which point it would only take miners about another month to claim all
+remaining subsidy, which was valued at approximately $91 billion USD at
+the time of this writing (April 2024).</p>
+
+<p>Since the discovery of the attack, a significant amount of user funds
+(but believed to be far less than $91 billion) is now stored in contract
+protocols that use <a href="/en/topics/timelocks/">timelocks</a>.  Since the activation of
+<a href="https://github.com/bitcoin/bips/blob/master/bip-0113.mediawiki">BIP113</a>, those contracts all depend on MTP rather than block header
+time.  During a time warp attack, MTP increases significantly slower
+than normally, so funds could be made inaccessible to their users for
+much longer than they expected or could potentially lead to users losing
+money (depending on the contract).</p>
+
+<p>The time warp attack would also result in much faster creation of new
+blocks than expected, making it easy to overwhelm the CPU or bandwidth
+of many nodes.  With a reduced
+number of nodes on the network, many other attacks would be easier,
+including <a href="/en/topics/eclipse-attacks/">eclipse attacks</a> and unwanted
+consensus changes.  A high rate of block production (due to a low
+difficulty of creating each block) could also prevent miners from
+converging on a single best chain, forcing nodes to frequently
+reorganize and making transaction confirmation completely unreliable.</p>
+
+<h2 id="proposed-use-as-an-upgrade-mechanism">Proposed use as an upgrade mechanism</h2>
+
+<p>A 2018 proposal called <a href="/en/newsletters/2018/10/09/#forward-blocks-on-chain-capacity-increases-without-a-hard-fork">forward blocks</a> proposed
+changing the consensus rules to deliberately encourage miners to perform
+a timewarp to produce blocks more quickly.  Those blocks would commit to
+essential transaction data, such as amounts and previous transaction,
+allowing non-upgraded full nodes to continue verifying consensus rules
+such as the 21 million bitcoin limit.  Upgraded nodes would look for
+other transaction data, such as signatures, in <em>extension blocks</em> that
+would not be seen by older nodes.  This could increase the maximum
+number of confirmed transactions on the network using only a
+backwards-compatible soft fork.</p>
+
+<p>We’re unaware of any continued research or development of this idea for
+Bitcoin.</p>
+
+<h2 id="solutions">Solutions</h2>
+
+<p>Because the setup for the attack is public, takes about a month, and
+requires cooperation from miners controlling a large portion of total
+network hashrate, there has been an apparent lack of urgency to fixing
+the attack.</p>
+
+<p>A <a href="/en/newsletters/2018/08/28/#requests-for-soft-fork-solutions-to-the-time-warp-attack">request for solutions</a> was made in 2018 and an
+elegant solution was proposed as part of the <a href="/en/topics/consensus-cleanup-soft-fork/">consensus cleanup</a> soft fork proposal: require the first block in a new
+difficulty period have a time no earlier than ten minutes before the
+last block in the previous period.  This means miners can only set an
+artificially-low timestamp for the first block in a retarget period if
+they also set an artificially-low timestamp for the last block in the
+previous period—but putting a low timestamp in the previous period
+would’ve raised difficulty then by as much as they’ll be able to lower
+it at the end of the current period, making any such attempt worse than
+useless.</p>
+
+<h2 id="optech-newsletter-and-website-mentions">Optech newsletter and website mentions</h2>
+
+<p><strong>2026</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2026/10/02/#bounds-on-chain-length-with-bip54-time-warp-fixes">Bounds on chain length with the BIP54 time warp fixes</a></li>
+  <li><a href="/en/newsletters/2026/09/11/#bitcoin-core-35949">Bitcoin Core #35949 updates block template creation to follow BIP54’s timewarp mitigation</a></li>
+  <li><a href="/en/newsletters/2026/01/02/#relax-bip54-timestamp-restriction-for-2106-soft-fork">Discussion of BIP54’s timewarp fix and its impact on the 2106 block timestamp overflow issue</a></li>
+</ul>
+
+<p><strong>2025</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2025/02/07/#increase-timewarp-grace-period-to-2-hours">Consensus cleanup proposal updates time warp grace period to 2 hours</a></li>
+  <li><a href="/en/newsletters/2025/01/31/#bitcoin-core-31376">Bitcoin Core #31376 prevents creating block templates that exploit the timewarp bug</a></li>
+  <li><a href="/en/newsletters/2025/01/03/#consensus-cleanup-timewarp-grace-period">Discussion about the proposed solution to classic time warp being too stringent</a></li>
+</ul>
+
+<p><strong>2024</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2024/12/06/#continued-discussion-about-consensus-cleanup-soft-fork-proposal">Discussion about fixing Murch-Zawy time warp in consensus cleanup</a></li>
+  <li><a href="/en/newsletters/2024/08/16/#new-time-warp-vulnerability-in-testnet4">New time warp vulnerability affecting testnet4 despite previous time warp fixes</a></li>
+  <li><a href="/en/newsletters/2024/07/26/#how-many-blocks-per-second-can-sustainably-be-created-using-a-time-warp-attack">Question: how many blocks per second can sustainably be created using a time warp attack?</a></li>
+  <li><a href="/en/newsletters/2024/06/07/#bip-and-experimental-implementation-of-testnet4">Draft BIP for testnet4 includes fix for time warp attack</a></li>
+  <li><a href="/en/newsletters/2024/04/24/#where-exactly-is-the-off-by-one-difficulty-bug">Question: where exactly is the ‘off-by-one’ difficulty bug and how does it relate to time warp?</a></li>
+</ul>
+
+<p><strong>2019</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2019/03/05/#the-time-warp-attack">Consensus cleanup proposal: fix the time warp attack</a></li>
+</ul>
+
+<p><strong>2018</strong></p>
+<ul>
+  <li><a href="/en/newsletters/2018/10/09/#forward-blocks-on-chain-capacity-increases-without-a-hard-fork">Forward blocks: on-chain capacity increases without a hard fork</a></li>
+  <li><a href="/en/newsletters/2018/10/09/#fixing-the-time-warp-bug">Fixing the time warp bug: a discussion</a></li>
+  <li><a href="/en/newsletters/2018/08/28/#requests-for-soft-fork-solutions-to-the-time-warp-attack">Requests for soft fork solutions to the time warp attack</a></li>
+</ul>
+
+<h2 id="see-also">See also</h2>
+
+<ul>
+  <li>
+    <p><a href="/en/topics/consensus-cleanup-soft-fork/">Consensus cleanup soft fork proposal</a></p>
+
+    <p><br /></p>
+  </li>
+</ul>
+
+<p class="float-left">
+
+<strong>Previous Topic:</strong><br /><a href="/en/topics/threshold-signature/">Threshold signature</a>
+
+</p>
+<p class="float-right">
+
+<strong>Next Topic:</strong><br /><a href="/en/topics/timelocks/">Timelocks</a>
+
+</p>
+
+<p class="center"><a href="https://github.com/bitcoinops/bitcoinops.github.io/edit/master/_topics/en/time-warp.md">Edit page</a><br />
+  <a href="https://github.com/bitcoinops/bitcoinops.github.io/issues/new?body=Source file: _topics/en/time-warp.md">Report Issue</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Bitcoin Optech</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">Bitcoin Optech</li><li><a class="u-email" href="mailto:info@bitcoinops.org">info@bitcoinops.org</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/bitcoinops"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">bitcoinops</span></a></li><li><a href="https://www.twitter.com/bitcoinoptech"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">bitcoinoptech</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>Helping Bitcoin-based businesses integrate scaling technology.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
