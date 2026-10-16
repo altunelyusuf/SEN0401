@@ -1,0 +1,272 @@
+{
+ "chapter": 14,
+ "deck": "SEN0401_Ch14_SecondLayerApplications_3e_v1_1_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 14: Second-Layer Apps",
+   "say": "This deck explains what is built on top of Bitcoin: the guarantees of the chain, colored coins, payment channels and the Lightning Network. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1 and five lnd 0.21.3-beta nodes were run on private test chains, so their answers are Recorded and only read back here. The research package for chapter 14 holds the sources, the claims and the list of what was not run.",
+   "concept": "What the chain guarantees, how a payment channel is built and how Lightning routes payments. Bitcoin Core 31.1 and lnd 0.21.3-beta results are Recorded."
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has three parts after the questions: what the chain guarantees, with the first bitcoin purchase, no double spend, proofs, pledges and colored coins; payment channels, with the first channels, Emma and Fabian, falling lock times, the penalty and the hash-locked contract; and the Lightning Network, with a five-node payment, hold invoices, the wire formats, the chain side and two stories. Each part carries true stories and corrections of the book that a reader can check on the slide.",
+   "concept": "Three parts, four true stories, and a list of what was not run"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The chapter asks two questions that this deck answers by computation: which of its statements can be checked, and what has changed since print. The three numbers are counted from the research package, which holds 83 sources, 27 findings and 55 executed claims. Each slide that follows shows the computation behind one claim.",
+   "concept": "Its own competency questions, and the numbers behind the answers"
+  },
+  {
+   "n": 4,
+   "kind": "section",
+   "title": "What the chain guarantees",
+   "say": "This part asks what the base chain gives to anything built on it. A spent output stays spent, a hash in a transaction proves that a document existed, pledges can be pooled into one payment, and a spent output can serve as a seal for colored coins. The story is the first purchase made with bitcoin.",
+   "concept": "No double spend, proofs, pledges and colored coins."
+  },
+  {
+   "n": 5,
+   "kind": "content",
+   "title": "Two pizzas for 10,000 bitcoins",
+   "say": "On 22 May 2010 a 19-year-old in California ordered two pizzas for Laszlo Hanyecz in Jacksonville and received 10,000 bitcoins, the first notable retail purchase with bitcoin. That payment settled on the chain, as every payment then did. The Lightning Network now holds 32,518 channels with 3,753.7 bitcoin on a public statistics page, but only the page was read here and no gossip was observed.",
+   "concept": "The story of 22 May 2010: who, where, when and what to read next",
+   "read": {
+    "label": "Bitcointalk thread: Pizza for bitcoins?",
+    "url": "https://bitcointalk.org/index.php?topic=137.0"
+   }
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "No double spend, no expiry",
+   "say": "Bitcoin's most basic guarantee is that an output is spent once. On the test chain a second spend with a lower fee was refused, one with a higher fee replaced the first in the memory pool, and once a block had confirmed one of them the other was refused. A payment that spent more than it held was refused, and a payment signed at height 301 was still accepted at 451. Since release 28.0 full replace-by-fee is the default.",
+   "concept": "A spent output stays spent, and a signed payment never expires"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "Proof of existence and a crowdfund",
+   "say": "A document can be timestamped by writing only its hash: a 32-byte SHA-256 in an output of value zero was confirmed in a block, so the document existed no later than that block. A crowdfunding transaction in the style of Lighthouse joins two pledges, each signed only for its own input and the one fixed output. With one pledge the node refused it for lack of value, with both it accepted it, and a changed output broke the signatures.",
+   "concept": "A hash proves existence; pledges join only when the goal is met"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "Single-use seals and client validation",
+   "say": "A single-use seal is something that can be closed once, and an unspent output is exactly that. In the test a chain of three seals was three different outpoints, each spent by the next transaction. A public key tweaked by the hash of a contract made a new address, only the tweaked key could spend from it, and the contract itself never appeared on the chain. A forged contract failed the check, so the validation stays between the parties.",
+   "concept": "A spent output can seal a contract that never touches the chain"
+  },
+  {
+   "n": 9,
+   "kind": "section",
+   "title": "Payment channels",
+   "say": "This part builds a payment channel. Two parties fund a shared output and exchange signed transactions, refunds carry falling lock times so the newest wins, the commitment of one side can be punished if an old one is published, and a hash-locked contract lets a payment pass through a third party. The story is where channels were first proposed.",
+   "concept": "A shared output, signed refunds and a promise that punishes cheating."
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "The first payment channels",
+   "say": "The Bitcoin Wiki traces payment channels to the first Bitcoin code, where an unrecorded open transaction could keep being replaced until its lock time. On 17 April 2013 Mike Hearn posted Anti DoS for tx replacement to the bitcoin-development list, and on 20 April Jeremy Spillman replied with the one-way design that the book calls Spillman-style. The refund had to be signed before the funding was sent.",
+   "concept": "The story of 20 April 2013: who, where, when and what to read next",
+   "read": {
+    "label": "Reply: Anti DoS for tx replacement (list post)",
+    "url": "https://web.archive.org/web/2023/https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2013-April/002433.html"
+   }
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Emma and Fabian: a channel in numbers",
+   "say": "In the book Emma pays Fabian one thousand satoshis for each second of video, from a channel funded with 3,600,000 satoshis, enough for one hour. The funding output needs two keys: on the test chain Emma's signature alone was refused and both signatures were accepted. The 71-byte script starts with 2 and ends with 2 and CHECKMULTISIG, and the recorded settlement paid Fabian for 6 seconds.",
+   "concept": "A channel is a two-key output and a running total of signed settlements"
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "Refunds with falling lock times",
+   "say": "To let a channel be replaced, each new refund carries an earlier lock time than the one before, so the newest refund can be mined first. On the test chain six refunds carried the lock heights 488 down to 483 and all six were refused at the start. The refund with the lowest lock was accepted at its height, and once it spent the funding output the older refunds failed with missing inputs.",
+   "concept": "The newest refund has the earliest lock and wins the race"
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "A commitment that punishes cheating",
+   "say": "Each side holds a commitment whose own output waits a number of blocks, while the other side can take it at once with a revocation key. On the test chain a spend after 999 confirmations was refused and after 1000 was accepted. The revocation key needed both halves of its secret, and with both the penalty spend confirmed. The book's 1000 blocks is a teaching value, since lnd 0.21.3-beta set 2016.",
+   "concept": "A published old state can be taken whole by the other side"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "HTLC: a secret opens it, time reclaims it",
+   "say": "A hash-time-locked contract has two ways out. Whoever knows the secret behind the hash can claim the output, and a wrong secret or the payer's key alone failed. After the lock height the payer can take it back, and the refund was refused one block early. The book writes HASH160 for the hash, which is the RIPEMD160 of the SHA256, while the Lightning payment hash itself is a plain 32-byte SHA256.",
+   "concept": "A secret opens it before the deadline, the refund after it"
+  },
+  {
+   "n": 15,
+   "kind": "section",
+   "title": "The Lightning Network",
+   "say": "This part runs the network. Five lnd nodes pass one payment of one bitcoin along a line with fees and falling timelocks, a hold invoice keeps it in flight, the handshake and the onion packet are checked against the published vectors, and the channel's own transactions show how cheating is punished and fees are bumped. The stories are the paper that proposed the network and the torch that passed along it.",
+   "concept": "Routing, fees, invoices, the wire formats and the chain side."
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Five nodes, one payment of 1 BTC",
+   "say": "Alice paid one bitcoin to Eric through Bob, Carol and Diana on five lnd nodes. Each hop forwarded a little less than it received, keeping a fee, so 300,000 satoshis went to the three middle nodes, which is 0.3 percent. The expiry of the payment fell by 80 blocks at each hop, so a node always has time to claim from the one before it. Nothing was paid on the public network.",
+   "concept": "Each hop keeps a fee and gets less time than the hop before"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "A hold invoice keeps a payment in flight",
+   "say": "A hold invoice lets the receiver delay the release of the secret. While the invoice was held every node on the line kept the payment in flight, the end nodes with one pending payment and the middle ones with two. Cancelling the invoice returned every balance to what it was, and releasing the secret settled the payment. Only one path existed, so multipath payments were not tried.",
+   "concept": "A payment can wait in flight, and then settle or unwind"
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Handshake and onion, checked on vectors",
+   "say": "Two published test vectors were recomputed in Python. The BOLT 8 handshake gave the expected first and third acts, of 50 and 66 bytes, and the same session key. The BOLT 4 onion packet for five hops matched the vector at 1,366 bytes, and the size stays the same for one, two or five hops so that a relay cannot tell its place on the path. Flipping a single bit of the onion made its HMAC fail.",
+   "concept": "A relay sees only its own layer, and every onion has one size"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "An invoice carries the payment hash",
+   "say": "A Lightning invoice is a bech32 string that holds the network, the amount, the payment hash, an expiry and a signature. The invoice made by lnd named the regtest network, asked for one bitcoin in millisatoshis and set a final delta of 80 blocks. Hashing the secret gave the payment hash printed in it, and the BOLT 11 example decoded to 250,000 satoshis. Only lnd was run.",
+   "concept": "An invoice is a signed promise that names the hash to be paid"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Channel transactions on the chain",
+   "say": "On the chain a channel is two transactions, the funding output that needs both keys and a cooperative close. The commitment transaction hides a 48-bit state number in its lock time and sequence fields, which lets both sides number their states. A cooperative close was one transaction with lock time zero, so the channel's whole life used two on-chain transactions. The BOLT 3 key derivation vectors matched.",
+   "concept": "A channel's whole life can be two transactions on the chain"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "Breach, justice and fee bumping",
+   "say": "When Irene broadcast an old state, Hitesh's node saw the revoked commitment and spent both of its outputs in a justice transaction. He received 999,990,380 satoshis of the 1,000,000,000 in the channel, and the rest went to the fee. A second test showed fee bumping: a zero-fee parent was refused alone and accepted as a package with a child that paid for both, at 10.9 satoshis per virtual byte.",
+   "concept": "Cheating with an old state loses the whole channel"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "A paper that became a network",
+   "say": "Joseph Poon and Thaddeus Dryja published a Lightning Network white paper in February 2015, and Wikipedia cites a copy archived on 28 February 2015. The draft that lightning.network keeps is version 0.5.9.2 of 14 January 2016, 320 days later. Lightning Labs launched the network in 2018, so the book's word proposed no longer holds, while its date for the first description, February 2015, does.",
+   "concept": "The story of 28 February 2015: who, where, when and what to read next",
+   "read": {
+    "label": "Poon and Dryja: Lightning paper (PDF)",
+    "url": "https://lightning.network/lightning-network-paper.pdf"
+   }
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Satoshis passed from hand to hand",
+   "say": "On 19 January 2019 the pseudonymous Twitter user hodlonaut began a promotional test of the Lightning Network by sending 100,000 satoshis to a trusted recipient. Each recipient added 10,000 satoshis and sent the sum on, so it reached well-known people such as Jack Dorsey and Elizabeth Stark. Each hand-over was an ordinary Lightning payment, and the fee arithmetic of the book predicts what stays after each hop.",
+   "concept": "The story of 19 January 2019: who, where, when and what to read next",
+   "read": {
+    "label": "Wikipedia: Lightning Network (article)",
+    "url": "https://en.wikipedia.org/wiki/Lightning_Network"
+   }
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "concept": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the CuriousInventor video, then the Optech topic on hash time locked contracts next to the chapter. The research package for chapter 14 lists all 83 sources with the passages used.",
+   "concept": "Watch the first video, then read the Optech topic beside the chapter",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Optech topic: Hash time locked contracts",
+     "url": "https://bitcoinops.org/en/topics/htlc/",
+     "finds": "How HTLCs route payments, with links to code"
+    },
+    {
+     "group": "Read",
+     "label": "Optech topic: Anchor outputs",
+     "url": "https://bitcoinops.org/en/topics/anchor-outputs/",
+     "finds": "How channels keep the option to raise their fees later"
+    },
+    {
+     "group": "Read",
+     "label": "Optech topic: Watchtowers",
+     "url": "https://bitcoinops.org/en/topics/watchtowers/",
+     "finds": "Services that answer a breach while the owner is offline"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BOLT 3: Transaction and Script Formats (spec)",
+     "url": "https://raw.githubusercontent.com/lightning/bolts/master/03-transactions.md",
+     "finds": "Channel transaction layouts, with test vectors"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 112: CHECKSEQUENCEVERIFY",
+     "url": "https://bips.dev/112/",
+     "finds": "The relative timelock opcode that channels depend on"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "Poon and Dryja: Lightning paper (PDF)",
+     "url": "https://lightning.network/lightning-network-paper.pdf",
+     "finds": "Draft 0.5.9.2 of 14 January 2016"
+    },
+    {
+     "group": "Watch",
+     "label": "CuriousInventor: Lightning Explained (video)",
+     "url": "https://www.youtube.com/embed/yKdK-7AtAMQ",
+     "finds": "How Lightning works, with animations"
+    },
+    {
+     "group": "Watch",
+     "label": "Poon and Dryja at Coinbase (video)",
+     "url": "https://www.youtube.com/embed/KN7Z5dGWcRY",
+     "finds": "The two authors present the Lightning Network"
+    },
+    {
+     "group": "Community",
+     "label": "mempool.space Lightning (statistics)",
+     "url": "https://mempool.space/lightning",
+     "finds": "Channels, nodes and capacity of the Lightning Network"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Optech newsletters (weekly)",
+     "url": "https://bitcoinops.org/en/newsletters/",
+     "finds": "Weekly digest of protocol and wallet development; all issues"
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin (research forum)",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers argue out proposals and research in public threads"
+    }
+   ]
+  },
+  {
+   "n": 26,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 14 holds the sources and the test records behind them.",
+   "concept": "And where each claim gets its proof"
+  }
+ ]
+}
