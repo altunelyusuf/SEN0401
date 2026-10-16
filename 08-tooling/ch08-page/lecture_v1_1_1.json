@@ -1,0 +1,349 @@
+{
+ "chapter": 8,
+ "deck": "SEN0401_Ch08_DigitalSignatures_3e_v1_1_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 8: Digital Signatures",
+   "say": "This deck explains how a Bitcoin signature works and what it commits to. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1.0 was run once on a test network, so its answers are Recorded and only read back here. The full text of every slide is in the research package for chapter 8.",
+   "concept": "SignatureFoundations",
+   "takeaway": "What a signature commits to, how schnorr and ECDSA work, and what moved since print. Bitcoin Core 31.1.0 results are Recorded.",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1.0 on this slide were produced by one run of the program on a test network and are read back here; they were not run again, and they are not run on this page."
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has four parts after the questions: what a signature proves and signs, schnorr signatures, ECDSA with its encoding and its nonce, and finally segwit, taproot and what moved since the book. Each part ends in a story or a correction of the book that a reader can check on the slide. The numbers in the list let a reader jump straight to a part.",
+   "concept": "SignatureFoundations",
+   "takeaway": "Four parts, three true stories, and a list of what was not run"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The chapter asks two questions that this deck answers by computation: which of its statements can be reproduced, and which have changed since print. The three numbers below them are counted from the research package, which holds 66 sources, 20 findings and 91 executed claims. Each slide that follows shows the computation behind its claim.",
+   "concept": "SignatureFoundations",
+   "takeaway": "Its own competency questions, and the numbers behind the answers"
+  },
+  {
+   "n": 4,
+   "kind": "section",
+   "title": "What a signature proves and signs",
+   "say": "This part starts from the verification function, with three inputs and one answer. It then separates the two numbers that the book calls modulus, and shows how the SIGHASH flags choose what a signature covers. The cheque on the slide is the picture to keep: a signature is only as strong as the fields it covers.",
+   "concept": "SignatureRoles",
+   "takeaway": "Sign and verify, the two moduli and the SIGHASH flags. Think of a cheque: ALL fills in every line, NONE leaves the payee blank."
+  },
+  {
+   "n": 5,
+   "kind": "content",
+   "title": "Anyone can verify a signature, no secret needed",
+   "say": "A signature check needs only a message, a public key and a signature, so any node can run it without a secret or a link to the signer. The console signs a message hash, verifies it, and then shows two ways to break it: a message changed by one bit and a neighbour's key. The last row shows that two owners can sign two inputs of one transaction independently, and that swapping their signatures fails.",
+   "concept": "VerifierInputs",
+   "takeaway": "Anyone can verify a signature; only the owner of the key can make one"
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Scalars live modulo n, coordinates modulo p",
+   "say": "The book says the arithmetic is done modulo p, but the scalars of the signature equation are reduced modulo n, the order of the group. The console shows the toy equation with plain integers, where division would reveal the key, and then the real curve, where the equation holds modulo n and fails modulo p. The two numbers are different and both have 256 bits.",
+   "concept": "ScalarModulus",
+   "takeaway": "Scalars wrap at the group order n; only the coordinates wrap at the prime p"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "A flag chooses what the signature commits to",
+   "say": "Each flag removes fields from the hash, and the left table shows which of five fields change it, found by changing one field at a time. The right table asks the same question of signatures that Bitcoin Core 31.1.0 made on a test network, which are Recorded here and edited and verified again on this machine. The two tables agree, and the book's wording about all inputs holds for outpoints but not for the other inputs' sequence numbers.",
+   "concept": "Commitments",
+   "takeaway": "NONE signs no outputs, SINGLE one, ALL all; ANYONECANPAY frees other inputs",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1.0 on this slide were produced by one run of the program on a test network and are read back here; they were not run again, and they are not run on this page."
+    }
+   ]
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "SIGHASH_SINGLE with no matching output",
+   "say": "The book does not say what SIGHASH_SINGLE signs when the input has no output with its index. In the legacy algorithm the value that is signed is then the number one, which the first rows print and which Core's own source marks as a bug. The last row is Recorded: Core 31.1.0 refuses to sign such an input, and signs the same transaction once each input has an output.",
+   "concept": "SingleBug",
+   "takeaway": "SINGLE with no matching output signs the number one; Core refuses it",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1.0 on this slide were produced by one run of the program on a test network and are read back here; they were not run again, and they are not run on this page."
+    }
+   ]
+  },
+  {
+   "n": 9,
+   "kind": "section",
+   "title": "Schnorr signatures",
+   "say": "This part follows Schnorr's idea from a three-move proof of identity to the 64-byte signature that taproot uses. It then shows what the signature's linearity allows, from adding keys to sharing a secret among three people. A story about a patent explains why Bitcoin began with ECDSA instead.",
+   "concept": "SchnorrSignatures",
+   "takeaway": "From a proof of identity to the 64-byte signature of taproot, and what its linearity allows"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "From a proof of identity to a signature",
+   "say": "The prover commits to a nonce, the verifier answers with a random challenge, and the prover responds so that one equation can be checked. The console runs the toy numbers, the real curve round, a response that is wrong by one, and a cheat who is told the challenge in advance and passes without the key. Replacing the verifier by a hash of the commitment, the key and the message gives a signature that verifies for its own message and fails for another.",
+   "concept": "IdentityProtocol",
+   "takeaway": "A schnorr signature is a three-move proof in which a hash plays the verifier"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "The signature that was patented for two decades",
+   "say": "On 19 February 1991 the United States published Claus-Peter Schnorr's patent 4,995,082, filed in 1990 for a scheme he had presented at Crypto 89. The patent kept the algorithm out of open standards, so ECDSA became the signature Bitcoin used from its first release until the taproot soft fork. The console computes both possible end dates, 19 February 2008 and 23 February 2010, and Wikipedia states that the patent expired in February 2010.",
+   "concept": "PatentDates",
+   "read": {
+    "label": "Schnorr's patent US 4,995,082 (PDF)",
+    "url": "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4995082"
+   },
+   "takeaway": "The story of 19 February 1991: who, where, when and what to read next"
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "BIP340 in practice: 64 bytes, x-only keys",
+   "say": "BIP340 signatures are 64 bytes, public keys are 32 bytes, and the published test vectors all reproduce here. Signing is deterministic by default, and hashing the public key into the challenge stops a related-key forgery that works without it. A combined equation accepts nine valid signatures and rejects the batch when one is swapped, but the claimed speed-up is NOT EXECUTED because the library lists no batch interface.",
+   "concept": "Bip340Format",
+   "takeaway": "One equation checks one signature or a batch; the speed-up was not measured",
+   "labels": [
+    {
+     "kind": "NOT EXECUTED",
+     "text": "the speed-up of batch verification."
+    }
+   ]
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "Keys that add up, and the trap in it",
+   "say": "Adding private keys adds public keys, and signing is linear, so two people can make one signature for a sum key. The naive protocol has a hole: a partner who sees your key first can publish a key that cancels it and then sign alone, which the console reproduces. MuSig2 weights each key by a hash, so the same attack no longer gives the attacker the aggregate, and its four published key vectors reproduce.",
+   "concept": "KeyCancellation",
+   "takeaway": "Plain key addition invites cancellation; MuSig2 hashed weights stop it"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Threshold signatures: any two of three",
+   "say": "Shamir's scheme hides a secret as the point where a line crosses an axis, so any two of three shares rebuild it and one share shows nothing. The book's threshold protocol has a weakness that the console reproduces: a partner can tell each of the others that the other is away and collect both partial keys. The BIP index has no number for a threshold scheme, although Optech lists a FROST proposal.",
+   "concept": "ThresholdSharing",
+   "takeaway": "Any two of three shares rebuild the secret, and one share shows nothing"
+  },
+  {
+   "n": 15,
+   "kind": "section",
+   "title": "ECDSA, DER and the nonce",
+   "say": "This part is about ECDSA, the signature Bitcoin used until 2021. It covers the formulas, the two forms of one signature, the DER encoding and a real signature from the chain, and then the nonce, which must never repeat. Two stories belong here, one about a signature printed in the book and one about weak random numbers on Android.",
+   "concept": "EcdsaSignatures",
+   "takeaway": "The signature Bitcoin used until 2021: formulas, encoding, a real signature and the number that must never repeat"
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "ECDSA: the formulas, and two forms of one signature",
+   "say": "ECDSA computes s from the hash, the key, the nonce and the point R, and the check recomputes R from s. The console verifies the book's formulas, shows that a second signature with s replaced by n minus s also verifies, and checks that 200 library signatures are low-S and strictly DER encoded. The two forms are the malleability that the low-S rule addresses.",
+   "concept": "EcdsaMath",
+   "takeaway": "One signature has two valid forms; only the low form passes the relay policy"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "The signature on the page is a real payment",
+   "say": "The long signature that the book uses to explain DER is a real one, from block 277,316 on 27 December 2013. The console finds it in the saved transaction record, splits it into its nine elements, recomputes the legacy signature hash and verifies it against the 65-byte public key; the same check fails when the flag byte is changed to NONE. Its R value begins with 0x88, so a padding zero makes it 72 bytes, which Bitcoin Core avoids today by grinding for a small R.",
+   "concept": "BookSampleOnChain",
+   "read": {
+    "label": "The signed payment in block 277,316 (tx)",
+    "url": "https://mempool.space/tx/0627052b6f28912f2703066a912ea577f2ce4da4caa5a5fbd8a57286c345c2f2"
+   },
+   "takeaway": "The story of 27 December 2013: who, where, when and what to read next",
+   "labels": [
+    {
+     "kind": "Stand-in picture",
+     "text": "the Bitcoin logo, not the sender or the transaction."
+    }
+   ]
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Deterministic nonces and small signatures",
+   "say": "The nonce can be derived from the key and the message with RFC 6979, so no random number generator is needed at signing time. The console reproduces the standard's published nonce, and the Recorded rows show that Bitcoin Core signs deterministically and grinds the nonce until R is small. All 300 signatures in one Core transaction are low-R, 298 of 71 bytes and 2 of 70, while about half of the library's unground signatures are not.",
+   "concept": "DeterministicNonces",
+   "takeaway": "A nonce derived from key and message needs no random generator",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1.0 on this slide were produced by one run of the program on a test network and are read back here; they were not run again, and they are not run on this page."
+    }
+   ]
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "When the phone's random numbers were not random",
+   "say": "On 11 August 2013 Bitcoin.org warned that Android's secure random number generator was weak, and four wallets were named. The sources say the generator was improperly initialized but not which flaw was exploited. The console shows why this is fatal for ECDSA: two signatures with one nonce give away the key, while two different nonces do not, and a deterministic nonce removes the dependence on randomness. The picture is the Android robot, a stand-in for the platform.",
+   "concept": "NonceReuse",
+   "read": {
+    "label": "Bitcoin.org alert: Android vulnerability",
+    "url": "https://bitcoin.org/en/alert/2013-08-11-android"
+   },
+   "takeaway": "The story of 11 August 2013: who, where, when and what to read next",
+   "labels": [
+    {
+     "kind": "Stand-in picture",
+     "text": "the platform, not the incident."
+    }
+   ]
+  },
+  {
+   "n": 20,
+   "kind": "section",
+   "title": "Segwit, taproot and since the book",
+   "say": "This part covers what segwit changed in what is signed, how a node judges a signature and what has moved since the book was printed. It uses the Recorded answers of Bitcoin Core for policy and consensus, and the saved sources for the status of proposals. It closes with a plain list of what this deck did not run.",
+   "concept": "SegwitSigning",
+   "takeaway": "What segwit changed in what is signed, how a node judges a signature, and what moved after print"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "Segwit hashes less and signs amounts",
+   "say": "Legacy signing hashes a copy of the transaction for each input, so ten times the inputs cost almost a hundred times the bytes; BIP143 keeps the cost linear. The chart shows 10 and 100 inputs, and the console shows the growth factors, 97.8 and 10.0. A version 0 signature also commits to the amount being spent, and a taproot signature commits to all spent amounts unless ANYONECANPAY is used. Block 709,635 holds the first taproot key-path spend, which verifies here.",
+   "concept": "ValueCommitment",
+   "takeaway": "Segwit signing cost grows with the inputs, not their square, and covers amounts"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "What a node accepts: policy, consensus, taproot",
+   "say": "A node can accept a signature in a block that it would not relay. Core 31.1.0 on a test network refuses a high-S signature in its memory pool but mines it into a block, while a signature that is not strictly DER encoded makes the block invalid. For taproot, the explicit hash type byte 0x00 is invalid and the default is the absence of the byte; the tables show Core's own error for each case.",
+   "concept": "ConsensusAndPolicy",
+   "takeaway": "Policy decides what is relayed, consensus what is valid",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers of Bitcoin Core 31.1.0 on this slide were produced by one run of the program on a test network and are read back here; they were not run again, and they are not run on this page."
+    }
+   ]
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Since the book: what moved after print",
+   "say": "The book is a snapshot of 2023. Most of the proposals it names are Deployed, but BIP118 is still a Draft, BIP461 and BIP361 are new drafts, and Core 30.0 caps legacy signature operations at 2,500 in policy. Several things were not run here and are marked NOT EXECUTED on the slide: the security proof of ECDSA, quantum attacks and any Core release other than 31.1.0.",
+   "concept": "SinceTheBook",
+   "takeaway": "The book is a snapshot; check the BIP index and Core's notes for changes",
+   "labels": [
+    {
+     "kind": "NOT EXECUTED",
+     "text": "ECDSA's full security proof, quantum attacks, any Core release but 31.1.0"
+    }
+   ]
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "concept": "SignatureFoundations",
+   "takeaway": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the Optech workshop videos on schnorr and MuSig, then BIP340 read next to the chapter. The research package for chapter 8 lists all 66 sources with the passages used.",
+   "concept": "SourcesRecord",
+   "links": [
+    {
+     "group": "Read",
+     "label": "BIP 340: Schnorr Signatures for secp256k1",
+     "url": "https://bips.dev/340/",
+     "finds": "The specification with reference code and test vectors"
+    },
+    {
+     "group": "Read",
+     "label": "Mastering Bitcoin 3e, ch. 8: Digital Signatures",
+     "url": "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/develop/ch08_signatures.adoc",
+     "finds": "The chapter's AsciiDoc source on GitHub, plain text"
+    },
+    {
+     "group": "Read",
+     "label": "Bitcoin Wiki: OP_CHECKSIG (article)",
+     "url": "https://en.bitcoin.it/wiki/OP_CHECKSIG",
+     "finds": "What the opcode checks, step by step"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 327: MuSig2 for BIP340 Multi-Signatures",
+     "url": "https://bips.dev/327/",
+     "finds": "Specification of two-round multi-party Schnorr signing"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "RFC 6979: Deterministic DSA and ECDSA",
+     "url": "https://www.rfc-editor.org/rfc/rfc6979.txt",
+     "finds": "How the signing nonce is derived from key and message"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "Schnorr: Efficient signature generation (1991)",
+     "url": "https://link.springer.com/article/10.1007/BF00196725",
+     "finds": "The seminal paper, Journal of Cryptology 4 (publisher page)"
+    },
+    {
+     "group": "Watch",
+     "label": "MIT 15.S12 Blockchain and Money: lectures",
+     "url": "https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/video_galleries/lecture-videos/",
+     "finds": "The 2018 course, every lecture video in one list"
+    },
+    {
+     "group": "Watch",
+     "label": "Optech Schnorr and Taproot workshop",
+     "url": "https://bitcoinops.org/en/schnorr-taproot-workshop/",
+     "finds": "Exercises and recorded sessions on Schnorr and Taproot"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Optech newsletters (weekly)",
+     "url": "https://bitcoinops.org/en/newsletters/",
+     "finds": "Weekly digest of protocol and wallet development; all issues"
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin (research forum)",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers argue out proposals and research in public threads"
+    },
+    {
+     "group": "Community",
+     "label": "bitcoin-dev (mailing list)",
+     "url": "https://groups.google.com/g/bitcoindev",
+     "finds": "Where BIPs and soft forks are first proposed and debated"
+    }
+   ],
+   "takeaway": "Watch the Optech workshop, then read BIP340 beside the chapter"
+  },
+  {
+   "n": 26,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 8 holds the sources and the test vectors behind them.",
+   "concept": "SignatureFoundations",
+   "takeaway": "And where each claim gets its proof"
+  }
+ ],
+ "_note": "lecture_v1_1_0.json plus the deck's honesty labels per slide (labels), made by lecture_make_v1_1_1.py from the deck plan and the deck's review record; the slide text is unchanged; concept now holds the id of the page concept the slide is about (the deck's one-line takeaway is kept as takeaway)."
+}
