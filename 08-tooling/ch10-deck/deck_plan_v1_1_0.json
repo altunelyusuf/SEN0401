@@ -1,0 +1,1721 @@
+{
+ "meta": {
+  "title": "Chapter 10: The Bitcoin Network",
+  "sub": "SEN0401, third-edition redesign",
+  "version": "1.1.0",
+  "python": "3.14.6",
+  "total": 0,
+  "redesign": "2026-10-15, first deck from the committed research package (commit a7b47b2), to the CME look and feel; notes are short reader's prose; v1.1.0: every READ card and resources link names its resource and goes straight to it (link_register_v1_0_0.json)",
+  "notes": "short reader's prose: 2-4 sentences, at most 100 words",
+  "honesty": {
+   "title": [
+    "Bitcoin Core 31.1",
+    "Recorded"
+   ],
+   "recorded": [
+    1,
+    6,
+    8,
+    9,
+    11,
+    13,
+    14,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+   ],
+   "notExecuted": [
+    8,
+    10,
+    12,
+    14,
+    23
+   ],
+   "standin": {
+    "10": [
+     "Stand-in picture"
+    ],
+    "12": [
+     "Stand-in picture"
+    ],
+    "20": [
+     "Stand-in picture"
+    ],
+    "22": [
+     "Stand-in picture"
+    ]
+   },
+   "vectors": [
+    5,
+    6,
+    8,
+    17,
+    19,
+    10,
+    12,
+    18,
+    20,
+    22
+   ]
+  },
+  "analogies": [
+   {
+    "concept": "flat peer-to-peer network",
+    "analogy": "Like a village market with no manager: every stall only talks to its neighbours",
+    "slide": 4
+   },
+   {
+    "concept": "handshake",
+    "analogy": "Like two people meeting: each says who they are, then they agree on a language",
+    "slide": 6
+   },
+   {
+    "concept": "DNS seed",
+    "analogy": "Like asking the phone directory for a few numbers, then your friends for more",
+    "slide": 8
+   },
+   {
+    "concept": "compact block",
+    "analogy": "Like telling a friend the page numbers of a book they already own",
+    "slide": 11
+   },
+   {
+    "concept": "mempool",
+    "analogy": "Like each shop keeping its own waiting list, while the town ledger is shared",
+    "slide": 14
+   },
+   {
+    "concept": "Merkle proof",
+    "analogy": "Like proving a name is in a phone book by showing only the headings on its path",
+    "slide": 16
+   },
+   {
+    "concept": "Bloom filter",
+    "analogy": "Like a guest list that admits a few strangers by mistake but never a listed friend",
+    "slide": 17
+   },
+   {
+    "concept": "block filter",
+    "analogy": "Like a library posting each day's index, so you look yourself up without asking",
+    "slide": 19
+   },
+   {
+    "concept": "encrypted transport",
+    "analogy": "Like moving from a postcard that anyone can read to a sealed envelope",
+    "slide": 21
+   },
+   {
+    "concept": "Tor",
+    "analogy": "Like passing a note through several friends so none knows both sender and reader",
+    "slide": 23
+   }
+  ]
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 10: The Bitcoin Network",
+   "sub": "How nodes find each other, pass blocks and payments, and what moved since print. Bitcoin Core 31.1 results are Recorded.",
+   "items": [],
+   "notes": "This deck explains the Bitcoin network: who the nodes are, how they find each other and shake hands, how blocks and transactions travel, and how light clients and encryption changed since the book went to print. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1 was run on a test network, so its answers are Recorded and only read back here. The research package for chapter 10 holds the sources and the claims.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "The questions, then three parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 6.3,
+     "h": 3.4,
+     "fs": 12.0,
+     "items": [
+      "The chapter's questions  (slides 3-3)",
+      "Who is on the network  (slides 4-6)",
+      "Peers, blocks and transactions  (slides 7-14)",
+      "Light clients, privacy and transport  (slides 15-26)"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.5,
+     "w": 2.45,
+     "h": 3.4,
+     "vert": true,
+     "items": [
+      {
+       "n": "26",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "5",
+       "label": "true stories, each with WHO / WHERE / WHEN / READ"
+      },
+      {
+       "n": "17",
+       "label": "live-run consoles, each shown with its result"
+      }
+     ]
+    }
+   ],
+   "notes": "The route has three parts after the questions: who is on the network and how two nodes meet, how peers, blocks and payments are found and relayed, and finally light clients, privacy and the encrypted wire. Each part carries a true story or a correction of the book that a reader can check on the slide. The numbers in the list let a reader jump straight to a part.",
+   "take": "Three parts, five true stories, and a list of what was not run",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions, and the numbers behind the answers",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 1.7,
+     "fs": 13,
+     "items": [
+      "Which claims of the chapter can be checked by computation, and what does the computation give?",
+      "What in the chapter has changed since the book went to print, and on what source?"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 0.5,
+     "y": 3.3,
+     "w": 9.0,
+     "h": 1.6,
+     "items": [
+      {
+       "n": "85",
+       "label": "sources, opened and read on 2026-10-15"
+      },
+      {
+       "n": "67",
+       "label": "claims, each recomputed by running code"
+      },
+      {
+       "n": "24",
+       "label": "findings, several of them corrections of the book"
+      }
+     ]
+    }
+   ],
+   "notes": "The chapter asks two questions that this deck answers by computation: which of its statements can be checked, and what has changed since print. The three numbers are counted from the research package, which holds 85 sources, 24 findings and 67 executed claims. Each slide that follows shows the computation behind one claim.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Who is on the network",
+   "sub": "Like a village market with no manager: every stall only talks to its neighbours",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 2,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Nodes counted today"
+      },
+      {
+       "label": "The handshake"
+      }
+     ]
+    }
+   ],
+   "notes": "This part asks who is on the network and how two nodes meet. The village market on the slide is the picture to keep: no manager, and every stall deals with its neighbours. The census of the real network is saved, and the handshake was run on a test node of Bitcoin Core 31.1.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Who is on the network today",
+   "sub": "Like a village market with no manager: every stall only talks to its neighbours",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10.5,
+     "items": [
+      "Row 1: 25,361 reachable nodes, of which 12,488 are onion services; only 8,664 are on the clearnet (row 2), not the book's 10,000",
+      "Row 3: 99.67 percent report a /Satoshi: agent; plain Bitcoin Core is 83.57 percent, and 31.1.0 is the most common",
+      "Row 4: the service bits show what a node offers: 22,402 keep the whole chain, 25,322 at least the last 288 blocks"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Reachable nodes by network, saved census",
+     "dataLabels": true,
+     "dlFmt": "#,##0",
+     "dlFs": 9,
+     "labels": [
+      "onion",
+      "ipv4",
+      "i2p",
+      "ipv6",
+      "cjdns"
+     ],
+     "series": [
+      {
+       "name": "nodes",
+       "data": [
+        12488,
+        7473,
+        4208,
+        1191,
+        1
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "b['total'], sorted(b['nets'].items())",
+       "(25361, [('cjdns', 1), ('i2p', 4208), ('ipv4', 7473), ('ipv6', 1191), ('onion', 12488)])"
+      ],
+      [
+       "b['nets']['ipv4'] + b['nets']['ipv6'], seen('book_ch10_network.adoc', 'about 10,000', 'listening nodes')",
+       "(8664, True)"
+      ],
+      [
+       "b['satoshi_prefix'], b['knots'], round(100 * b['core_plain'] / b['total'], 2), b['top_agent']",
+       "(25278, 4083, 83.57, ('/Satoshi:31.1.0/', 7442))"
+      ],
+      [
+       "sorted(b['services'].items())",
+       "[('BLOOM', 4308), ('COMPACT_FILTERS', 7905), ('NETWORK', 22402), ('NETWORK_LIMITED', 25322), ('P2P_V2', 21768), ('WITNESS', 24582)]"
+      ]
+     ],
+     "fs": 7.5,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the saved Bitnodes snapshot of 2026-10-15"
+    }
+   ],
+   "notes": "A census of the reachable network shows a flat peer-to-peer system of equals, as the book says, but its numbers have moved. The saved snapshot lists 25,361 reachable nodes, and nearly half of them are onion services, so only 8,664 can be reached over the ordinary internet. More than 99 percent run code derived from Bitcoin Core, and the service bits tell a client which nodes keep the whole chain and which keep only the last 288 blocks.",
+   "bg": "light",
+   "take": "The network is flat and open, and nearly half of its nodes sit behind Tor"
+  },
+  {
+   "kind": "content",
+   "title": "The handshake: version, verack, services",
+   "sub": "Like two people meeting: each says who they are, then they agree on a language",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 10.5,
+     "steps": [
+      {
+       "label": "version",
+       "sub": "who I am: 70016"
+      },
+      {
+       "label": "wtxidrelay, sendaddrv2",
+       "sub": "options"
+      },
+      {
+       "label": "verack",
+       "sub": "agreed",
+       "hot": true
+      },
+      {
+       "label": "sendcmpct, getheaders",
+       "sub": "first requests"
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.22,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "e, v = R['e1_handshake'], R['e1_handshake']['node_version']",
+       ""
+      ],
+      [
+       "P.frame('verack', b'').hex(), len(P.frame('verack', b'')), P.MAGIC['main'].hex(), e['magic']",
+       "('fabfb5da76657261636b000000000000000000005df6e0e2', 24, 'f9beb4d9', 'fabfb5da')"
+      ],
+      [
+       "v['version'], v['services'], v['user_agent'], v['start_height'], v['relay'], v['payload_bytes']",
+       "(70016, 3081, '/Satoshi:31.1.0/', 2099, True, 102)"
+      ],
+      [
+       "[c for t, c, n in e['sequence']]",
+       "['version', 'wtxidrelay', 'sendaddrv2', 'verack', 'sendcmpct', 'ping', 'getheaders', 'inv', 'feefilter']"
+      ],
+      [
+       "src('core_src_node_protocol_version.h', 'PROTOCOL_VERSION'), seen('book_ch10_network.adoc', '(e.g., 70002)')",
+       "('70016', True)"
+      ],
+      [
+       "R['networkinfo_A']['localservicesnames'], R['e10_pruned']['services'], R['e10_pruned']['prune_info']['pruned']",
+       "(['NETWORK', 'WITNESS', 'NETWORK_LIMITED', 'P2P_V2'], ['WITNESS', 'NETWORK_LIMITED', 'P2P_V2'], True)"
+      ]
+     ],
+     "fs": 7.8,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; the mainnet magic bytes are saved in the source"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 2: magic, command, length, checksum make 24 bytes for verack; mainnet magic f9beb4d9, test chain fabfb5da",
+      "Rows 3 and 5: the node sent protocol version 70016 and /Satoshi:31.1.0/; the book's listing shows 70002",
+      "Rows 4 and 6: version, options, verack, then requests; an archival node offers NETWORK, a pruned one only NETWORK_LIMITED"
+     ]
+    }
+   ],
+   "notes": "Two nodes meet by exchanging a version message, a few option messages and a verack, each framed with four magic bytes, a command, a length and a checksum. A script that knew only the wire format introduced itself to a test node of Bitcoin Core 31.1 and was answered as an equal with protocol version 70016, not the 70002 of the book. The services field says what a node offers: a pruned node does not set NETWORK but only NETWORK_LIMITED.",
+   "bg": "light",
+   "take": "Two nodes meet as equals: version, options, verack, then requests"
+  },
+  {
+   "kind": "section",
+   "title": "Peers, blocks and transactions",
+   "sub": "Finding peers, choosing connections, and passing blocks and payments along.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Finding peers"
+      },
+      {
+       "label": "Compact blocks"
+      },
+      {
+       "label": "Headers first"
+      },
+      {
+       "label": "Relay and orphans"
+      }
+     ]
+    }
+   ],
+   "notes": "This part follows a node from its first start to the data it relays. It finds peers through DNS seeds and gossip, keeps a few outbound connections of different kinds, and learns about blocks and transactions from them. A story about an attack on those connections and a story about compact blocks sit in the middle.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Finding peers: DNS seeds and addr",
+   "sub": "Like asking the phone directory for a few numbers, then your friends for more",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "8 DNS seeds",
+      "182 distinct addresses",
+      "port 8333"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.12,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "d, a = R['e11_dns_seeds'], R['e9_addr']; n = [len(v['ipv4']) for v in d['answers'].values()]",
+       ""
+      ],
+      [
+       "len(d['seeds_in_chainparams']), d['distinct_ipv4'], min(n), max(n)",
+       "(8, 182, 20, 29)"
+      ],
+      [
+       "src('core_src_kernel_chainparams.cpp', 'nDefaultPort'), d['tcp_probe']['connected']",
+       "('8333', False)"
+      ],
+      [
+       "a['without']['addr']['count'], a['with_sendaddrv2']['addrv2']['count'], src('core_src_net_processing.cpp', 'MAX_PCT_ADDR_TO_SEND')",
+       "(23, 23, '23')"
+      ],
+      [
+       "a['with_sendaddrv2']['addrv2']['networks'], a['with_sendaddrv2']['addrv2']['addr_len']",
+       "([1, 2], [4, 16])"
+      ],
+      [
+       "R['e9_addrman']['addrman_info']['ok']['all_networks']['total'], seen('bip-0155.mediawiki', 'TORV3', 'I2P', 'CJDNS')",
+       "(103, True)"
+      ]
+     ],
+     "fs": 7.6,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, with the DNS answers saved"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.45,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: 8 DNS seeds answered with 20 to 29 addresses each, 182 in all, on port 8333; our probe did not connect",
+      "Rows 4 to 6: a node sends up to 23 percent of its table as addr; with addrv2 it also names Tor, I2P and CJDNS peers"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.78,
+     "w": 9.0,
+     "h": 0.24,
+     "fs": 10,
+     "body": "NOT EXECUTED: connections to mainnet peers; row 3 shows the probe did not connect."
+    }
+   ],
+   "notes": "A new node asks the DNS seeds named in its code for a few addresses, connects to some of them, and then asks those peers for more with addr messages. In the run the eight seeds answered with 20 to 29 addresses each, 182 different ones, but the test node could not connect to any mainnet peer, so that step was not run. The newer addrv2 message can carry the long addresses of Tor, I2P and CJDNS, which the old four-byte format could not.",
+   "bg": "light",
+   "take": "Peers are found by DNS seeds first, then by gossip"
+  },
+  {
+   "kind": "content",
+   "title": "Who connects to whom: connection types",
+   "sub": "Eight full-relay links, two block-relay-only links, and at most 125 connections in all",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 10.5,
+     "steps": [
+      {
+       "label": "Outbound full relay",
+       "sub": "8: blocks, payments, addr"
+      },
+      {
+       "label": "Block-relay-only",
+       "sub": "2: blocks only"
+      },
+      {
+       "label": "Feeler, addr-fetch",
+       "sub": "short, to test or learn"
+      },
+      {
+       "label": "Inbound",
+       "sub": "the rest of 125",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.22,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "t, n = R['e8_types'], 'core_src_net.h'",
+       ""
+      ],
+      [
+       "t",
+       "[['addr-fetch', True, True, 'v2'], ['block-relay-only', False, False, 'v1'], ['outbound-full-relay', True, True, 'v2']]"
+      ],
+      [
+       "src(n, 'MAX_OUTBOUND_FULL_RELAY_CONNECTIONS'), src(n, 'MAX_BLOCK_RELAY_ONLY_CONNECTIONS'), src(n, 'DEFAULT_MAX_PEER_CONNECTIONS')",
+       "('8', '2', '125')"
+      ],
+      [
+       "i = R['e5_relay']['invs']",
+       ""
+      ],
+      [
+       "len(i['normal_wtxidrelay']), len(i['relay_false']), len(i['feefilter_5sat'])",
+       "(2, 0, 1)"
+      ]
+     ],
+     "fs": 7.7,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, three connection types"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 1: each entry is type, relays payments, relays addr, transport; the block-relay-only link relays neither and spoke v1",
+      "Row 3: the code sets 8 outbound full-relay links, 2 block-relay-only links and 125 connections in all",
+      "Rows 4 and 5: a peer that said it wants no payments was sent none of the 2 announced, a normal peer was sent both"
+     ]
+    }
+   ],
+   "notes": "A node does not treat all its peers alike. It keeps eight outbound links that carry everything and two that carry only blocks, so that an attacker who sees its payment traffic still cannot see those two. Short feeler and address-fetch links test and learn addresses, and up to 125 connections are allowed in all. On the test network a peer that said it wanted no payments received none.",
+   "bg": "light",
+   "take": "Two of a node's links carry blocks only, and hide from payment traffic"
+  },
+  {
+   "kind": "content",
+   "title": "Eight connections, one liar",
+   "sub": "The story of 12 August 2015: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch10/assets/photo_total_solar_eclipse_2017.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Total solar eclipse - NASA / Aubrey Gemignani, public domain, Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 12 August 2015 Ethan Heilman and colleagues present the eclipse attack at USENIX Security in Washington, D.C.",
+      "With enough addresses an attacker could own all of a node's connections; Core now keeps 2 block-relay-only links (row 1)",
+      "NOT EXECUTED: the attack itself; the papers' claims are found in the saved copies (rows 2 and 3)"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "src('core_src_net.h', 'MAX_BLOCK_RELAY_ONLY_CONNECTIONS')",
+       "'2'"
+      ],
+      [
+       "seen('heilman_2015_eclipse.pdf', 'Eclipse Attacks on Bitcoin\u2019s Peer-to-Peer')",
+       "True"
+      ],
+      [
+       "seen('apostolaki_2017_hijacking.pdf', 'isolate \u223c50% of the mining power')",
+       "True"
+      ]
+     ],
+     "fs": 8.1,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on saved sources; NOT EXECUTED: the attack"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Ethan Heilman and Alison Kendler of Boston University, Aviv Zohar of the Hebrew University of Jerusalem and Sharon Goldberg of Boston University",
+     "where": "the 24th USENIX Security Symposium in Washington, D.C., 12 to 14 August 2015",
+     "when": "2015-08-12",
+     "link": "https://www.usenix.org/conference/usenixsecurity15/technical-sessions/presentation/heilman",
+     "linkText": "Heilman et al.: Eclipse Attacks (paper)"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: an eclipse, not the paper."
+    }
+   ],
+   "notes": "On 12 August 2015 Ethan Heilman and his colleagues presented the eclipse attack at the USENIX Security Symposium in Washington, D.C. An adversary that controls enough addresses can take over all of a node's connections and then feed it a false view of the chain. Bitcoin Core now keeps anchor connections and two block-relay-only links. The attack and the routing attack of 2017 were not run here; the passages were found in the saved papers.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Compact blocks: send only what is missing",
+   "sub": "Like telling a friend the page numbers of a book they already own",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10.5,
+     "items": [
+      "Row 2: a block of 13 transactions was sent as 12 short ids of 6 bytes, and all 12 matched the receiver's own list",
+      "Row 3: the coinbase is always sent in full; the receiver lacked 2 transactions, asked for them and got exactly those",
+      "Row 4: 332 bytes instead of 3,062, about a ninth of the block"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Recorded: bytes to send one block of 13 transactions",
+     "dataLabels": true,
+     "dlFmt": "#,##0",
+     "dlFs": 9,
+     "labels": [
+      "compact block",
+      "full block"
+     ],
+     "series": [
+      {
+       "name": "bytes",
+       "data": [
+        332,
+        3062
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "c = R['e3_compact']",
+       ""
+      ],
+      [
+       "c['short_id_count'], c['tx_count'] - 1, c['short_ids_match'], c['short_id_bytes'], src('core_src_blockencodings.h', 'SHORTTXIDS_LENGTH')",
+       "(12, 12, True, 6, '6')"
+      ],
+      [
+       "c['prefilled_indexes'], c['prefilled_txids'] == [c['coinbase_txid']], len(c['blocktxn_txids']), c['blocktxn_txids'] == c['expected_txids']",
+       "([0], True, 2, True)"
+      ],
+      [
+       "c['cmpctblock_bytes'], c['full_block_bytes'], round(c['cmpctblock_bytes'] / c['full_block_bytes'], 4)",
+       "(332, 3062, 0.1084)"
+      ]
+     ],
+     "fs": 7.2,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    }
+   ],
+   "notes": "A node already holds most transactions of a new block in its mempool, so the block can travel as a header, a six-byte short id for each transaction, and the few transactions the receiver cannot have, always including the coinbase. In the run a block of 13 transactions took 332 bytes instead of 3,062, and the receiver asked for the two transactions it lacked. A node sends compact blocks unasked to at most three high-bandwidth peers.",
+   "bg": "light",
+   "take": "A compact block is a header and short ids: a ninth of the bytes"
+  },
+  {
+   "kind": "content",
+   "title": "Sending a block as a list of short codes",
+   "sub": "The story of 27 April 2016: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch10/assets/photo_optical_fibre.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Optical fibre strands - BigRiz, CC BY-SA 3.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 27 April 2016 BIP 152 is assigned to Matt Corallo; Bitcoin Core 0.13.0 ships Suhas Daftuar's code",
+      "The book says 2015 (row 1); Core's own list says 0.13.0 (row 2), so the book is a year early",
+      "Relay networks go further: a lost piece of 4 is rebuilt from one parity piece (row 4); FIBRE is NOT EXECUTED"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "seen('book_ch10_network.adoc', 'In 2015, a new version of Bitcoin Core added')",
+       "True"
+      ],
+      [
+       "seen('core_doc_bips.md', 'are used as of **v0.13.0**')",
+       "True"
+      ],
+      [
+       "parts = [b'compac', b't bloc', b'k mess', b'age!!!']; par = L.parity_code(parts)",
+       ""
+      ],
+      [
+       "b''.join(L.rebuild([parts[0], None, parts[2], parts[3]], par))",
+       "b'compact block message!!!'"
+      ]
+     ],
+     "fs": 7.8,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on saved sources and a demo; NOT EXECUTED: FIBRE"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Matt Corallo, a Bitcoin Core and relay-network developer, and Suhas Daftuar, who wrote the Bitcoin Core implementation",
+     "where": "the bitcoin/bips repository on GitHub, and Bitcoin Core 0.13.0, released in August 2016",
+     "when": "2016-04-27",
+     "link": "https://bips.dev/152/",
+     "linkText": "BIP 152: Compact Block Relay (spec)"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: optical fibre, not the BIP."
+    }
+   ],
+   "notes": "On 27 April 2016 the number 152 was assigned to the proposal for compact block relay by Matt Corallo, and Bitcoin Core 0.13.0 lists the code of Suhas Daftuar. The book dates the feature to 2015, which is a year too early. Corallo had earlier built a relay network for miners, and its successor FIBRE adds forward error correction, so that a lost packet can be rebuilt. The demonstration rebuilds one lost piece of four; FIBRE itself was not run.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Syncing: headers first, then blocks",
+   "sub": "Like reading the contents page before asking for the chapters",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "2,000 headers per message",
+      "80 bytes each",
+      "window of 1,024 blocks"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.12,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "h, i, p, c = R['e2_headers'], R['e10_ibd'], 'core_src_net_processing.h', 'core_src_net_processing.cpp'",
+       ""
+      ],
+      [
+       "h['first_count'], h['second_count'], h['height'], src(p, 'MAX_HEADERS_RESULTS')",
+       "(2000, 101, 2101, '2000')"
+      ],
+      [
+       "h['first_bytes'] == 3 + 2000 * 81, h['header_size'], h['chain_links_ok']",
+       "(True, 80, True)"
+      ],
+      [
+       "R['e2_announce']",
+       "{'without_sendheaders': ['inv'], 'with_sendheaders': ['headers']}"
+      ],
+      [
+       "src(c, 'BLOCK_DOWNLOAD_WINDOW'), src(c, 'MAX_BLOCKS_IN_TRANSIT_PER_PEER'), i['height'], i['chain_equal']",
+       "('1024', '16', 2105, True)"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, a second node syncing from the first"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: 2,000 headers came first, then 101, so 2,101 blocks; each header is 80 bytes and links to the one before it",
+      "Row 4: without sendheaders a new block is announced by inv, with it by the header itself",
+      "Row 5: blocks are fetched inside a window of 1,024, at most 16 in flight per peer; the second node ended on the same chain"
+     ]
+    }
+   ],
+   "notes": "A node that is catching up first asks for headers, at most 2,000 in one reply, and checks that each links to the one before. Only then does it fetch blocks, inside a window of 1,024 and at most 16 in flight from one peer. In the run a second node synced 2,105 blocks from the first and ended on the same chain. A peer that sent sendheaders is told of new blocks by their headers instead of an inv message.",
+   "bg": "light",
+   "take": "Headers come first, then blocks, so a liar is caught cheaply"
+  },
+  {
+   "kind": "content",
+   "title": "Relaying payments, and orphans",
+   "sub": "Like each shop keeping its own waiting list, while the town ledger is shared",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.65,
+     "w": 9.0,
+     "h": 2.1,
+     "rows": [
+      [
+       "r, m, o = R['e5_relay'], R['e10_mempool_vs_utxo'], R['e4_orphan']; k, u = r['invs'], m['before_block']",
+       ""
+      ],
+      [
+       "[i[1] for i in k['normal_wtxidrelay']], seen('bip-0339.mediawiki', 'MSG_WTX (0x00000005)')",
+       "([5, 5], True)"
+      ],
+      [
+       "round(r['feerate_low'], 1), round(r['feerate_high'], 1), r['peer_feefilter_sat_per_kvb'], len(k['feefilter_5sat'])",
+       "(2.0, 20.0, 5000, 1)"
+      ],
+      [
+       "u['F_mempool'], u['G_mempool'], m['utxo_hash_F'] == m['utxo_hash_G'], m['utxo_count_F']",
+       "(6, 0, True, 107)"
+      ],
+      [
+       "o['child_in_mempool_after_child'], hex(o['node_asked_for_parent'][0][0]), o['parent_in_mempool_after'], o['child_in_mempool_after']",
+       "(False, '0x40000001', True, True)"
+      ],
+      [
+       "seen('bitcoind_help_31.1.txt', 'transaction reconciliations per BIP 330 (default: 0)')",
+       "True"
+      ]
+     ],
+     "fs": 7.6,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.0,
+     "w": 9.0,
+     "h": 0.62,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: wtxid announcements (type 5); a peer with feefilter 5 sat/vB heard of 20.0 sat/vB, not 2.0",
+      "Row 4: one node held 6 payments, its blocks-only neighbour 0, yet both held the same 107 outputs after a block",
+      "Row 5: the orphan child is refused (False), the node asks for its parent (0x40000001), then both are in"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.7,
+     "w": 9.0,
+     "h": 0.3,
+     "fs": 10,
+     "body": "NOT EXECUTED: Erlay; row 6 shows that BIP 330 is off by default, so announcements are still flooded."
+    }
+   ],
+   "notes": "Transactions are announced by their wtxid, and a peer's feefilter keeps cheaper ones from being announced to it. The mempool is local to each node whereas the set of unspent outputs is shared, and the run shows a node with six waiting payments next to a neighbour with none that nevertheless holds the same 107 outputs. A child that arrives before its parent waits in the orphan pool, and the node asks its peers for the parent.",
+   "bg": "light",
+   "take": "The mempool is local; the set of unspent outputs is shared"
+  },
+  {
+   "kind": "section",
+   "title": "Light clients, privacy, transport",
+   "sub": "How a phone checks a payment without the chain, what it leaked, and how the wire became private.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Merkle proof"
+      },
+      {
+       "label": "Bloom and block filters"
+      },
+      {
+       "label": "Encrypted transport"
+      },
+      {
+       "label": "Onion, I2P and CJDNS"
+      }
+     ]
+    }
+   ],
+   "notes": "This part is about the nodes that do not keep the chain. A light client checks a payment with headers and a short proof, asks a full node for what concerns it, and has to hide what it asks. Two stories show how the first answer, the Bloom filter, leaked and how the second turned the question around, and a third shows how the wire itself was encrypted.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "A light client verifies with headers",
+   "sub": "Like proving a name is in a phone book by showing only the headings on its path",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10.5,
+     "items": [
+      "Row 2: at height 971,499 the headers are 77.7 MB and the chain 775,272 MB: 9,975 times smaller, as the book says",
+      "Row 3: a path of 3 hashes proves one of 5 payments in a block: 215 bytes against a block of 4,448",
+      "Row 4: an attacker with 10 percent of the power has a 0.0002428 chance after 6 blocks, one with 30 percent 0.1321"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Recorded: bytes to prove one payment",
+     "dataLabels": true,
+     "dlFmt": "#,##0",
+     "dlFs": 9,
+     "labels": [
+      "Merkle proof",
+      "whole block"
+     ],
+     "series": [
+      {
+       "name": "bytes",
+       "data": [
+        215,
+        4448
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "s, c = R['e6_spv'], L.chain_size_ratio()",
+       ""
+      ],
+      [
+       "c['tip_height'], c['headers_mb'], c['chain_mb'], c['ratio']",
+       "(971499, 77.7, 775272, 9975)"
+      ],
+      [
+       "s['path_len'], s['root_from_path'] == s['header_root'], s['block_tx_count'], s['proof_bytes'], R['e6_bloom_enabled']['full_block_bytes']",
+       "(3, True, 5, 215, 4448)"
+      ],
+      [
+       "[round(L.double_spend_probability(q, 6), 7) for q in (0.1, 0.3)]",
+       "[0.0002428, 0.1321112]"
+      ]
+     ],
+     "fs": 7.3,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; the sizes come from saved data"
+    }
+   ],
+   "notes": "A light client keeps only the 80-byte block headers, which are about ten thousand times smaller than the chain. To check one payment it asks a full node for the Merkle path from that payment to the root in the header, and the test run needed three hashes for a block of five payments, 215 bytes against a block of 4,448. Nakamoto's formula gives the odds that an attacker catches up after six blocks: 0.0002428 for a tenth of the power.",
+   "bg": "light",
+   "take": "Headers and a short Merkle path are enough to check one payment"
+  },
+  {
+   "kind": "content",
+   "title": "Bloom filters: a fuzzy guest list",
+   "sub": "Like a guest list that admits a few strangers by mistake but never a listed friend",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "6 bits set",
+      "5.3 percent false hits",
+      "BLOOM bit off by default"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.12,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "r, e = L.toy_bloom_experiment(), R['e6_bloom_enabled']",
+       ""
+      ],
+      [
+       "r['inserted_ok'], r['bits_set'], r['fp_measured'], r['fp_formula'], r['maybe_exists'], r['nope_exists']",
+       "(True, 6, 0.053, 0.031, True, True)"
+      ],
+      [
+       "L.bloom_bip37_vector(), src('core_src_common_bloom.h', 'MAX_BLOOM_FILTER_SIZE'), src('core_src_common_bloom.h', 'MAX_HASH_FUNCS')",
+       "('03614e9b050000000000000001', '36000', '50')"
+      ],
+      [
+       "len(e['matched_txids']), e['merkleblock_bytes'], e['full_block_bytes'], e['block_txs'], e['filter_bytes'], e['hash_functions']",
+       "(1, 215, 4448, 5, 7, 12)"
+      ],
+      [
+       "R['e6_bloom_default']['has_bloom_bit'], R['e6_bloom_default']['disconnected_after_filterload'], b['services']['BLOOM']",
+       "(False, True, 4308)"
+      ]
+     ],
+     "fs": 7.7,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; the BIP 37 vector is published"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: a toy filter with 6 bits set missed nothing and gave 0.053 false hits; BIP 37's published vector matches ours",
+      "Row 4: one wallet payment came back as a 215-byte merkleblock instead of a block of 4,448",
+      "Row 5: a default node sets no BLOOM bit and hung up on a peer that sent filterload"
+     ]
+    }
+   ],
+   "notes": "A Bloom filter is a short row of bits that answers either definitely not or probably yes, so a light client can send a full node a filter of its addresses and receive only matching payments. The toy filter of the chapter missed nothing and gave a few false hits, and the encoding of BIP 37 matches its published vector. The test node sent one matching payment as a 215-byte merkleblock, but a default node no longer offers the service.",
+   "bg": "light",
+   "take": "A Bloom filter says definitely not or probably yes, and it leaked"
+  },
+  {
+   "kind": "content",
+   "title": "The filter that told on the wallet",
+   "sub": "The story of 24 October 2012: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch10/assets/photo_bloom_filter_diagram.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Bloom filter diagram - David Eppstein, public domain, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 24 October 2012 BIP 37 is assigned to Mike Hearn and Matt Corallo: a phone sends a Bloom filter of its addresses",
+      "In 2014 Arthur Gervais and colleagues at ETH Zurich show that the filters leak the user's addresses (row 1)",
+      "Core 0.19.0.1 turned the service off: a default node hangs up on it (row 2), but 4,308 of 25,361 nodes still offer it (row 3)"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "seen('gervais_2014_bloom_privacy.txt', 'leaks considerable information ab')",
+       "True"
+      ],
+      [
+       "(d := R['e6_bloom_default'])['has_bloom_bit'], d['disconnected_after_filterload']",
+       "(False, True)"
+      ],
+      [
+       "b['services']['BLOOM'], b['total']",
+       "(4308, 25361)"
+      ]
+     ],
+     "fs": 7.7,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on saved sources and the Core 31.1 record (Recorded)"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Mike Hearn and Matt Corallo, who wrote BIP 37, and Arthur Gervais, Srdjan Capkun, Ghassan Karame and Damian Gruber of ETH Zurich, who tested it",
+     "where": "the bitcoin/bips repository, the ETH Zurich security group, and Bitcoin Core 0.19, which turned the service off by default in 2019",
+     "when": "2012-10-24",
+     "link": "https://eprint.iacr.org/2014/763",
+     "linkText": "Gervais et al.: Bloom filter privacy (paper)"
+    }
+   ],
+   "notes": "On 24 October 2012 BIP 37 was assigned to Mike Hearn and Matt Corallo: a light client would send a Bloom filter of its addresses to a full node. In 2014 Arthur Gervais and his colleagues at ETH Zurich showed that the reliance on Bloom filters leaks considerable information about the addresses of the user. Bitcoin Core 0.19.0.1 switched the service off by default, and the test node hung up on a peer that sent filterload.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Block filters turn the question around",
+   "sub": "Like a library posting each day's index, so you look yourself up without asking",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "M = 784,931 and P = 19",
+      "21 bits per element",
+      "OP_RETURN left out"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.12,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "g, r, f = L.gcs_book_example(), L.rice_roundtrip([379, 476, 653, 849, 900], 7), R['e7_filter']",
+       ""
+      ],
+      [
+       "g['sorted'], g['deltas'], g['equal'], g['max_bits_original'], g['max_bits_deltas']",
+       "([379, 476, 653, 849, 900], [379, 97, 177, 196, 51], True, 10, 8)"
+      ],
+      [
+       "r['decoded'] == [379, 476, 653, 849, 900], r['bits'], r['fixed_bits'], r['bytes']",
+       "(True, 44, 50, 6)"
+      ],
+      [
+       "P.GCS_P, P.GCS_M, L.bip158_vectors(), P.siphash_test_vector()",
+       "(19, 784931, (10, 10), 'a129ca6149be45e5')"
+      ],
+      [
+       "f['my_filter_equal'], f['my_header_equal'], f['n_elements'], f['filter_bytes'], f['bits_per_element']",
+       "(True, True, 104, 275, 21.15)"
+      ],
+      [
+       "f['op_return_outputs'], f['any_op_return_in_filter'], f['scripts_total'], f['n_elements']",
+       "(2, False, 144, 104)"
+      ]
+     ],
+     "fs": 7.8,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; the BIP 158 vectors are published"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: the gaps 379, 97, 177, 196, 51 fit in 8 bits, not 10; Rice coding stores the five numbers in 44 bits, not 50",
+      "Rows 4 and 5: all 10 published vectors pass; our filter equals the node's, at 21.15 bits per element, not 64",
+      "Row 6: the 2 OP_RETURN outputs of the block are not in the filter"
+     ]
+    }
+   ],
+   "notes": "A block filter reverses the Bloom filter: the full node builds one small filter for every block, and the light client downloads it and tests its own scripts locally, so it never reveals them. The filter stores the sorted differences with Golomb-Rice coding, about 21 bits for each element, not the 64 bits of the book. The chapter's own code reproduced all ten published vectors of BIP 158, and the filter and header of the test node.",
+   "bg": "light",
+   "take": "A block filter is tested on the client, so nothing is revealed"
+  },
+  {
+   "kind": "content",
+   "title": "An anonymous post turned the filter around",
+   "sub": "The story of 9 May 2016: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch10/assets/photo_solomon_golomb.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Solomon W. Golomb - National Science Foundation, public domain, Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 9 May 2016 a developer writing as bfd posts the idea to the bitcoin-dev list: one small filter for each block (row 1)",
+      "Olaoluwa Osuntokun and Alex Akselrod write it as BIP 157 and 158; Lightning Labs builds Neutrino on it",
+      "A Core 31.1 node served 3 filters on request, one without the option hung up (row 2); 7,905 nodes offer them (row 3)"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "seen('ml_bfd_2016-05_committed_bloom.html', 'Date: Mon, 09 May 2016')",
+       "True"
+      ],
+      [
+       "(w := R['e7_wire'])['cfilter_count'], w['node_without_option']['disconnected']",
+       "(3, True)"
+      ],
+      [
+       "b['services']['COMPACT_FILTERS'], b['total']",
+       "(7905, 25361)"
+      ]
+     ],
+     "fs": 8.0,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on saved sources and the Core 31.1 record (Recorded)"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "an anonymous developer who wrote as bfd, and Olaoluwa Osuntokun and Alex Akselrod, who wrote BIP 157 and 158",
+     "where": "the bitcoin-dev mailing list, and the Lightning Labs project Neutrino",
+     "when": "2016-05-09",
+     "link": "https://bips.dev/157/",
+     "linkText": "BIP 157: Client Side Block Filtering (spec)"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: Solomon Golomb, namesake of the coding."
+    }
+   ],
+   "notes": "On 9 May 2016 a developer writing as bfd posted to the bitcoin-dev list the idea of committed Bloom filters, one small filter for each block, so that the client tests its own addresses and reveals nothing. Olaoluwa Osuntokun and Alex Akselrod wrote it as BIP 157 and 158, and Lightning Labs built the light client Neutrino on it. A node of Bitcoin Core 31.1 served three filters on request, and one started without the option hung up.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Transport v2: from postcard to envelope",
+   "sub": "Like moving from a postcard that anyone can read to a sealed envelope",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "v1 shows its magic bytes",
+      "v2 shows nothing",
+      "85.8 percent offer v2"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.12,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "v1, v2 = R['e8_transport']['v1'], R['e8_transport']['v2']",
+       ""
+      ],
+      [
+       "v1['transport_a'], v1['contains_magic'], v1['contains_version_command'], v1['first_bytes_a_to_b'][:8]",
+       "('v1', True, True, 'fabfb5da')"
+      ],
+      [
+       "v2['transport_a'], v2['contains_magic'], v2['contains_version_command'], v2['entropy_first_4096']",
+       "('v2', False, False, 7.953)"
+      ],
+      [
+       "v2['session_id_a'] == v2['session_id_n'], len(v2['session_id_a'])",
+       "(True, 64)"
+      ],
+      [
+       "src('core_src_net.h', 'DEFAULT_V2_TRANSPORT'), round(100 * b['services']['P2P_V2'] / b['total'], 1)",
+       "('true', 85.8)"
+      ],
+      [
+       "seen('bip-0324.mediawiki', 'unencrypted and unauthenticated'), seen('bip-0324.mediawiki', 'man-in-the-middle')",
+       "(True, True)"
+      ]
+     ],
+     "fs": 7.8,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Rows 2 and 3: the v1 stream shows the magic bytes and the word version; v2 shows neither, at 7.953 bits of 8 per byte",
+      "Rows 4 and 5: both ends derive the same 64-character session id; v2 is the default since Core 27.0, offered by 85.8 percent",
+      "Row 6: BIP 324 calls v1 unencrypted and unauthenticated, and names the man in the middle that v2 does not stop"
+     ]
+    }
+   ],
+   "notes": "In the old transport every message began with the same four magic bytes and the command name, so anyone on the path could read the traffic. The version 2 transport of BIP 324 hides all of that: in the run its stream showed neither the magic bytes nor the word version and looked like random bytes, and both ends derived the same session id. It encrypts but does not authenticate, so an active man in the middle remains possible.",
+   "bg": "light",
+   "take": "The book says the wire is plain, but v2 has been the default since 27.0"
+  },
+  {
+   "kind": "content",
+   "title": "From a closed proposal to the default",
+   "sub": "The story of 8 March 2019: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch10/assets/photo_enigma_machine.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Enigma machine - Rama, CC BY-SA 2.0 FR, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "Jonas Schnelli proposes encrypted connections in BIP 151 in 2016; it is closed after mixed comments (row 2)",
+      "On 8 March 2019 BIP 324 is assigned to Mehta, Ruffing, Schnelli and Wuille; Core 26.0 offers it and 27.0 makes it the default (row 1)",
+      "On the 31.1 test node a v2 stream showed no magic bytes (row 3); 21,768 of 25,361 census nodes offer it"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "seen('core_relnotes_27.0.md', 'BIP324 v2 transport is now enabled by default')",
+       "True"
+      ],
+      [
+       "seen('bip-0151.mediawiki', 'Status: Closed')",
+       "True"
+      ],
+      [
+       "R['e8_transport']['v2']['contains_magic'], b['services']['P2P_V2']",
+       "(False, 21768)"
+      ]
+     ],
+     "fs": 8.0,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on saved sources and the Core 31.1 record (Recorded)"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Dhruv Mehta, Tim Ruffing, Jonas Schnelli and Pieter Wuille, the authors of BIP 324; Jonas Schnelli had written the earlier BIP 151",
+     "where": "the bitcoin/bips repository, and the releases Bitcoin Core 26.0 (December 2023) and 27.0 (April 2024)",
+     "when": "2019-03-08",
+     "link": "https://bips.dev/324/",
+     "linkText": "BIP 324: v2 P2P Encrypted Transport (spec)"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: an Enigma machine, not the protocol."
+    }
+   ],
+   "notes": "Jonas Schnelli proposed encrypting peer connections in BIP 151 in 2016, and the proposal was closed after mixed comments. On 8 March 2019 BIP 324 was assigned to Dhruv Mehta, Tim Ruffing, Jonas Schnelli and Pieter Wuille, and it replaces BIP 151. Bitcoin Core 26.0 added it as an option and 27.0 made it the default, so that 21,768 of the 25,361 nodes of the census now offer it.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Hiding who you are: Tor, I2P, CJDNS",
+   "sub": "Like passing a note through several friends so none knows both sender and reader",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.65,
+     "w": 9.0,
+     "h": 2.05,
+     "rows": [
+      [
+       "[(x['name'], x['reachable']) for x in R['networkinfo_A']['networks']]",
+       "[('ipv4', True), ('ipv6', True), ('onion', False), ('i2p', False), ('cjdns', False)]"
+      ],
+      [
+       "[x for x in R['e8_onion_node']['networks'] if x[1]]",
+       "[['onion', True, '127.0.0.1:9']]"
+      ],
+      [
+       "b['nets']['onion'], b['nets']['i2p'], b['nets']['cjdns']",
+       "(12488, 4208, 1)"
+      ],
+      [
+       "seen('core_relnotes_22.0.md', 'I2P (Invisible'), seen('core_relnotes_23.0.md', 'for the CJDNS network')",
+       "(True, True)"
+      ],
+      [
+       "seen('bitcoind_help_31.1.txt', 'Automatically create Tor onion service (default: 1)')",
+       "True"
+      ]
+     ],
+     "fs": 8.4,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, and counts from the saved census"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.98,
+     "w": 9.0,
+     "h": 0.66,
+     "fs": 10.5,
+     "items": [
+      "Rows 1 and 2: five networks are known; with a proxy setting onion was marked reachable (nothing ran)",
+      "Row 3: the census holds 12,488 onion nodes, 4,208 I2P nodes and 1 on CJDNS; the book knows only Tor",
+      "Rows 4 and 5: I2P came with Core 22.0 and CJDNS with 23.0; Core creates a Tor onion service by default"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.68,
+     "w": 9.0,
+     "h": 0.34,
+     "fs": 10.5,
+     "body": "NOT EXECUTED: Tor, I2P and CJDNS routers; the proxy setting only marks a network reachable, and no traffic ran through it."
+    }
+   ],
+   "notes": "Bitcoin Core can run over five networks, and the book knows only Tor. Tor version 3 and addrv2 came with release 0.21.0, I2P with 22.0 and CJDNS with 23.0, and the saved census shows 12,488 onion nodes, 4,208 I2P nodes and a single CJDNS node. The test node marked onion as reachable when given a proxy setting, but no Tor, I2P or CJDNS router was run, so no traffic was sent through them.",
+   "bg": "light",
+   "take": "Onion nodes are about half of the network, I2P a sixth, CJDNS one node"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per part, each one provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 9.0,
+     "h": 3.4,
+     "fs": 12.5,
+     "items": [
+      "The network is flat and open: 25,361 reachable nodes, 99.67 percent on Bitcoin Core code, nearly half of them behind Tor",
+      "Peers meet through DNS seeds and addr, shake hands on version 70016, and keep 8 full-relay and 2 block-relay-only links",
+      "Blocks travel as headers and compact blocks, payments as wtxid announcements, and the mempool stays local",
+      "A light client needs headers and a Merkle path; Bloom filters leaked and are off, block filters turn the question around",
+      "Since print the wire is encrypted by default, I2P and CJDNS join Tor, and the orphan and mempool rules have moved"
+     ]
+    }
+   ],
+   "notes": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "bg": "light",
+   "take": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Opened on 2026-10-15; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.45,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "Optech topic: Compact block relay",
+         "https://bitcoinops.org/en/topics/compact-block-relay/",
+         "Summary of BIP 152 and its later improvements"
+        ],
+        [
+         "Optech topic: Version 2 P2P transport",
+         "https://bitcoinops.org/en/topics/v2-p2p-transport/",
+         "Summary of encrypted peer traffic and its rollout"
+        ],
+        [
+         "Bitnodes (live node census)",
+         "https://bitnodes.io/",
+         "Count and map of reachable nodes, by country and client"
+        ]
+       ]
+      },
+      {
+       "head": "Standards and papers",
+       "rows": [
+        [
+         "BIP 152: Compact Block Relay",
+         "https://bips.dev/152/",
+         "Short transaction ids and the messages that carry them"
+        ],
+        [
+         "BIP 324: v2 P2P Encrypted Transport",
+         "https://bips.dev/324/",
+         "The encrypted handshake and packet format of peers"
+        ],
+        [
+         "Heilman et al.: Eclipse Attacks (paper)",
+         "https://www.usenix.org/conference/usenixsecurity15/technical-sessions/presentation/heilman",
+         "Talk page with the paper, slides and video"
+        ]
+       ]
+      },
+      {
+       "head": "Watch",
+       "rows": [
+        [
+         "USENIX Security '15: Eclipse Attacks (video)",
+         "https://www.youtube.com/embed/b-qGTj2Vvns",
+         "The conference talk behind the paper"
+        ],
+        [
+         "Neutrino: Privacy Preserving Light Client (video)",
+         "https://www.youtube.com/embed/7FWKc8lM4Ek",
+         "SF Bitcoin Developers talk on block filters"
+        ]
+       ]
+      },
+      {
+       "head": "Community",
+       "rows": [
+        [
+         "Bitcoin Optech newsletters (weekly)",
+         "https://bitcoinops.org/en/newsletters/",
+         "Weekly digest of protocol and wallet development; all issues"
+        ],
+        [
+         "Delving Bitcoin (research forum)",
+         "https://delvingbitcoin.org/",
+         "Developers argue out proposals and research in public threads"
+        ],
+        [
+         "bitcoin-dev (mailing list)",
+         "https://groups.google.com/g/bitcoindev",
+         "Where BIPs and soft forks are first proposed and debated"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the USENIX talk on eclipse attacks, then the Optech topic on compact block relay next to the chapter. The research package for chapter 10 lists all 85 sources with the passages used.",
+   "bg": "light",
+   "take": "Watch the eclipse talk, then read the Optech topic beside the chapter"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "Who is on the network, and how two nodes meet",
+      "How blocks and payments travel, and what a node keeps",
+      "How a light client checks a payment without the chain",
+      "What stays hidden now: v2 transport, filters, Tor, I2P"
+     ]
+    }
+   ],
+   "notes": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 10 holds the sources and the test records behind them.",
+   "bg": "dark"
+  }
+ ]
+}
