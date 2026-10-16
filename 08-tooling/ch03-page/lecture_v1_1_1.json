@@ -1,0 +1,239 @@
+{
+ "chapter": 3,
+ "deck": "SEN0401_Ch03_BitcoinCore_3e_v2_1_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 3: Bitcoin Core",
+   "say": "SAY: Chapters 1 and 2 described the system; this chapter hands it to you. By tonight you can be running the same program that wrote the genesis block's successors.\nFULL TEXT: course page, chapter 3.",
+   "takeaway": "The reference implementation - download it, verify it, run it, question it"
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "SAY: Five parts: by the end you can fetch, verify, build, run and query the reference implementation - and every claim on the way arrives with its receipt.\nASK: Who already runs a node? You are today's teaching assistants.\nFULL TEXT: course page, chapter 3 - every section.",
+   "takeaway": "Five parts - and by tonight, your own node"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "SAY: A node is a computer that runs Bitcoin software and takes part in the peer-to-peer network, and this first branch of the chapter is about the most complete kind of node, the full verification node. The chapter opens with the reason such a node exists.\nFULL TEXT: course page, chapter 3 - Node.",
+   "takeaway": "If you can answer these, chapter 3 is yours"
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, eight branches",
+   "say": "SAY: A node is a computer that runs Bitcoin software and takes part in the peer-to-peer network, and this first branch of the chapter is about the most complete kind of node, the full verification node. The chapter opens with the reason such a node exists.\nFULL TEXT: course page, chapter 3 - Node, Build, Operation, Interface.",
+   "takeaway": "Eight branches - every slide today lives on this map"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "The node",
+   "say": "SAY: A node is a computer that runs Bitcoin software and takes part in the peer-to-peer network, and this first branch of the chapter is about the most complete kind of node, the full verification node. The chapter opens with the reason such a node exists.\nFULL TEXT: course page, chapter 3 - Node.",
+   "takeaway": "What the reference implementation is, and what it keeps"
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Version 0.1, set in stone",
+   "say": "STORY (2009-01-08): Five days after the genesis block, Satoshi announced Bitcoin version 0.1 - a Windows program on SourceForge. A year and a half later he wrote the sentence this course keeps returning to: once version 0.1 was released, the core design was set in stone for the rest of its lifetime. Everything this chapter builds, configures and queries descends from that one program, which is why Bitcoin Core is called the reference implementation.\nSOURCE: Announcement of 2009-01-08 on the metzdowd.com cryptography list ('Bitcoin v0.1 released'); the 'set in stone' sentence is Satoshi's forum post of 2010-06-17; project history summarized at en.wikipedia.org/wiki/Bitcoin_Core.\nIMAGE: the 0.5.2 GUI (MIT licence) - the same program two years on.",
+   "read": {
+    "label": "Satoshi: Bitcoin v0.1 released (list post)",
+    "url": "https://www.metzdowd.com/pipermail/cryptography/2009-January/014994.html"
+   },
+   "takeaway": "The software came first - the program IS the specification",
+   "concept": "SatoshiNakamoto"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "One program, many postures",
+   "say": "SAY: A pruned node is a full node that deletes old block files after it has verified them, so that it needs far less disk space.\nASK: Which posture still enforces every consensus rule? (both - that is the point)\nFULL TEXT: course page, chapter 3 - PrunedNode, InitialDownload.",
+   "takeaway": "Same rules, different storage - pruning keeps the checks, drops the history"
+  },
+  {
+   "n": 8,
+   "kind": "section",
+   "title": "From source to binary",
+   "say": "SAY: The build branch is about turning the text of Bitcoin Core into a program that can run. The book calls this part of the chapter the Bitcoin development environment: the tools, libraries and support software a developer needs for writing Bitcoin applications, which the chapter walks through step by step.\nFULL TEXT: course page, chapter 3 - Build.",
+   "takeaway": "Trust arithmetic, not downloads"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "Clone it, then pick your version by tag",
+   "say": "SAY: Git is a distributed version control system, and a repository is the database in which it keeps a project and all of its history. The book calls Git the most widely used distributed version control system and an essential part of the toolkit of every software developer (Antonopoulos and Harding, 2023).\nASK: Why does the course pin a commit instead of saying 'latest'?\nFULL TEXT: course page, chapter 3 - GitRepository, ReleaseTag.",
+   "takeaway": "A release is a tag; a tag names one exact snapshot"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Dozens of builders, one identical binary",
+   "say": "STORY (since 2011; Guix from release 22.0): A downloaded binary asks for trust; Bitcoin Core answers with arithmetic. Every release is built reproducibly - first under Gitian, since release 22.0 under Guix - so that anyone compiling the tagged source gets a byte-identical result. Independent builders publish signed hashes of what they produced, side by side, in a public repository. If one build differed, its hash would betray it instantly - the same trick the chapter's Merkle root plays on transactions.\nSOURCE: bitcoin-core/guix.sigs on GitHub: per-release folders of builder attestations; Guix build documentation in the pinned source tree, contrib/guix/README.md.",
+   "read": {
+    "label": "Builder attestation, Core 31.1 (hash list)",
+    "url": "https://raw.githubusercontent.com/bitcoin-core/guix.sigs/main/31.1/achow101/all.SHA256SUMS"
+   },
+   "takeaway": "Verify, don't trust - applied to the software itself",
+   "concept": "SoftwareTesting"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "From source to bitcoind",
+   "say": "SAY: CMake is the build system that Bitcoin Core has used since release 29.0. The manual of CMake explains its role: a buildsystem describes how to build a project's executables and libraries from its source code using a build tool to automate the process, and CMake lets a project describe its buildsystem abstractly in files written in the CMake language, from which it generates a preferred buildsystem for each user (Kitware, 2026).\nASK: Why does the project treat review and tests as the bottleneck?\nFULL TEXT: course page, chapter 3 - CMakeBuild, SoftwareTesting.",
+   "takeaway": "The build system turns audited text into your node"
+  },
+  {
+   "n": 12,
+   "kind": "section",
+   "title": "Running and talking to it",
+   "say": "SAY: Operation is the second large part of the chapter, and it is about what happens after the software has been built or downloaded: how a node is started, how it is configured, how its state is observed, and what kind of wallet comes with it.\nFULL TEXT: course page, chapter 3 - Operation.",
+   "takeaway": "A daemon, a log that explains itself, and one protocol"
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "The log narrates everything the node decides",
+   "say": "SAY: The start-up log is the stream of messages that the node writes while it starts, and afterwards as it runs. With the option that sends the log to the console it appears in the terminal, and otherwise it goes to a file called debug.log in the data directory, as the documentation of the data directory states (Bitcoin Core, 2026).\nASK: Where would you look first when a node misbehaves? (the answer is this slide's title)\nFULL TEXT: course page, chapter 3 - StartupLog, Daemon.",
+   "takeaway": "When a node misbehaves, the log already wrote the diagnosis"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "The project that outlives its keyholders",
+   "say": "STORY (2011 and 2014): Bitcoin Core is the program Satoshi published in January 2009, still developed in public. In 2011 Satoshi handed the project to Gavin Andresen - the faucet builder of chapter 2 - and withdrew. In April 2014 Andresen passed the lead-maintainer role to Wladimir van der Laan to focus on protocol work. Hundreds of contributors and several maintainers later, the repository, its tags and its releases carry on; no single person has been indispensable since.\nSOURCE: Repository history of bitcoin/bitcoin (the chapter's pinned checkout is commit 05bc2f53); maintainer handoffs of 2011 and April 2014 as recorded in the project history and summarized at en.wikipedia.org/wiki/Bitcoin_Core.",
+   "read": {
+    "label": "Andresen: Core maintainer van der Laan (post)",
+    "url": "https://web.archive.org/web/2015/https://bitcoinfoundation.org/2014/04/07/bitcoin-core-maintainer-wladimir-van-der-laan/"
+   },
+   "takeaway": "Maintainers change; the repository and its rules remain",
+   "concept": "SatoshiNakamoto"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "Talking to the node: bitcoin-cli and JSON-RPC",
+   "say": "SAY: JSON-RPC is a protocol for remote procedure calls whose messages are written in JSON. Its specification describes it as a stateless, light-weight remote procedure call protocol that defines a few data structures and the rules for processing them, independent of the transport, so that the same messages may travel within a process, over sockets or over HTTP (JSON-RPC Working Group, 2013).\nASK: Your phone wallet never shows this - what is it speaking underneath?\nFULL TEXT: course page, chapter 3 - JsonRpc, BitcoinCommand.",
+   "takeaway": "Every GUI and every explorer speaks this same protocol"
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Wallets are descriptors now",
+   "say": "SAY: A descriptor wallet is a wallet whose content is a set of output descriptions, each stating one family of scripts that the wallet can receive to and spend from. Bitcoin Core's documentation says that its code internally stores and operates on descriptors to reason about the sets of outputs that belong to the wallet (Bitcoin Core, 2026).\nASK: What does the # suffix buy you when you mistype one character?\nFULL TEXT: course page, chapter 3 - DescriptorWallet, LegacyWallet.",
+   "takeaway": "A descriptor states, in one line, what the wallet watches"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "Decode a real transaction",
+   "say": "SAY: A decoded transaction is the structure that results from reading the bytes of a serialized transaction and naming each field. The command decoderawtransaction takes the hexadecimal string and returns a JSON object (Antonopoulos and Harding, 2023).\nASK: Which of the two identifiers survives a witness change, and why does that matter?\nFULL TEXT: course page, chapter 3 - DecodedTransaction, TransactionIdentifier.",
+   "takeaway": "The node explains any transaction - Alice's included"
+  },
+  {
+   "n": 18,
+   "kind": "section",
+   "title": "The chain as data",
+   "say": "SAY: The data branch is about what a node holds and what the interface shows of it: the transactions that move value, the blocks that gather them into the shared record, and the state of the chain that results.\nFULL TEXT: course page, chapter 3 - Data.",
+   "takeaway": "Headers, roots, and the same node from your own code"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "The header is 80 bytes of commitment",
+   "say": "SAY: The block header is the summary at the head of every block.\nASK: Chapter 2 drew this tree with toy leaves - what changed here? (nothing but the data)\nFULL TEXT: course page, chapter 3 - BlockHeader, MerkleRoot.",
+   "takeaway": "Eighty bytes pin megabytes - that is the whole trick"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "The chapter as data, and in one library call",
+   "say": "SAY: The semantics branch connects the chapter to the course's wider theme, the meaning of data. A node answers every request in the JSON text format, a structure of names and values, which a program can read but whose names carry no meaning of their own; the field called height in a block's answer means what the documentation says it means, and nothing in the text states it.\nFULL TEXT: course page, chapter 3 - Semantics.",
+   "takeaway": "The course page and your scripts read the same node"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "SAY: Five lines, one per part; the agenda names the slides that prove each.\nASK: Which line would you defend first, and with which slide?\nFULL TEXT: course page, chapter 3 - every section.",
+   "takeaway": "If a line feels unproven, its part's slides carry the receipt"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "SAY: Everything here is free. The homework writes itself: clone, checkout the newest tag, build, and bring your log's worker-thread line to class.\nASK: Who will have a pruned node syncing before Friday?\nFULL TEXT: course page, chapter 3 - Ecosystem.",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Mastering Bitcoin, ch. 3: Bitcoin Core",
+     "url": "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/develop/ch03_bitcoin-core.adoc",
+     "finds": "Chapter text as AsciiDoc source, plain text, free to read"
+    },
+    {
+     "group": "Read",
+     "label": "Bitcoin Core: releases",
+     "url": "https://bitcoincore.org/en/releases/",
+     "finds": "Every release with notes, binaries and signatures"
+    },
+    {
+     "group": "Read",
+     "label": "bitcoind.cpp at tag v31.1 (source)",
+     "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v31.1/src/bitcoind.cpp",
+     "finds": "The daemon's entry point; change the tag to read others"
+    },
+    {
+     "group": "Verify & build",
+     "label": "guix.sigs README: how builders attest (text)",
+     "url": "https://raw.githubusercontent.com/bitcoin-core/guix.sigs/main/README.md",
+     "finds": "The process behind the signed build hashes of each release"
+    },
+    {
+     "group": "Verify & build",
+     "label": "Bitcoin Core build guide for Unix (text)",
+     "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/master/doc/build-unix.md",
+     "finds": "Dependencies and commands to build bitcoind on Linux"
+    },
+    {
+     "group": "Talk to a node",
+     "label": "Bitcoin Core RPC reference (docs)",
+     "url": "https://developer.bitcoin.org/reference/rpc/",
+     "finds": "Every RPC method with arguments, results and examples"
+    },
+    {
+     "group": "Talk to a node",
+     "label": "Bitcoin Stack Exchange (Q&A site)",
+     "url": "https://bitcoin.stackexchange.com",
+     "finds": "Search or ask any technical question; answers are voted"
+    },
+    {
+     "group": "History",
+     "label": "Wikipedia: Bitcoin Core (article)",
+     "url": "https://en.wikipedia.org/wiki/Bitcoin_Core",
+     "finds": "History of the client from version 0.1 to the present"
+    },
+    {
+     "group": "History",
+     "label": "Pro Git, 2nd edition (book)",
+     "url": "https://git-scm.com/book/en/v2",
+     "finds": "The free book on Git, by Chacon and Straub"
+    }
+   ],
+   "takeaway": "Clone, verify, build, run - the whole chapter is one evening of commands"
+  },
+  {
+   "n": 23,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "SAY: Four claims, each carried by something you watched run - a log, a request, a recomputed root. Next: the keys and addresses that make ownership work.\nFULL TEXT: course page, chapter 3.",
+   "takeaway": "And where each claim gets its proof"
+  }
+ ],
+ "_note": "lecture_v1_1_0.json (the deck export of the chapter 03 deck, untouched) with the deck's takeaway as takeaway and, on each story slide, the first concept of the story that the page has as concept; made by pages_deck_links_make_v1_1_0.py"
+}
