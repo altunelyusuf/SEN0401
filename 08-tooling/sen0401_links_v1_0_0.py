@@ -30,7 +30,7 @@ READ = {
  (11, "TheHashTreeOfRalphMerkle"): ("Merkle's patent US 4,309,569 (PDF)", "https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/4309569"),
  (11, "GriefingTheTestnet"): ("BIP 94: Testnet 4 (spec)", "https://bips.dev/94/"),
  (11, "SignetBlocksNeedASignature"): ("BIP 325: Signet (spec)", "https://bips.dev/325/"),
- (12, "HashcashBeforeBitcoin"): ("Back: Hashcash, a DoS counter-measure (PDF)", "http://www.hashcash.org/papers/hashcash.pdf"),
+ (12, "HashcashBeforeBitcoin"): ("Back: Hashcash, a DoS counter-measure (PDF)", "https://web.archive.org/web/2023/http://www.hashcash.org/papers/hashcash.pdf"),
  (12, "ChainSplitOfMarch2013"): ("BIP 50: March 2013 Chain Fork Post-Mortem", "https://bips.dev/50/"),
  (12, "HalvingBlockWithRecordFees"): ("Block 840,000 on mempool.space (block)", "https://mempool.space/block/0000000000000000000320283a032748cef8227873ff4872689bf23f1cda83a5"),
  (12, "TaprootThroughSpeedyTrial"): ("Core 0.21.1 release notes: Speedy Trial", "https://bitcoincore.org/en/releases/0.21.1/"),
@@ -202,7 +202,9 @@ def register(n):
             note = "not verified from here: the server answered with a bot challenge page; the URL is the publisher's own article page"
         elif not isinstance(st, int) or st >= 400:
             note = "not verified from here"
-        if "web.archive.org" in b[3]:
+        if "hashcash.org" in b[3]:
+            note = "www.hashcash.org serves no HTTPS (the story check needs https links); the Internet Archive copy of the same PDF is linked and was read"
+        elif "web.archive.org" in b[3]:
             note = "the original list server (lists.linuxfoundation.org, same path) answers HTTP 418 to this machine; the Internet Archive copy of the same message is linked and was read"
         rows.append({"slide": b[0], "place": b[1], "old_label": a[2], "old_url": a[3], "new_label": b[2], "new_url": b[3], "changed": (a[2], a[3]) != (b[2], b[3]),
                      "status": st, "title_found": ti, "note": note})

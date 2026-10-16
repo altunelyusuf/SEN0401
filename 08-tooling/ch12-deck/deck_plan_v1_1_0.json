@@ -1,0 +1,1672 @@
+{
+ "meta": {
+  "title": "Chapter 12: Mining and Consensus",
+  "sub": "SEN0401, third-edition redesign",
+  "version": "1.1.0",
+  "python": "3.14.6",
+  "total": 0,
+  "redesign": "2026-10-15, first deck from the committed research package (commit 615aa32, v1_0_1 files), to the CME look and feel; notes are short reader's prose; v1.1.0: every READ card and resources link names its resource and goes straight to it (link_register_v1_0_0.json)",
+  "notes": "short reader's prose: 2-4 sentences, at most 100 words",
+  "honesty": {
+   "title": [
+    "Bitcoin Core 31.1",
+    "Recorded"
+   ],
+   "recorded": [
+    1,
+    6,
+    8,
+    9,
+    10,
+    15,
+    18,
+    21
+   ],
+   "notExecuted": [
+    9,
+    10,
+    12,
+    14,
+    19,
+    20,
+    21
+   ],
+   "standin": {
+    "7": [
+     "Stand-in picture"
+    ],
+    "22": [
+     "Stand-in picture"
+    ],
+    "23": [
+     "Stand-in picture"
+    ]
+   },
+   "vectors": [
+    5,
+    6,
+    7,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+   ]
+  },
+  "analogies": [
+   {
+    "concept": "halving",
+    "analogy": "Like a spring that gives half as much each season, until the last drop around 2140",
+    "slide": 5
+   },
+   {
+    "concept": "block reward",
+    "analogy": "Like a driver's wage plus tips: in one block the tips were twelve times the wage",
+    "slide": 6
+   },
+   {
+    "concept": "consensus checks",
+    "analogy": "Like a doorman with a checklist: one wrong item and the guest stays outside",
+    "slide": 8
+   },
+   {
+    "concept": "most work",
+    "analogy": "Like a court that follows the heaviest file of evidence, not the longest",
+    "slide": 9
+   },
+   {
+    "concept": "coinbase",
+    "analogy": "Like a cashier's first receipt of the day: it creates the money that the rest only move",
+    "slide": 10
+   },
+   {
+    "concept": "proof of work",
+    "analogy": "Like throwing dice until a throw is low enough: hard to find, easy for anyone to check",
+    "slide": 12
+   },
+   {
+    "concept": "difficulty",
+    "analogy": "Like a lottery that adds balls until a win still takes ten minutes",
+    "slide": 13
+   },
+   {
+    "concept": "retarget",
+    "analogy": "Like a thermostat: blocks too fast and the target tightens, too slow and it loosens",
+    "slide": 14
+   },
+   {
+    "concept": "BIP 94",
+    "analogy": "Like timing a race from the first runner, not from whoever starts late",
+    "slide": 15
+   },
+   {
+    "concept": "extra nonce",
+    "analogy": "Like a combination lock with four billion settings: you must change the lock itself",
+    "slide": 18
+   },
+   {
+    "concept": "mining pool",
+    "analogy": "Like a lottery syndicate: small steady shares instead of a rare big win",
+    "slide": 19
+   },
+   {
+    "concept": "attack odds",
+    "analogy": "Like a race: a runner who starts behind rarely catches up, and rarely is not never",
+    "slide": 20
+   },
+   {
+    "concept": "soft fork",
+    "analogy": "Like a club rule: a stricter rule keeps every member, a looser one splits the club",
+    "slide": 21
+   }
+  ]
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 12: Mining and Consensus",
+   "sub": "How new coins are made, how every node checks a block, why proof of work is a lottery, and how the rules change. Bitcoin Core 31.1 results are Recorded.",
+   "items": [],
+   "notes": "This deck explains mining and consensus: the reward and its halving, the checklists that every node runs on a block, the nonce lottery of proof of work and its retargeting, the pools and attacks that follow, and the soft forks that change the rules. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1 was run on a test network, so its answers are Recorded and only read back here. The research package for chapter 12 holds the sources and the claims.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "The questions, then three parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 6.3,
+     "h": 3.4,
+     "fs": 12.0,
+     "items": [
+      "The chapter's questions  (slides 3-3)",
+      "Rewards, rules and the block  (slides 4-10)",
+      "Proof of work  (slides 11-16)",
+      "Competition and rule changes  (slides 17-26)"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.5,
+     "w": 2.45,
+     "h": 3.4,
+     "vert": true,
+     "items": [
+      {
+       "n": "26",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "4",
+       "label": "true stories, each with WHO / WHERE / WHEN / READ"
+      },
+      {
+       "n": "17",
+       "label": "live-run consoles, each shown with its result"
+      }
+     ]
+    }
+   ],
+   "notes": "The route has three parts after the questions: rewards, rules and the block, with the subsidy, the checklists, the chain of most work and the coinbase; proof of work, with its lottery, difficulty and retargeting; and competition and rule changes, with pools, attacks and forks. Each part carries a true story or a correction of the book that a reader can check on the slide. The numbers in the list let a reader jump straight to a part.",
+   "take": "Three parts, four true stories, and a list of what was not run",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions, and the numbers behind the answers",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 1.7,
+     "fs": 13,
+     "items": [
+      "Which claims of the chapter can be checked by computation, and what does the computation give?",
+      "What in the chapter has changed since the book went to print, and on what source?"
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 0.5,
+     "y": 3.3,
+     "w": 9.0,
+     "h": 1.6,
+     "items": [
+      {
+       "n": "91",
+       "label": "sources, opened and read on 2026-10-15"
+      },
+      {
+       "n": "69",
+       "label": "claims, each recomputed by running code"
+      },
+      {
+       "n": "27",
+       "label": "findings, several of them corrections of the book"
+      }
+     ]
+    }
+   ],
+   "notes": "The chapter asks two questions that this deck answers by computation: which of its statements can be checked, and what has changed since print. The three numbers are counted from the research package, which holds 91 sources, 27 findings and 69 executed claims. Each slide that follows shows the computation behind one claim.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Rewards, rules and the block",
+   "sub": "Where new coins come from, who may claim them, and the rules a block must pass.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Halving and supply"
+      },
+      {
+       "label": "Subsidy plus fees"
+      },
+      {
+       "label": "Node checklists"
+      },
+      {
+       "label": "Most work wins"
+      },
+      {
+       "label": "The coinbase"
+      }
+     ]
+    }
+   ],
+   "notes": "This part is about money and rules. It starts with the subsidy that halves every 210,000 blocks and the fees that are added to it, then follows the checklists that every node runs on a transaction and a block, the rule that the chain with the most work wins, and the special first transaction of a block, the coinbase. The story of the part is the block in which fees beat the subsidy twelve times.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Halving and the 21 million limit",
+   "sub": "Like a spring that gives half as much each season, until the last drop around 2140",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10,
+     "items": [
+      "Row 2: blocks 210,000, 420,000, 630,000 and 840,000 (2012 to 2024) pay 25, 12.5, 6.25 and 3.125 coins",
+      "Row 3: the 33 rewards add up to 2,099,999,997,690,000 satoshis, 2,310,000 short of 21 million; the last satoshi is in block 6,929,999",
+      "Row 4: the book's max_money.py divides with /=, so Python 3 prints 2100000000000000.0 and not the figure of its text"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Subsidy in coins, by halving block",
+     "dataLabels": true,
+     "dlFmt": "0.###",
+     "dlFs": 9,
+     "labels": [
+      "210,000",
+      "420,000",
+      "630,000",
+      "840,000"
+     ],
+     "series": [
+      {
+       "name": "coins",
+       "data": [
+        25.0,
+        12.5,
+        6.25,
+        3.125
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "hs = {n: J(n) for n in (210000, 420000, 630000, 840000)}",
+       ""
+      ],
+      [
+       "[(n, L.iso(b['timestamp'])[:4], f'{L.subsidy(n) / 1e8:g}') for n, b in hs.items()]",
+       "[(210000, '2012', '25'), (420000, '2016', '12.5'), (630000, '2020', '6.25'), (840000, '2024', '3.125')]"
+      ],
+      [
+       "L.total_supply(), 2100000000000000 - L.total_supply(), L.subsidy(33 * 210000 - 1), 33 * 210000 - 1",
+       "(2099999997690000, 2310000, 1, 6929999)"
+      ],
+      [
+       "L.book_script_as_printed(), L.total_supply()",
+       "(2100000000000000.0, 2099999997690000)"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on four real blocks saved from mempool.space, and on the book's script as printed"
+    }
+   ],
+   "notes": "The subsidy is 50 coins shifted right by one bit for every 210,000 blocks, and four real blocks show it: 25, 12.5, 6.25 and 3.125 coins. Summed in whole satoshis the 33 non-zero rewards stop 2,310,000 satoshis short of 21 million coins, and the last reward of one satoshi is in block 6,929,999, about the year 2140. The book's script has an error: its float division makes Python 3 print 2100000000000000.0 and not the figure of the text.",
+   "bg": "light",
+   "take": "The reward halves every 210,000 blocks, so supply stops just below 21 million"
+  },
+  {
+   "kind": "content",
+   "title": "A block's reward is subsidy plus fees",
+   "sub": "Like a driver's wage plus tips: in one block the tips were twelve times the wage",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "subsidy + fees",
+      "tips 12.04x the wage",
+      "may claim less"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.12,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "r, e, m = R['b5_reward'], J(840000)['extras'], R['b5_modest']",
+       ""
+      ],
+      [
+       "r['coinbasevalue'], r['subsidy'] + r['fees'], r['fees']",
+       "(345369, 345369, 40194)"
+      ],
+      [
+       "e['totalFees'], L.subsidy(840000), round(e['totalFees'] / L.subsidy(840000), 2), e['pool']['name']",
+       "(3762561499, 312500000, 12.04, 'ViaBTC')"
+      ],
+      [
+       "m['coinbase_output_sat'], r['coinbasevalue'] - m['coinbase_output_sat'], m['submit']",
+       "(345368, 1, 'accepted')"
+      ],
+      [
+       "R['b5_greedy_submit'], R['b4_rules']['reward_one_satoshi_too_high']",
+       "('bad-cb-amount', 'bad-cb-amount')"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; block 840,000 is saved from mempool.space"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 2: the template pays 345,369 satoshis, the subsidy plus 40,194 of fees, as the book says",
+      "Row 3: block 840,000, by ViaBTC, paid 3,762,561,499 satoshis of fees, 12.04 times the subsidy of 312,500,000",
+      "Rows 4 and 5: a block that claims 1 satoshi less is accepted; one that claims 1 satoshi more is refused"
+     ]
+    }
+   ],
+   "notes": "A block may claim at most the subsidy plus the fees of its transactions. The test node's template paid 345,369 satoshis, made of the subsidy and 40,194 of fees; a block that claimed one satoshi less was accepted and one that claimed one satoshi more was refused as bad-cb-amount. In block 840,000 the fees were 12.04 times the subsidy, which makes the book's remark that fees are usually a small percentage of income a description of its time and not a law.",
+   "bg": "light",
+   "take": "Reward is subsidy plus fees, and fees can be 12 times the subsidy"
+  },
+  {
+   "kind": "content",
+   "title": "The block where tips beat the wage 12 times",
+   "sub": "The story of 20 April 2024: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch12/assets/photo_asic_miner.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Antminer ASIC Miner - Steve Rainwater, CC BY-SA 2.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 20 April 2024 ViaBTC mines block 840,000, the first to pay 3.125 coins, with 3,050 transactions (row 2)",
+      "Its fees were 3,762,561,499 satoshis, 12.04 times the subsidy, so the book's small percentage fails here (rows 2, 3)",
+      "The reward was 4,075,061,499 satoshis, mostly tips; the pool tag in the coinbase is how statistics are made"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "b = J(840000); e = b['extras']",
+       ""
+      ],
+      [
+       "b['height'], b['tx_count'], e['totalFees'], e['pool']['name']",
+       "(840000, 3050, 3762561499, 'ViaBTC')"
+      ],
+      [
+       "round(e['totalFees'] / 3.125e8, 2), e['reward']",
+       "(12.04, 4075061499)"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on block 840,000 saved from mempool.space"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Satoshi Nakamoto, who wrote the halving schedule, and ViaBTC, the pool that mined block 840,000",
+     "where": "the main chain of Bitcoin, block 840,000, as listed by mempool.space",
+     "when": "2024-04-20",
+     "link": "https://mempool.space/block/0000000000000000000320283a032748cef8227873ff4872689bf23f1cda83a5",
+     "linkText": "Block 840,000 on mempool.space (block)"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: a miner of the kind, not the one."
+    }
+   ],
+   "notes": "Block 840,000 was mined by ViaBTC at 00:09:27 UTC on 20 April 2024 and was the first to pay the new subsidy of 3.125 coins. Its 3,050 transactions paid 3,762,561,499 satoshis in fees, 12.04 times the subsidy, so the reward of 4,075,061,499 satoshis was made mostly of tips. The coinbase carries the tag /ViaBTC/, which is how the statistics of pools are made. The book says that fees are usually a small percentage of income, and this block is an exception.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Node checklists for transactions and blocks",
+   "sub": "Like a doorman with a checklist: one wrong item and the guest stays outside",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.95,
+     "rows": [
+      [
+       "c, r = R['b3_tx_checklist'], R['b4_rules']",
+       ""
+      ],
+      [
+       "len(c) - 1, len(r), c['coinbase_100_confirmations']['allowed'], R['b4_tip_is_valid']",
+       "(14, 14, True, True)"
+      ],
+      [
+       "[c[k]['reject-reason'] for k in ('duplicate_input', 'negative_output', 'coinbase_99_confirmations')]",
+       "['bad-txns-inputs-duplicate', 'bad-txns-vout-negative', 'bad-txns-premature-spend-of-coinbase']"
+      ],
+      [
+       "[r[k] for k in ('reward_one_satoshi_too_high', 'no_height_in_coinbase', 'merkle_root_wrong')]",
+       "['bad-cb-amount', 'bad-cb-height', 'bad-txnmrklroot']"
+      ],
+      [
+       "[r[k] for k in ('time_equal_to_median_time_past', 'time_two_hours_and_a_second_ahead', 'version_1')]",
+       "['time-too-old', 'time-too-new', 'bad-version(0x00000001)']"
+      ]
+     ],
+     "fs": 9.8,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.95,
+     "w": 9.0,
+     "h": 0.75,
+     "fs": 10,
+     "items": [
+      "Row 2: 14 transaction cases and 14 block cases each ended in a named reason; a coinbase at depth 100 is allowed",
+      "Row 3: a repeated input, a negative output and a coinbase spent at depth 99 are refused, by name",
+      "Rows 4 and 5: a block is refused for a reward too high, no height, a wrong merkle root, an early time or a version 1"
+     ]
+    }
+   ],
+   "notes": "Consensus is a set of checks, and each one has a name. On a Bitcoin Core 31.1 test node, fourteen transaction cases and fourteen block cases each produced one reason: a repeated input, a negative output, a coinbase spent before 100 blocks, a reward one satoshi too high, no height in the coinbase, a wrong merkle root, a time not above the median or two hours ahead, and a version 1. The one valid block was accepted.",
+   "bg": "light",
+   "take": "Every rule has a name, and a node reports the first one a block breaks"
+  },
+  {
+   "kind": "content",
+   "title": "The best chain has the most work",
+   "sub": "Like a court that follows the heaviest file of evidence, not the longest",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.7,
+     "rows": [
+      [
+       "a, b = R['b7_after'], R['b7_before']",
+       ""
+      ],
+      [
+       "int(a['chainwork_tip'], 16), int(a['chainwork_x'], 16), a['tip_is_y2']",
+       "(208, 206, True)"
+      ],
+      [
+       "b['carol_received'], b['pay_confirmations'], a['pay_confirmations'], a['carol_received']",
+       "(49.999, 1, -2, 0.0)"
+      ],
+      [
+       "a['back_confirmations'], [t['status'] for t in a['tips']], R['b7_deliver_y2']",
+       "(2, ['active', 'valid-fork'], 'accepted')"
+      ]
+     ],
+     "fs": 10,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest, two nodes"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.75,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 2: the branch with chainwork 208 beat the one with 206 and became the tip of both nodes",
+      "Row 3: a payment of 49.999 coins with 1 confirmation fell to -2 confirmations; the receiver then held 0.0",
+      "Row 4: the payment came back with 2 confirmations, and the losing branch stays as a valid fork"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.55,
+     "w": 9.0,
+     "h": 0.3,
+     "fs": 10,
+     "body": "NOT EXECUTED: block relay over the peer-to-peer network; the test blocks were handed to the nodes by RPC."
+    }
+   ],
+   "notes": "A node follows the chain with the most cumulative proof of work, which is not always the longest. On two test nodes a branch with chainwork 208 replaced one with 206, and a payment of 49.999 coins that had one confirmation went to minus two, so the receiver held nothing until the payment was mined again. The losing branch stays on record as a valid fork. The blocks were handed over by RPC and not relayed over the network.",
+   "bg": "light",
+   "take": "The chain with the most work wins, and a payment can fall back to zero"
+  },
+  {
+   "kind": "content",
+   "title": "Coinbase fields and reserved weight",
+   "sub": "Like a cashier's first receipt of the day: it creates the money that the rest only move",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.7,
+     "rows": [
+      [
+       "t, k, w = R['b1_template0'], R['b5_core_coinbase'], J(840000)['weight']",
+       ""
+      ],
+      [
+       "t['weightlimit'], src('core_src_policy_policy.h', 'DEFAULT_BLOCK_RESERVED_WEIGHT'), 4000000 - 8000, w",
+       "(4000000, '8000', 3992000, 3993281)"
+      ],
+      [
+       "L.push_num(k['height']).hex(), k['scriptsig'], k['height']",
+       "('029c08', '029c0800', 2204)"
+      ],
+      [
+       "k['locktime'] == k['height'] - 1, hex(k['sequence']), k['scriptsig'][-2:], k['version']",
+       "(True, '0xfffffffe', '00', 2)"
+      ]
+     ],
+     "fs": 9.7,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; block 840,000 is saved from mempool.space"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.75,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 2: Core reserves 8,000 of 4,000,000 weight; block 840,000 weighed 3,993,281, so other software made it",
+      "Row 3: the script begins with the height as a pushed number: 029c08 for block 2,204, the BIP 34 rule",
+      "Row 4: Core's coinbase has locktime height - 1, sequence 0xfffffffe and ends in OP_0; the book omits these"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.55,
+     "w": 9.0,
+     "h": 0.3,
+     "fs": 10,
+     "body": "NOT EXECUTED: Bitcoin Core's IPC mining interface; the template came from the getblocktemplate RPC."
+    }
+   ],
+   "notes": "The first transaction of a block, the coinbase, has no real input. Since BIP 34 its script begins with the height, so block 2,204 starts with 029c08, and the coinbase of Bitcoin Core 31.1 also sets its locktime to the height minus one, its sequence to 0xfffffffe and ends the script with OP_0, none of which is in the book's table. Core now reserves 8,000 weight units for it, so its blocks stay below 3,992,000, and block 840,000 with 3,993,281 came from other software.",
+   "bg": "light",
+   "take": "The coinbase begins with the height; Core reserves 8,000 weight units for it"
+  },
+  {
+   "kind": "section",
+   "title": "Proof of work",
+   "sub": "A lottery whose odds the network sets, and a thermostat that keeps it fair.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "The nonce lottery"
+      },
+      {
+       "label": "Difficulty and hash rate"
+      },
+      {
+       "label": "Retargeting"
+      },
+      {
+       "label": "Hashcash"
+      }
+     ]
+    }
+   ],
+   "notes": "This part explains proof of work. It starts with a toy lottery in which a counter is hashed until the result is small enough, then asks how small the target must be and how much work that means in days. It ends with the rule that sets the target every 2,016 blocks, and with the story of Adam Back's Hashcash, from which the idea comes.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Proof of work is a nonce lottery",
+   "sub": "Like throwing dice until a throw is low enough: hard to find, easy for anyone to check",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10,
+     "items": [
+      "Row 2: the book's phrase with a counter first gives a hash starting with 0 at 32: 09cb91f8, with a lowercase w",
+      "Row 2: with the capital W the book prints, the hash is 6bbe6a3d, so the printed spelling is wrong",
+      "Rows 3 and 4: two zero digits take 228 tries, three take 3,460; block 277,316 has 63 leading zero bits",
+      "NOT EXECUTED: mining on the public network or with ASICs"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Tries to find a hash with leading zero digits",
+     "dataLabels": true,
+     "dlFmt": "#,##0",
+     "dlFs": 9,
+     "labels": [
+      "1 zero digit",
+      "2 zero digits",
+      "3 zero digits"
+     ],
+     "series": [
+      {
+       "name": "tries",
+       "data": [
+        32,
+        228,
+        3460
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "h = L.header(L.raw('mempool_header_277316.txt')); t = L.bits_to_target(h['bits'])",
+       ""
+      ],
+      [
+       "next(n for n in range(1, 10 ** 6) if hw(n).startswith('0')), hw(32)[:8], hw(32, 'W')[:8]",
+       "(32, '09cb91f8', '6bbe6a3d')"
+      ],
+      [
+       "[next(n for n in range(1, 10 ** 6) if hw(n).startswith('0' * z)) for z in (2, 3)]",
+       "[228, 3460]"
+      ],
+      [
+       "L.leading_zero_bits(h['hash']), 256 - t.bit_length(), int(h['hash'], 16) < t",
+       "(63, 62, True)"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the saved header of block 277,316; the search runs here on one CPU"
+    }
+   ],
+   "notes": "Proof of work is a lottery in which anyone can check a winning ticket at once. In the book's toy version the phrase Hello, world with a counter first gives a hash that starts with a zero at 32; two zeros took 228 tries and three took 3,460. The book prints the phrase with a capital W, and that spelling gives a different hash, 6bbe6a3d; only the lowercase one gives 09cb91f8. Nothing was mined on a public network.",
+   "bg": "light",
+   "take": "A hash below the target is a winning ticket that anyone can check"
+  },
+  {
+   "kind": "content",
+   "title": "Difficulty, hash rate and a 1 TH/s miner",
+   "sub": "Like a lottery that adds balls until a win still takes ten minutes",
+   "items": [
+    {
+     "t": "flow",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 9.0,
+     "h": 0.55,
+     "fs": 10.5,
+     "steps": [
+      {
+       "label": "Difficulty",
+       "sub": "of block 277,316"
+      },
+      {
+       "label": "x 2^32 hashes",
+       "sub": "per block, on average"
+      },
+      {
+       "label": "/ 10^12 per second",
+       "sub": "a 1 TH/s miner"
+      },
+      {
+       "label": "58.7 days",
+       "sub": "8,453 blocks",
+       "hot": true
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.22,
+     "w": 9.0,
+     "h": 1.5,
+     "rows": [
+      [
+       "d = L.difficulty('1903a30c'); s = d * 2 ** 32 / 1e12",
+       ""
+      ],
+      [
+       "round(d), round(s / 86400, 1), round(s / 600), round(8496 * 600 / 86400, 1)",
+       "(1180923195, 58.7, 8453, 59.0)"
+      ],
+      [
+       "d2 = L.jload('mempool_difficulty_adjustments_2y.json')[0][2]; r = L.jload('mempool_hashrate_3m.json')['currentHashrate']",
+       ""
+      ],
+      [
+       "f'{d2 * 2 ** 32 / 600:.3e}', f'{r:.3e}', round(r / (d * 2 ** 32 / 600))",
+       "('9.500e+20', '1.029e+21', 121738)"
+      ]
+     ],
+     "fs": 8.2,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the saved header, adjustments and hash rate from mempool.space"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.05,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 2: a 1 TH/s miner needs 58.7 days or 8,453 blocks at that difficulty; the book says 8,496 blocks and 59 days",
+      "Row 4: the last difficulty implies 9.500e+20 hashes a second; mempool.space reports 1.029e+21",
+      "Row 4: that is 121,738 times the hash rate of the book's example block"
+     ]
+    }
+   ],
+   "notes": "Difficulty tells how many hashes a block takes on average: difficulty times 2 to the 32. At the difficulty of block 277,316, 1,180,923,195, a miner doing a trillion hashes a second needs 58.7 days, which is 8,453 blocks; the book says 8,496 blocks, an error of about half a percent. Today's hash rate, from the last adjustment and from mempool.space, is about 10 to the 21 per second, 121,738 times that of the book's example.",
+   "bg": "light",
+   "take": "At 1 TH/s a block takes 8,453 blocks of waiting, not the book's 8,496"
+  },
+  {
+   "kind": "content",
+   "title": "Retargeting every 2,016 blocks",
+   "sub": "Like a thermostat: blocks too fast and the target tightens, too slow and it loosens",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.7,
+     "rows": [
+      [
+       "a, z, n = [L.header(L.raw('mempool_header_%d.txt' % k)) for k in (838656, 840671, 840672)]",
+       ""
+      ],
+      [
+       "z['time'] - a['time'], z['bits'], n['bits'], hex(L.retarget(a['time'], z['time'], z['bits']))",
+       "(1186047, '17034219', '170331db', '0x170331db')"
+      ],
+      [
+       "L.retarget(a['time'], z['time'], z['bits']) == int(n['bits'], 16), round(1209600 / (z['time'] - a['time']), 4)",
+       "(True, 1.0199)"
+      ],
+      [
+       "round((2016 / 2015 - 1) * 100, 3), [hex(L.retarget(0, t, '17034219')) for t in (12096000, 120960)]",
+       "(0.05, ['0x170d0864', '0x1700d086'])"
+      ]
+     ],
+     "fs": 9.0,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on three real headers saved from mempool.space"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.75,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 2: 2,016 blocks took 1,186,047 seconds; the formula turns bits 17034219 into 170331db, as on the real chain",
+      "Row 3: the real next block has exactly those bits (True); the period ran 1.0199 times faster than two weeks",
+      "Row 4: counting 2,015 gaps makes the aim 0.05 percent fast; a ten-fold swing is clamped to 4x or a quarter"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.55,
+     "w": 9.0,
+     "h": 0.3,
+     "fs": 10,
+     "body": "NOT EXECUTED: a real Core retarget; regtest never retargets, so the formula met real mainnet headers instead."
+    }
+   ],
+   "notes": "Every 2,016 blocks the target is scaled by the time the period took against two weeks, and never by more than a factor of four either way. From the headers of blocks 838,656 and 840,671, which are 1,186,047 seconds apart, the formula computes the bits 170331db, and that is what block 840,672 really carries. Counting 2,015 gaps and not 2,016 makes the aim 0.05 percent faster than ten minutes. Regtest does not retarget, so no real Bitcoin Core retarget was run.",
+   "bg": "light",
+   "take": "The formula reproduces a real adjustment; a swing is clamped to four times"
+  },
+  {
+   "kind": "content",
+   "title": "The BIP 94 branch and recent adjustments",
+   "sub": "Like timing a race from the first runner, not from whoever starts late",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "enforce_BIP94",
+      "absent from the book",
+      "52 adjustments"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.12,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "R['b2_bits']['2017'], [cv(c, r'fPowNoRetargeting = (\\w+)') for c in ('regtest', 'main')]",
+       "('207fffff', ['true', 'false'])"
+      ],
+      [
+       "[cv(c, r'enforce_BIP94 = (\\w+)') for c in ('testnet4', 'main')]",
+       "['true', 'false']"
+      ],
+      [
+       "[seen(f, 'enforce_BIP94') for f in ('core_src_pow.cpp', 'book_ch12_mining.adoc')]",
+       "[True, False]"
+      ],
+      [
+       "a = L.jload('mempool_difficulty_adjustments_2y.json'); ch = [x[3] for x in a]",
+       ""
+      ],
+      [
+       "len(a), round(min(ch), 3), round(max(ch), 3), sum(1 for c in ch if c < 1)",
+       "(52, 0.888, 1.147, 20)"
+      ]
+     ],
+     "fs": 9.5,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; the source and the adjustments are saved"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 1: regtest keeps bits 207fffff at height 2,017 because fPowNoRetargeting is true there; on main it is false",
+      "Rows 2 and 3: Core 31.1 has the branch if (params.enforce_BIP94): true on testnet4, false on main, absent from the book",
+      "Row 5: 52 adjustments in two years, from 0.888 to 1.147 times; 20 of them eased the difficulty"
+     ]
+    }
+   ],
+   "notes": "The book's listing of the retarget function has no branch for testnet4, but Bitcoin Core 31.1 has one: when enforce_BIP94 is true, the new target is built from the bits of the first block of the period, which may not use the minimum-difficulty exception. It is true on testnet4 and false on the main chain. Regtest sets fPowNoRetargeting and keeps its bits forever. In the last two years there were 52 adjustments, from 0.888 to 1.147 times.",
+   "bg": "light",
+   "take": "Core has a BIP 94 branch that the book's retarget listing lacks"
+  },
+  {
+   "kind": "content",
+   "title": "The stamp that made email cost something",
+   "sub": "The story of 1 August 2002: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch12/assets/photo_adam_back.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Adam Back - Joi Ito, CC BY 2.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 1 August 2002 Adam Back dates his paper on Hashcash: the sender hashes a string until the hash starts with enough zeros (row 1)",
+      "Nakamoto's paper says Bitcoin needs a proof of work similar to Adam Back's Hashcash (row 2)",
+      "The book's toy search, Hello, world! with a counter, finds its first zero at 32 (row 3)"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "seen('back_2002_hashcash.txt', '1st August 2002')",
+       "True"
+      ],
+      [
+       "seen('nakamoto_2008_bitcoin.txt', \"similar to Adam Back's Hashcash\")",
+       "True"
+      ],
+      [
+       "next(n for n in range(1, 99) if hw(n)[0] == '0'), hw(32)[:8]",
+       "(32, '09cb91f8')"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on saved sources and the book's toy search"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Adam Back, the cryptographer who proposed Hashcash, Cynthia Dwork and Moni Naor, who proposed pricing functions against junk mail",
+     "where": "the paper Hashcash - A Denial of Service Counter-Measure, dated 1 August 2002, and the Bitcoin paper of 2008",
+     "when": "2002-08-01",
+     "link": "https://web.archive.org/web/2023/http://www.hashcash.org/papers/hashcash.pdf",
+     "linkText": "Back: Hashcash, a DoS counter-measure (PDF)"
+    }
+   ],
+   "notes": "Proof of work did not start with Bitcoin. Cynthia Dwork and Moni Naor proposed in 1992 that a user should compute a moderately hard function to fight junk mail, and Adam Back proposed Hashcash in 1997 and described it in a paper dated 1 August 2002. Satoshi Nakamoto's paper says that Bitcoin needs a proof of work similar to Back's Hashcash, and the book's toy search is the same idea in small.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Competition and rule changes",
+   "sub": "What miners do when the lottery gets harder, how attackers fare, and how the rules change.",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.85,
+     "y": 2.95,
+     "w": 8.6,
+     "h": 1.9,
+     "cols": 4,
+     "fs": 14,
+     "subfs": 11,
+     "accent": [],
+     "items": [
+      {
+       "label": "Nonce space"
+      },
+      {
+       "label": "Pools"
+      },
+      {
+       "label": "Attacks"
+      },
+      {
+       "label": "Soft and hard forks"
+      },
+      {
+       "label": "Two true stories"
+      }
+     ]
+    }
+   ],
+   "notes": "This part is about competition and change. When the 32-bit nonce is used up a miner changes other fields, miners join pools to smooth their luck, and a pool with enough power can attack. Rule changes then come as soft forks, which only tighten, or hard forks, which split. The two stories are the chain split of March 2013 and the activation of taproot.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "When the 32-bit nonce runs out",
+   "sub": "Like a combination lock with four billion settings: you must change the lock itself",
+   "items": [
+    {
+     "t": "chips",
+     "x": 0.5,
+     "y": 1.27,
+     "w": 9.0,
+     "h": 0.38,
+     "fs": 9.5,
+     "items": [
+      "nonce: 2^32 values",
+      "extra nonce: 2^96 values",
+      "version rolling: 16 bits"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 2.12,
+     "w": 9.0,
+     "h": 1.85,
+     "rows": [
+      [
+       "h, v, e = L.jload('mempool_hashrate_3m.json')['currentHashrate'], R['b10_rolled'], R['b5_extranonce']",
+       ""
+      ],
+      [
+       "2 ** 32, f'{h / 2 ** 32:.2e}', f'{2 ** 96:.3e}'",
+       "(4294967296, '2.40e+11', '7.923e+28')"
+      ],
+      [
+       "bin(0x1fffe000).count('1'), 2 ** bin(0x1fffe000).count('1'), f'{2 ** 48 / 1e12:.1f}'",
+       "(16, 65536, '281.5')"
+      ],
+      [
+       "v['rolled_bits'], v['versionHex'], v['accepted_height']",
+       "('0xe000', '2000e000', 3)"
+      ],
+      [
+       "e['coinbase_txid_1'] != e['coinbase_txid_2'], e['merkle_1'] != e['merkle_2'], e['nonce_1'] == e['nonce_2']",
+       "(True, True, True)"
+      ]
+     ],
+     "fs": 9.3,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; the hash rate is saved from mempool.space"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 4.3,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 2: the nonce holds 4,294,967,296 values, spent 2.40e+11 times a second; an extra nonce makes 7.923e+28",
+      "Row 3: 16 free version bits give 65,536 times the nonces: 2^48 values, 281.5 trillion, the book's 281 TH/s",
+      "Rows 4 and 5: a block with version 2000e000 was accepted; a new extra nonce changed the txid and the root"
+     ]
+    }
+   ],
+   "notes": "The nonce has only 4,294,967,296 values, and today's hash rate uses them up 240 billion times a second, so miners change something else. The extra nonce in the coinbase script changes the transaction id and the merkle root, which gives 2 to the 96 values. Version rolling lets miners also change 16 bits of the version, which gives 65,536 times as many nonces; on the test chain a block with a rolled version was accepted.",
+   "bg": "light",
+   "take": "A miner changes the extra nonce or the version bits when the nonce runs out"
+  },
+  {
+   "kind": "content",
+   "title": "Mining pools: who finds the blocks",
+   "sub": "Like a lottery syndicate: small steady shares instead of a rare big win",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10,
+     "items": [
+      "Row 2: of 52,371 blocks in a year Foundry USA found 28.2 percent, AntPool 18.2, F2Pool 12.6, ViaBTC 9.7",
+      "Row 3: four pools found 68.6 percent of the blocks, of 32 pools listed",
+      "Row 4: at 0.01 percent of the hash rate a miner finds a block every 69 days; at 1 percent 1.44 a day",
+      "NOT EXECUTED: a live pool and Stratum"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Share of one year's blocks, percent",
+     "dataLabels": true,
+     "dlFmt": "0.0",
+     "dlFs": 9,
+     "labels": [
+      "Foundry USA",
+      "AntPool",
+      "F2Pool",
+      "ViaBTC"
+     ],
+     "series": [
+      {
+       "name": "percent",
+       "data": [
+        28.2,
+        18.2,
+        12.6,
+        9.7
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "p = L.jload('mempool_pools_1y.json'); n = sum(q['blockCount'] for q in p['pools'])",
+       ""
+      ],
+      [
+       "n, [(q['name'], round(100 * q['blockCount'] / n, 1)) for q in p['pools'][:4]]",
+       "(52371, [('Foundry USA', 28.2), ('AntPool', 18.2), ('F2Pool', 12.6), ('ViaBTC', 9.7)])"
+      ],
+      [
+       "round(100 * sum(q['blockCount'] for q in p['pools'][:4]) / n, 1), len(p['pools'])",
+       "(68.6, 32)"
+      ],
+      [
+       "round(144 * 0.01, 2), round(144 * 1e-4 * 365, 2), round(1 / (144 * 1e-4))",
+       "(1.44, 5.26, 69)"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on a pool listing saved from mempool.space"
+    }
+   ],
+   "notes": "Mining by oneself is a lottery with long waits, so most miners join a pool that shares the reward by the shares of work each one sends. In the last year four pools found 68.6 percent of 52,371 blocks, with Foundry USA at 28.2 percent. The book's remark that a miner with 1 percent finds more than a block a day is right at 1.44, while one with 0.01 percent waits 69 days. No live pool or Stratum connection was made.",
+   "bg": "light",
+   "take": "Four pools found two thirds of the blocks; a small miner waits for months"
+  },
+  {
+   "kind": "content",
+   "title": "How much power an attack needs",
+   "sub": "Like a race: a runner who starts behind rarely catches up, and rarely is not never",
+   "items": [
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 1.38,
+     "w": 4.6,
+     "h": 1.75,
+     "fs": 10,
+     "items": [
+      "Row 1: selfish mining pays above 1/3 of the power, or 1/4 if half the honest miners follow its blocks",
+      "Row 2: from 6 blocks behind a 10 percent attacker catches up with chance 0.0002428, 30 percent 0.1321",
+      "Row 4: the top pool has 0.2816 of the blocks: below 1/3 and above 1/4",
+      "NOT EXECUTED: a 51 percent attack on a public chain"
+     ]
+    },
+    {
+     "t": "chart",
+     "x": 5.3,
+     "y": 1.38,
+     "w": 4.2,
+     "h": 1.75,
+     "ctype": "bar",
+     "title": "Chance to catch up from 6 blocks behind",
+     "dataLabels": true,
+     "dlFmt": "0.####",
+     "dlFs": 9,
+     "labels": [
+      "10 percent",
+      "30 percent",
+      "45 percent"
+     ],
+     "series": [
+      {
+       "name": "chance",
+       "data": [
+        0.0002428,
+        0.1321,
+        0.766
+       ]
+      }
+     ]
+    },
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 3.42,
+     "w": 9.0,
+     "h": 1.38,
+     "rows": [
+      [
+       "[round((1 - g) / (3 - 2 * g), 4) for g in (0, 0.5, 1)]",
+       "[0.3333, 0.25, 0.0]"
+      ],
+      [
+       "[round(pw(q, 6), d) for q, d in ((0.1, 7), (0.3, 4), (0.45, 3))]",
+       "[0.0002428, 0.1321, 0.766]"
+      ],
+      [
+       "p = L.jload('mempool_pools_1y.json')['pools']; s = p[0]['blockCount'] / sum(q['blockCount'] for q in p)",
+       ""
+      ],
+      [
+       "p[0]['name'], round(s, 4), s < 1 / 3, s > 1 / 4",
+       "('Foundry USA', 0.2816, True, True)"
+      ]
+     ],
+     "fs": 8.5,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on the formula of Nakamoto's paper and a pool listing saved from mempool.space"
+    }
+   ],
+   "notes": "An attacker does not need 51 percent to do harm. Nakamoto's table gives a 10 percent attacker, six blocks behind, a chance of 0.0002428, and the chance grows fast with power: 0.1321 at 30 percent and 0.766 at 45 percent. The paper on selfish mining shows that a pool profits from hiding blocks above one third of the power, or one quarter if half of the honest miners follow its blocks, and the top pool holds 0.2816. No attack was run on a public chain.",
+   "bg": "light",
+   "take": "An attacker needs less than a majority; the top pool is below 1/3"
+  },
+  {
+   "kind": "content",
+   "title": "Soft forks tighten, hard forks split",
+   "sub": "Like a club rule: a stricter rule keeps every member, a looser one splits the club",
+   "items": [
+    {
+     "t": "code",
+     "x": 0.5,
+     "y": 1.7,
+     "w": 9.0,
+     "h": 1.75,
+     "rows": [
+      [
+       "r, c, v = R['b9_lax_block'], R['b9_lax_chain'], R['b8_versionbits']['V']['rows']",
+       ""
+      ],
+      [
+       "r['lax_node'], r['strict_node'], c['strict_node_on_block_6'], c['same_tip']",
+       "('accepted', 'bad-cb-height', 'prev-blk-not-found', False)"
+      ],
+      [
+       "[(x['height'], x['status']) for x in v]",
+       "[(143, 'defined'), (144, 'started'), (287, 'started'), (288, 'locked_in'), (431, 'locked_in'), (432, 'active')]"
+      ],
+      [
+       "v[1]['statistics']['threshold'], v[1]['statistics']['period'], math.ceil(0.95 * 2016)",
+       "(108, 144, 1916)"
+      ],
+      [
+       "cv('main', r'BIP34Height = (\\d+)'), cv('main', r'SegwitHeight = (\\d+)')",
+       "('227931', '481824')"
+      ]
+     ],
+     "fs": 8.9,
+     "cap": "run under Python 3.14.6",
+     "label": "Recorded: Core 31.1 regtest; the heights are read from the saved chainparams.cpp"
+    },
+    {
+     "t": "beats",
+     "x": 0.5,
+     "y": 3.8,
+     "w": 9.0,
+     "h": 0.68,
+     "fs": 10,
+     "items": [
+      "Row 2: a lax node accepted a block with no height; a strict node refused it and could not follow the lax chain",
+      "Rows 3 and 4: BIP 9 on regtest: defined at 143, started at 144, locked in at 288, active at 432; 108 of 144 signal",
+      "Row 5: in the code BIP 34 is now a height, 227931, and segwit's is 481824; the mainnet threshold is 1,916 of 2,016"
+     ]
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.6,
+     "w": 9.0,
+     "h": 0.28,
+     "fs": 10,
+     "body": "NOT EXECUTED: a real hard-fork client; only soft-fork behaviour ran on test nodes."
+    }
+   ],
+   "notes": "A soft fork only tightens the rules, so old nodes still accept the new blocks; a hard fork loosens them and splits the chain. On two test nodes a lax node accepted a block with no height in its coinbase and a strict node refused it, and the strict node could not follow the lax chain. BIP 9 let miners signal in a window: with a period of 144 and a threshold of 108, the deployment went from defined to started, locked in and active. On the main chain the threshold is 1,916 of 2,016.",
+   "bg": "light",
+   "take": "A soft fork only tightens; BIP 9 lets miners signal, lock in and activate"
+  },
+  {
+   "kind": "content",
+   "title": "The day Bitcoin had two histories",
+   "sub": "The story of 11 March 2013: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch12/assets/photo_fork_in_the_road.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Fork in the road - Ian Sane, CC BY 2.0, Flickr"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "On 11 March 2013 block 225,430 with 797 transactions was accepted by Bitcoin 0.8 and refused by older nodes (row 2)",
+      "A Berkeley DB lock limit of older versions had become a rule by accident; two pools went back to 0.7 (BIP 50)",
+      "The split lasted 24 blocks (row 2); a deliberate 80/20 hard fork would take 17.5 or 70 days a period (row 3)"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "a, z = J(225430), J(225454)",
+       ""
+      ],
+      [
+       "a['height'], a['tx_count'], a['size'], z['height'] - a['height']",
+       "(225430, 797, 249119, 24)"
+      ],
+      [
+       "L.blocks_per_period(0.8), L.blocks_per_period(0.2)",
+       "((12.5, 17.5), (50.0, 70.0))"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on blocks saved from mempool.space"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Gavin Andresen, who wrote the post-mortem BIP 50, Marek Palatinus (Slush) and Michael Marsee (Eleuthria of BTCGuild)",
+     "where": "the Bitcoin network, from block 225,430, and BIP 50 in the bitcoin/bips repository",
+     "when": "2013-03-11",
+     "link": "https://bips.dev/50/",
+     "linkText": "BIP 50: March 2013 Chain Fork Post-Mortem"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: a fork in a road, not the split."
+    }
+   ],
+   "notes": "On 11 March 2013 a block of 797 transactions, number 225,430, was accepted by nodes of Bitcoin 0.8 and rejected by some older ones. BIP 50, written by Gavin Andresen, explains that versions before 0.8 had too few Berkeley DB locks for a large but valid block, which had become a rule by accident. The pools of Slush and BTCGuild went back to 0.7 so that the old chain had the most work, and the split lasted 24 blocks, about six hours.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Taproot: a 90 percent vote on a clock",
+   "sub": "The story of 14 November 2021: who, where, when and what to read next",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch12/assets/photo_taproot_profile.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.9,
+     "h": 2.45,
+     "cap": "Taproot profile - Forest and Kim Starr, CC BY 3.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "x": 3.6,
+     "y": 1.4,
+     "w": 5.9,
+     "h": 1.2,
+     "fs": 10.5,
+     "items": [
+      "Speedy Trial opened on 24 April 2021 and timed out on 11 August 2021; it needed 1,815 of 2,016 blocks, 90 percent (row 3)",
+      "Block 709,632, mined by F2Pool on 14 November 2021, was the first under the new rules; its version is 0x20200004 (row 2)",
+      "Bit 2 of that version signals taproot; Core 31.1 still has the parameters in chainparams.cpp"
+     ]
+    },
+    {
+     "t": "code",
+     "x": 3.6,
+     "y": 3.0,
+     "w": 5.9,
+     "h": 1.38,
+     "rows": [
+      [
+       "b = J(709632)",
+       ""
+      ],
+      [
+       "b['height'], hex(b['version']), b['extras']['pool']['name']",
+       "(709632, '0x20200004', 'F2Pool')"
+      ],
+      [
+       "L.iso(1619222400)[:10], L.iso(1628640000)[:10], 1815 * 100 // 2016",
+       "('2021-04-24', '2021-08-11', 90)"
+      ]
+     ],
+     "fs": 9,
+     "cap": "run under Python 3.14.6",
+     "label": "executed on block 709,632 saved from mempool.space"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.62,
+     "w": 9.0,
+     "who": "Pieter Wuille, Jonas Nick and Anthony Towns, the authors of BIP 341, and F2Pool, which mined the first block under the new rules",
+     "where": "the main chain of Bitcoin at block 709,632, and BIP 341 in the bitcoin/bips repository",
+     "when": "2021-11-14",
+     "link": "https://bitcoincore.org/en/releases/0.21.1/",
+     "linkText": "Core 0.21.1 release notes: Speedy Trial"
+    },
+    {
+     "t": "foot",
+     "x": 0.5,
+     "y": 4.22,
+     "w": 2.9,
+     "h": 0.36,
+     "fs": 9,
+     "body": "Stand-in picture: a tree's taproot, not the soft fork."
+    }
+   ],
+   "notes": "Taproot was activated by a variant of BIP 9 called Speedy Trial, which opened on 24 April 2021, timed out on 11 August 2021 and needed 1,815 of 2,016 blocks, 90 percent, instead of 1,916. It also set a minimum activation height of 709,632, so that nodes had time to upgrade. Block 709,632 was mined by F2Pool on 14 November 2021 with the version 0x20200004, in which bit 2 is the signal for taproot.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per part, each one provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 9.0,
+     "h": 3.4,
+     "fs": 12.5,
+     "items": [
+      "The subsidy halves every 210,000 blocks, fees are added, and a block that claims too much is refused",
+      "Every block and transaction passes named checks, and the chain with the most work wins",
+      "Proof of work is a nonce lottery; the target is reset every 2,016 blocks from real timestamps",
+      "Pools smooth the luck, and an attacker's odds fall fast with each block behind",
+      "Soft forks only tighten the rules and need signals; hard forks split the chain"
+     ]
+    }
+   ],
+   "notes": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "bg": "light",
+   "take": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Opened on 2026-10-15; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.45,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "Optech topic: Soft fork activation",
+         "https://bitcoinops.org/en/topics/soft-fork-activation/",
+         "The activation methods tried, with links to the debates"
+        ],
+        [
+         "Optech topic: Selfish mining",
+         "https://bitcoinops.org/en/topics/selfish-mining/",
+         "Summary of the attack and what is known about it"
+        ],
+        [
+         "mempool.space (block explorer)",
+         "https://mempool.space/",
+         "Look up any block, transaction, fee rate and mempool"
+        ]
+       ]
+      },
+      {
+       "head": "Standards and papers",
+       "rows": [
+        [
+         "BIP 9: Version bits with timeout and delay",
+         "https://bips.dev/9/",
+         "How soft forks are signalled in block versions"
+        ],
+        [
+         "BIP 54: Consensus Cleanup",
+         "https://bips.dev/54/",
+         "Proposed fixes of long-known consensus weaknesses"
+        ],
+        [
+         "Eyal and Sirer: Majority is not Enough (paper)",
+         "https://arxiv.org/abs/1311.0243",
+         "The selfish-mining paper, free to download"
+        ]
+       ]
+      },
+      {
+       "head": "Watch",
+       "rows": [
+        [
+         "3Blue1Brown: But how does bitcoin work? (video)",
+         "https://www.youtube.com/embed/bBC-nXj3Ng4",
+         "Ledger, signatures and proof of work, drawn out"
+        ],
+        [
+         "Khan Academy: Bitcoin, proof of work (video)",
+         "https://www.youtube.com/embed/9V1bipPkCTU",
+         "Proof of work in a few minutes"
+        ]
+       ]
+      },
+      {
+       "head": "Community",
+       "rows": [
+        [
+         "Bitcoin Optech newsletters (weekly)",
+         "https://bitcoinops.org/en/newsletters/",
+         "Weekly digest of protocol and wallet development; all issues"
+        ],
+        [
+         "Delving Bitcoin (research forum)",
+         "https://delvingbitcoin.org/",
+         "Developers argue out proposals and research in public threads"
+        ],
+        [
+         "bitcoin-dev (mailing list)",
+         "https://groups.google.com/g/bitcoindev",
+         "Where BIPs and soft forks are first proposed and debated"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "Everything here is free to read or watch, and every link was opened on 2026-10-15. A good start is the 3Blue1Brown video on how bitcoin works, then the Optech topic on soft fork activation next to the chapter. The research package for chapter 12 lists all 91 sources with the passages used.",
+   "bg": "light",
+   "take": "Watch the proof-of-work video, then read the Optech topic beside the chapter"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "How the reward is made and why a block cannot claim more",
+      "How nodes check a block and choose the chain with most work",
+      "Why proof of work is a lottery and how its target is reset",
+      "What pools, attacks and soft forks change"
+     ]
+    }
+   ],
+   "notes": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 12 holds the sources and the test records behind them.",
+   "bg": "dark"
+  }
+ ]
+}
