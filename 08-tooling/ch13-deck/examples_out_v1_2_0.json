@@ -1,0 +1,386 @@
+{
+ "_version": "1.1.0",
+ "_python": "3.14.6",
+ "Payment": [
+  [
+   "s, t, r = R['b1_secrecy'], R['b1_tamper'], R['b1_replay']",
+   ""
+  ],
+  [
+   "s['tx_bytes'], s['witness_item_lengths'], s['private_key_hex_in_tx'], s['wif_in_tx']",
+   "(222, [71, 33], False, False)"
+  ],
+  [
+   "t['valid']['allowed'], t['address_replaced']['allowed'], t['amount_changed']['allowed']",
+   "(True, False, False)"
+  ],
+  [
+   "s['sighash_byte'], r['testmempoolaccept']['reject-reason'], r['balance_r'], r['balance_r_after']",
+   "('01', 'txn-already-known', 1.5, 1.5)"
+  ],
+  [
+   "r['sendrawtransaction']['error'].split('message: ')[1]",
+   "'Transaction outputs already in utxo set'"
+  ]
+ ],
+ "Transport": [
+  [
+   "p, n = R['b2_peers'], R['b2_netinfo']",
+   ""
+  ],
+  [
+   "p['Q'][0]['transport'], p['P'][0]['transport'], R['b2_session_ids_match'], 'P2P_V2' in n['P_localservices']",
+   "('v2', 'v2', True, True)"
+  ],
+  [
+   "p['X'][0]['transport'], [y['transport'] for y in p['P']].count('v1'), n['X_localservices']",
+   "('v1', 1, ['NETWORK', 'WITNESS', 'NETWORK_LIMITED'])"
+  ],
+  [
+   "seen('book_ch13_security.adoc', 'no encryption is required for Bitcoin traffic')",
+   "True"
+  ],
+  [
+   "seen('core_relnotes_27.0.md', 'BIP324 v2 transport is now enabled by default')",
+   "True"
+  ]
+ ],
+ "Root": [
+  [
+   "g, b = J(0), J(938343)",
+   ""
+  ],
+  [
+   "g['id'][:20], g['height'], seen('core_src_kernel_chainparams.cpp', g['id'])",
+   "('000000000019d6689c08', 0, True)"
+  ],
+  [
+   "b['height'], b['id'][:24], seen('core_src_kernel_chainparams.cpp', b['id'])",
+   "(938343, '00000000000000000000cceb', True)"
+  ],
+  [
+   "seen('bitcoind_help_31.1.txt', 'potentially skip their script verification')",
+   "True"
+  ],
+  [
+   "int(L.raw('mempool_tip_height.txt')) - b['height']",
+   "33237"
+  ]
+ ],
+ "Release": [
+  [
+   "r = R['b8_release']",
+   ""
+  ],
+  [
+   "r['match'], r['tarball_sha256'][:16], r['tarball_bytes'], r['n_lines_in_list']",
+   "(True, 'b80d9c3e04da78fb', 90293352, 28)"
+  ],
+  [
+   "r['gpg_exit'], r['gpg_has_signature_line'], r['n_signatures_made'], r['n_cannot_check_no_public_key']",
+   "(2, False, 11, 11)"
+  ],
+  [
+   "seen('core_contrib_guix_README.md', 'instead of blindly _trusting_ binary downloads')",
+   "True"
+  ]
+ ],
+ "Cold": [
+  [
+   "h, c, b = R['b3_hot'], R['b3_cold'], R['b3_broadcast']",
+   ""
+  ],
+  [
+   "h['watch_private_keys_enabled'], h['hot_sign_complete'], h['partial_sigs_before']",
+   "(False, False, [0])"
+  ],
+  [
+   "h['hot_listdescriptors_private']['error'].split('message: ')[1]",
+   "\"Can't get private descriptor string for watch-only wallets\""
+  ],
+  [
+   "c['blocks'], c['connections'], c['sign_complete'], h['psbt_chars'], c['psbt_chars_signed']",
+   "(0, 0, True, 528, 596)"
+  ],
+  [
+   "b['finalize_complete'], b['confirmations'], b['dest_received']",
+   "(True, 1, 1.0)"
+  ]
+ ],
+ "Hardware": [
+  [
+   "tries = 15; wait = [2 ** k for k in range(tries)]",
+   ""
+  ],
+  [
+   "wait, sum(wait), round(sum(wait) / 3600, 1)",
+   "([1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384], 32767, 9.1)"
+  ],
+  [
+   "words = 4; rate = 12",
+   ""
+  ],
+  [
+   "(2 ** (11 * words), round(2048 ** words / 10 ** rate, 1))",
+   "(17592186044416, 17.6)"
+  ],
+  [
+   "seen('bitcoinwiki_trezor.txt', 'wipe itself after 16 failed PIN entry attempts')",
+   "True"
+  ],
+  [
+   "seen('core_doc_external-signer.md', '-signer=<cmd>'), seen(hww, 'swap out the recipient')",
+   "(True, True)"
+  ]
+ ],
+ "Encryption": [
+  [
+   "l, w, u, f = R['b4_locked'], R['b4_wrong'], R['b4_unlocked'], R['b4_file']",
+   ""
+  ],
+  [
+   "l['send']['error'][:15], w['error'][:15], l['balance_visible']",
+   "('error code: -13', 'error code: -14', 1.0)"
+  ],
+  [
+   "u['unlocked_until'] - u['now'], u['send_ok'], R['b4_after_timeout']['unlocked_until']",
+   "(3, True, 0)"
+  ],
+  [
+   "[cr('WALLET_CRYPTO_' + k) for k in ('KEY_SIZE', 'SALT_SIZE', 'IV_SIZE')], cr('DEFAULT_DERIVE_ITERATIONS')",
+   "(['32', '8', '16'], '25000')"
+  ],
+  [
+   "f['encryptwallet_message'][:60], f['xprv_text_in_file_before']",
+   "('wallet encrypted; The keypool has been flushed and a new HD ', False)"
+  ],
+  [
+   "k = 25; bits = 30; days = 2 ** bits * (k / 250) / 86400",
+   ""
+  ],
+  [
+   "(k * 1000, round(days, 1))",
+   "(25000, 1242.8)"
+  ]
+ ],
+ "Backups": [
+  [
+   "b, d = R['b5_backup'], R['b6_backup']",
+   ""
+  ],
+  [
+   "b['balance_src'], b['balance_fresh'], b['fresh_next_matches'], b['far_address_ismine_fresh']",
+   "(3.0, 3.0, True, True)"
+  ],
+  [
+   "b['keypool_range_end'], b['far_index'], b['balance_stale'], b['far_address_ismine_stale']",
+   "([0, 2], 9, 1.0, False)"
+  ],
+  [
+   "d['m1_knows_multisig_address'], d['ms_balance'], d['rebuilt_balance'], d['wrongorder_balance']",
+   "(False, 2.0, 2.0, 0.0)"
+  ],
+  [
+   "pool = 3; paid = [(1, 1), (9, 2)]",
+   ""
+  ],
+  [
+   "(sum(c for i, c in paid if i < pool), sum(c for i, c in paid))",
+   "(1, 3)"
+  ]
+ ],
+ "Seeds": [
+  [
+   "v = L.jload('bip39_trezor_vectors.json')['english'][0]; w = v[1].split()",
+   ""
+  ],
+  [
+   "L.bip39_mnemonic(bytes.fromhex(v[0])) == v[1], len(w), L.bip39_valid(v[1])",
+   "(True, 12, True)"
+  ],
+  [
+   "ent = 16; cs = ent // 4; words = 12; total = words * 11; tcs = total - total * 32 // 33",
+   ""
+  ],
+  [
+   "(ent * 8, cs, (ent * 8 + cs) // 11)",
+   "(128, 4, 12)"
+  ],
+  [
+   "(tcs, 1 / 2 ** tcs)",
+   "(4, 0.0625)"
+  ],
+  [
+   "L.bip39_seed(v[1], 'TREZOR').hex() == v[2], L.bip39_seed(v[1]).hex()[:16]",
+   "(True, '5eb00bbddcf06908')"
+  ],
+  [
+   "sum(seen(f, 'mnemonic') for f in ('core_doc_descriptors.md', 'bitcoind_help_31.1.txt'))",
+   "0"
+  ]
+ ],
+ "TrezorStory": [
+  [
+   "w = [2 ** k for k in range(15)]",
+   ""
+  ],
+  [
+   "sum(w), round(sum(w) / 3600, 1)",
+   "(32767, 9.1)"
+  ],
+  [
+   "seen('bitcoinwiki_trezor.txt', 'an EAL 6+ secure element')",
+   "True"
+  ]
+ ],
+ "CasasciusStory": [
+  [
+   "t = 'bitcoinwiki_casascius.txt'",
+   ""
+  ],
+  [
+   "seen(t, 'sold until Nov 26, 2013'), seen(t, '1000 BTC increments')",
+   "(True, True)"
+  ],
+  [
+   "seen(t, 'qualifies him as a money transmitter')",
+   "True"
+  ]
+ ],
+ "Multisig": [
+  [
+   "s, l, o = R['b6_sign'], R['b6_loss'], R['b6_order']",
+   ""
+  ],
+  [
+   "s['m1_alone'], s['m1_m3'], s['vsize']",
+   "({'complete': False, 'sigs': [1]}, {'complete': True, 'sigs': [0]}, 146)"
+  ],
+  [
+   "l['lose_m1_sign_with_m2_m3'], l['lose_m2_m3_sign_with_m1']",
+   "(True, False)"
+  ],
+  [
+   "R['b6_single_vsize'], s['vsize'], o['sortedmulti_same'], o['multi_same']",
+   "(110, 146, True, False)"
+  ],
+  [
+   "m = 2; n = 3; r = 10; vs = (82 * 4 + 2 + 1 + 1 + m * 73 + 1 + 3 + 34 * n + 3) // 4",
+   ""
+  ],
+  [
+   "(vs, vs * r)",
+   "(146, 1460)"
+  ]
+ ],
+ "Odds": [
+  [
+   "[round(L.p_lose(0.1, m, n), 4) for m, n in ((1, 1), (2, 3), (1, 3))]",
+   "[0.1, 0.028, 0.001]"
+  ],
+  [
+   "[round(L.p_theft(0.05, m, n), 5) for m, n in ((1, 1), (2, 3), (1, 3))]",
+   "[0.05, 0.00725, 0.14263]"
+  ],
+  [
+   "from math import comb; n = 3; m = 2; p = 10; q = p / 100",
+   ""
+  ],
+  [
+   "round(sum(comb(n, s) * (1 - q) ** s * q ** (n - s) for s in range(m)), 4)",
+   "0.028"
+  ],
+  [
+   "p = 5; q = p / 100",
+   ""
+  ],
+  [
+   "round(sum(comb(n, s) * q ** s * (1 - q) ** (n - s) for s in range(m, n + 1)), 5)",
+   "0.00725"
+  ]
+ ],
+ "Heir": [
+  [
+   "h, lim = R['b7_heir'], R['b7_limits']",
+   ""
+  ],
+  [
+   "R['b7_owner']['allowed'], R['b7_descriptor']['policy']",
+   "(True, 'or(owner, and(heir, older 10))')"
+  ],
+  [
+   "[h[k]['allowed'] for k in ('at_1_conf', 'at_9_conf', 'at_10_conf')], h['at_9_conf']['reject_reason']",
+   "([False, False, True], 'non-BIP68-final')"
+  ],
+  [
+   "lim['65535'], lim['65536'], R['b7_older_65536']['allowed'], R['b7_older_65536']['confirmations']",
+   "({'ok': True}, {'ok': True}, True, 1)"
+  ],
+  [
+   "bits = 16; top = 2 ** bits - 1; n = 10",
+   ""
+  ],
+  [
+   "(top, 65536 & top, round(top * 10 / 1440, 1))",
+   "(65535, 0, 455.1)"
+  ],
+  [
+   "(n * 10, n * 512 // 60)",
+   "(100, 85)"
+  ]
+ ],
+ "Shamir": [
+  [
+   "sh = L.shamir_split(123456789, 2, 3, [987654321])",
+   ""
+  ],
+  [
+   "sh",
+   "[(1, 1111111110), (2, 2098765431), (3, 3086419752)]"
+  ],
+  [
+   "[L.shamir_recover(x) for x in (sh[:2], sh[1:])], L.shamir_recover(sh[:1]) == 123456789",
+   "([123456789, 123456789], False)"
+  ],
+  [
+   "p = 11; y = 5; fits = {(s, (y - s) % p) for s in range(p)}",
+   ""
+  ],
+  [
+   "(len(fits), len({s for s, a in fits}), p)",
+   "(11, 11, 11)"
+  ]
+ ],
+ "MtGoxStory": [
+  [
+   "round(850000 * 100 / 7 / 1e6, 1)",
+   "12.1"
+  ],
+  [
+   "(round(40 * (100 - 36) / 100, 2), round(40 * 36 / 100, 2))",
+   "(25.6, 14.4)"
+  ],
+  [
+   "round(850000 - 199999.99, 2)",
+   "650000.01"
+  ]
+ ],
+ "ShamirStory": [
+  [
+   "p = 47; s = 12; a = 30; y = [(s + a * x) % p for x in (1, 2, 3)]",
+   ""
+  ],
+  [
+   "(y, (2 * y[0] - y[1]) % p)",
+   "([42, 25, 8], 12)"
+  ],
+  [
+   "from math import comb; n = 5; k = 3",
+   ""
+  ],
+  [
+   "(sum(comb(n, j) for j in range(k, n + 1)), comb(n, k - 1))",
+   "(16, 10)"
+  ]
+ ]
+}
