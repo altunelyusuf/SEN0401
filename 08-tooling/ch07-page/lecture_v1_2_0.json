@@ -1,0 +1,292 @@
+{
+ "chapter": 7,
+ "deck": "SEN0401_Ch07_AuthorizationAuthentication_3e_v1_3_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 7: Scripts and Signatures",
+   "say": "This deck explains how Bitcoin decides who may spend an output: the output carries a locking script, the spender supplies an unlocking script, and a node runs the two and accepts the spend only if the result is true. The full text of every slide is on the course page for chapter 7.",
+   "concept": "Authorization and Authentication: scripts that lock coins, signatures that unlock them, every spend run in a real interpreter"
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has five parts and ends with a taproot spend the reader has examined alone. One story is the bug of 2010 in which an input script of one number and OP_RETURN could spend any output, one is the fork of July 2015 that followed a rule about the encoding of signatures, and one is the path of a signature scheme from a patent to the soft fork of November 2021. The part a reader expects to be hardest is worth marking now and checking at the summary slide.",
+   "concept": "Five parts - and at the end, a taproot spend you have read yourself"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "Script is the programming language that the original Bitcoin software introduced for transaction validation. The book describes it as a Forth-like stack-based language, says that both the script placed in an output and the legacy input script used in a spending transaction are written in it, and says that it is a very simple language that requires minimal processing and cannot easily do many of the fancy things modern programming languages can (Antonopoulos and Harding, 2023). The full explanation is on the course page, chapter 7, under The language and its limits, in the concept Script.",
+   "concept": "Its own competency questions - we return to each"
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, nine branches",
+   "say": "Script is the programming language that the original Bitcoin software introduced for transaction validation. The full explanation is on the course page, chapter 7, under From a public key to its hash and The language and its limits, in the concepts Script, Pay to public key hash.",
+   "concept": "Nine branches - every slide today lives on this map"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "Scripts and the stack",
+   "say": "Script is the programming language that the original Bitcoin software introduced for transaction validation. The book describes it as a Forth-like stack-based language, says that both the script placed in an output and the legacy input script used in a spending transaction are written in it, and says that it is a very simple language that requires minimal processing and cannot easily do many of the fancy things modern programming languages can (Antonopoulos and Harding, 2023). The full explanation is on the course page, chapter 7, under The language and its limits, in the concepts Script, The script execution stack.",
+   "concept": "The language, its two scripts and a bug of 2010"
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "A script is a short program for a stack",
+   "say": "A stack is a very simple data structure that the book compares to a stack of cards. It has two base operations: push adds an item on top of the stack and pop removes the top item. The full explanation is on the course page, chapter 7, under From a public key to its hash and The language and its limits, in the concepts The script execution stack, Pay to public key hash.",
+   "concept": "A spend is a proof run against a condition, and the verdict is one value"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "The script that ended with a true result",
+   "say": "This is a true story, dated 2010-07-28. On 28 July 2010 two bugs were discovered and demonstrated on the test network. One of them, recorded as CVE-2010-5141, let an attacker spend coins that they did not own: the first software joined the input script and the output script into one program and treated OP_RETURN as a jump to the end, so an input script of 1 followed by OP_RETURN ended the run with a true value and the output script never ran.",
+   "concept": "Found on 28 July 2010, fixed in version 0.3.5",
+   "read": {
+    "label": "CVE-2010-5141 entry (Bitcoin Wiki)",
+    "url": "https://en.bitcoin.it/wiki/Common_Vulnerabilities_and_Exposures#CVE-2010-5141"
+   }
+  },
+  {
+   "n": 8,
+   "kind": "section",
+   "title": "Signatures, multisig and script hash",
+   "say": "An ECDSA signature is two numbers, r and s, and the way they are written as bytes is a rule of the protocol. The book says that for ECDSA the encoding uses an international standard called the Distinguished Encoding Rules, DER, while for schnorr signatures a simpler serialization is used (Antonopoulos and Harding, 2023). The full explanation is on the course page, chapter 7, under Checking a signature and The t-of-k script and its limits, in the concepts Signature encoding (DER), Scripted multisignature.",
+   "concept": "Signatures, t of k keys and script hashes"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "A signature is two numbers, written in strict DER",
+   "say": "An ECDSA signature is two numbers, r and s, and the way they are written as bytes is a rule of the protocol. The book says that for ECDSA the encoding uses an international standard called the Distinguished Encoding Rules, DER, while for schnorr signatures a simpler serialization is used (Antonopoulos and Harding, 2023). The full explanation is on the course page, chapter 7, under Checking a signature, in the concepts Signature encoding (DER), The signature hash and its hash types.",
+   "concept": "Two valid-looking encodings of one signature must not both be valid"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Half the miners did not check the block",
+   "say": "This is a true story, dated 2015-07-04. BIP66 made strict DER the only valid encoding of a signature, and it took effect once 950 of the last 1,000 blocks were version 3, which happened early on 4 July 2015, at block 363,725. A small miner that had not upgraded then produced an invalid block, as was expected, but roughly half of the network's hash rate was mining without fully validating blocks and built on top of it, so a fork of 6 blocks lasted from 02:10 to 03:50 UTC and a second of 3 blocks followed on 5 July.",
+   "concept": "2015-07-04",
+   "read": {
+    "label": "Alert: Some Miners Generating Invalid Blocks",
+    "url": "https://bitcoin.org/en/alert/2015-07-04-spv-mining"
+   }
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Multisignature: t of k keys, in order",
+   "say": "A scripted multisignature is an output script that sets a condition where k public keys are recorded in the script and at least t of them must provide signatures to spend the funds. The book calls this t-of-k and notes that earlier editions, and much other documentation, write m-of-n, which is hard to say aloud because m and n sound alike (Antonopoulos and Harding, 2023). The full explanation is on the course page, chapter 7, under The t-of-k script and its limits, in the concepts Scripted multisignature, Multisignature limits.",
+   "concept": "Signatures follow the order of the keys, and the odd extra element must be empty"
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "P2SH: the payer sees only a hash",
+   "say": "The redeem script is the script that a pay to script hash output stands for. The book says it is called that because it is presented to the system at redemption time rather than as an output script. The console hashes the 105-byte script into a 23-byte output and a 34-character address starting with 3, spends it with two real signatures, and then shows that presenting a script that hashes to a different value fails. The full explanation is on the course page, chapter 7, under Hashing the script, in the concepts Redeem script, Pay to script hash output.",
+   "concept": "Pay to script hash moves the size and the fee of the script to its spender"
+  },
+  {
+   "n": 13,
+   "kind": "section",
+   "title": "Time and flow control",
+   "say": "OP_CHECKLOCKTIMEVERIFY, written CLTV in short, is an opcode that makes an output spendable only after a given block height or time. The full explanation is on the course page, chapter 7, under Absolute timelocks and Relative timelocks, in the concepts OP_CHECKLOCKTIMEVERIFY, OP_CHECKSEQUENCEVERIFY.",
+   "concept": "Making a spend wait, and letting one output have several ways out"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Two timelocks, both enforced by the script",
+   "say": "OP_CHECKLOCKTIMEVERIFY, written CLTV in short, is an opcode that makes an output spendable only after a given block height or time. The full explanation is on the course page, chapter 7, under Absolute timelocks and Relative timelocks, in the concepts OP_CHECKLOCKTIMEVERIFY, OP_CHECKSEQUENCEVERIFY.",
+   "concept": "Scripts check the transaction's own fields, so consensus enforces the wait"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "One output, three ways out",
+   "say": "The capital-account script is the book's combined example. The full explanation is on the course page, chapter 7, under Conditionals and guards and Script with timelocks and signers, in the concepts Capital account script, Scripts with several paths.",
+   "concept": "One output, several redemption paths, each with its own terms"
+  },
+  {
+   "n": 16,
+   "kind": "section",
+   "title": "Witness programs and script trees",
+   "say": "A witness program is what BIP141 calls an output script that consists of a one-byte push opcode, one of OP_0 and OP_1 to OP_16, followed by a direct data push between 2 and 40 bytes. The value of the first push is the version byte, and the following byte vector is the witness program. The full explanation is on the course page, chapter 7, under Trees of alternative scripts and Witness programs and addresses, in the concepts Witness program, Merklized alternative script tree.",
+   "concept": "Where the proof moved to, what a real block spends, and how alternatives hide in a hash"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "Witness programs, and what 1,022 real inputs spend",
+   "say": "A witness program is what BIP141 calls an output script that consists of a one-byte push opcode, one of OP_0 and OP_1 to OP_16, followed by a direct data push between 2 and 40 bytes. The value of the first push is the version byte, and the following byte vector is the witness program. The full explanation is on the course page, chapter 7, under Witness programs and addresses, in the concepts Witness program, Pay to witness public key hash.",
+   "concept": "Most inputs spend witness programs, and the signature commits to the amount"
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "A tree of scripts hides every script you do not use",
+   "say": "A Merklized alternative script tree, MAST for short, is the way to use a merkle tree to authorize many different spending conditions. The full explanation is on the course page, chapter 7, under Trees of alternative scripts, in the concepts Merklized alternative script tree, Two meanings of MAST.",
+   "concept": "The cost grows with the depth of the tree, not with the number of scripts"
+  },
+  {
+   "n": 19,
+   "kind": "section",
+   "title": "Taproot and tapscript",
+   "say": "Taproot is the name of the output type and of the soft fork that added it. The book builds it from the earlier ideas: pay to contract tweaks a key to commit to an agreement, and taproot commits instead to the program code of a contract by tweaking with the root of a MAST. The figure is the book's picture of a taproot output in which the public key commits to the Merkle root of a script tree. The full explanation is on the course page, chapter 7, under Taproot outputs, in the concepts Taproot output, Key path spending.",
+   "concept": "One key for agreement, one script for the rest"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Taproot: one 32-byte key that commits to a tree",
+   "say": "Taproot is the name of the output type and of the soft fork that added it. The book builds it from the earlier ideas: pay to contract tweaks a key to commit to an agreement, and taproot commits instead to the program code of a contract by tweaking with the root of a MAST. The full explanation is on the course page, chapter 7, under Taproot outputs, in the concepts Taproot output, Key path spending.",
+   "concept": "When everyone agrees, the chain shows one signature and no script"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "The script path: reveal one script, hide the rest",
+   "say": "Script path spending is the spending of a taproot output by one of its scripts. The book lists what the witness holds: a version number; the underlying key, the taproot internal key; the script to execute, called the leaf script; one 32-byte hash for each junction in the Merkle tree along the path that connects the leaf to the root; and any data needed to satisfy the script, such as signatures or preimages (Antonopoulos and Harding, 2023). The full explanation is on the course page, chapter 7, under Taproot outputs, in the concepts Script path spending, Control block.",
+   "concept": "A script path spend shows one script and nothing about the others"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "From a patented signature to taproot",
+   "say": "This is a true story, dated 2021-11-14. Claus Schnorr patented the signature algorithm he discovered and kept it out of open standards and open-source software for almost two decades, so cryptographers of the early 1990s built the DSA family that led to the ECDSA signatures Bitcoin used from its first release. BIP340 was assigned in January 2020 to standardise Schnorr signatures on Bitcoin's curve, BIP341 and BIP342 added the taproot output and tapscript, and the rules took effect at block 709,632 on 14 November 2021, a block of 2,043 transactions.",
+   "concept": "2021-11-14",
+   "read": {
+    "label": "Block 709,632, taproot activation (block)",
+    "url": "https://mempool.space/block/0000000000000000000687bca986194dc2c1f949318629b44bb54ec0a94d8244"
+   }
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Tapscript: three small changes",
+   "say": "OP_CHECKSIGADD is the opcode that replaces OP_CHECKMULTISIG. The book says that it increments a counter by one when it successfully verifies a signature, which makes it possible to count how many signatures passed and compare the count with the number wanted. The full explanation is on the course page, chapter 7, under Tapscript, in the concepts OP_CHECKSIGADD, OP_SUCCESS opcodes.",
+   "concept": "Tapscript counts signatures one at a time and leaves room for upgrades"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature, one per part, and each of them is carried by a slide range that the agenda names. A line that feels unproven should send the reader back to its consoles, because every figure in it was computed on a slide with the chapter's own interpreter. The full text behind all five lines is on the course page for chapter 7.",
+   "concept": "If a line feels unproven, its part's slides carry the receipt"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read, and every link was fetched on the date in the subtitle. A good exercise is to read the source of the first script engine next to today's rules and find the line where OP_RETURN changed meaning, then run the same script in the chapter's library on the course page. The course page for chapter 7 carries the full resource list, including the chapter itself and Bitcoin Core's interpreter, with a sentence on why each entry is there.",
+   "concept": "Read the first engine beside today's rules and find where OP_RETURN changed",
+   "links": [
+    {
+     "group": "Read and explore",
+     "label": "Bitcoin white paper (PDF)",
+     "url": "https://bitcoin.org/bitcoin.pdf",
+     "finds": "Nakamoto's nine pages of 31 October 2008"
+    },
+    {
+     "group": "Read and explore",
+     "label": "Script (Bitcoin Wiki)",
+     "url": "https://en.bitcoin.it/wiki/Script",
+     "finds": "Every opcode with its effect and status"
+    },
+    {
+     "group": "Read and explore",
+     "label": "Optech topic: Taproot",
+     "url": "https://bitcoinops.org/en/topics/taproot/",
+     "finds": "Summary of taproot with links to newsletters and code"
+    },
+    {
+     "group": "Read and explore",
+     "label": "Taproot (Bitcoin Wiki)",
+     "url": "https://en.bitcoin.it/wiki/Taproot",
+     "finds": "Plain description of the taproot soft fork"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 66: Strict DER signatures (spec)",
+     "url": "https://bips.dev/66/",
+     "finds": "The rule behind the July 2015 fork"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 141: Segregated Witness (spec)",
+     "url": "https://bips.dev/141/",
+     "finds": "Witness programs and how they are validated"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 341: Taproot spending rules (spec)",
+     "url": "https://bips.dev/341/",
+     "finds": "Key path, script path and the commitment"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 342: Tapscript validation (spec)",
+     "url": "https://bips.dev/342/",
+     "finds": "The script rules inside a taproot spend"
+    },
+    {
+     "group": "The stories",
+     "label": "script.cpp of Bitcoin 0.3.0 (source)",
+     "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v0.3.0/script.cpp",
+     "finds": "The early script engine, as it was released"
+    },
+    {
+     "group": "The stories",
+     "label": "CVE-2010-5141 entry (Bitcoin Wiki)",
+     "url": "https://en.bitcoin.it/wiki/Common_Vulnerabilities_and_Exposures#CVE-2010-5141",
+     "finds": "The early script bug, in the list of known vulnerabilities"
+    },
+    {
+     "group": "The stories",
+     "label": "Alert: Some Miners Generating Invalid Blocks",
+     "url": "https://bitcoin.org/en/alert/2015-07-04-spv-mining",
+     "finds": "The notice of 4 July 2015 about unvalidated blocks"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Stack Exchange (Q&A site)",
+     "url": "https://bitcoin.stackexchange.com",
+     "finds": "Search or ask any technical question; answers are voted"
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin (forum)",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers discuss script and consensus changes in the open"
+    },
+    {
+     "group": "Watch",
+     "label": "Schnorr: Optech workshop 1.1 (video)",
+     "url": "https://www.youtube.com/embed/wybiVFdknhg",
+     "finds": "Bitcoin Optech's workshop on the signature scheme of chapter 7"
+    },
+    {
+     "group": "Watch",
+     "label": "Tapscript: Optech workshop 2.3 (video)",
+     "url": "https://www.youtube.com/embed/nXGe9_M5pjk",
+     "finds": "Bitcoin Optech on the three small changes of tapscript"
+    }
+   ]
+  },
+  {
+   "n": 26,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by computations that ran on slides of this deck with the chapter's own interpreter, which is checked against Bitcoin Core's published script tests and against every input of a real block. The course page for chapter 7 carries every word behind them, the stories with their sources, and the question bank to test the four claims on yourself.",
+   "concept": "And where each claim gets its proof"
+  }
+ ]
+}
