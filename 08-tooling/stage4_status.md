@@ -9,3 +9,6 @@ Not achieved: Stage3.F fails on the chapter's Stage 3 document (45 dangling cita
 
 ## Chapter 9 - achieved
 Page ABox 03-materials/ch09/page/sen0401_ch09_page_abox_v2_0_0.ttl for page 9.68.0 (96 sections, 96 widgets all design-tested, 6 objectives, 13 questions). Stage4.A, B, cov (207 individuals), sub (207), src (207) PASS; Stage3.F PASS. Research/Ch09, Deck/Ch09, Page/Ch09 chapter checks PASS. Gate output: 08-tooling/ch09-page/stage4_gates_v2_0_0.txt.
+
+## Chapter 10 - achieved
+Page ABox 03-materials/ch10/page/sen0401_ch10_page_abox_v2_0_0.ttl for page 9.53.0 (86 sections, 86 widgets all design-tested, 6 objectives, 12 questions). Stage4.A, B, cov (187 individuals), sub (187), src (187) PASS; Stage3.F PASS. Research/Ch10, Deck/Ch10, Page/Ch10 chapter checks PASS. Gate output: 08-tooling/ch10-page/stage4_gates_v2_0_0.txt.
