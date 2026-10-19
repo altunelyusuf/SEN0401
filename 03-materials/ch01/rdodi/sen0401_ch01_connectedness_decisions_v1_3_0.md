@@ -50,3 +50,6 @@ None: every island of the file is joined to the rest by at least one relation th
 | SEM-1 hasOwner | high | set | domain and range declared as the union of every type the A-Box shows on the two sides (BP-D57 step 3) |
 | SYN-2 input, output | high | declare | chx:input and chx:output declared as datatype properties of rd:IOExample, range xsd:string, with label and comment |
 | SYN-1 X_LightweightClient -> X_FullNode (A-Box individuals) | medium | class-level relation set; individual link not set | The text is right (a lightweight client relies on a full node), so chx:reliesOn links the two classes in the T-Box; the A-Box is outside this repair and is not changed. |
+| SYN-1 X_LightweightClient -> X_FullNode | medium | rejected | The text is right and the relation is set where the model can carry it: chx:reliesOn links the classes Lightweight client and Full node in this T-Box. An individual-level link would change the A-Box, which this repair does not touch. |
+
+The rejected rows are the ledger sen0401_ch01_link_decisions_v1_3_0.tsv, in the format of LINK_DECISIONS_v*.tsv.

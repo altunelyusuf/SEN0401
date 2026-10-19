@@ -26,3 +26,4 @@ PROPS = [
 ]
 PROPS.append(P("reliesOn", "relies on", "LightweightClient", "FullNode", "A lightweight client relies on a full node for most of its data. Basis: the chapter defines Lightweight client: 'relies on a full node or server for most data and validates only partly'."))
 DECISIONS = [("SYN-1 X_LightweightClient -> X_FullNode (A-Box individuals)", "medium", "class-level relation set; individual link not set", "The text is right (a lightweight client relies on a full node), so chx:reliesOn links the two classes in the T-Box; the A-Box is outside this repair and is not changed.")]
+REJECT = {("X_LightweightClient", "X_FullNode"): "The text is right and the relation is set where the model can carry it: chx:reliesOn links the classes Lightweight client and Full node in this T-Box. An individual-level link would change the A-Box, which this repair does not touch."}
