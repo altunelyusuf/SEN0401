@@ -10,6 +10,7 @@ import glob, importlib.util, os, re, sys
 sys.dont_write_bytecode = True
 HERE = os.path.dirname(os.path.abspath(__file__)); REPO = os.path.dirname(os.path.dirname(HERE))
 KEY = sys.argv[1]; TODAY = "2026-10-19"
+sys.path.insert(0, HERE)
 spec = importlib.util.spec_from_file_location("spec", os.path.join(HERE, "spec_%s.py" % KEY)); S = importlib.util.module_from_spec(spec); spec.loader.exec_module(S)
 sub = "ch%s" % KEY if KEY != "numbers" else "numbers"; stem = "sen0401_%s" % sub
 RD = os.path.join(REPO, "03-materials", sub, "rdodi")
@@ -21,6 +22,17 @@ assert not os.path.exists(new), "refusing to overwrite " + new
 t = open(old, encoding="utf-8").read()
 base = "http://example.org/sen0401/%s/tbox" % sub
 assert ('<%s/%s>' % (base, ov)) in t or ('owl:versionInfo "%s"' % ov) in t
+# every quoted basis must be found word for word in the chapter's own texts
+from rdflib import Graph as _G, Literal as _L
+_txt = []
+for _p in ("domain_abox", "research", "document"):
+    for _f in glob.glob(os.path.join(RD, "%s_%s_v*.ttl" % (stem, _p))):
+        _g = _G(); _g.parse(_f)
+        _txt += [" ".join(str(o).split()) for o in _g.objects() if isinstance(o, _L)]
+_blob = "\n".join(_txt)
+for _p in S.PROPS:
+    for _q in _p.get("quotes", []):
+        assert " ".join(_q.split()) in _blob, "quote not found in the chapter texts: %s (%s)" % (_q, _p["id"])
 # header
 t = t.replace('owl:versionInfo "%s"' % ov, 'owl:versionInfo "%s"' % nv, 1)
 t = t.replace('owl:versionIRI <%s/%s>' % (base, ov), 'owl:versionIRI <%s/%s>' % (base, nv), 1)
@@ -28,7 +40,7 @@ idl = re.search(r'dcterms:identifier "%s_tbox_v%s" ;[^\n]*\n' % (stem, ov.replac
 assert idl, "identifier line"
 line = idl.group(0)
 rest = re.sub(r'prov:wasRevisionOf <[^>]*> ;', '', line.split(";", 1)[1]).strip()
-note = S.NOTE.replace('"', "'")
+note = S.NOTE.format(v=nv).replace('"', "'")
 newline = ('dcterms:identifier "%s_tbox_v%s" ;\n    owl:priorVersion <%s/%s> ; prov:wasRevisionOf <%s/%s> ;\n    skos:changeNote "%s"@en ;\n' % (stem, nv.replace(".", "_"), base, ov, base, ov, note))
 if rest: newline += "    " + rest + "\n"
 t = t.replace(line, newline, 1)
@@ -42,7 +54,7 @@ if "chx:hasOwner a owl:ObjectProperty" in t:
     ty = lambda x: {str(u).split("#")[-1] for u in a.objects(x, RDF.type) if u != OWL.NamedIndividual}
     D, R = set(), set()
     for s_, o_ in a.subject_objects(P): D |= ty(s_); R |= ty(o_)
-    un = lambda xs: "[ a owl:Class ; owl:unionOf ( %s ) ]" % " ".join("chx:" + x for x in sorted(xs))
+    un = lambda xs: "[ <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> owl:Class ; owl:unionOf ( %s ) ]" % " ".join("chx:" + x for x in sorted(xs))
     m = re.search(r'chx:hasOwner a owl:ObjectProperty ;[^\n]*\.\n', t); assert m
     l0 = m.group(0).rstrip()[:-1].rstrip()
     l1 = l0 + ' ;\n    rdfs:comment "A concept owned by the concept it belongs to, as the chapter\'s examples use it between typed things; domain and range are the union of every type the A-Box shows on the two sides (BP-D57 step 3)."@en ;\n    rdfs:domain %s ;\n    rdfs:range %s ;\n    rdfs:isDefinedBy <%s> .\n' % (un(D), un(R), base)
@@ -51,7 +63,7 @@ if "chx:hasOwner a owl:ObjectProperty" in t:
 out = ["\n#################################################################\n# Connectedness repair (discipline v2.19.0, BP-D56 and BP-D57), %s.\n# The datatype properties the A-Box uses and nothing declared, then the relations\n# between the chapter's subject branches that the chapter's own sources state.\n#################################################################\n" % TODAY]
 out.append('chx:input a owl:DatatypeProperty ; rdfs:label "input expression"@en ; rdfs:comment "The expression an input/output example evaluates."@en ; rdfs:domain rd:IOExample ; rdfs:range xsd:string ; rdfs:isDefinedBy <%s> .\n' % base)
 out.append('chx:output a owl:DatatypeProperty ; rdfs:label "output value"@en ; rdfs:comment "The value that evaluating the example expression gives."@en ; rdfs:domain rd:IOExample ; rdfs:range xsd:string ; rdfs:isDefinedBy <%s> .\n' % base)
-def cls(x): return "chx:" + x if isinstance(x, str) else "[ a owl:Class ; owl:unionOf ( %s ) ]" % " ".join("chx:" + y for y in x)
+def cls(x): return "chx:" + x if isinstance(x, str) else "[ <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> owl:Class ; owl:unionOf ( %s ) ]" % " ".join("chx:" + y for y in x)
 for p in S.PROPS:
     c = p["why"].replace('"', "'")
     out.append('chx:%s a owl:ObjectProperty ; rdfs:label "%s"@en ;\n    rdfs:comment "%s"@en ;\n    rdfs:domain %s ; rdfs:range %s ; rdfs:isDefinedBy <%s> .\n' % (p["id"], p["label"], c, cls(p["dom"]), cls(p["rng"]), base))
