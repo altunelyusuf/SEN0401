@@ -8,3 +8,5 @@ Chapter 9 page 9.68.0 (template 9.51.0): committed. 9.34.0 370 pass, 0 fail; 9.3
 Chapter 6 page 9.67.0 (template 9.51.0, page data 2.22.0 with the content pinned to 9.63.0's): committed. Content identical to 9.63.0 (page data equal except the version; same widgets, same examples run and Recorded, 374 pass for both tests as before). Five runs each of 9.34.0 and 9.35.0: 10 of 10 pass, 374 pass, 0 fail. Load task median (ms), before on 9.63.0: 248, 216, 209, 234, 196, 169, 181, 189, 206, 195; after on 9.67.0: 104, 95, 110, 107, 129, 102, 102, 97, 108, 105. Link register 13 of 13.
 
 Chapter 01 page 9.70.0 (template 9.51.0, rebuilt from the corrected deck's lecture export lecture_v1_3_0.json): 9.34.0 372 pass, 0 fail; 9.35.0 372 pass, 0 fail.
+
+Chapter 02 page 9.71.0 (template 9.51.0, rebuilt from the corrected deck's lecture export lecture_v1_3_0.json): 9.34.0 374 pass, 0 fail; 9.35.0 374 pass, 0 fail.
