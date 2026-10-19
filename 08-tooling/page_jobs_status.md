@@ -10,3 +10,5 @@ Chapter 6 page 9.67.0 (template 9.51.0, page data 2.22.0 with the content pinned
 Chapter 01 page 9.70.0 (template 9.51.0, rebuilt from the corrected deck's lecture export lecture_v1_3_0.json): 9.34.0 372 pass, 0 fail; 9.35.0 372 pass, 0 fail.
 
 Chapter 02 page 9.71.0 (template 9.51.0, rebuilt from the corrected deck's lecture export lecture_v1_3_0.json): 9.34.0 374 pass, 0 fail; 9.35.0 374 pass, 0 fail.
+
+Chapter 03 page 9.72.0 (template 9.51.0, rebuilt from the corrected deck's lecture export lecture_v1_3_0.json): 9.34.0 374 pass, 0 fail; 9.35.0 374 pass, 0 fail.
