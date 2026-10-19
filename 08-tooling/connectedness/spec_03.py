@@ -1,0 +1,30 @@
+from spec_common import *
+PROPS = [
+ P("reportsChainWork", "reports", "BlockchainInfo", "ChainWork", "The getblockchaininfo call reports the chain work", ("Blockchain information (getblockchaininfo)", "its difficulty and chain work")),
+ P("reportsDifficulty", "reports", "BlockchainInfo", "Difficulty", "The getblockchaininfo call reports the difficulty", ("Blockchain information (getblockchaininfo)", "its difficulty and chain work")),
+ P("indexesTransactions", "indexes", "TransactionIndex", "Transaction", "The txindex option indexes every transaction", ("Transaction index (txindex)", "builds an index of every transaction so that getrawtransaction can find any of them")),
+ P("sizesCacheOf", "sizes the cache of", "DatabaseCache", "UtxoSet", "The dbcache option sizes the cache of the unspent-output set", ("Database cache (dbcache)", "sizes the cache of the unspent-output set")),
+ P("acceptsBlocksFrom", "accepts blocks from", "BlocksOnlyMode", "Peer", "Blocks-only mode accepts blocks from peers but not unconfirmed transactions", ("Blocks-only mode", "a node accepts blocks from its peers but not unconfirmed transactions")),
+ P("timesBlockHeader", "gives the times in", "UnixTime", "BlockHeader", "Bitcoin uses Unix time for the times in block headers", ("Unix time", "Bitcoin uses it for the times in block headers")),
+ P("isComputedByShift", "is computed by", "BlockSubsidy", "BitShift", "The block subsidy is computed by shifting right once per 210,000 blocks", ("Block subsidy", "is shifted right once for every 210,000 blocks")),
+ P("isWrittenIn", "is written in", "SourceCode", "ProgrammingLanguage", "Bitcoin Core's source code is written mainly in C++", ("Source code", "mainly C++ in Bitcoin Core"), ("Programming language", "the chapter meets C++ for the node")),
+ P("isDrawnForCookie", "is drawn for", "RandomNumber", "CookieAuthentication", "Random numbers are drawn for the cookie credential", ("Random number", "for cookies and salts"), ("Cookie authentication", "Bitcoin Core creates a random credential on each start")),
+ P("isDrawnForSalt", "is drawn for", "RandomNumber", "Salt", "Random numbers are drawn for salts", ("Random number", "for cookies and salts"), ("Salt", "A salt is a random value mixed into the hashing of a password")),
+ P("isFollowedByTests", "is followed by", "Compilation", "SoftwareTesting", "Compilation is followed by the unit tests", ("Compilation", "is followed by the unit tests")),
+ P("isStoredInDataDirectory", "is stored in", "CookieAuthentication", "DataDirectory", "The cookie credential is stored in the data directory", ("Cookie authentication", "stores it in the data directory as .cookie")),
+ P("usesHmac", "uses", "RpcAuth", "Hmac", "The rpcauth option holds the HMAC-SHA256 of the password", ("Hashed credentials (rpcauth)", "the HMAC-SHA256 of the password under that salt")),
+ P("usesSalt", "uses", "RpcAuth", "Salt", "The rpcauth option holds a random salt", ("Hashed credentials (rpcauth)", "a user name, a random salt and the HMAC-SHA256 of the password")),
+ P("includesCommandLineClient", "includes", "Executable", "CommandLineClient", "The build produces the command-line client among its executables", ("Executable", "bitcoin-cli the command-line client")),
+ P("providesNode", "provides", "Executable", "Node", "The build produces bitcoind, which is the node", ("Executable", "bitcoind is the node")),
+ P("buildsReproducibly", "builds reproducibly", "ReproducibleBuild", "SourceCode", "A reproducible build produces identical files from the same source", ("Reproducible build", "bit-for-bit identical files from the same source")),
+ P("checksAgainstChecksum", "is checked against", "ReleaseVerification", "Checksum", "A downloaded release is checked against the published checksums", ("Release verification", "checked against the SHA-256 checksums the project publishes")),
+ P("checksSignature", "is checked against", "ReleaseVerification", "OpenPgpSignature", "A downloaded release is checked against the signatures on the checksums", ("Release verification", "and the signatures on them")),
+ P("checksTransactions", "checks", "FullNode", "Transaction", "A full node checks every confirmed transaction against every rule", ("Full node", "checks every confirmed transaction against every rule of the system")),
+ P("isUpdatedByBlock", "is updated for every", "UtxoSet", "Block", "A node updates the set of unspent outputs for every block", ("Set of unspent outputs", "a node updates it for every block")),
+ P("deletesOldBlocks", "deletes old", "PrunedNode", "Block", "A pruned node deletes old blocks", ("Pruned node", "deletes old blocks to reduce disk use")),
+ P("isDeployedBy", "is deployed by", "SoftFork", "ImprovementProposal", "Soft forks are deployed through Bitcoin Improvement Proposals", ("Soft fork", "BIP 9 lets several be deployed in parallel by signalling in the block version")),
+ P("mapsKeysOf", "maps the keys of", "JsonLdContext", "JsonFormat", "A JSON-LD context maps the keys of a JSON text to IRIs", ("JSON-LD context", "maps the keys of a JSON text to IRIs")),
+ P("comesFromFullNode", "comes from", "VerifiedData", "FullNode", "Data from your own node is authoritative because the node verified it itself", ("Verified data", "Data from your own node is authoritative because the node verified it itself"), ("Full node", "A full verification node checks every confirmed transaction against every rule of the system")),
+]
+REJECT_TO = {"X_ReferenceImplementation": "The text names Bitcoin Core, the reference implementation, only in passing, as the program the described thing belongs to or runs in; the two individuals are not related by that mention, and the class-level relations of this file already carry what the chapter states about the reference implementation."}
+REJECT = {("X_ConfigurationFile", "X_StartupLog"): "The definition says only where bitcoind -printtoconsole shows the file being looked for; the start-up log is mentioned as the place a message appears, not as a thing the configuration file is related to."}
