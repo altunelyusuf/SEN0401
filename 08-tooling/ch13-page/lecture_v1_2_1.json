@@ -1,0 +1,417 @@
+{
+ "chapter": 13,
+ "deck": "SEN0401_Ch13_BitcoinSecurity_3e_v1_2_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 13: Bitcoin Security",
+   "say": "This deck explains Bitcoin security: what a signature protects, how traffic and the chain's first block are trusted, how a download is checked, and how keys are kept offline, on a device, behind a passphrase and in a backup. It ends with several keys, a delayed heir and Shamir's shared secrets. Every example runs under Python 3.14.6 on the chapter's own library, and Bitcoin Core 31.1 was run on a test network, so its answers are Recorded and only read back here. The research package for chapter 13 holds the sources and the claims.",
+   "concept": "SecurityModel",
+   "takeaway": "What a signature protects, how keys are kept and backed up, and how several keys survive loss and theft. Bitcoin Core 31.1 results are Recorded.",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers on this slide were read back from the recorded run of Bitcoin Core 31.1 on a regtest chain and from saved files (chainparams.cpp, block data); no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has three parts after the questions: trusting the network and the software, with the signed payment, encrypted traffic, the first block and the download check; keeping the keys safe, with cold storage, devices, passphrases, backups and seed words; and surviving loss and theft, with several keys, an heir, shared secrets and custody. Each part carries true stories and corrections of the book that a reader can check on the slide. The numbers in the list let a reader jump straight to a part.",
+   "concept": "SecurityModel",
+   "takeaway": "Three parts, four true stories, and a list of what was not run"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The chapter asks two questions that this deck answers by computation: which of its statements can be checked, and what has changed since print. The three numbers are counted from the research package, which holds 77 sources, 27 findings and 74 executed claims. Each slide that follows shows the computation behind one claim.",
+   "concept": "SecurityModel",
+   "takeaway": "Its own competency questions, and the numbers behind the answers"
+  },
+  {
+   "n": 4,
+   "kind": "section",
+   "title": "Trusting the network and the software",
+   "say": "This part asks what Bitcoin protects and what it asks you to trust. A signed payment cannot be altered or replayed, node traffic is now encrypted by default, the chain starts from one typed-in block and a shortcut called assumed-valid, and a downloaded program can be checked against a list of hashes, but only so far as the signers' keys are known.",
+   "concept": "SecurityModel",
+   "takeaway": "What a signature protects, and what a node or a download is trusted for."
+  },
+  {
+   "n": 5,
+   "kind": "content",
+   "title": "A signature protects value and recipient",
+   "say": "A Bitcoin payment authorizes a specific value to a specific recipient. On a Bitcoin Core 31.1 test node, a signed payment of 222 bytes held a signature of 71 bytes and the public key of 33 bytes, and neither the private key nor its WIF text. The same payment with a swapped recipient or a changed amount was refused, because the signature covers the outputs, and sending it again paid nothing. No mainnet funds were used.",
+   "concept": "SignedTransactionHidesKey",
+   "takeaway": "A signature covers value and recipient, and never contains the key",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers on this slide were read back from the recorded run of Bitcoin Core 31.1 on a regtest chain and from saved files (chainparams.cpp, block data); no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "NOT EXECUTED",
+     "text": "real money on mainnet; every payment here was made on regtest."
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Encrypted by default since release 27.0",
+   "say": "The book says that no encryption is required for Bitcoin traffic, and chapter 10 says Bitcoin Core talks in the clear. That is out of date: BIP 324 defines an encrypted version 2 transport, release 26.0 added it switched off, and release 27.0 turned it on by default. Two test nodes of Core 31.1 spoke v2 and agreed on one session id, while a peer without v2 was still served over v1. No traffic was captured on the wire.",
+   "concept": "V2SessionOnBothSides",
+   "takeaway": "Since release 27.0 peers encrypt their traffic by default",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers on this slide were read back from the recorded run of Bitcoin Core 31.1 on a regtest chain and from saved files (chainparams.cpp, block data); no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "NOT EXECUTED",
+     "text": "BIP 324 on the wire; the session ids matched, but no packets were captured."
+    }
+   ]
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "The root of trust: one typed-in block",
+   "say": "The book says that the genesis block is the root of trust and that the only thing to be explicitly trusted is a fully validated blockchain. The genesis hash is indeed typed into chainparams.cpp and asserted. But Bitcoin Core 31.1 also ships an assumed-valid block, 938,343, and its help says a node may assume that block and its ancestors are valid and skip their script verification. Trust is therefore in the release you installed as well.",
+   "concept": "GenesisHashHardCoded",
+   "takeaway": "The chain starts from one typed-in block, plus an assumed-valid shortcut"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "Does the download match the list?",
+   "say": "The tarball of Bitcoin Core 31.1 has 90,293,352 bytes and its SHA-256 equals its line in the list of 28 hashes, so it is the file that the list names. But the list itself is signed with 11 signatures, and with an empty keyring gpg could call none of them good: the hash proves only that the file is the listed one. The project's Guix builds exist so that users need not trust binary downloads blindly.",
+   "concept": "TarballHashMatches",
+   "takeaway": "A matching hash proves the file is the listed one, not who listed it",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers on this slide were read back from the recorded run of Bitcoin Core 31.1 on a regtest chain and from saved files (chainparams.cpp, block data); no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "NOT EXECUTED",
+     "text": "a good gpg verification; it needs the builders' public keys, which were not imported."
+    }
+   ]
+  },
+  {
+   "n": 9,
+   "kind": "section",
+   "title": "Keeping the keys safe",
+   "say": "This part is about keeping keys. A watch-only wallet and a partially signed transaction keep the keys on another machine, a hardware wallet makes the signature and defends itself with waiting, a passphrase locks the wallet file, and a backup must hold the descriptor and be recent. Seed words are checksummed arithmetic. The stories are the Trezor and the Casascius coin.",
+   "concept": "ProtectingKeys",
+   "takeaway": "Cold storage, devices, passphrases, backups and seed words."
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Cold storage: watch, sign elsewhere, send",
+   "say": "In cold storage the node that is online holds only public keys. On test nodes the hot wallet had private keys disabled and could not sign, and when asked for its private descriptors it answered with error minus four. A second node with no blocks and no connections signed the partially signed transaction of 528 characters, and the hot node finalized and broadcast it. A second node on the same machine is not a true air gap.",
+   "concept": "PsbtThroughColdNode",
+   "takeaway": "The online wallet only watches; the signing happens somewhere else",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers on this slide were read back from the recorded run of Bitcoin Core 31.1 on a regtest chain and from saved files (chainparams.cpp, block data); no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "NOT EXECUTED",
+     "text": "a true air gap; the cold node was a second regtest node, not a separate machine."
+    }
+   ]
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Hardware wallets wait and wipe",
+   "say": "A hardware wallet holds the keys and defends them with a PIN whose waits double after every wrong try: they add up to 32,767 seconds, 9.1 hours, before the device wipes itself at the sixteenth. A phrase a person invents is weaker: four words from a list of 2,048 give 17,592,186,044,416 phrases, which an assumed trillion guesses a second exhaust in 17.6 seconds. Bitcoin Core can drive such a device with the option -signer, and the person must still read the address on the device's screen; no device was run.",
+   "concept": "SigningDevices",
+   "takeaway": "The device protects the key; you must still read the address on its screen",
+   "labels": [
+    {
+     "kind": "NOT EXECUTED",
+     "text": "a device"
+    }
+   ]
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "A passphrase locks the keys, not the balance",
+   "say": "Encrypting the wallet locks the private keys and nothing else. A locked test wallet still showed its balance but refused to send with error minus 13, a wrong passphrase gave minus 14, and a three-second unlock ended on time. The key is AES-256 with 8 bytes of salt and 25000 rounds, about 0.1 seconds on an old laptop, so trying all 30-bit passphrases takes about 1,242.8 days on one such machine. Encryption also makes a new seed, so an older backup misses new coins.",
+   "concept": "LockedWalletRefuses",
+   "takeaway": "Encryption hides the keys, and it starts a new seed: back up again",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers on this slide were read back from the recorded run of Bitcoin Core 31.1 on a regtest chain and from saved files (chainparams.cpp, block data); no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "A backup is a descriptor and a date",
+   "say": "The book speaks of a wallet as keys that can be backed up like any file. In Bitcoin Core 31.1 a wallet is a set of descriptors, and a backup is only good while it is recent: with a keypool of 3 a stale backup held only 1.0 of 3.0 coins, because 2.0 went to the tenth address, and counted by hand 1 of 3 comes back. For a multisignature wallet the descriptor must be saved too, since one key alone knew nothing of the address.",
+   "concept": "DescriptorIsPartOfBackup",
+   "takeaway": "A backup needs the descriptor and a recent date",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers on this slide were read back from the recorded run of Bitcoin Core 31.1 on a regtest chain and from saved files (chainparams.cpp, block data); no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "NOT EXECUTED",
+     "text": "paper and metal backups; only file backups of regtest wallets were restored."
+    }
+   ]
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Seed words and their arithmetic",
+   "say": "A seed phrase is a number written in words with a checksum. Sixteen bytes of entropy, 128 bits, get a 4-bit checksum and make twelve words from a list of 2048, so a random wrong phrase still passes once in 16. The seed is made with 2048 rounds of PBKDF2 over the words and an optional passphrase, and it equals the published Trezor vector. Printing a single key on paper was a method of 2011 to 2016 that the Bitcoin Wiki now calls obsolete.",
+   "concept": "Bip39MnemonicChecksum",
+   "takeaway": "Twelve words with a checksum rebuild every key; Core itself keeps descriptors",
+   "labels": [
+    {
+     "kind": "NOT EXECUTED",
+     "text": "recovery of a BIP 39 phrase in Bitcoin Core; Core has no such import."
+    }
+   ]
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "The little box that learned to wait",
+   "say": "A Trezor holds the keys and makes the signatures, and it defends itself against a thief with a PIN whose waits double, with a wipe after 16 failed attempts. SatoshiLabs announced the Trezor Safe 5 on 14 June 2024 at BTC Prague, with a colour touchscreen and an EAL 6+ secure element. The Bitcoin Wiki still warns that malware could swap the recipient's address, so the person must read the address on the device's own screen.",
+   "concept": "TrezorPinWait",
+   "read": {
+    "label": "Bitcoin Wiki: Trezor (article)",
+    "url": "https://en.bitcoin.it/wiki/Trezor"
+   },
+   "takeaway": "The story of 14 June 2024: who, where, when and what to read next",
+   "labels": [
+    {
+     "kind": "Stand-in picture",
+     "text": "a Trezor Model T, not the Safe 5."
+    }
+   ]
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "A coin with a private key under a sticker",
+   "say": "Mike Caldwell of Sandy, Utah, made physical bitcoins: a coin with a private key under a tamper-evident hologram, sold in sizes from 1 to 1000 BTC. FinCEN had told him that minting physical bitcoins qualified him as a money transmitter that must register, and he suspended sales on 26 November 2013. The book's physical storage, the seed on paper or metal, is the same idea without the maker.",
+   "concept": "CasasciusHologram",
+   "read": {
+    "label": "Bitcoin Wiki: Casascius physical bitcoins",
+    "url": "https://en.bitcoin.it/wiki/Casascius_physical_bitcoins"
+   },
+   "takeaway": "The story of 26 November 2013: who, where, when and what to read next",
+   "labels": [
+    {
+     "kind": "Stand-in picture",
+     "text": "a hologram close-up, not the coin."
+    }
+   ]
+  },
+  {
+   "n": 17,
+   "kind": "section",
+   "title": "Surviving loss and theft",
+   "say": "This part is about the two ways to lose coins, losing the key and having it stolen. Several keys, a path for an heir that opens after a wait, and Shamir's shared secrets each trade one risk for another, and the odds depend on what is feared. The stories are the exchange that held everyone's keys and the paper that began secret sharing.",
+   "concept": "Survivability",
+   "takeaway": "Several keys, a delayed heir and shared secrets, and what custody costs."
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Two of three keys sign",
+   "say": "A two-of-three wallet needs two signatures: on the test chain one signature left the payment incomplete and two made it complete, in 146 virtual bytes against 110 for a single key. Counting the bytes by hand gives the same 146, which is 1,460 satoshis at 10 per virtual byte. The loss of one key left the funds spendable, the loss of two did not. With sortedmulti the address is the same for any order of the keys, which is why the descriptor belongs in the backup.",
+   "concept": "TwoOfThreeSigning",
+   "takeaway": "Two of three keys survive one loss, and cost 36 more virtual bytes",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers on this slide were read back from the recorded run of Bitcoin Core 31.1 on a regtest chain and from saved files (chainparams.cpp, block data); no node was started again, and this page does not start one: its examples measure the recorded data again."
+    }
+   ]
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Odds of losing or being robbed",
+   "say": "The odds depend on what is feared. If each key is lost with chance 0.1 and stolen with chance 0.05, independently, which is an assumption, a two-of-three setup is stuck with chance 0.028 and robbed with chance 0.00725, against 0.1 and 0.05 for one key. A one-of-three setup is almost never stuck, 0.001, but is robbed with chance 0.14263. Summing the binomial terms by hand gives the same 0.028 and 0.00725.",
+   "concept": "OddsOfLossAndTheft",
+   "takeaway": "More keys trade the risk of loss against the risk of theft"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "An heir who must wait ten blocks",
+   "say": "A wallet can give an heir a path that opens only after a delay: the policy was or(owner, and(heir, older 10)). On the test chain the owner could spend at once and the heir was refused at one and nine confirmations and accepted at ten, about 100 minutes of blocks. The trap: BIP 68 keeps 16 bits, so older(65536), which Core 31.1 accepted, means a wait of 0 and the heir could spend after one block. The longest honest wait is 65,535 blocks, about 455 days.",
+   "concept": "HeirWaitsTenBlocks",
+   "takeaway": "An heir path waits for confirmations, and a value over 65,535 wraps around",
+   "labels": [
+    {
+     "kind": "Recorded",
+     "text": "The answers on this slide were read back from the recorded run of Bitcoin Core 31.1 on a regtest chain and from saved files (chainparams.cpp, block data); no node was started again, and this page does not start one: its examples measure the recorded data again."
+    },
+    {
+     "kind": "NOT EXECUTED",
+     "text": "estate planning with a lawyer; only the script rule was tested, on regtest."
+    }
+   ]
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "Shamir: three pieces, any two open it",
+   "say": "Shamir's scheme splits a secret into n pieces so that any k of them recover it and fewer reveal nothing. In the chapter's library a secret was split into three shares, and any two returned it while one share did not. Over the small prime 11, one share fitted 11 pairs of secret and slope, one for each of the 11 possible secrets, which is what undetermined means. The book does not mention the scheme, but BIP 93, a draft, and SLIP 39 use it for seed words.",
+   "concept": "ShamirTwoOfThree",
+   "takeaway": "Any two of three shares recover the secret, and one share reveals nothing",
+   "labels": [
+    {
+     "kind": "NOT EXECUTED",
+     "text": "Shamir sharing inside a wallet; the shares were made by the chapter's own library."
+    }
+   ]
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "The exchange that held the keys of everyone",
+   "say": "Mt. Gox of Shibuya, Tokyo, launched in 2010, halted withdrawals on 7 February 2014 and suspended all trading on 24 February. The 850,000 bitcoins it reported lost were called about 7 percent of all coins, which implies a supply near 12.1 million. Counts differ by source: 850,000 less the 199,999.99 found leaves 650,000.01. Bitfinex in 2016 cut every account by 36 percent, so 40 bitcoin kept 25.6, and customers of both held claims, not keys.",
+   "concept": "MtGoxLoss",
+   "read": {
+    "label": "Wikipedia: Mt. Gox (article)",
+    "url": "https://en.wikipedia.org/wiki/Mt._Gox"
+   },
+   "takeaway": "The story of 24 February 2014: who, where, when and what to read next",
+   "labels": [
+    {
+     "kind": "NOT EXECUTED",
+     "text": "a breach"
+    },
+    {
+     "kind": "Stand-in picture",
+     "text": "a letter about the bankruptcy, not the theft."
+    }
+   ]
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Three pieces of a key, any two will do",
+   "say": "Adi Shamir's paper How to Share a Secret (Communications of the ACM, November 1979) divides data into n pieces so that any k compute it and any k minus 1 leave it completely undetermined. It rests on polynomial interpolation: k points fix one polynomial of degree k minus 1, and the secret is its value at zero. Modulo 47, the secret 12 and slope 30 give shares 42, 25 and 8, and two of them return 12. With 3 of 5 shares needed, 16 groups open the secret and 10 groups of two learn nothing.",
+   "concept": "OneShareRevealsNothing",
+   "read": {
+    "label": "Shamir: How to Share a Secret (PDF, 1979)",
+    "url": "https://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf"
+   },
+   "takeaway": "The story of 1 November 1979: who, where, when and what to read next"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. Each can be traced to a part of the route on slide 2 and to computations that ran on its slides. A line that feels unproven should send the reader back to that part's consoles.",
+   "concept": "SecurityModel",
+   "takeaway": "If a line feels unproven, its part's consoles carry the receipt"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch, and every link was opened on 2026-10-19. A good start is the Stand-up Maths video on secret sharing, then the Optech topic on partially signed transactions next to the chapter. The research package for chapter 13 lists all 77 sources with the passages used.",
+   "concept": "SharingControl",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Optech topic: Partially signed transactions",
+     "url": "https://bitcoinops.org/en/topics/psbt/",
+     "finds": "Summary of PSBT and the wallets that use it"
+    },
+    {
+     "group": "Read",
+     "label": "Optech topic: Output script descriptors",
+     "url": "https://bitcoinops.org/en/topics/output-script-descriptors/",
+     "finds": "Summary of descriptors with examples"
+    },
+    {
+     "group": "Read",
+     "label": "Optech topic: Timelocks",
+     "url": "https://bitcoinops.org/en/topics/timelocks/",
+     "finds": "The four timelock types side by side"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 324: v2 P2P Encrypted Transport",
+     "url": "https://bips.dev/324/",
+     "finds": "The encrypted handshake and packet format of peers"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 39: Mnemonic code for deterministic keys",
+     "url": "https://bips.dev/39/",
+     "finds": "Seed words, their checksum and the word list"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "Shamir: How to Share a Secret (PDF, 1979)",
+     "url": "https://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf",
+     "finds": "The original two pages that define threshold sharing"
+    },
+    {
+     "group": "Watch",
+     "label": "Stand-up Maths: an open secret with maths (video)",
+     "url": "https://www.youtube.com/embed/K54ildEW9-Q",
+     "finds": "Secret sharing explained with polynomials"
+    },
+    {
+     "group": "Watch",
+     "label": "Unchained: What is bitcoin multisig? (video)",
+     "url": "https://www.youtube.com/embed/pOr6dwb7-dw",
+     "finds": "How several keys protect one wallet"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Optech newsletters (weekly)",
+     "url": "https://bitcoinops.org/en/newsletters/",
+     "finds": "Weekly digest of protocol and wallet development; all issues"
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin (research forum)",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers argue out proposals and research in public threads"
+    },
+    {
+     "group": "Community",
+     "label": "bitcoin-dev (mailing list)",
+     "url": "https://groups.google.com/g/bitcoindev",
+     "finds": "Where BIPs and soft forks are first proposed and debated"
+    }
+   ],
+   "takeaway": "Watch the secret-sharing video, then read the Optech topic beside the chapter"
+  },
+  {
+   "n": 26,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by computations that ran on slides of this deck. A reader who can say them and point to the slide that proves them has the chapter. The research package for chapter 13 holds the sources and the test records behind them.",
+   "concept": "SecurityModel",
+   "takeaway": "And where each claim gets its proof"
+  }
+ ],
+ "_note": "lecture_v1_2_0.json plus the deck's honesty labels per slide (labels), made by lecture_make_v1_2_1.py from the deck plan v1_2_0; the slide text is unchanged; concept now holds the id of the page concept the slide is about (the deck's one-line takeaway is kept as takeaway)."
+}
