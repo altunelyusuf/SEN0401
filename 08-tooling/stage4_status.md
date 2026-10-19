@@ -21,3 +21,7 @@ Page ABox 03-materials/ch12/page/sen0401_ch12_page_abox_v2_0_0.ttl for page 9.55
 
 ## Chapter 13 - achieved
 Page ABox 03-materials/ch13/page/sen0401_ch13_page_abox_v2_0_0.ttl for page 9.69.0 (84 sections, 84 widgets all design-tested, 6 objectives, 10 questions). Stage4.A, B, cov (183 individuals), sub (183), src (183) PASS; Stage3.F PASS. Research/Ch13, Deck/Ch13, Page/Ch13 chapter checks PASS. Gate output: 08-tooling/ch13-page/stage4_gates_v2_0_0.txt.
+Note: the first browser-test run of page 14 was killed by the machine's memory limit (playwright driver, 4 GB) after 127 checks; a rerun alone passed 370/0. No test was changed.
+
+## Chapter 14 - achieved
+Page ABox 03-materials/ch14/page/sen0401_ch14_page_abox_v2_0_0.ttl for page 9.57.0 (68 sections, 68 widgets all design-tested, 6 objectives, 9 questions). Stage4.A, B, cov (151 individuals), sub (151), src (151) PASS; Stage3.F PASS. Research/Ch14, Deck/Ch14, Page/Ch14 chapter checks PASS. Gate output: 08-tooling/ch14-page/stage4_gates_v2_0_0.txt.
