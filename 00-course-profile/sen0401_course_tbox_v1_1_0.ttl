@@ -1,0 +1,69 @@
+@prefix schema:  <https://schema.org/> .
+@prefix cme:     <http://example.org/cme#> .
+@prefix sen0401: <http://example.org/sen0401#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+
+#################################################################
+#  SEN0401 course profile - TBox (BP-D53 three-file structure).
+#
+#  The two classes this course introduces in its own namespace,
+#  moved verbatim on 2026-10-05 from sen0401_course_v1_1_0.ttl,
+#  which mixed T-Box and A-Box roles; the A-Box continues as
+#  sen0401_course_v1_2_0.ttl. CME has no classes for these and a
+#  course never mints CME vocabulary.
+#################################################################
+
+<http://example.org/sen0401/course/tbox> a owl:Ontology ;
+    rdfs:label "SEN0401 course profile - TBox"@en ;
+    owl:versionInfo "1.1.0" ;
+    owl:versionIRI <http://example.org/sen0401/course/tbox/1.1.0> ;
+    owl:priorVersion <http://example.org/sen0401/course/tbox/1.0.0> ;
+    prov:wasRevisionOf <http://example.org/sen0401/course/tbox/1.0.0> ;
+    dcterms:identifier "sen0401_course_tbox_v1_1_0" ;
+    dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+    dcterms:creator <http://example.org/rdodi/agent/YusufAltunel> ;
+    dcterms:created "2026-10-05"^^xsd:date ;
+    dcterms:modified "2026-10-19"^^xsd:date ;
+    skos:changeNote "Version 1.1.0 (2026-10-19): connectedness repair. Adds the object properties sen0401:gapOfPart, sen0401:gapInRepository and sen0401:themeOfCourse, each stated by the comment of its domain class or by the course A-Box. No existing statement is changed."@en .
+
+sen0401:TermTheme a owl:Class ;
+    rdfs:label "term theme"@en ;
+    rdfs:isDefinedBy <http://example.org/sen0401/course/tbox> ;
+    rdfs:comment "The theme a term's project work must fall inside, as the course's own outline or README states it."@en .
+
+sen0401:PartGap a owl:Class ;
+    rdfs:label "missing required part"@en ;
+    rdfs:isDefinedBy <http://example.org/sen0401/course/tbox> ;
+    rdfs:comment "A part the claimed course profile requires that this repository does not hold, named so that its absence is a recorded decision rather than an oversight, and so that a submission is not made while it is open."@en .
+
+#################################################################
+#  Version 1.1.0: the relations the two classes were missing.
+#  Ranges are classes of CME (cme:CoursePart, cme:CourseRepository)
+#  and schema.org (schema:Course), which the A-Box already uses.
+#################################################################
+
+sen0401:gapOfPart a owl:ObjectProperty ;
+    rdfs:label "is the gap of part"@en ;
+    rdfs:domain sen0401:PartGap ;
+    rdfs:range cme:CoursePart ;
+    rdfs:isDefinedBy <http://example.org/sen0401/course/tbox> ;
+    rdfs:comment "The missing required part that a part gap names. Stated by the comment of PartGap: 'A part the claimed course profile requires that this repository does not hold'."@en .
+
+sen0401:gapInRepository a owl:ObjectProperty ;
+    rdfs:label "is a gap in repository"@en ;
+    rdfs:domain sen0401:PartGap ;
+    rdfs:range cme:CourseRepository ;
+    rdfs:isDefinedBy <http://example.org/sen0401/course/tbox> ;
+    rdfs:comment "The repository that does not hold the part. Stated by the same comment: 'that this repository does not hold'."@en .
+
+sen0401:themeOfCourse a owl:ObjectProperty ;
+    rdfs:label "is the theme of course"@en ;
+    rdfs:domain sen0401:TermTheme ;
+    rdfs:range schema:Course ;
+    rdfs:isDefinedBy <http://example.org/sen0401/course/tbox> ;
+    rdfs:comment "The course whose term the theme belongs to. Stated by the A-Box, where the course sen0401:Course, a schema:Course, carries the term theme 'Semantic technologies' and sen0401:TermTheme_Fall2026 gives it as the README states it."@en .
