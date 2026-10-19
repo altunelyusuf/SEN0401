@@ -15,3 +15,6 @@ Page ABox 03-materials/ch10/page/sen0401_ch10_page_abox_v2_0_0.ttl for page 9.53
 
 ## Chapter 11 - achieved
 Page ABox 03-materials/ch11/page/sen0401_ch11_page_abox_v2_0_0.ttl for page 9.54.0 (91 sections, 91 widgets all design-tested, 6 objectives, 10 questions). Stage4.A, B, cov (197 individuals), sub (197), src (197) PASS; Stage3.F PASS. Research/Ch11, Deck/Ch11, Page/Ch11 chapter checks PASS. Gate output: 08-tooling/ch11-page/stage4_gates_v2_0_0.txt.
+
+## Chapter 12 - achieved
+Page ABox 03-materials/ch12/page/sen0401_ch12_page_abox_v2_0_0.ttl for page 9.55.0 (86 sections, 86 widgets all design-tested, 6 objectives, 10 questions). Stage4.A, B, cov (187 individuals), sub (187), src (187) PASS; Stage3.F PASS. Research/Ch12, Deck/Ch12, Page/Ch12 chapter checks PASS. Gate output: 08-tooling/ch12-page/stage4_gates_v2_0_0.txt.
