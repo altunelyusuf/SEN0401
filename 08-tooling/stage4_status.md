@@ -6,3 +6,6 @@ Standing gaps, same for every chapter: Stage4.L, Cross.C and Stage1.C/E are NOT_
 ## Chapter 8 - achieved
 Page ABox 03-materials/ch08/page/sen0401_ch08_page_abox_v2_0_0.ttl for page 9.51.0 (109 sections, 109 widgets all design-tested, 6 objectives, 12 questions). Stage4.A, B, cov (233 individuals), sub (233), src (233) PASS. Research/Ch08, Deck/Ch08, Page/Ch08 chapter checks PASS. Gate output: 08-tooling/ch08-page/stage4_gates_v2_0_0.txt.
 Not achieved: Stage3.F fails on the chapter's Stage 3 document (45 dangling citations); this is a Stage 3 matter that exists without the page ABox and is not changed here.
+
+## Chapter 9 - achieved
+Page ABox 03-materials/ch09/page/sen0401_ch09_page_abox_v2_0_0.ttl for page 9.68.0 (96 sections, 96 widgets all design-tested, 6 objectives, 13 questions). Stage4.A, B, cov (207 individuals), sub (207), src (207) PASS; Stage3.F PASS. Research/Ch09, Deck/Ch09, Page/Ch09 chapter checks PASS. Gate output: 08-tooling/ch09-page/stage4_gates_v2_0_0.txt.

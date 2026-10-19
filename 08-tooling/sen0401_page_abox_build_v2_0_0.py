@@ -103,8 +103,10 @@ for n in nodes:
     elif det.startswith("grid"):
         k = len(nbychild.get(n["id"], []))
         wd = "This widget shows the %d concepts of the group %s in a grid, and choosing one opens its card." % (k, n["label"])
-    else:
+    elif det.startswith("overview"):
         wd = "This widget is the overview of the branch %s, and choosing one of its sub-subjects opens that sub-subject." % n["label"]
+    else:
+        sys.exit("REFUSED: the test result of widget %s reads %r, which this builder has no truthful sentence for" % (n["id"], det))
     item(wid, [IPO.InstructionalWidget], "Widget of %s" % n["label"], wd, src)
     g.add((wid, IPO.demonstratesSubject, cls)); g.add((wid, WP.demonstratesConcept, cls)); g.add((wid, SEN.placedInSection, sec))
     g.add((wid, WP.hasDesignTest, Literal("Exercised in headless Chromium by 08-tooling/sen0401_page_test_v%s.py on page %s: %s" % (TR.get("_test_version", "9_35_0").replace("_", "."), PV.replace("_", "."), det))))
