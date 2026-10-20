@@ -1,4 +1,4 @@
-# Stage 4 status (page ABox of chapters 8-14), 2026-10-19
+# Stage 4 status (page ABox of chapters 8-14 and the numbers page), 2026-10-20
 
 Method: 08-tooling/sen0401_page_abox_build_v2_0_0.py writes the page ABox from the chapter's page data, objectives, quiz and the stored browser-test result (page test 9.35.0 on the newest page); 08-tooling/sen0401_stage4_gates_v1_0_0.py runs RDODI's newest pipeline validator (1.13.0) unchanged on it. No gate, check, test or threshold was edited.
 Standing gaps, same for every chapter: Stage4.L, Cross.C and Stage1.C/E are NOT_MEASURED (the research files carry no concept inventory); Cross.B is CANNOT_RUN (the Stage 3 documents record a section's concept in dcterms:source, not prov:wasDerivedFrom, so no page region can chain through them); Stage4.B reports 3 advisory warnings.
@@ -25,3 +25,12 @@ Note: the first browser-test run of page 14 was killed by the machine's memory l
 
 ## Chapter 14 - achieved
 Page ABox 03-materials/ch14/page/sen0401_ch14_page_abox_v2_0_0.ttl for page 9.57.0 (68 sections, 68 widgets all design-tested, 6 objectives, 9 questions). Stage4.A, B, cov (151 individuals), sub (151), src (151) PASS; Stage3.F PASS. Research/Ch14, Deck/Ch14, Page/Ch14 chapter checks PASS. Gate output: 08-tooling/ch14-page/stage4_gates_v2_0_0.txt.
+
+## Chapter 1 - Stage 3.F achieved (2026-10-20)
+Stage 3 document v1.2.1 (commit 3e664d2): the root section cites P01 (Antonopoulos and Harding, 2023); Stage3.F PASS (30 citations), Stage 1-3 gates and the 351 corpus claims pass, Deck/Ch01 PASS.
+Not achieved: the chapter 1 Stage 4 page ABox (Stage4.cov, sub fail on the old label-only v9_4_2 ABox; another agent builds it). The Research/Ch01 chapter check cannot complete because chapter 1 has no verify script.
+
+## Numbers page (Bitcoin in numbers, supplement to chapters 1 and 2) - achieved
+Stage 3.F: research v1.1.0 (the labels of the held Blockchain.com chart sources P02-P04 now carry (Blockchain.com, 2026); the three endpoints were re-fetched on 2026-10-20 and saved with SHA-256 in 08-tooling/numbers-evidence, and the price of 2026-08-26 and the hash rate of 2026-08-28 equal research finding F2). 19 dangling citations -> 0.
+Stage 4: builder 08-tooling/sen0401_page_abox_build_v2_1_0.py (new version: accepts 'numbers', truthful sentences for the stored results 'chart drawn' and 'second step revealed'; chapters 8 and 14 rebuilt with it are byte-identical to the committed v2.0.0 output). Page ABox 03-materials/numbers/page/sen0401_numbers_page_abox_v9_4_3.ttl for page 9.4.2 (23 sections, 23 widgets all design-tested, 4 objectives, 5 questions); it is numbered 9.4.3 because the older label-only ABox v9_4_2 stays committed and the gate reads the newest file by version. Stage4.A, B, cov (59 individuals), sub (59), src (59) PASS; Stage3.F PASS. Gate output: 08-tooling/numbers-page/stage4_gates_v2_1_0.txt.
+There is no chapter check (Research/Deck/Page) for the numbers page. The stored browser-test result is the one committed with the page (page test 9.4.2, 23/23 widgets passed); it was not re-run.
