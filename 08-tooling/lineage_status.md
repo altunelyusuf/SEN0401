@@ -13,3 +13,8 @@ Pending, in order:
 4. TK_Gap3F_Ch05_Build / Verify after the chapter 5 work agent finishes.
 
 Waiting for the owner: Mission outcome, closureCommittedAt, Lineage3 Achieved.
+
+Update 2026-10-21 (after v0.135): chapter 5 Stage 3.F repaired by another agent (research v1.1.1, 76d6083).
+5. IN PROGRESS: bridge rerun for Ch05 (detached: /tmp/claude-0/s/gd/run5.sh, log bridge5.out, T0_5/T1_5). Start gate for the two Ch05 Verify tasks: READY (scratch).
+6. NEXT: tool 08-tooling/sen0401_lineage_gap_ch05_v1_0_0.py record BRIDGE T0 T1 -> v0.136: TK_Gap3F_Ch05_Build, both Ch05 Verify tasks Done; ST_Gap_Stage3F and ST_Gap_Stage4 Done; notes on EP_* and Init_Slides.
+7. Then: validate, order check, pipeline_verify per lineage, commit, push, final report.
