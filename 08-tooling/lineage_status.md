@@ -1,6 +1,6 @@
 # Lineage status (third lineage, gap stories) - restart-safe list
 
-Head when written: v0.137.
+Head when written: v0.138.
 
 Done (committed):
 - v0.122-v0.129: change route for the 2026-10-20 gaps, work begun on the 10 Build tasks (2026-10-20T16:17:19).
@@ -19,3 +19,4 @@ Update 2026-10-21 (after v0.135): chapter 5 Stage 3.F repaired by another agent 
 6. DONE: v0.136 recorded (3 tasks, 2 stories Done, notes on EP_* and Init_Slides, two observations).
 7. DONE: v0.137 corrected the finish of ST_Gap_Stage3F (last task 02:02:01).
 8. Remaining: owner acts only (Mission outcome, closure report closureCommittedAt, Lineage3 Achieved).
+9. DONE: re-measure of 15 units (all exit 0); v0.138 corrected caveat and label corrections.
