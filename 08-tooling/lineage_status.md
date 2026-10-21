@@ -29,3 +29,4 @@ Update 2026-10-21 (after v0.135): chapter 5 Stage 3.F repaired by another agent 
 - objective recorded as sen0401_slides_lineage_v0_144_0.ttl (commit follows; see git log)
 - backlog recorded as sen0401_slides_lineage_v0_145_0.ttl (commit follows; see git log)
 - begin recorded as sen0401_slides_lineage_v0_146_0.ttl (commit follows; see git log)
+- owner correction recorded as sen0401_slides_lineage_v0_147_0.ttl (commit follows; see git log)
