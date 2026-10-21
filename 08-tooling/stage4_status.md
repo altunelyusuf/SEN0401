@@ -58,3 +58,5 @@ Page ABox 03-materials/ch01/page/sen0401_ch01_page_abox_v9_70_0.ttl for page 9.7
 
 ## Chapter 8 - achieved (page 9.77.0, research 1.2.0)
 Page ABox 03-materials/ch08/page/sen0401_ch08_page_abox_v9_77_0.ttl for page 9.77.0 (127 sections, 127 widgets (63 run in the browser, 34 recorded, 127 marked tested), 12 questions, 6 objectives). Stage3.F, Stage4.A, B, cov (269 individuals), sub (269), src (269) PASS. Research/Ch08, Deck/Ch08, Page/Ch08 chapter checks PASS. Gate output: 08-tooling/ch08-page/stage4_gates_v1_1_0.txt.
+
+Chapter 11 Stage 4 page ABox v9.77.0 (page 9.77.0): runner v1_1_0 exit 0, Stage3.F, Stage4.A, B, cov, sub, src PASS; Stage1.C, Stage1.E, Stage3.E, Stage4.L, Cross.C NOT_MEASURED, Cross.B CANNOT_RUN; Research, Deck, Page chapter checks PASS.
