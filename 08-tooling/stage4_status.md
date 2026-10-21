@@ -55,3 +55,6 @@ Page ABox 03-materials/ch07/page/sen0401_ch07_page_abox_v9_76_0.ttl for page 9.7
 
 ## Chapter 1 - achieved
 Page ABox 03-materials/ch01/page/sen0401_ch01_page_abox_v9_70_0.ttl for page 9.70.0 (builder 2.1.0 with the ABox version set to the page version, because the older ABox v9_4_x is named by a higher version number and the gates read the newest). 117 sections, 117 widgets (42 run in the browser, 48 recorded, 122 marked tested), 5 questions, 4 objectives. Stage4.A, B, cov (247 individuals), sub (247), src (247) PASS; Stage3.F PASS. Deck/Ch01, Page/Ch01 chapter checks PASS; Research/Ch01 cannot complete (chapter 1 has no verify script, so the chapter check stops at that step; its Stage 1-3 gates PASS and 351 corpus claims execute with no failure). Gate output: 08-tooling/ch01-page/stage4_gates_v1_1_0.txt. Browser test 9.35.0 run alone on the page: result stored in 08-tooling/ch01-page/test_results_abox_v9_70_0.json.
+
+## Chapter 8 - achieved (page 9.77.0, research 1.2.0)
+Page ABox 03-materials/ch08/page/sen0401_ch08_page_abox_v9_77_0.ttl for page 9.77.0 (127 sections, 127 widgets (63 run in the browser, 34 recorded, 127 marked tested), 12 questions, 6 objectives). Stage3.F, Stage4.A, B, cov (269 individuals), sub (269), src (269) PASS. Research/Ch08, Deck/Ch08, Page/Ch08 chapter checks PASS. Gate output: 08-tooling/ch08-page/stage4_gates_v1_1_0.txt.
