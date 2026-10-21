@@ -24,3 +24,4 @@ Update 2026-10-21 (after v0.135): chapter 5 Stage 3.F repaired by another agent 
 11. IN PROGRESS: template revision (owner message 2026-10-21): tool 08-tooling/sen0401_lineage_template_revision_v1_0_0.py events change, retract, scope, goal, objective, backlog, begin; one commit each (v0.140..v0.146). Check git log for the last done event.
 - change recorded as sen0401_slides_lineage_v0_140_0.ttl (commit follows; see git log)
 - retract recorded as sen0401_slides_lineage_v0_141_0.ttl (commit follows; see git log)
+- scope recorded as sen0401_slides_lineage_v0_142_0.ttl (commit follows; see git log)
