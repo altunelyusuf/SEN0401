@@ -51,3 +51,4 @@ Quote and time are recorded in v0.147. No work agent runs until the coordinator 
 - v0.154: change request CR3_PageErd (Pending) with impact assessment. OWNER QUESTION: for a page whose chapter states no relationship between two sections, what measures the relationship labels: (a) element 3 does not apply to such a page, (b) the research states one relationship so the feature can run, or (c) another measure he names?
 - ST_Ch08_Examples Done; ST_Page_Template stays InProgress (two criteria not met). Mission outcome, closureCommittedAt and Lineage3 Achieved untouched.
 - change (section links) recorded as sen0401_slides_lineage_v0_155_0.ttl (commit follows; see git log)
+- retract (section links) recorded as sen0401_slides_lineage_v0_156_0.ttl (commit follows; see git log)
