@@ -1,6 +1,6 @@
 # Lineage status (third lineage, gap stories) - restart-safe list
 
-Head when written: v0.139.
+Head when written: v0.146.
 
 Done (committed):
 - v0.122-v0.129: change route for the 2026-10-20 gaps, work begun on the 10 Build tasks (2026-10-20T16:17:19).
@@ -21,7 +21,7 @@ Update 2026-10-21 (after v0.135): chapter 5 Stage 3.F repaired by another agent 
 8. Remaining: owner acts only (Mission outcome, closure report closureCommittedAt, Lineage3 Achieved).
 9. DONE: re-measure of 15 units (all exit 0); v0.138 corrected caveat and label corrections.
 10. DONE: v0.139 owner message of 2026-10-21 08:12 Istanbul recorded (notes only). OPEN: owner question on older-template pages (pages 8,10,11,12,14); no decision yet.
-11. IN PROGRESS: template revision (owner message 2026-10-21): tool 08-tooling/sen0401_lineage_template_revision_v1_0_0.py events change, retract, scope, goal, objective, backlog, begin; one commit each (v0.140..v0.146). Check git log for the last done event.
+11. DONE: template revision v0.140-v0.146 (owner message 2026-10-21 08:12 Istanbul). Work begun 2026-10-21T07:05:34 UTC on TK_Ch08Ex_Build, TK_PageTpl_Ch10/11/12/14_Build. TK_PageTpl_Ch08_Build stays Ready (waits for TK_Ch08Ex_Build). Next: record Done through the evidence bridge when work is pushed.
 - change recorded as sen0401_slides_lineage_v0_140_0.ttl (commit follows; see git log)
 - retract recorded as sen0401_slides_lineage_v0_141_0.ttl (commit follows; see git log)
 - scope recorded as sen0401_slides_lineage_v0_142_0.ttl (commit follows; see git log)
