@@ -55,3 +55,4 @@ Quote and time are recorded in v0.147. No work agent runs until the coordinator 
 - scope (section links) recorded as sen0401_slides_lineage_v0_157_0.ttl (commit follows; see git log)
 - goal (section links) recorded as sen0401_slides_lineage_v0_158_0.ttl (commit follows; see git log)
 - objective (section links) recorded as sen0401_slides_lineage_v0_159_0.ttl (commit follows; see git log)
+- backlog (section links) recorded as sen0401_slides_lineage_v0_160_0.ttl (commit follows; see git log)
