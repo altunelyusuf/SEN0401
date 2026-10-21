@@ -4,7 +4,7 @@ The owner chose option (b) of the open change request ex:CR3_PageErd, widened: t
 (object properties between the sections' individuals or classes), not as text. The deliverable is new (the scope excluded research changes other than chapter 8), the third lineage is in its closed Backlog stage, so the route is a
 StageRevision from the Scope stage (G127). The work is planned into a NEW iteration, ex:Iter_14, because the goal of ex:Iter_13 is frozen at its start and an iteration is not extended (the owner's rule of 2026-10-21 10:14 Istanbul).
 One call = one new file = one event; the caller validates, checks and commits each alone. Events, in order:
-  change | retract | scope PREV | goal PREV | objective PREV | backlog PREV
+  change | retract | scope PREV | goal PREV | objective PREV | backlog PREV | fill PREV
 The Disposition of ex:CR3_PageErd becomes Accepted in the backlog version, with the ScopeChange. Nothing is waived, no criterion is changed, and no recorded digest is rewritten."""
 __version__ = "1.0.0"
 import os, re, sys
@@ -296,10 +296,15 @@ ex:Data3L_L_Failing a backlog:TestData ; rdfs:label "A chapter whose research st
                                                                            "the new iteration Iter_14 with its sprint goal, plan baseline and planning ceremony, test cases, the ScopeChange that admits the story; the change request CR3_PageErd is Accepted; the %d carried items are re-admitted by the rebuilt output, not re-dated." % n)
 
 
+def ev_fill(t, prev):
+    t = G.fill_re(t, NEWB, prev)
+    return t, "closedAtCommit of the rebuilt Backlog output ex:Out3_BacklogR5 set to the commit that closed it (%s); the revision is complete and no work is begun." % prev
+
+
 def main():
     ev = sys.argv[1]; src = M.newest(); t = open(src, encoding="utf-8").read(); nxt, cur = M.next_version(src)
     fn = {"change": lambda: ev_change(t), "retract": lambda: ev_retract(t), "scope": lambda: ev_scope(t, sys.argv[2]), "goal": lambda: ev_goal(t, sys.argv[2]),
-          "objective": lambda: ev_objective(t, sys.argv[2]), "backlog": lambda: ev_backlog(t, sys.argv[2])}
+          "objective": lambda: ev_objective(t, sys.argv[2]), "backlog": lambda: ev_backlog(t, sys.argv[2]), "fill": lambda: ev_fill(t, sys.argv[2])}
     if ev not in fn:
         raise SystemExit(__doc__)
     nt, comment = fn[ev]()
