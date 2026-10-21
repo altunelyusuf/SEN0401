@@ -109,13 +109,8 @@ ex:Del3_SectionLinks a backlog:ScopeDeliverable ;
     backlog:derivesFromMissionClause "%s"^^xsd:string ;
     backlog:hasDeliverableText %s ;
     backlog:deliverableForArea ex:Area3_SectionLinks ; backlog:hasScopeLayer backlog:Layer_Work ; backlog:hasProductScopeKind backlog:Kind_Functional .
-ex:Excl3_NoTemplateOrTestChange a backlog:ScopeExclusion ;
-    rdfs:label "The section links do not change the page template, the page tests, the gates or the thresholds, and stop where a new relation type would need one"@en ; backlog:belongsToLineage ex:Lineage3 ;
-    backlog:excludesConcern %s ;
-    backlog:hasExclusionRationale "The owner's answer asks that the research state the relationships; the page already draws a relation of any type other than 'mentions' as 'operates on' and the test 9.35.0 measures the labels. A change of the template, the test or a gate would move the measure to fit the result; it is not part of this deliverable and an executor stops and reports where it would be needed." ;
-    backlog:decidedBy backlog:Builder ; backlog:hasScopeLayer backlog:Layer_Work .
 ex:Scope3 backlog:requiresDeliverable ex:Del3_SectionLinks ;
-    backlog:coversArea ex:Area3_SectionLinks ; backlog:hasScopeExclusion ex:Excl3_NoTemplateOrTestChange ;
+    backlog:coversArea ex:Area3_SectionLinks ;
     rdfs:seeAlso ex:CR3_PageErd, ex:IA3_PageErd .
 ex:Scope3 rdfs:comment %s@en .
 ex:Excl3_NoConceptGates rdfs:comment %s@en .
@@ -124,13 +119,11 @@ ex:Excl3_NoConceptGates rdfs:comment %s@en .
            "discovered with the OEE relationship taxonomy (categories such as semantic, syntactic, temporal, containment, ordering and succession; class kinds where the kind rule needs them), each property declared in the domain T-Box with domain, range, label and kb:hasRelationshipCategory, a standard relation reused where one says it; "
            "every section of the chapter related to at least one other section; the page-data builder reads the links as page relations, the page is rebuilt as a new page version and its Stage 4 page ABox as a new file; the page test 9.35.0 runs its ERD labels feature and passes it with no skip. "
            + OEE + " " + FACTS),
-       T.CLAUSE and lit("Anything that changes the page template, a page test, a gate, a threshold or a criterion; a relation type the template cannot draw (the template draws every type other than 'mentions' as 'operates on'); forcing a relationship between two sections that no taxonomy relation states; "
-                        "the section relationships of chapters 8, 9, 12, 13 and 14 (sections with no relationship there are reported as facts; extending to them is the owner's to decide)."),
-       lit("Revised 2026-10-22 by the stage revision %s on the owner's answer of %s (quoted in the change request ex:CR3_PageErd). The statement above is unchanged (L-112). It now also requires ex:Del3_SectionLinks, covers the area ex:Area3_SectionLinks and carries the exclusion ex:Excl3_NoTemplateOrTestChange." % (REV.replace("ex:", ""), WHEN)),
+       lit("Revised 2026-10-22 by the stage revision %s on the owner's answer of %s (quoted in the change request ex:CR3_PageErd). The statement above is unchanged (L-112). It now also requires ex:Del3_SectionLinks and covers the area ex:Area3_SectionLinks. The exclusion ex:Excl3_NoConceptGates (owner-decided) stands for every gate, test and threshold. Not in the deliverable and not changed: the page template, a page test, a criterion, a relation type the template cannot draw (it draws every type other than 'mentions' as 'operates on'), forcing a relationship that no taxonomy relation states, and the section relationships of chapters 8, 9, 12, 13 and 14 (reported as facts; extending to them is the owner's to decide)." % (REV.replace("ex:", ""), WHEN)),
        lit("Note 2026-10-22: the concern 'a change of content, decks or research other than the chapter 8 examples' is lifted for the research of chapters 10 and 11 by the owner's answer of %s, as ex:Del3_SectionLinks; the exclusion stands for every other change of content, decks or research and for every gate, test and threshold." % WHEN))]
     t += "".join(L)
     return t + out_new(t, "Scope", "Out3_ScopeR4", "Out3_Mission"), \
-        "third lineage, Scope stage rebuilt by the stage revision for the relationships between sections: a deliverable (the research of chapters 10 and 11 states section relationships as links; the pages show them), its area, and an exclusion (no template, test, gate or threshold change)."
+        "third lineage, Scope stage rebuilt by the stage revision for the relationships between sections: a deliverable (the research of chapters 10 and 11 states section relationships as links; the pages show them), its area, and its area; the exclusion ex:Excl3_NoConceptGates stands for every gate, test and threshold."
 
 
 def ev_goal(t, prev):

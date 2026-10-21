@@ -52,3 +52,4 @@ Quote and time are recorded in v0.147. No work agent runs until the coordinator 
 - ST_Ch08_Examples Done; ST_Page_Template stays InProgress (two criteria not met). Mission outcome, closureCommittedAt and Lineage3 Achieved untouched.
 - change (section links) recorded as sen0401_slides_lineage_v0_155_0.ttl (commit follows; see git log)
 - retract (section links) recorded as sen0401_slides_lineage_v0_156_0.ttl (commit follows; see git log)
+- scope (section links) recorded as sen0401_slides_lineage_v0_157_0.ttl (commit follows; see git log)
