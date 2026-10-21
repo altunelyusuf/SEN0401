@@ -1,6 +1,6 @@
 # Lineage status (third lineage, gap stories) - restart-safe list
 
-Head when written: v0.135.
+Head when written: v0.136.
 
 Done (committed):
 - v0.122-v0.129: change route for the 2026-10-20 gaps, work begun on the 10 Build tasks (2026-10-20T16:17:19).
@@ -15,6 +15,6 @@ Pending, in order:
 Waiting for the owner: Mission outcome, closureCommittedAt, Lineage3 Achieved.
 
 Update 2026-10-21 (after v0.135): chapter 5 Stage 3.F repaired by another agent (research v1.1.1, 76d6083).
-5. IN PROGRESS: bridge rerun for Ch05 (detached: /tmp/claude-0/s/gd/run5.sh, log bridge5.out, T0_5/T1_5). Start gate for the two Ch05 Verify tasks: READY (scratch).
-6. NEXT: tool 08-tooling/sen0401_lineage_gap_ch05_v1_0_0.py record BRIDGE T0 T1 -> v0.136: TK_Gap3F_Ch05_Build, both Ch05 Verify tasks Done; ST_Gap_Stage3F and ST_Gap_Stage4 Done; notes on EP_* and Init_Slides.
-7. Then: validate, order check, pipeline_verify per lineage, commit, push, final report.
+5. DONE: bridge rerun Ch05, 8 of 8 verified (2026-10-21T01:51:46 to 02:02:01 UTC).
+6. DONE: v0.136 recorded (3 tasks, 2 stories Done, notes on EP_* and Init_Slides, two observations).
+7. Remaining: owner acts only (Mission outcome, closure report closureCommittedAt, Lineage3 Achieved).
