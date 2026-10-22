@@ -67,3 +67,4 @@ Quote and time are recorded in v0.147. No work agent runs until the coordinator 
 - work begun (Iter_15) recorded as v0.168 at 2026-10-22T01:01:08 UTC for the chapter 10 consolidation
 - sen0401_slides_lineage_v0_169_0.ttl: Register v0.169: control of Iter_15, consolidation: TK_SecLinks_Ch10_Consolidate Done on bridge-verified evidence (8 checks, serial) and a harness, executor instance and brief as links, the executor's judgment calls recorded as facts; story ST_Ch10_Consolidate Done (G125); CONFORMANT, plus the control tool and logs
 - work begun (Iter_14) recorded as v0.170 at 2026-10-22T01:27:29 UTC for the page-data builder task
+- sen0401_slides_lineage_v0_171_0.ttl: Register v0.171: control of Iter_14, page-data builder: TK_SecLinks_PageData Done on bridge-verified evidence (v2_23_0 against v2_22_0, 14 chapters, serial) and a harness; executor instance and passed brief as links; CONFORMANT, plus the control tool, the comparison tool and logs
