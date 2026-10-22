@@ -1,0 +1,243 @@
+--- sen0401_page_test_v9_35_1.py	2026-10-22 09:54:38.614956581 +0300
++++ sen0401_page_test_v9_36_0.py	2026-10-22 21:38:00.096539338 +0300
+@@ -4,7 +4,8 @@
+ slice, so different questions get different answers; a menu click changes the main area and leaves the
+ detail card closed; the card opens only on an explicit request; the tab row is the sub-menu of the
+ selected top-level item. Every stored result must also equal what the build's interpreter printed."""
+-__version__ = "9.35.1"
++__version__ = "9.36.0"
++# 9.36.0 (SEN0401, over 9.35.1; owner-directed remedy of chapters 5 and 6, ex:CR3_Remedy56): the features P1, P2, P3, P4, P5, P6, P8, P9 and P11 of the page standard 9.52 are ADDED at the end of the run; every feature of 9.35.1 is unchanged. They apply to a page that declares <meta name="page-standard" content="9.52"> and are reported SKIP (page does not declare the standard) otherwise; the environment switch FORCE_STANDARD=1 applies them to any page. P7 (zoom) and P10 (visualised results) are measured by the existing diagram checks and inside P2.
+ # 9.35.1 (SEN0401, over 9.35.0; owner's decision of Thursday 2026-10-22 08:35 Istanbul, ex:CR3_PageGates option A): the one assertion on the mentioned-together relationships of the ERD's sections choice applies by what the page has. A page with 'mentions' relations between two different sections keeps r2 > r3; a page with relations between two sections but no 'mentions' (the section links of chapters 10 and 11 are all 'operates on') requires r2 == r3 and r2 > 0, because the toggle has nothing to remove; the NOREL branch is unchanged. Reason: 9.35.0 assumed that every page with a relation between two sections has 'mentions'. No other check changed.
+ # 9.35.0 (SEN0401, over 9.34.0; found on the chapter 8 page): the fill-the-blank question type is required only when some example's code holds a number to blank (`digits`, computed since 9.32.0 and not used); a chapter whose examples are calls of its own library holds none, so the type is reported as a SKIP with its reason. No other check changed.
+ # 9.34.0 (SEN0401, over 9.33.0; found by the lineage audit of chapter 6, page 9.41.0): two checks that measured the chapter or the machine instead of the page. (a) The main-thread budget looked for the previously shipped page beside the page under test; the key-substituted copy sits alone in a temporary folder, so it never found one (also for chapters that have one) and fell back to the absolute 200 ms. It now looks in the repository by PAGE_VER, and compared the load task with the previously shipped page of the SAME chapter and, with none (chapters 6 and 7 are shipped once), fell back to the absolute 200 ms, which the 2-CPU build machine misses by a few ms on an unchanged template (chapter 6: 207 ms median, spread 187-235). With no predecessor the absolute 200 ms still applies in full (a page of another chapter is not a fair control: boot time grows with the chapter's size - chapter 5 page 2.09 MB measured 171 ms, chapter 6 page 2.28 MB 207-234 ms on this machine). (b) The agent list check counted characters of an agent name (at most 40) - a limit that no owner request states (the 2026-09-30 request is for a SHORT list, one row per agent, the name cut by an ellipsis on one line); the rule source is this test since 9.15.0. It now requires what the page promises: every agent name sits on a single row of the list. No page text is shortened; no research is changed.
+@@ -1381,6 +1382,230 @@
+     zp = os.path.join(os.path.dirname(page_path), "_audit_test.zip"); dl_.value.save_as(zp); z = _zf.ZipFile(zp); names = z.namelist(); bad = z.testzip(); log = json.loads(z.read("audit_log.json")); evs = [e["event"] for e in log["events"]]; txt = z.read("audit_log.json").decode() + z.read("audit_log.csv").decode("utf-8")
+     os.remove(zp)
+     feat("the audit log downloads as a valid zip with README, JSON, CSV and the saved results; it records opened, started, finished and release, and holds no release code", bad is None and {"README.txt", "audit_log.json", "audit_log.csv"} <= set(names) and any(n.startswith("results/") for n in names) and {"page_opened", "exam_started", "exam_finished", "release_accepted"} <= set(evs) and "R1." not in txt, "%s; %s" % (names, evs[-6:]))
++    # ---- 9.36.0: the page standard 9.52 (P1 P2 P3 P4 P5 P6 P8 P9 P11). Applies to a page that declares <meta name="page-standard" content="9.52">; FORCE_STANDARD=1 applies it to any page ----
++    import re as _re9, glob as _g9
++    _html9 = open(page_path, encoding="utf-8").read()
++    STD_DECL = bool(_re9.search(r'<meta\s+name=["\']page-standard["\']\s+content=["\']9\.52["\']', _html9))
++    FORCE_STD = os.environ.get("FORCE_STANDARD") == "1"
++    F_P1 = "P1 no horizontal overflow at 390 px and at 1366 px in any top-level tab and sub-tab, and no element wider than the screen"
++    F_P2L = "P2 the chapter-code tab (data-pane=chaptercode) lists the deck's examples by name, in the deck's slide order, with no code in the list"
++    F_P2R = "P2 every chapter-code example opens in the editor, runs in the page with the chapter library defined in the page, and shows a visualised result (P10)"
++    F_P2P = "P2 the Playground list shows names only and fits its container at 390 and 1366 px"
++    F_P3L = "P3 the tab labels and the left-tree labels are disjoint, or the tab bar is one row"
++    F_P3S = "P3 the tabs and the left tree are synchronised"
++    F_P4 = "P4 no third level of tabs, and one more level of panels so that one panel (data-panel) holds one concept"
++    F_P5 = "P5 a panel is at most 1.0 screen high at 1366x768"
++    F_P6 = "P6 no list is repeated on one screen"
++    F_P8 = "P8 the top-level menu is uncrowded: at most 8 top-level tabs"
++    F_P9 = "P9 a text-size control that works, and an adaptive layout at 390, 768 and 1366 px"
++    F_P11 = "P11 the page declares the standard (meta page-standard 9.52) and its examples equal the deck's code manifest"
++    ALLP = [F_P1, F_P2L, F_P2R, F_P2P, F_P3L, F_P3S, F_P4, F_P5, F_P6, F_P8, F_P9, F_P11]
++    if not (STD_DECL or FORCE_STD):
++        for _k in ALLP: skip(_k, "page does not declare the standard")
++    else:
++        print("  page standard: declared=%s, FORCE_STANDARD=%s" % (STD_DECL, FORCE_STD), flush=True)
++        MAN = None
++        _mf = sorted(_g9.glob(os.path.join(REPO, "03-materials", N, "page", "chapter_code_%s_v*.json" % N)), key=lambda x: [int(v) for v in _re9.findall(r"_v(\d+)_(\d+)_(\d+)\.json$", x)[0]])
++        if _mf:
++            try:
++                _m = json.load(open(_mf[-1], encoding="utf-8"))
++                if isinstance(_m, dict): _m = next((v for v in _m.values() if isinstance(v, list) and v and isinstance(v[0], dict)), [])
++                MAN = sorted([(int(e.get("order", i + 1)), str(e.get("name", ""))) for i, e in enumerate(_m)])
++            except Exception as ex_: print("  manifest unreadable:", ex_)
++        HAS_CC = pg.locator('[data-pane="chaptercode"]').count() > 0
++        CC_APPLIES = bool(MAN) or HAS_CC or FORCE_STD
++        JS_STATE = """(wantLists)=>{
++ const vis=e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&!e.closest('[hidden]')};
++ const iw=innerWidth, ih=innerHeight, norm=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
++ let wide=null;
++ for(const e of document.body.querySelectorAll('*')){const r=e.getBoundingClientRect(); if(r.width<=iw+1||!vis(e)) continue; if(e.closest('svg')&&e.tagName.toLowerCase()!=='svg') continue;
++   let a=e,sc=false; while(a&&a!==document.body){const o=getComputedStyle(a).overflowX; if(o==='auto'||o==='scroll'){sc=true;break} a=a.parentElement} if(sc) continue;
++   if(!wide||r.width>wide.w) wide={w:Math.round(r.width),d:e.tagName.toLowerCase()+(e.id?'#'+e.id:'')}}
++ const all=[...document.querySelectorAll('[data-panel],[data-pane],[data-subpane]')].filter(vis);
++ let pan=all.filter(e=>e.matches('[data-panel]')); if(!pan.length) pan=all.filter(e=>!all.some(o=>o!==e&&e.contains(o)));
++ const panels=pan.map(e=>({n:e.dataset.panel||e.dataset.pane||e.dataset.subpane,h:Math.round(e.getBoundingClientRect().height),h4:Math.max([...e.querySelectorAll('h4')].filter(vis).length,[...e.querySelectorAll('section.leaf')].filter(vis).length)}));
++ const tl3=[...document.querySelectorAll('[role=tablist]')].filter(t=>vis(t)&&!t.classList.contains('viewsub')&&!t.closest('.roster,#groups,.viewsub')).map(t=>[...t.children].map(x=>x.textContent.trim().slice(0,20)).join('/'));
++ const out={doc:document.documentElement.scrollWidth,iw:iw,wide:wide,panels:panels,tl3:tl3,fs:(()=>{const c=document.querySelector('.fsctl,[aria-label="Text size"]');if(!c)return null;const r=c.getBoundingClientRect();return r.right<=iw+1&&r.left>=0&&r.width>0})()};
++ if(wantLists){
++   const lists=[];
++   const add=(el,labels)=>{labels=labels.map(norm).filter(x=>x);if(labels.length>=3){const r=el.getBoundingClientRect();if(r.top<ih&&r.bottom>0)lists.push({el:el,labels:labels})}};
++   document.querySelectorAll('[role=tablist]:not(#groups),nav.groups,ul:not(#tree):not(#tree ul),ol,.tabs,.subtabs').forEach(el=>{if(vis(el)&&!el.closest('#tree'))add(el,[...el.children].map(x=>x.textContent.trim()).filter(t=>t&&t.length<70))});
++   const tr=document.getElementById('tree'); if(tr&&vis(tr))add(tr,[...tr.querySelectorAll('.tn')].filter(vis).map(x=>x.textContent.replace(/[▸▾]/g,'').trim()));
++   const dups=[]; for(let i=0;i<lists.length;i++)for(let j=i+1;j<lists.length;j++){const A=lists[i],B=lists[j]; if(A.el.contains(B.el)||B.el.contains(A.el))continue;
++     const sa=new Set(A.labels),sb=new Set(B.labels); let k=0; sa.forEach(x=>{if(sb.has(x))k++}); const jac=k/(new Set([...sa,...sb]).size); if(k>=3&&jac>=0.8)dups.push(k+' of '+Math.min(sa.size,sb.size)+' labels')}
++   out.dups=dups}
++ return out}"""
++        def _sweep(w, h, lists=False):
++            sp = ctx.new_page(); sp.set_viewport_size({"width": w, "height": h}); sp.goto("file://" + page_path); sp.wait_for_timeout(1500)
++            st = []
++            try:
++                for gi in range(sp.locator("#groups button").count()):
++                    gb = sp.locator("#groups button").nth(gi); gl = gb.get_attribute("data-tab")
++                    try: gb.click(timeout=8000)
++                    except Exception: pass
++                    sp.wait_for_timeout(300)
++                    n = sp.locator('.viewsub [data-tab]:visible').count()
++                    for si in range(max(n, 1)):
++                        lab = gl
++                        if n:
++                            try:
++                                t_ = sp.locator('.viewsub [data-tab]:visible').nth(si); lab = gl + "/" + (t_.get_attribute("data-tab") or str(si)); t_.click(timeout=8000)
++                            except Exception: pass
++                            sp.wait_for_timeout(250)
++                        try:
++                            s_ = sp.evaluate(JS_STATE, lists); s_["at"] = lab; st.append(s_)
++                        except Exception as ex_: st.append({"at": lab, "err": str(ex_)[:100]})
++                        if lists:   # the parts a breadcrumb offers inside the shown pane (a section of a subject is a pane of its own)
++                            cb = sp.locator('select.cbsel:visible'); nopt = cb.first.locator("option").count() if cb.count() else 0
++                            for oi in range(1, min(nopt, 12)):
++                                try:
++                                    cb.first.select_option(index=oi); sp.wait_for_timeout(200)
++                                    s_ = sp.evaluate(JS_STATE, lists); s_["at"] = lab + "#" + str(oi); st.append(s_)
++                                except Exception: break
++            finally:
++                sp.close()
++            return st
++        SW = {}
++        for _w, _h in ((390, 844), (768, 1024), (1366, 768)):
++            try: SW[_w] = _sweep(_w, _h, lists=(_w == 1366))
++            except Exception as ex_: SW[_w] = []; print("  sweep %d crashed: %s" % (_w, str(ex_)[:200]))
++        def _ovf(w):
++            bad = []
++            for s_ in SW.get(w, []):
++                if s_.get("err"): continue
++                if s_["doc"] > s_["iw"] + 1: bad.append("%s: page scrolls sideways (%d px)" % (s_["at"], s_["doc"]))
++                if s_["wide"]: bad.append("%s: %s is %d px wide" % (s_["at"], s_["wide"]["d"], s_["wide"]["w"]))
++            return bad
++        # ---- P2 Playground by name
++        pgm = {}
++        for _w in (390, 1366):
++            sp = ctx.new_page(); sp.set_viewport_size({"width": _w, "height": 844 if _w == 390 else 768}); sp.goto("file://" + page_path); sp.wait_for_timeout(800)
++            try:
++                sp.evaluate("showTab('play')"); sp.wait_for_timeout(500)
++                pgm[_w] = sp.evaluate("""()=>{const items=[...document.querySelectorAll('[data-pg-item]')];let labels,list,width,cont;
++ if(items.length){labels=items.map(e=>e.textContent.trim());list=items[0].parentElement}else{list=document.getElementById('pex');labels=list?[...list.options].map(o=>o.text):[]}
++ if(!list)return null;const r=list.getBoundingClientRect();width=Math.round(items.length?Math.max(...items.map(e=>e.getBoundingClientRect().width)):r.width);cont=Math.round((list.parentElement||list).getBoundingClientRect().width);
++ const code=labels.filter(l=>l.length>60||/[()=\\[\\]{}]/.test(l)||/^[^:]{1,40}: ./.test(l));return {n:labels.length,code:code.length,longest:Math.max(0,...labels.map(l=>l.length)),width:width,cont:cont,iw:innerWidth}}""")
++            except Exception as ex_: pgm[_w] = None; print("  playground probe failed:", str(ex_)[:150])
++            sp.close()
++        okp = all(v is None or (v["code"] == 0 and v["width"] <= v["iw"] and v["width"] <= v["cont"] + 1) for v in pgm.values()) and len(pgm) == 2  # a page without a Playground list has no such defect
++        _unused = all(v and v["code"] == 0 and v["width"] <= v["iw"] and v["width"] <= v["cont"] + 1 for v in pgm.values()) and len(pgm) == 2
++        _p = pgm.get(1366) or {}; _q = pgm.get(390) or {}
++        feat(F_P2P, okp, "the select is %s px wide at 1366 px (container %s px) and %s px wide at 390 px (container %s px); %s of %s labels hold code (longest %s characters)" % (_p.get("width"), _p.get("cont"), _q.get("width"), _q.get("cont"), _p.get("code"), _p.get("n"), _p.get("longest")))
++        # ---- P1 (after the Playground probe: a select clipped by its container still counts as wider than the screen)
++        b1, b2 = _ovf(390), _ovf(1366)
++        for _w, _bl in ((390, b1), (1366, b2)):
++            _v = pgm.get(_w)
++            if _v and _v["width"] > _v["iw"]: _bl.append("Playground list is %d px wide on a %d px screen" % (_v["width"], _v["iw"]))
++        feat(F_P1, bool(SW.get(390)) and bool(SW.get(1366)) and not b1 and not b2, "390 px: %d defects %s; 1366 px: %d defects %s; %d and %d states measured" % (len(b1), b1[:3], len(b2), b2[:3], len(SW.get(390, [])), len(SW.get(1366, []))))
++        # ---- P2 chapter-code tab
++        if CC_APPLIES:
++            if not HAS_CC:
++                feat(F_P2L, False, "no chapter-code tab: the page has no element data-pane=chaptercode (manifest file: %s)" % (os.path.basename(_mf[-1]) if _mf else "none"))
++                feat(F_P2R, False, "no chapter-code tab, so no example can be opened, run or visualised")
++                CCI = []
++            else:
++                try: view("chaptercode")
++                except Exception:
++                    try: pg.evaluate("showTab('chaptercode')"); pg.wait_for_timeout(300)
++                    except Exception: pass
++                CCI = pg.evaluate("()=>[...document.querySelectorAll('[data-cc-item]')].map(e=>({name:e.dataset.ccName||'',order:parseInt(e.dataset.ccOrder,10),len:e.textContent.trim().length,nl:/\\n.*\\n/.test(e.textContent.trim())}))")
++                ords = [c["order"] for c in CCI]
++                okl = len(CCI) > 0 and all(c["name"] for c in CCI) and all(isinstance(o, int) for o in ords) and ords == sorted(set(ords)) and all(c["len"] <= 120 and not c["nl"] for c in CCI)
++                feat(F_P2L, okl, "%d items, orders %s..., first names %s" % (len(CCI), ords[:5], [c["name"] for c in CCI[:3]]))
++                bad = []; t0 = time.time(); ran = 0
++                for i in range(len(CCI)):
++                    if time.time() - t0 > 900: bad.append("%d: not measured, time limit" % (i + 1)); continue
++                    try:
++                        pg.locator("[data-cc-item]").nth(i).click(timeout=10000); pg.wait_for_timeout(200)
++                        ed = pg.locator("[data-cc-editor]").first
++                        code = ed.input_value() if ed.evaluate("e=>'value' in e") else ed.text_content()
++                        if not (code or "").strip(): bad.append("%d %s: editor empty" % (i + 1, CCI[i]["name"])); continue
++                        pg.evaluate("()=>{const r=document.querySelector('[data-cc-result]');if(r)r.innerHTML=''}")
++                        pg.locator("[data-cc-run]").first.click(timeout=10000)
++                        pg.wait_for_function("()=>{const r=document.querySelector('[data-cc-result]');return r&&(r.textContent.trim().length>0||r.querySelector('svg,canvas,img,table'))}", timeout=90000)
++                        pg.wait_for_timeout(300)
++                        res = pg.evaluate("()=>{const r=document.querySelector('[data-cc-result]');return {t:r.textContent.trim().slice(0,160),v:!!r.querySelector('svg,canvas,img,table,meter,progress,[data-vis],.vis,.viz,.bar')}}")
++                        ran += 1
++                        if _re9.search(r"Traceback|NameError|Error:", res["t"]): bad.append("%d %s: %s" % (i + 1, CCI[i]["name"], res["t"][:70]))
++                        elif not res["v"]: bad.append("%d %s: result is text, not a visualisation" % (i + 1, CCI[i]["name"]))
++                    except Exception as ex_: bad.append("%d %s: %s" % (i + 1, CCI[i]["name"], str(ex_)[:60]))
++                feat(F_P2R, len(CCI) > 0 and not bad, "%d of %d examples ran; %d defects %s" % (ran, len(CCI), len(bad), bad[:3]))
++        else:
++            skip(F_P2L, "no chapter-code manifest for this chapter and no chapter-code tab"); skip(F_P2R, "no chapter-code manifest for this chapter and no chapter-code tab"); CCI = []
++        # ---- P3
++        sp = ctx.new_page(); sp.set_viewport_size({"width": 1366, "height": 768}); sp.goto("file://" + page_path); sp.wait_for_timeout(1200)
++        try:
++            sp.click('#groups [data-tab="learn"]'); sp.wait_for_timeout(500)
++            nrm = "(s)=>s.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()"
++            T3 = sp.evaluate("""()=>{const norm=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();const vis=e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&!e.closest('[hidden]')};
++ const tabs=[...document.querySelectorAll('.viewsub [role=tab],.viewsub [data-tab]')].filter(vis);const tl=[...new Set(tabs.map(t=>norm(t.textContent)))];
++ const tree=new Set([...document.querySelectorAll('#tree .tn')].map(x=>norm(x.textContent.replace(/[▸▾]/g,''))));
++ const rep=tl.filter(l=>tree.has(l));const rows=new Set(tabs.map(t=>Math.round(t.getBoundingClientRect().top))).size;
++ const folders=tabs.filter(t=>/\\u{1F4C1}/u.test(t.textContent)||tree.has(norm(t.textContent))).length;
++ return {tabs:tl.length,rep:rep.length,rows:rows,folders:folders,treeTop:[...document.querySelectorAll('#tree > li > .tn')].length}}""")
++            okl3 = T3["rep"] == 0 or T3["rows"] == 1
++            feat(F_P3L, okl3, "%d of %d tab labels repeat tree labels (%d of %d folder tabs); the tab bar is %d row(s); the tree has %d top folders" % (T3["rep"], T3["tabs"], T3["rep"], T3["folders"], T3["rows"], T3["treeTop"]))
++            # synchronisation: tab click -> tree selection; tree click -> tab selection (or the visible panel names the item)
++            sync_bad = []; tested = 0
++            tabs_l = sp.locator('.viewsub [data-tab]:visible'); ntab = tabs_l.count()
++            for ti in range(ntab):
++                try:
++                    tb = sp.locator('.viewsub [data-tab]:visible').nth(ti); lab = tb.text_content().strip(); tb.click(timeout=8000); sp.wait_for_timeout(250)
++                    r_ = sp.evaluate("""(lab)=>{const norm=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();const tn=[...document.querySelectorAll('#tree .tn')];const has=tn.some(x=>norm(x.textContent.replace(/[▸▾]/g,''))===norm(lab));const sel=document.querySelector('#tree .tn.sel');return {has:has,ok:!!sel&&norm(sel.textContent.replace(/[▸▾]/g,''))===norm(lab)}}""", lab)
++                    if r_["has"]:
++                        tested += 1
++                        if not r_["ok"]: sync_bad.append("tab '%s' leaves the tree selection elsewhere" % lab[:25])
++                except Exception as ex_: sync_bad.append("tab %d: %s" % (ti, str(ex_)[:50]))
++            first_tn = sp.locator("#tree > li > .tn")
++            for ni in range(min(first_tn.count(), 3)):
++                try:
++                    tn = sp.locator("#tree > li > .tn").nth(ni); lab = tn.text_content().replace("▸", "").replace("▾", "").strip(); tn.click(timeout=8000); sp.wait_for_timeout(300)
++                    r_ = sp.evaluate("""(lab)=>{const norm=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();const sel=[...document.querySelectorAll('.viewsub [aria-selected=true]')].map(x=>norm(x.textContent));const pane=[...document.querySelectorAll('[data-pane],[data-subpane],[data-panel]')].filter(e=>e.getBoundingClientRect().height>0&&!e.closest('[hidden]')).map(e=>norm(e.textContent.slice(0,400))).join(' ');return sel.includes(norm(lab))||pane.includes(norm(lab))}""", lab)
++                    tested += 1
++                    if not r_: sync_bad.append("tree item '%s' does not select a tab or show its panel" % lab[:25])
++                except Exception as ex_: sync_bad.append("tree %d: %s" % (ni, str(ex_)[:50]))
++            feat(F_P3S, tested > 0 and not sync_bad, "%d synchronisation probes, %d defects %s" % (tested, len(sync_bad), sync_bad[:3]))
++        except Exception as ex_:
++            feat(F_P3L, False, "crashed: %s" % str(ex_)[:150]); feat(F_P3S, False, "crashed")
++        sp.close()
++        # ---- P4, P5, P6 from the 1366x768 sweep
++        S = [s_ for s_ in SW.get(1366, []) if not s_.get("err")]
++        tl3 = [(s_["at"], s_["tl3"]) for s_ in S if s_["tl3"]]
++        npanel = pg.locator("[data-panel]").count()
++        stack = max([p_["h4"] for s_ in S for p_ in s_["panels"]] or [0])
++        multi = [p_["n"] for s_ in S for p_ in s_["panels"] if p_["h4"] > 1]
++        feat(F_P4, bool(S) and not tl3 and npanel > 0 and not multi, "%d data-panel elements in the page; %d states show a third tab row %s; the most h4 concepts stacked in one visible pane or panel: %d (%d panes stack more than one)" % (npanel, len(tl3), tl3[:2], stack, len(multi)))
++        over = []; allp = []
++        for s_ in S:
++            for p_ in s_["panels"]: allp.append((p_["h"], p_["n"], s_["at"]))
++        over = sorted([a for a in allp if a[0] > 768], reverse=True)
++        feat(F_P5, bool(allp) and not over, "%d of %d panels are over one screen (768 px) high; tallest %s" % (len(over), len(allp), ["%s %d px = %.1f screens" % (a[1], a[0], a[0] / 768.0) for a in over[:3]]))
++        dd = [(s_["at"], s_["dups"]) for s_ in S if s_.get("dups")]
++        feat(F_P6, bool(S) and not dd, "%d of %d screens repeat a list %s" % (len(dd), len(S), dd[:2]))
++        # ---- P8
++        tops_n = pg.locator("#groups button").count()
++        feat(F_P8, 0 < tops_n <= 8, "%d top-level tabs" % tops_n)
++        # ---- P9
++        fs = {}
++        try:
++            fs0 = pg.evaluate("parseFloat(getComputedStyle(document.documentElement).fontSize)")
++            ctl = pg.locator("#fsUp").count() > 0
++            if ctl:
++                pg.click("#fsUp"); pg.wait_for_timeout(200); fs1 = pg.evaluate("parseFloat(getComputedStyle(document.documentElement).fontSize)")
++                pg.click("#fsDown"); pg.wait_for_timeout(100)
++            else: fs1 = fs0
++            ctl_ok = ctl and fs1 > fs0
++        except Exception: ctl_ok = False; fs0 = fs1 = None
++        adapt = {w: (len(SW.get(w, [])) > 0 and not _ovf(w) and all(s_.get("fs") for s_ in SW.get(w, []) if not s_.get("err"))) for w in (390, 768, 1366)}
++        feat(F_P9, ctl_ok and all(adapt.values()), "text-size control raised the root size from %s to %s px; no overflow and the control on screen at 390: %s, 768: %s, 1366: %s" % (fs0, fs1, adapt[390], adapt[768], adapt[1366]))
++        # ---- P11
++        if MAN is None and not HAS_CC:
++            feat(F_P11, STD_DECL, "declares the standard: %s; no chapter-code manifest and no chapter-code tab for this chapter (examples equal: not applicable)" % STD_DECL)
++        else:
++            page_ex = sorted([(c["order"], c["name"]) for c in CCI])
++            eq = MAN is not None and page_ex == MAN
++            feat(F_P11, STD_DECL and eq, "declares the standard: %s; manifest %s with %s examples; the page lists %d examples; equal: %s" % (STD_DECL, os.path.basename(_mf[-1]) if _mf else "none", len(MAN) if MAN is not None else "-", len(page_ex), eq))
+     b.close()
+ json.dump(R, open(os.environ.get("RESULTS", os.path.join(REPO, "08-tooling", "%s-page" % N, "test_results_v%s.json" % PV)), "w"), indent=1)
+ bad = [k for k, v in R["widgets"].items() if not v["passed"]]
