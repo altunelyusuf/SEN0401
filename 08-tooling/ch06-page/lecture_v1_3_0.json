@@ -1,0 +1,518 @@
+{
+ "chapter": 6,
+ "deck": "SEN0401_Ch06_Transactions_3e_v2_1_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 6: Transactions",
+   "say": "This deck reads one real Bitcoin transaction, Alice's payment to Bob from the book, byte by byte. Every number was computed from those bytes with the chapter's own Python library, and no Bitcoin Core node was available where it was built.",
+   "concept": "One real transaction, 194 bytes, read field by field, with every number recomputed"
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has eight parts that follow the order of the bytes of a transaction. Four true stories and eighteen code examples are spread across them. The examples are listed in the same order in the chapter code tab of the course page, so every slide can be rerun.",
+   "concept": "Eight parts, one real transaction, and a summary you can check"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The seven questions are the chapter's own, rewritten so that each has an answer on a slide. We return to them in the summary. A reader who can answer all seven has understood the chapter.",
+   "concept": "Its own competency questions; we return to each"
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, eight branches",
+   "say": "The chapter has eight branches and 107 concepts. Each branch gets a divider, concept cards with everyday comparisons, code that runs, and some branches a true story. The deck follows the order in which the bytes of a transaction are written.",
+   "concept": "Eight branches; every slide today lives on this map"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "What a transaction is",
+   "say": "This part opens one real transaction. We read Alice's payment byte by byte and compare its two serializations. A story about the first transaction ever closes the part.",
+   "concept": "A transaction is a signed letter asking every ledger to update itself."
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "What a transaction is: concepts (1 of 2)",
+   "say": "These cards cover Transaction, The ownership record of a full node, The parts of a transaction and Serialized transaction. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "194 bytes, every one named",
+   "say": "The library parses Alice's transaction from the book into named fields and adds up their lengths. The seven groups add back to the 194 bytes of the serialized transaction, so no byte is unexplained. It is example 1 in the chapter code tab of the course page.",
+   "concept": "Every byte belongs to a named field, and the fields come in a fixed order"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "What a transaction is: concepts (2 of 2)",
+   "say": "These cards cover Extended serialization format, Legacy serialization, Partially signed bitcoin transaction and Byte map. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "Two serializations, two identifiers",
+   "say": "The same payment is written twice. The legacy form leaves out marker, flag and witness, and its hash is the txid that explorers show. The extended form has its own hash, the wtxid. It is example 2 in the chapter code tab of the course page.",
+   "concept": "The txid hashes the legacy bytes only; the wtxid hashes everything"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Ten bitcoins to Hal Finney, block 170",
+   "say": "This is a true story, dated 2009-01-12. On 11 January 2009 Hal Finney posted two words, running bitcoin, and the next day the software's author sent him 10 BTC. The lesson is that the format you are reading is the one from block 170.",
+   "concept": "The first transaction ever to spend an output",
+   "read": {
+    "label": "Satoshi to Finney, block 170 (tx)",
+    "url": "https://mempool.space/tx/f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16"
+   }
+  },
+  {
+   "n": 11,
+   "kind": "section",
+   "title": "Version, marker and flag",
+   "say": "The first six bytes of a transaction are not data about money. They tell a node which rules apply and whether a witness follows, so every later field is read correctly.",
+   "concept": "Version, marker and flag are the edition number and labels on the envelope."
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "Version, marker and flag (1 of 2)",
+   "say": "These cards cover Version 1, Version 2 and BIP68 and The version 3 proposal. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "The first six bytes",
+   "say": "Six bytes decide how everything after them is read. The version says which rules apply, and the zero marker with the one flag announces a witness. A legacy parser would read the zero as an empty input list. It is example 3 in the chapter code tab of the course page.",
+   "concept": "A zero marker where an input count would be tells old and new nodes apart"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Version, marker and flag (2 of 2)",
+   "say": "These cards cover Presigned transactions, Marker byte and Flag byte. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 15,
+   "kind": "section",
+   "title": "Inputs",
+   "say": "Inputs name the coins a transaction spends, and they state no amount. We meet the compact count, the outpoint and its two byte orders, and the database of unspent coins.",
+   "concept": "Inputs are the banknotes you hand over, each named by its address."
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Inputs: concepts (1 of 4)",
+   "say": "These cards cover Input count, CompactSize unsigned integer, Other variable-length integers and Outpoint. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "CompactSize: counting in few bytes",
+   "say": "Counts in a transaction use a variable-length integer. Up to 252 it is one byte; beyond that a first byte of fd, fe or ff says that two, four or eight more bytes follow. It is example 4 in the chapter code tab of the course page.",
+   "concept": "Small counts cost one byte; the first byte warns when a longer number follows"
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Inputs: concepts (2 of 4)",
+   "say": "These cards cover The previous transaction's identifier, Output index, The rule against double spending and Conflicting transactions. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "The outpoint, read both ways round",
+   "say": "An input points at a coin by the txid of an earlier transaction and an output number. The bytes are stored in one order and printed in the reverse order, which is a classic source of mistakes. It is example 5 in the chapter code tab of the course page.",
+   "concept": "An input states no amount; it names a coin by transaction and output number"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Inputs: concepts (3 of 4)",
+   "say": "These cards cover The UTXO database, Digest, Internal byte order and Display byte order. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "A spend updates the UTXO set",
+   "say": "A full node keeps a database of unspent outputs. Applying a transaction removes the coins its inputs name and adds the coins its outputs create. The difference in value is the fee. It is example 6 in the chapter code tab of the course page.",
+   "concept": "Nodes keep only unspent outputs; the fee is whatever is left over"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "10,000 bitcoins for two pizzas",
+   "say": "This is a true story, dated 2010-05-22. Four days after offering 10,000 BTC on the bitcointalk forum to anyone who would send him two pizzas, Laszlo Hanyecz reported that the deal was done. The lesson is that an input count of 131 is what one-output payments can look like.",
+   "concept": "The most famous purchase ever made with bitcoin",
+   "read": {
+    "label": "Pizza for bitcoins? (bitcointalk thread)",
+    "url": "https://bitcointalk.org/index.php?topic=137.0"
+   }
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Inputs: concepts (4 of 4)",
+   "say": "These cards cover Input script and Script length prefix. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 24,
+   "kind": "section",
+   "title": "The sequence field",
+   "say": "One four-byte field has carried three meanings in fifteen years. We decode it against two proposals, BIP125 and BIP68, and see why bit 31 matters.",
+   "concept": "The sequence field is a booth ticket whose meaning changed three times."
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "The sequence field: concepts (1 of 3)",
+   "say": "These cards cover Sequence number, Setup and refund transactions, Payment channel and The replacement bandwidth attack. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 26,
+   "kind": "content",
+   "title": "Four sequence values, three meanings",
+   "say": "The same four bytes signal finality, opt-in replacement under BIP125 and a relative timelock under BIP68. Setting bit 31 switches the timelock off, which is why the third value shows none. It is example 7 in the chapter code tab of the course page.",
+   "concept": "Bit 31 of the sequence field is the security bit of this chapter"
+  },
+  {
+   "n": 27,
+   "kind": "content",
+   "title": "The sequence field: concepts (2 of 3)",
+   "say": "These cards cover Opt-in replace-by-fee, The BIP125 signal, BIP68 relative timelock and The type flag. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 28,
+   "kind": "content",
+   "title": "BIP68: an hour as a sequence number",
+   "say": "To demand an hour, the type flag is set and the value counts units of 512 seconds, so an hour rounds up to 4,096 seconds. Counted in blocks, thirty blocks after a coin confirms is the earliest spend. It is example 8 in the chapter code tab of the course page.",
+   "concept": "Disable flag, type flag and a 16-bit value share one field"
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "The sequence field: concepts (3 of 3)",
+   "say": "These cards cover The disable flag and The 16-bit mask. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 30,
+   "kind": "section",
+   "title": "Outputs",
+   "say": "Outputs hold the amounts and the locks. The part ends with a block that created 184 billion bitcoins and with the policy that keeps tiny outputs out of everyone's database.",
+   "concept": "Outputs are the lines of a till receipt: an amount and who may collect it."
+  },
+  {
+   "n": 31,
+   "kind": "content",
+   "title": "Outputs: concepts (1 of 3)",
+   "say": "These cards cover Output count, Amount, Satoshi and The consensus range of an amount. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 32,
+   "kind": "content",
+   "title": "Amounts, change and the fee",
+   "say": "Outputs state amounts in satoshis. The input states none, so the spent coin's value comes from the record of that coin. What the outputs do not take is the fee that the miner collects. It is example 9 in the chapter code tab of the course page.",
+   "concept": "No field holds a balance or a fee; both are differences"
+  },
+  {
+   "n": 33,
+   "kind": "content",
+   "title": "Outputs: concepts (2 of 3)",
+   "say": "These cards cover Uneconomical output, Dust limit, Data-carrier output and Output script. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "The 2010 overflow, in five lines",
+   "say": "In August 2010 a block carried two outputs of about 92 billion bitcoins each. Their sum wrapped around to a negative number, which passed the check on the total. Checking every output closes the hole. It is example 10 in the chapter code tab of the course page.",
+   "concept": "Check each amount and the total: one check on the total was not enough"
+  },
+  {
+   "n": 35,
+   "kind": "content",
+   "title": "The block that created 184 billion bitcoins",
+   "say": "This is a true story, dated 2010-08-15. Block 74,638 contained a transaction with two outputs of 92,233,720,368.54277039 BTC each. The lesson is that a signed amount needs a range check; the chain learned it the hard way.",
+   "concept": "A bug that created money out of thin air",
+   "read": {
+    "label": "Value overflow incident (Bitcoin Wiki)",
+    "url": "https://en.bitcoin.it/wiki/Value_overflow_incident"
+   }
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "Outputs: concepts (3 of 3)",
+   "say": "These cards cover Script size limits, Anyone-can-spend scripts and Standard transaction outputs. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 37,
+   "kind": "content",
+   "title": "Dust limits by output type",
+   "say": "An output is dust when it costs more to spend than it is worth, at the relay fee. Segwit outputs are cheaper to spend, so their limit is lower. A data-carrier output can never be spent and is exempt. It is example 11 in the chapter code tab of the course page.",
+   "concept": "Dust is a policy about who pays for the UTXO set: everyone, for ever"
+  },
+  {
+   "n": 38,
+   "kind": "section",
+   "title": "Witnesses",
+   "say": "A witness is the proof that a spender may spend. We see how proofs inside the input script made identifiers malleable, and how segregated witness repaired that as a soft fork.",
+   "concept": "A witness is the ID you show at the counter, kept off the receipt."
+  },
+  {
+   "n": 39,
+   "kind": "content",
+   "title": "Witnesses: concepts (1 of 4)",
+   "say": "These cards cover Witness, Public key and signature as witness, Contract protocols and Circular dependency. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "One spend, four identifiers",
+   "say": "A small number can be pushed on the script stack in four ways. Each way is a different byte string, so the same payment gets four different legacy identifiers. This was the malleability that software could not ignore. It is example 12 in the chapter code tab of the course page.",
+   "concept": "A stranger could change the txid without changing the payment"
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "Witnesses: concepts (2 of 4)",
+   "say": "These cards cover Third-party transaction malleability, Alternative push encodings, Second-party transaction malleability and Wanted malleability. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 42,
+   "kind": "content",
+   "title": "Segwit: change the witness, keep the txid",
+   "say": "After segregated witness the signature lives outside the txid. Replacing it leaves the txid unchanged, so chains of unconfirmed payments stay valid. The wtxid still covers the witness and changes. It is example 13 in the chapter code tab of the course page.",
+   "concept": "What a hash covers decides what can safely be built on it"
+  },
+  {
+   "n": 43,
+   "kind": "content",
+   "title": "Mt. Gox blames malleability",
+   "say": "This is a true story, dated 2014-02-10. On 7 February 2014 Mt. Gox halted bitcoin withdrawals, and on 10 February it issued a press release blaming a bug in the bitcoin software: someone could alter transaction details to make it seem that a sending of bitcoins had not occurred when it had.",
+   "concept": "An exchange blames the protocol, and researchers check",
+   "read": {
+    "label": "Transaction Malleability and MtGox (paper)",
+    "url": "https://arxiv.org/abs/1403.6676"
+   }
+  },
+  {
+   "n": 44,
+   "kind": "content",
+   "title": "Witnesses: concepts (3 of 4)",
+   "say": "These cards cover Segregated witness, Hard fork, Soft fork and Witness program. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 45,
+   "kind": "content",
+   "title": "Witnesses: concepts (4 of 4)",
+   "say": "These cards cover Witness structure, Witness stack, Witness item and A legacy input's witness. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 46,
+   "kind": "content",
+   "title": "Hard fork or soft fork?",
+   "say": "Segregated witness was a soft fork. Old nodes saw the new outputs as anyone-can-spend scripts and accepted the blocks, while upgraded nodes enforced the witness rules. That is why it could be activated without a split.",
+   "concept": "A soft fork can only restrict; old nodes keep accepting the blocks"
+  },
+  {
+   "n": 47,
+   "kind": "section",
+   "title": "Lock time and the coinbase",
+   "say": "Two special cases of a transaction: one that may not be mined before a time, and one that creates new coins. The clock and the money supply both follow from simple rules.",
+   "concept": "A lock time is a post-dated cheque; a coinbase is the mint's wage slip."
+  },
+  {
+   "n": 48,
+   "kind": "content",
+   "title": "Lock time and the coinbase (1 of 3)",
+   "say": "These cards cover The lock time field, Lock time as a block height, Lock time as an epoch time and Median time past. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 49,
+   "kind": "content",
+   "title": "Lock time and the median time past",
+   "say": "Block timestamps are not monotonic, so a time lock is compared with the median of the last eleven. Values below 500 million are heights; larger ones are times. The median lags the highest timestamp. It is example 14 in the chapter code tab of the course page.",
+   "concept": "Lock time says not before; nothing in a transaction says not after"
+  },
+  {
+   "n": 50,
+   "kind": "content",
+   "title": "Lock time and the coinbase (2 of 3)",
+   "say": "These cards cover Coinbase transaction, The null outpoint, The coinbase field and Block subsidy. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 51,
+   "kind": "content",
+   "title": "The subsidy, halving by halving",
+   "say": "The subsidy starts at 50 bitcoin and is halved every 210,000 blocks by a right shift. It reaches zero after block 6,929,999, and the total ever issued stays just below 21 million. It is example 15 in the chapter code tab of the course page.",
+   "concept": "The coinbase is the only transaction that creates bitcoin"
+  },
+  {
+   "n": 52,
+   "kind": "content",
+   "title": "Lock time and the coinbase (3 of 3)",
+   "say": "These cards cover Block reward and Maturity rule. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 53,
+   "kind": "content",
+   "title": "The coinbase and its maturity",
+   "say": "A coinbase has one input that points at nothing. Its coins are locked for 100 blocks, so that a reorganisation cannot invalidate coins that were already spent. Block 9's coins were spendable by block 170. It is example 16 in the chapter code tab of the course page.",
+   "concept": "Newly created coins cannot be spent until 100 blocks have passed"
+  },
+  {
+   "n": 54,
+   "kind": "section",
+   "title": "Weight and foundations",
+   "say": "The part closes with what a block is filled by, and with the hashes and rule sets that every figure of the chapter rests on. We recompute the weight 569 from the bytes.",
+   "concept": "Weight is a transaction's postage; foundations are the post office's rules."
+  },
+  {
+   "n": 55,
+   "kind": "content",
+   "title": "Weight and foundations (1 of 3)",
+   "say": "These cards cover Weight, Vbytes, The block weight limit and Weight factors. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 56,
+   "kind": "content",
+   "title": "569: weight by field",
+   "say": "Each field weighs its bytes times four, except the marker, the flag and the witness, which weigh one. The sum is the 569 the book quotes, and dividing by four gives 143 virtual bytes. It is example 17 in the chapter code tab of the course page.",
+   "concept": "Weight is what a block is filled by, and witness bytes cost a quarter"
+  },
+  {
+   "n": 57,
+   "kind": "content",
+   "title": "Weight and foundations (2 of 3)",
+   "say": "These cards cover Hash function, Double SHA-256, Transaction identifier and Witness transaction identifier. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 58,
+   "kind": "content",
+   "title": "How a txid is made",
+   "say": "A txid is not a field. It is the double SHA-256 of the legacy serialization, shown in reverse byte order. We recompute it from the bytes and it matches the library and the explorer. It is example 18 in the chapter code tab of the course page.",
+   "concept": "Identifiers are computed, never stored: anyone can recompute them"
+  },
+  {
+   "n": 59,
+   "kind": "content",
+   "title": "Weight and foundations (3 of 3)",
+   "say": "These cards cover Relay policy and Consensus rule. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 6.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 60,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature, one for each group of parts. A line that feels unproven should send you back to its code slide, because every figure in it was computed there. The chapter code tab of the course page lets you rerun all eighteen examples.",
+   "concept": "If a line feels unproven, the code slide of its part carries the receipt"
+  },
+  {
+   "n": 61,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read, and every link was opened on the date in the subtitle. A good exercise is to take any confirmed transaction from the explorer and run the chapter code on its hexadecimal. The course page for chapter 6 carries the full resource list.",
+   "concept": "Parse any transaction yourself and match the explorer's identifier and weight",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Mastering Bitcoin, ch. 6: Transactions",
+     "url": "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/develop/ch06_transactions.adoc",
+     "finds": "Chapter text as AsciiDoc source, plain text, free to read"
+    },
+    {
+     "group": "Read",
+     "label": "Transaction Malleability and MtGox (paper)",
+     "url": "https://arxiv.org/abs/1403.6676",
+     "finds": "Decker and Wattenhofer's measurements, free to download"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 141: Segregated Witness (spec)",
+     "url": "https://bips.dev/141/",
+     "finds": "Weight, witness data and the new transaction format"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 68: Relative lock-time (spec)",
+     "url": "https://bips.dev/68/",
+     "finds": "Locking an input by sequence numbers"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 125: Opt-in Replace-by-Fee (spec)",
+     "url": "https://bips.dev/125/",
+     "finds": "How a transaction signals that it may be replaced"
+    },
+    {
+     "group": "Tools",
+     "label": "Alice's transaction on mempool.space (tx)",
+     "url": "https://mempool.space/tx/466200308696215bbc949d5141a49a4138ecdfdfaa2a8029c1f9bcecd1f96177",
+     "finds": "Block 775,072: the payment this chapter builds"
+    },
+    {
+     "group": "Tools",
+     "label": "Bitcoin Wiki: Transaction (guide)",
+     "url": "https://en.bitcoin.it/wiki/Transaction",
+     "finds": "Fields of a transaction, explained on the wiki"
+    },
+    {
+     "group": "Community",
+     "label": "Pizza for bitcoins? (bitcointalk thread)",
+     "url": "https://bitcointalk.org/index.php?topic=137.0",
+     "finds": "Laszlo Hanyecz's offer of 10,000 bitcoins, May 2010"
+    },
+    {
+     "group": "Community",
+     "label": "Strange block 74638 (bitcointalk thread)",
+     "url": "https://bitcointalk.org/index.php?topic=822.0",
+     "finds": "The forum thread where the overflow was found live"
+    },
+    {
+     "group": "Watch",
+     "label": "Bitcoin transaction (tutorial video)",
+     "url": "https://www.youtube.com/embed/PrcJD4rznyA",
+     "finds": "Mobilefish.com walks through inputs, outputs and signatures"
+    }
+   ]
+  },
+  {
+   "n": 62,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by a computation that ran on a slide of this deck. The course page for chapter 6 has every word behind them, the stories with their sources, and the question bank to test yourself.",
+   "concept": "And where each claim gets its proof"
+  }
+ ]
+}
