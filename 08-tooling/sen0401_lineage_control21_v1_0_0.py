@@ -13,6 +13,9 @@ import sen0401_lineage_successor_stages_v1_1_0 as S
 import sen0401_lineage_template_revision_v1_0_0 as T
 import sen0401_lineage_control_v1_0_0 as C
 import sen0401_lineage_control20_v1_0_0 as K
+RC = "08-tooling/sen0401_lineage_research_check_v1_0_0.py"; SING = "AC3L_Ch10_Singular"
+XK = [("annotated", RC, "annotated:10"), ("linkdisc", RC, "linkdisc:10"), ("kindrule", RC, "kindrule:10"), ("singular", RC, "singular:10"), ("samepairs", RC, "samepairs:10")]
+XL = {"annotated": "every link annotated with the sentence that states it", "linkdisc": "OE link discovery v1_1_0: 0 beyond the baseline", "kindrule": "OE kind rule check v1_1_0", "singular": "one property per meaning (BP-D61 floor)", "samepairs": "the 28 link pairs are still stated"}
 lit = C.lit; WORK = "/tmp/claude-0/s/ctl21"; VT = K.VT; TK = K.TK
 GATE = "/home/claude/Ontologies/backlog-roadmap-framework/03-tooling/backlog_execution_ready_v1_2_0.py"
 
@@ -35,8 +38,8 @@ def start():
 
 def prepare():
     os.makedirs(WORK, exist_ok=True); draft = [K.PRE]
-    for kind, spec, tid in K.KINDS:
-        draft.append('ex:Ev21C_%s a backlog:TestEvidence ; rdfs:label %s@en ; backlog:belongsToLineage ex:Lineage3 ; backlog:hasTestId "%s" ; backlog:hasTestSpec "%s" .\n' % (kind, lit("Verify run: %s, chapter 10, page 9.79.0" % K.LABEL[kind]), tid, spec))
+    for kind, spec, tid in (K.KINDS + XK):
+        draft.append('ex:Ev21C_%s a backlog:TestEvidence ; rdfs:label %s@en ; backlog:belongsToLineage ex:Lineage3 ; backlog:hasTestId "%s" ; backlog:hasTestSpec "%s" .\n' % (kind, lit("Verify run: %s, chapter 10, page 9.79.0" % (K.LABEL.get(kind) or XL[kind])), tid, spec))
     d = os.path.join(WORK, "draft.ttl"); open(d, "w").write("".join(draft))
     cmd = "python3 -B {spec} {id} > %s/bridge_verify_$(echo {id} | tr '/:' '__').log 2>&1" % K.LOGDIR
     r = subprocess.run([sys.executable, C.BRIDGE, d, "--workspace", K.REPO, "--test-command", cmd, "-o", os.path.join(WORK, "bridge.ttl")], capture_output=True, text=True, env=dict(os.environ, TZ="UTC"))
@@ -45,24 +48,24 @@ def prepare():
 
 def record():
     now = M.now(); src = M.newest(); t = open(src, encoding="utf-8").read(); nxt, cur = M.next_version(src)
-    v = S.verdicts(os.path.join(WORK, "bridge.ttl")); V = {k: v["Ev21C_" + k] for k, _, _ in K.KINDS}; L = []; OUT = {}
-    for kind, spec, tid in K.KINDS:
+    v = S.verdicts(os.path.join(WORK, "bridge.ttl")); V = {k: v["Ev21C_" + k] for k, _, _ in (K.KINDS + XK)}; L = []; OUT = {}
+    for kind, spec, tid in (K.KINDS + XK):
         lg = os.path.join(K.LOGDIR, "bridge_verify_%s.log" % tid.replace("/", "_").replace(":", "_")); OUT[kind] = [l for l in open(lg, encoding="utf-8", errors="replace").read().strip().splitlines() if l.strip()][-1][:200]
     bad = [k for k in V if not V[k][0]]; assert not bad, "a check is not verified: %s" % bad
     logs = sorted(os.path.relpath(p, K.REPO) for p in glob.glob(os.path.join(K.LOGDIR, "bridge_verify_*.log"))); ver = C.bridge_files(logs, now); assert all(x[1][0] for x in ver.values())
-    for kind, spec, tid in K.KINDS:
-        ok, at, how = V[kind]; crits = [K.CRIT] + ([K.TCRIT] if kind in K.AC3T else [])
+    for kind, spec, tid in (K.KINDS + XK):
+        ok, at, how = V[kind]; crits = [K.CRIT] + ([K.TCRIT] if kind in K.AC3T else []) + ([SING] if kind in ("stage4", "research", "seclinks") + tuple(x[0] for x in XK) else [])
         L.append('ex:Ev21C_%s a backlog:TestEvidence ; rdfs:label %s@en ; backlog:belongsToLineage ex:Lineage3 ; backlog:attestsCriterion %s ;\n    backlog:hasTestId "%s" ; backlog:hasTestSpec "%s" ;\n    backlog:evidenceVerified true ; backlog:hasVerificationMethod %s ;\n    backlog:verifiedByTool "backlog_evidence_bridge_v1_1_0 with the course repository as workspace" ; backlog:verifiedAt "%s"^^xsd:dateTime .\n' % (
-            kind, lit("Verify run: %s, chapter 10, page 9.79.0" % K.LABEL[kind]), ", ".join("ex:" + c for c in crits), tid, spec, lit(how[:600]), at))
+            kind, lit("Verify run: %s, chapter 10, page 9.79.0" % (K.LABEL.get(kind) or XL[kind])), ", ".join("ex:" + c for c in crits), tid, spec, lit(how[:600]), at))
     for f, (eid, (ok, at, how)) in ver.items():
         L.append('ex:%s a backlog:ArtifactEvidence ; rdfs:label %s@en ; backlog:belongsToLineage ex:Lineage3 ; backlog:attestsCriterion ex:%s ; backlog:hasArtifactPath "%s" ; backlog:hasArtifactSHA256 "%s" ;\n    backlog:evidenceVerified true ; backlog:hasVerificationMethod "artifact exists and hash matches" ;\n    backlog:verifiedByTool "backlog_evidence_bridge_v1_1_0" ; backlog:verifiedAt "%s"^^xsd:dateTime .\n' % (eid, lit(os.path.basename(f)), K.CRIT, f, K.sha256(f), at))
-    ex = ["Ev21C_" + k for k, _, _ in K.KINDS]
+    ex = ["Ev21C_" + k for k, _, _ in (K.KINDS + XK)]
     i, j = T.blk(t, VT); b = t[i:j]; m = re.search(r'backlog:hasState backlog:InProgress ; backlog:startedAt "([^"]*)"\^\^xsd:dateTime', b); assert m, VT
     t = t[:i] + b.replace(m.group(0), 'backlog:hasState backlog:Done ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:finishedAt "%s"^^xsd:dateTime ; backlog:lastAuditedAt "%s"^^xsd:dateTime ; backlog:hasExecutionModality backlog:Mode_Hybrid' % (m.group(1), now, now), 1) + t[j:]
-    L.append(C.transition("Done21T_" + VT, VT, "T_Complete", now, "Verification finished %s UTC: all %d checks ran one after the other on the bridge and are verified; recorded as printed." % (now, len(K.KINDS)), VT + " completed"))
+    L.append(C.transition("Done21T_" + VT, VT, "T_Complete", now, "Verification finished %s UTC: all %d checks ran one after the other on the bridge and are verified; recorded as printed." % (now, len((K.KINDS + XK))), VT + " completed"))
     L.append('ex:Harness21C_%s a backlog:TestHarness ; rdfs:label %s@en ; backlog:harnessFor ex:%s ; backlog:hasHarnessEvidence %s .\n' % (VT, lit("Checks run for " + VT), VT, ", ".join("ex:" + e for e in ex)))
     L.append('ex:%s backlog:hasAcceptanceCriterion ex:%s ; backlog:hasEvidence %s ;\n    backlog:hasAuditNote %s .\n' % (VT, K.CRIT, ", ".join("ex:" + e for e in ex) + ", " + ", ".join("ex:" + e for e, _ in ver.values()),
-             lit("Done, recorded %s: the checks of the task ran one after the other on the bridge after the task started; results as printed: %s. The page-test elements read the logs of the builder's control run of the same page files on the same day (08-tooling/verify/iter16/ch10, the page and its SHA-256 are unchanged since); the page tests were not run a second time." % (now[:10], " | ".join("%s -> %s" % (k, OUT[k][:120]) for k in OUT)))))
+             lit("Done, recorded %s: the checks of the task ran one after the other on the bridge after the task started; results as printed: %s. The page-test elements read the logs of the builder's control run of the same page files on the same day (08-tooling/verify/iter16/ch10, the page and its SHA-256 are unchanged since); the page tests were not run a second time. NOTE on tools: the criterion AC3L_Ch10_Singular names OE link discovery v1_1_0 and OE kind rule check v1_1_0; the working copy of the OE repository now holds newer versions (v1_2_0 and v1_3_0) and no longer holds the named ones, so the builder restored the two named files from the OE repository history (oe_link_discovery_v1_1_0.py from the commit before repo-tooling v1.81.0, oe_kind_rule_check_v1_1_0.py from the commit before repo-tooling v1.80.0) into a scratch tree (OEE_ROOT=/tmp/claude-0/s/oe_old, the rest symlinked to the current repo-tooling and oe-method) and ran exactly the named versions; the newer versions were not run." % (now[:10], " | ".join("%s -> %s" % (k, OUT[k][:120]) for k in OUT)))))
     t2 = X.set_status(t + "\n" + "".join(L), "LS_InProgress")
     print(os.path.basename(M.write_new(src, t2, nxt, cur, "Verify task %s Done at %s UTC on bridge-verified evidence and a harness. ST_Section_Links and ST_Page_Template stay InProgress (chapter 11 open)." % (VT, now))))
 
