@@ -22,12 +22,12 @@ def start():
     assert "backlog:hasState backlog:Proposed" in b and "startedAt" not in b, VT
     assert re.search(r"backlog:hasState backlog:Done", t[T.blk(t, TK)[0]:T.blk(t, TK)[1]]), TK + " is not Done"
     tmp = t[:i] + b.replace("backlog:hasState backlog:Proposed", "backlog:hasState backlog:Ready", 1) + t[j:]
-    open(src + ".gate.tmp", "w").write(tmp)
+    ready = M.now(); open(src + ".gate.tmp", "w").write(tmp)
     r = subprocess.run([sys.executable, GATE, src + ".gate.tmp", "--lineage", "Lineage3", "--item", VT], capture_output=True, text=True); os.remove(src + ".gate.tmp")
     assert "VERDICT     : READY" in r.stdout, VT + " is not READY: " + r.stdout[-300:]
     now = M.now(); it = re.search(r"memberOfContainer ex:(Iter_\d+)", b).group(1)
     t = t[:i] + b.replace("backlog:hasState backlog:Proposed", 'backlog:hasState backlog:InProgress ; backlog:startedAt "%s"^^xsd:dateTime' % now, 1) + t[j:]
-    ev = C.transition("Ready21T_" + VT, VT, "T_Refine", now, "Ready at %s UTC: its Build task %s is Done on bridge-verified evidence (v%s); the refinement ex:Refine_%s already names the checks, the page and what a passing result is." % (now, TK, cur, VT), VT + " ready")
+    ev = C.transition("Ready21T_" + VT, VT, "T_Refine", ready, "Ready at %s UTC: its Build task %s is Done on bridge-verified evidence (v%s); the refinement ex:Refine_%s already names the checks, the page and what a passing result is. The start gate was asked right after (it answered READY)." % (ready, TK, cur, VT), VT + " ready")
     ev += C.transition("Begin21T_" + VT, VT, "T_Start", now, "Verification begun %s UTC by the builder session after the start gate said READY, inside the started sprint ex:%s: the checks of the task run one after the other on the evidence bridge; nothing is changed or waived; every result is recorded as printed." % (now, it), VT + " started")
     t = X.set_status(t + "\n" + ev, "LS_InProgress")
     print(now, os.path.basename(M.write_new(src, t, nxt, cur, "Verify task %s made Ready and started at %s UTC (start gate READY, dependency %s Done)." % (VT, now, TK))))
