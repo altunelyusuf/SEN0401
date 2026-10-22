@@ -1,0 +1,385 @@
+{
+ "chapter": 5,
+ "version": "1.1.0",
+ "kind": "chapter-code manifest",
+ "deck": "03-materials/ch05/SEN0401_Ch05_WalletRecovery_3e_v3_1_0.pptx",
+ "about": "The code examples of the chapter 5 deck, in the order of the code slides (order = slide order). The page's chapter-code tab lists them by NAME in this order; the code runs in the page with the chapter library and the prelude defined first; the expected result is what the run printed.",
+ "executed_with": {
+  "python": "3.14.6",
+  "library": "sen0401_ch05_wallet_lib_v1_1_0"
+ },
+ "library": {
+  "file": "08-tooling/sen0401_ch05_wallet_lib_v1_1_0.py",
+  "sha256": "2392604907c0a667c03c692ee3633354d22c6b2c83cf4077317f0a7ae7bde7e5",
+  "data_files": [
+   {
+    "file": "08-tooling/ch05-evidence/bip39_english.txt",
+    "sha256": "2f5eed53a4727b4bf8880d8f3f199efc90e58503646d9ff8eff3a2ed3b24dbda",
+    "needed_by": "wordlist()"
+   }
+  ],
+  "page_requirements": [
+   "hashlib with sha256, sha512, pbkdf2_hmac and ripemd160",
+   "hmac",
+   "unicodedata",
+   "json (imported by the prelude)",
+   "wordlist() reads the BIP39 English word list (2048 words) from the data file"
+  ]
+ },
+ "prelude": "import json\nsha256_hex = lambda b: hashlib.sha256(b).hexdigest()\nENT = \"0c1e24e5917779d297e14d45f14e1a1a\"\nWORDS = \"army van defense carry jealous true garbage claim echo media make crunch\"\nPASSPHRASE = \"SuperDuperSecret\"\nTV = bytes.fromhex(\"000102030405060708090a0b0c0d0e0f\")\nB84 = \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\"\nDESC = (\"wpkh([73c5da0a/84h/0h/0h]xpub6CatWdiZiodmUeTDp8LT5or8nmbKNcuyvz7WyksVFkKB4RHwCD3Xyuv\"\n        \"PEbvqAQY3rAPshWcMLoP2fMFMKHPJ4ZeZXYVUhLv1VMrjPC7PW6V/0/*)\")\nC32 = \"ms10testsxxxxxxxxxxxxxxxxxxxxxxxxxx4nzvca9cmczlw\"\nBOOK_XPUB = (\"xpub67xpozcx8pe95XVuZLHXZeG6XWXHpGq6Qv5cmNfi7cS5mtjJ2tgypeQbB\"\n             \"s2UAR6KECeeMVKZBPLrtJunSDMstweyLXhRgPxdp14sk9tJPW9\")\n",
+ "examples": [
+  {
+   "order": 1,
+   "id": "loose_vs_seed",
+   "name": "Loose keys versus one seed",
+   "slide": 11,
+   "concepts": [
+    "independent key generation",
+    "deterministic key generation",
+    "seed"
+   ],
+   "code": "seed = b\"my seed\"\nkey = lambda i: sha256_hex(seed + bytes([i]))\nkeys = [key(i)[:8] for i in range(3)]\nprint(keys)\nagain = [key(i)[:8] for i in range(3)]\nprint(keys == again)",
+   "expected": "['aa74b609', '94af53de', 'fc092c45']\nTrue\n"
+  },
+  {
+   "order": 2,
+   "id": "other_schemes",
+   "name": "Other recovery codes check themselves differently",
+   "slide": 17,
+   "concepts": [
+    "codex32",
+    "Electrum v2",
+    "BIP39",
+    "Aezeed",
+    "Muun"
+   ],
+   "code": "print(codex32_check(C32))\nn = next(i for i in range(99999)\n         if electrum_has_version(\"seed %d\" % i, \"100\"))\nprint(n, electrum_hash(\"seed %d\" % n)[:3])",
+   "expected": "True\n5483 100\n"
+  },
+  {
+   "order": 3,
+   "id": "shamir",
+   "name": "Three of five shares recover the secret",
+   "slide": 18,
+   "concepts": [
+    "secret sharing",
+    "SLIP39 share set"
+   ],
+   "code": "secret = 0x1337c0de\nshares = shamir_split(secret, 3, 5, [11, 22])\nprint(shamir_combine(shares[:3]) == secret)\nprint(shamir_combine(shares[1:4]) == secret)\nprint(shamir_combine(shares[:2]) == secret)",
+   "expected": "True\nTrue\nFalse\n"
+  },
+  {
+   "order": 4,
+   "id": "hash_avalanche",
+   "name": "A hash function changes half its bits",
+   "slide": 22,
+   "concepts": [
+    "hash function",
+    "SHA-256 and SHA-512"
+   ],
+   "code": "a = hashlib.sha256(b\"seed A\").digest()\nb = hashlib.sha256(b\"seed B\").digest()\ndiff = int(a.hex(), 16) ^ int(b.hex(), 16)\nprint(len(a) * 8, bin(diff).count(\"1\"))",
+   "expected": "256 126\n"
+  },
+  {
+   "order": 5,
+   "id": "entropy_sizes",
+   "name": "How many words for how much entropy",
+   "slide": 23,
+   "concepts": [
+    "entropy",
+    "code length",
+    "security strength"
+   ],
+   "code": "for bits in (128, 160, 192, 224, 256):\n    ent = bytes(bits // 8)\n    n = len(entropy_to_mnemonic(ent).split())\n    print(bits, n)",
+   "expected": "128 12\n160 15\n192 18\n224 21\n256 24\n"
+  },
+  {
+   "order": 6,
+   "id": "entropy_to_words",
+   "name": "From entropy to twelve words",
+   "slide": 24,
+   "concepts": [
+    "word list",
+    "eleven-bit segment",
+    "entropy"
+   ],
+   "code": "words = entropy_to_mnemonic(bytes.fromhex(ENT))\nprint(words == WORDS)\nidx = [wordlist().index(w) for w in words.split()]\nprint(idx)\nprint(format(idx[0], \"011b\"), words.split()[0])",
+   "expected": "True\n[96, 1929, 459, 279, 956, 1866, 764, 333, 559, 1107, 1076, 423]\n00001100000 army\n"
+  },
+  {
+   "order": 7,
+   "id": "checksum",
+   "name": "The checksum catches a wrong word",
+   "slide": 25,
+   "concepts": [
+    "checksum",
+    "BIP39 checksum"
+   ],
+   "code": "ent, ok = mnemonic_to_entropy(WORDS)\nprint(ent.hex(), ok)\nbad = WORDS.replace(\"crunch\", \"army\")\nprint(mnemonic_to_entropy(bad)[1])",
+   "expected": "0c1e24e5917779d297e14d45f14e1a1a True\nFalse\n"
+  },
+  {
+   "order": 8,
+   "id": "normalisation",
+   "name": "Text is normalised before stretching",
+   "slide": 26,
+   "concepts": [
+    "text normalisation"
+   ],
+   "code": "s = \"caf\\u00e9\"\nn = unicodedata.normalize(\"NFKD\", s)\nprint(len(s), len(n))\nprint(mnemonic_to_seed(s) == mnemonic_to_seed(n))",
+   "expected": "4 5\nTrue\n"
+  },
+  {
+   "order": 9,
+   "id": "pbkdf2_salt",
+   "name": "PBKDF2 stretches the words with a salt",
+   "slide": 27,
+   "concepts": [
+    "key-stretching function",
+    "PBKDF2",
+    "salt",
+    "root seed"
+   ],
+   "code": "def stretch(salt, rounds):\n    d = hashlib.pbkdf2_hmac(\n        \"sha512\", WORDS.encode(), salt, rounds)\n    return d.hex()[:12]\nprint(stretch(b\"mnemonic\", 1))\nprint(stretch(b\"mnemonic\", 2048))\nprint(stretch(b\"mnemonic1\", 2048))",
+   "expected": "d4a21305b044\n5b56c417303f\n6b63963292ef\n"
+  },
+  {
+   "order": 10,
+   "id": "passphrase_wallets",
+   "name": "A passphrase opens a different wallet",
+   "slide": 28,
+   "concepts": [
+    "recovery code passphrase",
+    "optional passphrase in BIP39",
+    "plausible deniability",
+    "duress wallet"
+   ],
+   "code": "path = \"m/84h/0h/0h/0/0\"\ndef addr(pp):\n    k, c = keys_at(WORDS, path, pp)\n    return p2wpkh_address(ser_p(ec_mul(k)))\nprint(addr(\"\"))\nprint(addr(PASSPHRASE))",
+   "expected": "bc1qg0azlj4w2lrq8jssrrz6eprt2fe7f7edm4vpd5\nbc1qp2dvcxvj4y5p5mesfgspljzdvnyzmqy2724n04\n"
+  },
+  {
+   "order": 11,
+   "id": "master_key",
+   "name": "HMAC-SHA512 makes the master key",
+   "slide": 33,
+   "concepts": [
+    "HMAC-SHA512",
+    "master private key",
+    "master chain code",
+    "root seed"
+   ],
+   "code": "h = hmac.new(b\"Bitcoin seed\", TV, hashlib.sha512)\nI = h.digest()\nleft, right = I[:32], I[32:]\nprint(len(I), len(left), len(right))\nk, c = master(TV)\nprint(k == int.from_bytes(left, \"big\"), c == right)\nprint(\"%064x\" % k)",
+   "expected": "64 32 32\nTrue True\ne8f32e723decf4051aefac8e2c93c9c5b214313817cdb01a1494b917c8436b35\n"
+  },
+  {
+   "order": 12,
+   "id": "child_keys",
+   "name": "Child keys from a parent and an index",
+   "slide": 34,
+   "concepts": [
+    "child key derivation",
+    "chain code",
+    "index number",
+    "private child key derivation"
+   ],
+   "code": "k, c = master(TV)\nfor i in range(3):\n    ki, ci = ckd_priv(k, c, i)\n    print(i, \"%064x\" % ki, ci.hex())",
+   "expected": "0 4e2cdcf2f14e802810e878cf9e6411fc4e712edf19a06bcfcc5d5572e489a3b7 d323f1be5af39a2d2f08f5e8f664633849653dbe329802e9847cfc85f8d7b52a\n1 4df92b81d2727c0434dc6567e01ceaec80e408974b131b8085490313d2f82a9e 8dd96414ff4d5b4750be3af7fecce207173f86d6b5f58f9366297180de8e109b\n2 271614f2ca446df6e17e3ea92dacc70a0b6360bf831648a42508e7918a71db8a 6da671c6fba4fe2ff713350cc6c90dd429c24722cfe91ef118e549617ed6664a\n"
+  },
+  {
+   "order": 13,
+   "id": "hardened",
+   "name": "Hardened and normal children differ",
+   "slide": 35,
+   "concepts": [
+    "hardened derivation",
+    "hardened child key derivation",
+    "index numbers for normal and hardened derivation"
+   ],
+   "code": "k, c = master(TV)\nnormal, _ = ckd_priv(k, c, 0)\nhard, _ = ckd_priv(k, c, HARD)\nprint(HARD, normal == hard)\nprint(path_indices(\"m/0h\") == [HARD])",
+   "expected": "2147483648 False\nTrue\n"
+  },
+  {
+   "order": 14,
+   "id": "xpub_leak",
+   "name": "Why hardened steps protect the parent",
+   "slide": 36,
+   "concepts": [
+    "child key independence",
+    "extended public key",
+    "using derived child keys"
+   ],
+   "code": "k, c = master(TV)\nK = ec_mul(k)\nkid, _ = ckd_priv(k, c, 5)\nback = leak_parent_private_key(K, c, 5, kid)\nprint(back == k)",
+   "expected": "True\n"
+  },
+  {
+   "order": 15,
+   "id": "public_derivation",
+   "name": "Public keys derived without private keys",
+   "slide": 37,
+   "concepts": [
+    "public child key derivation",
+    "extended public key deployment"
+   ],
+   "code": "k, c = master(TV)\nK = ec_mul(k)\nk5, _ = ckd_priv(k, c, 5)\nK5, _ = ckd_pub(K, c, 5)\nprint(ec_mul(k5) == K5)",
+   "expected": "True\n"
+  },
+  {
+   "order": 16,
+   "id": "extended_keys",
+   "name": "Extended keys: xprv, xpub and a fingerprint",
+   "slide": 38,
+   "concepts": [
+    "extended key",
+    "extended private key",
+    "extended public key",
+    "extended key encoding",
+    "key fingerprint"
+   ],
+   "code": "k, c = master(TV)\nxprv = serialize_xprv(k, c)\nxpub = serialize_xpub(ec_mul(k), c)\nprint(xprv[:4], len(xprv), xpub[:4], len(xpub))\nprint(fingerprint(ec_mul(k)).hex())\nprint(parse_extended(xpub)[\"depth\"])",
+   "expected": "xprv 111 xpub 111\n3442193e\n0\n"
+  },
+  {
+   "order": 17,
+   "id": "index_space",
+   "name": "2 to the 31 children, normal and hardened",
+   "slide": 39,
+   "concepts": [
+    "index number"
+   ],
+   "code": "print(2**31, HARD, 2**31 - 1)\nprint(len(range(0, HARD)), len(range(HARD, 2 * HARD)))",
+   "expected": "2147483648 2147483648 2147483647\n2147483648 2147483648\n"
+  },
+  {
+   "order": 18,
+   "id": "key_path",
+   "name": "Reading a key path level by level",
+   "slide": 44,
+   "concepts": [
+    "HD wallet path",
+    "purpose level (BIP43)",
+    "BIP44 structure",
+    "account branch",
+    "change branch",
+    "address index"
+   ],
+   "code": "path = \"m/84h/0h/0h/1/7\"\nidx = path_indices(path)\nnames = \"purpose coin account change index\".split()\nfor n, i in zip(names, idx):\n    print(n, i, i >= HARD)",
+   "expected": "purpose 2147483732 True\ncoin 2147483648 True\naccount 2147483648 True\nchange 1 False\nindex 7 False\n"
+  },
+  {
+   "order": 19,
+   "id": "standard_paths",
+   "name": "Four standard paths, four address types",
+   "slide": 45,
+   "concepts": [
+    "BIP44 path for legacy scripts",
+    "BIP49 path for nested segwit",
+    "BIP84 path for native segwit",
+    "BIP86 path for single-key taproot",
+    "implicit path",
+    "output script"
+   ],
+   "code": "pub = lambda p: ser_p(ec_mul(keys_at(B84, p)[0]))\na44 = p2pkh(pub(\"m/44h/0h/0h/0/0\"))\ns = b\"\\x00\\x14\" + hash160(pub(\"m/49h/0h/0h/0/0\"))\na49 = b58check(b\"\\x05\" + hash160(s))\na84 = p2wpkh_address(pub(\"m/84h/0h/0h/0/0\"))\nq = taproot_output_key(pub(\"m/86h/0h/0h/0/0\"))\na86 = p2tr_address(q)\nprint(a44, a49, a84, a86, sep=\"\\n\")",
+   "expected": "1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA\n37VucYSaXLCAsxYyAPfbSi9eh4iEcbShgf\nbc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu\nbc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr\n"
+  },
+  {
+   "order": 20,
+   "id": "bip84_vector",
+   "name": "Our address equals the standard's own",
+   "slide": 46,
+   "concepts": [
+    "explicit path",
+    "BIP44"
+   ],
+   "code": "k, c = keys_at(B84, \"m/84h/0h/0h/0/0\")\naddr = p2wpkh_address(ser_p(ec_mul(k)))\npublished = \"bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu\"\nprint(addr == published)",
+   "expected": "True\n"
+  },
+  {
+   "order": 21,
+   "id": "key_tweak",
+   "name": "A key tweak makes the taproot key",
+   "slide": 47,
+   "concepts": [
+    "key tweak"
+   ],
+   "code": "k, c = keys_at(B84, \"m/86h/0h/0h/0/0\")\nP = ser_p(ec_mul(k))\nQ = taproot_output_key(P)\nprint(P[1:].hex()[:12], Q.hex()[:12])\nprint(p2tr_address(Q))",
+   "expected": "cc8a4bc64d89 a60869f0dbcf\nbc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr\n"
+  },
+  {
+   "order": 22,
+   "id": "descriptor",
+   "name": "A descriptor with its checksum and key origin",
+   "slide": 49,
+   "concepts": [
+    "output script descriptor",
+    "descriptor checksum",
+    "key origin",
+    "multipath descriptor"
+   ],
+   "code": "print(descsum_create(DESC)[-8:])\nfp, steps = parse_origin(DESC)\nprint(fp, [s >= HARD for s in steps])\nmulti = \"wsh(multi(2,A,B,C))\"\nprint(descsum_create(multi))",
+   "expected": "afwvtk2s\n73c5da0a [True, True, True]\nwsh(multi(2,A,B,C))#uhe03042\n"
+  },
+  {
+   "order": 23,
+   "id": "labels",
+   "name": "Labels exported in the BIP329 format",
+   "slide": 54,
+   "concepts": [
+    "label",
+    "address label",
+    "transaction label",
+    "BIP329",
+    "label export format (BIP329)"
+   ],
+   "code": "a = \"bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu\"\nrows = [dict(type=\"addr\", ref=a, label=\"rent\"),\n        dict(type=\"tx\", ref=\"ab\" * 32, label=\"pay\")]\nfor r in rows: print(json.dumps(r))",
+   "expected": "{\"type\": \"addr\", \"ref\": \"bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu\", \"label\": \"rent\"}\n{\"type\": \"tx\", \"ref\": \"abababababababababababababababababababababababababababababababab\", \"label\": \"pay\"}\n"
+  },
+  {
+   "order": 24,
+   "id": "xpub_shop",
+   "name": "A web shop that holds no private key",
+   "slide": 58,
+   "concepts": [
+    "payment processor",
+    "wallet with public keys only",
+    "extended public key deployment"
+   ],
+   "code": "acct = parse_extended(BOOK_XPUB)\nK = decompress(acct[\"key\"])\nfor i in range(3):\n    Ki, _ = ckd_pub(K, acct[\"chain\"], i)\n    print(i, p2wpkh_address(ser_p(Ki)))",
+   "expected": "0 bc1qv32edz2zpvhmmjkd7vq2wcnhacys0pku9vh5jw\n1 bc1qtqvqy3kyl5y6dmvk65p7e966k8ycyhwg9ypw3p\n2 bc1qw399x6vyt7jhurm7h3ylc0uldlqr7wj9clk5ng\n"
+  },
+  {
+   "order": 25,
+   "id": "gap_limit",
+   "name": "The gap limit decides how far a scan looks",
+   "slide": 59,
+   "concepts": [
+    "gap limit"
+   ],
+   "code": "used = {0, 3, 25}\nfor gap in (5, 10, 20, 30):\n    found = scan_with_gap(used, gap)\n    print(gap, len(found))",
+   "expected": "5 2\n10 2\n20 2\n30 3\n"
+  },
+  {
+   "order": 26,
+   "id": "signature",
+   "name": "A digital signature fails if the message changes",
+   "slide": 60,
+   "concepts": [
+    "digital signature"
+   ],
+   "code": "d = 0x1337\npub = ec_mul(d)\nz = int(sha256_hex(b\"pay 1\"), 16)\nsig = ecdsa_sign(d, z, 4242)\nz2 = int(sha256_hex(b\"pay 2\"), 16)\nprint(ecdsa_verify(pub, z, sig))\nprint(ecdsa_verify(pub, z2, sig))",
+   "expected": "True\nFalse\n"
+  },
+  {
+   "order": 27,
+   "id": "restore_drill",
+   "name": "The restore drill: a typo opens another wallet",
+   "slide": 62,
+   "concepts": [
+    "testing a backup",
+    "written backup",
+    "data loss"
+   ],
+   "code": "def first(words):\n    k, c = keys_at(words, \"m/84h/0h/0h/0/0\")\n    return p2wpkh_address(ser_p(ec_mul(k)))\nnoted = first(B84)\nprint(first(B84) == noted)\nprint(first(B84.replace(\"about\", \"above\")) == noted)",
+   "expected": "True\nFalse\n"
+  }
+ ]
+}
