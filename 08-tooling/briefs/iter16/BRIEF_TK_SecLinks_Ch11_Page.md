@@ -1,6 +1,6 @@
 # Brief for the executor session SEN0401-I14-page-ch11-r2
 
-Generated from the register sen0401_slides_lineage_v0_180_0.ttl. Task TK_SecLinks_Ch11_Page (state in the register: Suspended).
+Generated from the register sen0401_slides_lineage_v0_182_0.ttl. Task TK_SecLinks_Ch11_Page (state in the register: Suspended).
 Executor session name: **SEN0401-I14-page-ch11-r2**. The register's note on 'work begun' (or on the resume of a paused task) for this task names this session.
 
 ## Why this work exists (the owner's answer)
@@ -19,7 +19,7 @@ Executor session name: **SEN0401-I14-page-ch11-r2**. The register's note on 'wor
 - Page-test runs take about nine minutes each; run them one after the other (they share the machine); a flaky main-thread budget failure (no [FAIL] feature line) may be run again up to three times, every run kept as a log; a [FAIL] line is a result.
 
 ## Do not start until
-Task(s) TK_PageGates_Template, TK_PageGates_Test, TK_PageGates_Regression are Done in the register (the builder session controls them and tells the coordinator).
+Task(s) TK_PageGates_Regression are Done in the register (the builder session controls them and tells the coordinator).
 
 ## The task
 **Rebuild the page of chapter 11 from the research with section links, and its Stage 4 page ABox**
@@ -75,7 +75,9 @@ Satisfied by: the page, its Stage 4 page ABox and the stored page-test results a
 
 ## Facts measured on 2026-10-22 (builder session)
 Control of 2026-10-22 on the bridge (register v0.173; logs in 08-tooling/verify/iter14/ch10 and ch11): page 9.78.0 of chapter 10 fails 4 of 370 features in each of the tests 9.34.0 and 9.35.0, which are 2 distinct features: (A) the ERD sections-choice feature with the mentioned-together relations (sections 17, relations 23 -> 23 with mentions off; the assertion r2 > r3 assumes any page with a relation between two sections has 'mentions'; the page data holds 0 'mentions', the new section links are all 'operates on'); (B) the concept-map feature 'Untangle leaves no two boxes overlapping' (24 boxes, 2 overlap; template function rlUntangle).
-Page 9.78.0 of chapter 11 stops in both tests, in the first run of each, on a click timeout ("<rect y=30 rx=6 x=250 width=170 height=152> from <g class=oe-e data-ent=HeaderFields ... drag to move> subtree intercepts pointer events"), after 161 features passed and 1 failed (the same assertion (A): sections 16, relations 32 -> 32); its on-choice labels feature is not reached; the executor's earlier run crashed the same way (08-tooling/ch11-evidence/page_test_9_35_0_page_v9_78_0_run2_FAIL_crash.log); the force-click diagnostic found 4 of 22 boxes overlapping (a log, not a result). Whether the crash is the template layout (overlapping entities, one intercepting pointer events: probably the same layout cause) or a test artefact is NOT yet established: the executor of TK_PageGates_Template establishes it as a fact.
+Page 9.78.0 of chapter 11 stops in both tests, in the first run of each, on a click timeout (HeaderFields intercepts pointer events). ESTABLISHED as a fact by the executors of Iter_16 and confirmed by the builder: it is a TEST ARTEFACT, not the template layout. The test drags the first ERD entity 120 px right and 70 px down over HeaderFields, GenesisQuirks and BackLinks and then clicks the SAME entity (9.35.1 lines 1256-1263); HeaderFields, drawn later, intercepts the pointer; template 9.51.1 gives the identical result. Chapter 10's click works (it clicks a different entity). The owner has been asked whether the test may change that click (change request CR3_PageClick, pending); until he answers, the chapter 11 page cannot pass the page tests 9.34.1 and 9.35.1 and no task works around it: no force-click, no changed click target.
+Iter_16 delivered (controlled, register v0.182): template course_page_template_v9_51_1.html (Untangle separation pass in rlUntangle; the concept-map overlaps after Untangle are 2 -> 0 on chapter 10 and 4 -> 0 on chapter 11) and the page tests sen0401_page_test_v9_34_1.py and v9_35_1.py (only the mentioned-together assertion changed; test 9.35.1 on chapter 1 page 9.70.0 equals the stored result of 9.35.0, 372 passed, 0 failed). Read their evidence in 08-tooling/page-gates-evidence/.
+DISK: stale temporary folders (/tmp/sen0401_page_test_* and /tmp/sen0401_fx_*) of earlier sessions filled the root disk to 28 MB free and crashed browser runs ('Target crashed', 'Page crashed') of the test task. Before each batch of page-test runs delete those folders when older than 60 minutes (find /tmp -maxdepth 1 -name 'sen0401_page_test_*' -mmin +60 -exec rm -rf {} + ; the same for 'sen0401_fx_*'), check df -h /, keep the logs. A crash with a full disk is not a result.
 The ERD label features themselves run and pass on both pages (chapter 10: labels shown 23 -> 23, overlaps 0/0; the filled ERD of chapter 11: 32 labels, 0 overlapping pairs). The shipped pages 9.77.0 of chapters 10 and 11 passed because the test skipped assertion (A) for them (NOREL: no relation between two sections).
 
 ## How to build (resumed task)
