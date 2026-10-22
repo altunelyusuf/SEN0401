@@ -1,0 +1,49 @@
+/* 9.52.0: the owner's page standard (17:27 and 17:30 Istanbul, 2026-10-22) - one row of tabs, a panel level below the group, the chapter-code tab, the Playground by name */
+.subtabs.viewsub{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;align-items:center;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.viewsub button{flex:none;white-space:nowrap;box-sizing:border-box;height:1.75rem;line-height:1;display:inline-flex;align-items:center}
+.viewsub .tabsep{flex:none;color:var(--mute);font-size:.82rem;font-weight:700;padding:0 .1rem 0 .5rem;margin-left:.25rem;border-left:2px solid var(--line);cursor:help}
+.viewsub .subjtab{min-width:2.1rem;padding:.15rem .55rem;text-align:center}
+nav.groups{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}nav.groups button{flex:none}
+.panelhint{display:none;margin:.1rem 0 .3rem;padding:.6rem .8rem;border:1px dashed var(--line);border-radius:12px;background:var(--bg)}.paneled .panelhint{display:block}.panelhint .btn{margin-left:.2rem}
+.paneled .cards{display:block}
+[data-subpane]:not([hidden])>section.midhead{margin-bottom:.4rem}
+/* one panel holds one concept and is at most one screen high: its text and its pictures are two regions of one box (fitPanels sets --ph, the height left under the tabs) */
+section[data-panel]>.pbody{display:grid;grid-template-columns:minmax(0,1fr);gap:.3rem 1rem}
+section[data-panel] .pright:empty{display:none}
+section[data-panel] .ctext>p:first-child{margin-top:.1rem}
+section[data-panel] .widget{margin:.3rem 0}
+@media (min-width:1001px){
+ section[data-panel]{display:flex;flex-direction:column;max-height:var(--ph,none);min-height:0;overflow:hidden;padding:.5rem .8rem}
+ section[data-panel]>h2,section[data-panel]>h3,section[data-panel]>h4{flex:none;margin:.1rem 0 .3rem}
+ section[data-panel]>.pbody{flex:1 1 auto;min-height:0;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+ section[data-panel]>.pbody:has(>.pright:empty){grid-template-columns:minmax(0,1fr)}
+ section[data-panel]>.pbody>.ctext{min-height:0;overflow-y:auto;overflow-x:hidden;max-width:56rem}
+ section[data-panel]>.pbody>.pright{min-height:0;overflow-y:auto;overflow-x:auto}
+ section[data-panel] .nbh{position:static;margin:0 0 .3rem}section[data-panel] .nbh .diagram{height:11rem}
+ section[data-panel] .ctext p.bp{margin:.25rem 0}
+ section[data-panel] .ndiag .diagram.nd{height:min(19rem,40vh)}
+}
+[data-subpane] .cards>section.leaf:not([hidden]){margin:0}
+/* the chapter code */
+.ccwrap{clear:both;display:grid;grid-template-columns:minmax(12rem,18rem) minmax(0,1fr);gap:.8rem;align-items:start}
+.cclist{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--panel);max-height:calc(100vh - 12rem);overflow-y:auto;overflow-x:hidden;counter-reset:cc}
+.cclist li{display:flex;align-items:baseline;gap:.5rem;padding:.35rem .6rem;cursor:pointer;border-bottom:1px solid var(--line);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cclist li:last-child{border-bottom:0}.cclist li::before{content:attr(data-cc-order);flex:none;min-width:1.6rem;text-align:center;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:700;font-size:.8rem}
+.cclist li:hover{background:var(--card)}.cclist li[aria-selected=true]{background:var(--yellow);color:#2B2622;font-weight:700}.cclist li[aria-selected=true]::before{background:#fff}
+.cclist li[data-cc-status=ok]::after{content:"\2713";margin-left:auto;color:var(--ok);font-weight:700}.cclist li[data-cc-status=diff]::after,.cclist li[data-cc-status=error]::after{content:"\2717";margin-left:auto;color:var(--bad);font-weight:700}
+.cclist li:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.ccmain{min-width:0}.cchead{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .7rem}.cchead h3{margin:.1rem 0}.ccnote{margin:.1rem 0 .3rem}
+.ccbar{margin:.3rem 0}.ccprog{margin-left:.3rem}
+.ccres{margin-top:.2rem}.ccflow{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;font-size:.9rem;margin:.1rem 0 .3rem}.ccflow>span{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:.05rem .6rem}
+.cchip{font-weight:700;border-radius:999px;padding:.05rem .6rem;border:1px solid var(--line)}.cchip.ok{color:var(--ok);border-color:var(--ok)}.cchip.bad{color:var(--bad);border-color:var(--bad)}
+.diagram.small.ccviz{height:auto;min-height:6rem;max-height:15rem;background:var(--panel);border:1px solid var(--line);border-radius:10px}.ccviz svg{display:block;width:100%;height:auto;max-height:15rem}
+.ccviz .ccax{stroke:var(--mute)}.ccviz .ccbar{fill:var(--blue)}.ccviz .ccval,.ccviz .cclab,.ccviz .ccbyte,.ccviz .ccln,.ccviz .cctx{font:12px Calibri,Arial,sans-serif;fill:var(--ink)}.ccviz .ccbyte{fill:#fff;font-size:10px}.ccviz .cctx{font-family:"Courier New",monospace}.ccviz .ccln{fill:var(--mute)}.ccviz .cccard{fill:var(--code);opacity:.08;stroke:var(--line)}
+.ccres .out{max-height:9rem;overflow:auto}
+@media (max-width:900px){.ccwrap{grid-template-columns:minmax(0,1fr)}.cclist{max-height:11rem}}
+/* the Playground list: names that fit their container, the code opens in the editor below */
+.pgrow{display:block}.pglist{display:block;width:100%;max-width:100%;box-sizing:border-box;min-width:0}.pglist option{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* every view of a wide screen is one screen: the view fills the height under the tab row and scrolls inside itself (fitPanes sets its height) */
+@media (min-width:1001px){main.center{overflow:hidden}#panes>[data-pane]:not([hidden]){overflow-y:auto;overflow-x:hidden}.viewsub{position:sticky;top:0;z-index:4;background:var(--bg)}}
+.pgroup{background:var(--card);border-radius:12px;padding:.7rem .9rem}.pgroup h5{margin:.1rem 0 .3rem;font-size:1.08rem;font-family:Cambria,Georgia,serif;color:var(--blue)}
+#checks table{width:100%;table-layout:fixed}#checks td,#checks th{overflow-wrap:anywhere;white-space:normal}
+@media print{main.center{overflow:visible!important}#panes>[data-pane]{max-height:none!important;overflow:visible!important}section[data-panel]{max-height:none!important;overflow:visible!important;display:block!important}section[data-panel]>.pbody,section[data-panel]>.pbody>*{overflow:visible!important;max-height:none!important}.viewsub{position:static}}
