@@ -24,6 +24,7 @@ ITEMS = [
 TAG = os.environ.get("RANK_TAG", "31"); SKIP = [x for x in os.environ.get("RANK_SKIP", "").split(",") if x]; AMEND = os.environ.get("RANK_AMEND") == "1"; WHY = os.environ.get("RANK_WHY", "")
 src = M.newest(); t = open(src, encoding="utf-8").read(); nxt, cur = M.next_version(src); now = M.now(); L = []; rows = []
 for sid, lab, R, I, Cf, E, D, basis in [x for x in ITEMS if x[0] not in SKIP]:
+    if os.environ.get("RANK_PAGES_READY") == "1" and sid.startswith("ST_Charset_Page_"): D = 1; basis = basis.replace("DepFactor 0.5: its prerequisites (template and check, with their verification) are not Done.", "DepFactor 1: its prerequisites (template and check, with their verification) are Done.").replace("DepFactor 0.5: its prerequisites are not Done.", "DepFactor 1: its prerequisites (template and check, with their verification) are Done."); assert "DepFactor 1: its" in basis
     assert ("ex:%s a backlog:Story" % sid) in t, sid
     v = round(R * I * Cf / E, 2); key = round(v * D, 2); rows.append((key, sid, lab, R, I, Cf, E, D, v))
     i, j = T.blk(t, sid); b = t[i:j]; b2 = b if TAG != "31" else re.sub(r'\n?\s*backlog:notYetScoreable true ; backlog:hasScoreabilityReason "(?:[^"\\]|\\.)*" ;', '', b, count=1); assert TAG != "31" or b2 != b, sid
