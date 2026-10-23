@@ -85,13 +85,22 @@ def one(g, ver, tid, out):
     return sess, ("no, after %s" % ", ".join(blocked)) if blocked else "yes"
 
 
+def rank_of(g, tid):
+    st = next((s for s in g.subjects(B.decomposesInto, E[tid]) if (s, rdflib.RDF.type, B.Story) in g), None); best = None
+    for sc in g.objects(st, B.hasPriorityScore):
+        at = str(g.value(sc, B.scoredAt)); v = round(float(g.value(sc, B.hasScoreValue)) * float(g.value(sc, B.hasDepFactor) or 1), 2)
+        if best is None or at > best[0]: best = (at, v)
+    return best[1] if best else None
+
+
 def main():
     ONLY = sys.argv[1]; out = os.path.join(REPO, sys.argv[2] if len(sys.argv) > 2 else SUM); os.makedirs(out, exist_ok=True)
     src = M.newest(); g = rdflib.Graph(); g.parse(src, format="turtle"); ver = os.path.basename(src)
     ids = list(SESS) if ONLY == "ALL" else [ONLY]
-    idx = ["# Executor briefs of Iteration 19: the character set declared first (template 9.52.2, a check, the chapter 5 and 6 pages) (generated from %s)\n" % ver, "The Verify and Regress tasks have no executor: the builder session controls them and runs the evidence bridge after the executors report.\n", "| Task | Executor session | Can start |", "|---|---|---|"]
-    for tid in ids:
-        sess, can = one(g, ver, tid, out); idx.append("| %s | %s | %s |" % (tid, sess, can))
+    idx = ["# Executor briefs of Iteration 19: the character set declared first (template 9.52.2, a check, the chapter 5 and 6 pages) (generated from %s)\n" % ver, "The Verify and Regress tasks have no executor: the builder session controls them and runs the evidence bridge after the executors report.\n", "| Start order (by ranking) | Task | Executor session | Can start | Ordering key (BP-D10: RICE score x dependency factor) |", "|---|---|---|---|---|"]
+    ids = sorted(ids, key=lambda x: -(rank_of(g, x) or 0))
+    for k, tid in enumerate(ids):
+        sess, can = one(g, ver, tid, out); idx.append("| %d | %s | %s | %s | %s |" % (k + 1, tid, sess, can, rank_of(g, tid)))
     open(os.path.join(out, "INDEX.md" if ONLY == "ALL" else "INDEX_%s.md" % ONLY), "w", encoding="utf-8").write("\n".join(idx) + "\n")
     print(out, len(ids), "briefs from", ver); print("\n".join(idx[4:]))
 
