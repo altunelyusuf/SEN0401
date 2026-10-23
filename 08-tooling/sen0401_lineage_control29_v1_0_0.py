@@ -9,7 +9,7 @@ import sen0401_lineage_succession3_v1_1_0 as X
 import sen0401_lineage_successor_stages_v1_1_0 as S
 import sen0401_lineage_template_revision_v1_0_0 as T
 import sen0401_lineage_control_v1_0_0 as C
-REPO = M.REPO; BRIDGE = C.BRIDGE; lit = C.lit; PC = "08-tooling/sen0401_lineage_page_check_v1_4_0.py"; CC = "08-tooling/sen0401_lineage_chapter_check_v1_3_0.py"; S4 = "08-tooling/sen0401_stage4_gates_v1_1_0.py"; DC = "08-tooling/sen0401_deck_control_check_v1_1_0.py"
+REPO = M.REPO; BRIDGE = C.BRIDGE; lit = C.lit; PC = "08-tooling/sen0401_lineage_page_check_v1_4_1.py"; CC = "08-tooling/sen0401_lineage_chapter_check_v1_3_0.py"; S4 = "08-tooling/sen0401_stage4_gates_v1_1_0.py"; DC = "08-tooling/sen0401_deck_control_check_v1_1_0.py"
 GATE = "/home/claude/Ontologies/backlog-roadmap-framework/03-tooling/backlog_execution_ready_v1_2_0.py"
 CH = {"05": dict(pv="9_82_0", pvd="9.82.0", old="9_74_0", sess="SEN0401-I18-page-ch05", eid="abab547a", commits=["d05fdfd", "e3395b3", "4b989be", "6f12c23", "7de8449"]),
       "06": dict(pv="9_82_0", pvd="9.82.0", old="9_75_0", sess="SEN0401-I18-page-ch06", eid="a179ad44", commits=["ff8f258", "06addfb", "ba2acf1", "1818345"])}
