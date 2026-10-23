@@ -88,7 +88,7 @@ def main():
     ONLY = sys.argv[1]; out = os.path.join(REPO, sys.argv[2] if len(sys.argv) > 2 else SUM); os.makedirs(out, exist_ok=True)
     src = M.newest(); g = rdflib.Graph(); g.parse(src, format="turtle"); ver = os.path.basename(src)
     ids = list(SESS) if ONLY == "ALL" else [ONLY]
-    idx = ["# Executor briefs of Iteration 17: the chapter 5 and 6 remedy (generated from %s)\n" % ver, "The Verify and Regress tasks have no executor: the builder session controls them and runs the evidence bridge after the executors report.\n", "| Task | Executor session | Can start |", "|---|---|---|"]
+    idx = ["# Executor briefs of Iteration 18: the story chip repair of template 9.52.0 (generated from %s)\n" % ver, "The Verify and Regress tasks have no executor: the builder session controls them and runs the evidence bridge after the executors report.\n", "| Task | Executor session | Can start |", "|---|---|---|"]
     for tid in ids:
         sess, can = one(g, ver, tid, out); idx.append("| %s | %s | %s |" % (tid, sess, can))
     open(os.path.join(out, "INDEX.md" if ONLY == "ALL" else "INDEX_%s.md" % ONLY), "w", encoding="utf-8").write("\n".join(idx) + "\n")
