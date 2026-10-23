@@ -1,0 +1,545 @@
+{
+ "manifest": "chapter_code_ch08_v1_0_0",
+ "chapter": 8,
+ "deck": "SEN0401_Ch08_DigitalSignatures_3e_v2_0_0.pptx",
+ "deck_version": "2.0.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the library defined in the page",
+ "library": {
+  "module": "sen0401_ch08_lib",
+  "file": "03-materials/ch08/assets/sen0401_ch08_lib-1.0.0-py3-none-any.whl",
+  "sha256": "faf1fc056d3b8414a393769b0d37716b0095377ee07051252c81a6cd3e0384df",
+  "modules": [
+   "sen0401_ch07_script_lib_v1_0_0",
+   "sen0401_ch08_sig_lib_v1_0_0",
+   "sen0401_ch08_claims_v1_0_0"
+  ],
+  "import": "import sen0401_ch07_script_lib_v1_0_0 as L, sen0401_ch08_sig_lib_v1_0_0 as C, sen0401_ch08_claims_v1_0_0 as K"
+ },
+ "setup": {
+  "code": "# setup: the chapter library of the page (L = chapter 7 script and curve library, C = chapter 8 signature library, K = chapter 8 claims); the page boots these names\nimport sen0401_ch07_script_lib_v1_0_0 as L, sen0401_ch08_sig_lib_v1_0_0 as C, sen0401_ch08_claims_v1_0_0 as K",
+  "data": {}
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "Verification needs message, key and signature",
+   "slide": 7,
+   "branch": "Foundations of digital signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "sk, msg = K.SK, K.MSG\npk, sig = L.pubkey_create(sk), L.ecdsa_sign(sk, msg)\nbad = bytes([msg[0] ^ 1]) + msg[1:]\nother = L.pubkey_create(sk + 1)\nv = lambda p, m: L.ecdsa_verify(p, m, sig)\nchecks = [v(pk, msg), v(pk, bad), v(other, msg)]\nchecks",
+   "show": [
+    {
+     "expression": "checks",
+     "expected": "[True, False, False]"
+    },
+    {
+     "expression": "len(sig)",
+     "expected": "70"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "Scalars live modulo n, coordinates modulo p",
+   "slide": 9,
+   "branch": "Foundations of digital signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "r = 5 % 3\nby_n, by_p, differ = C.modulus_check()\ngap = (L.P - L.N).bit_length()\n(by_n, by_p, differ)",
+   "show": [
+    {
+     "expression": "r",
+     "expected": "2"
+    },
+    {
+     "expression": "(by_n, by_p, differ)",
+     "expected": "(True, False, True)"
+    },
+    {
+     "expression": "gap",
+     "expected": "129"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "A signature covers a digest of the transaction",
+   "slide": 10,
+   "branch": "Foundations of digital signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "t1, t2 = C.make_tx(2, 2), C.make_tx(2, 2)\nt2.vout[1] = (1001, t2.vout[1][1])\ndig = lambda t: L.sighash_legacy(b'\\x51', t, 0, 1).hex()\ndigests = [dig(t1)[:12], dig(t1)[:12], dig(t2)[:12]]\ndigests",
+   "show": [
+    {
+     "expression": "digests",
+     "expected": "['18bdeda48b41', '18bdeda48b41', 'ff64b81fb946']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "A SIGHASH flag is one byte",
+   "slide": 13,
+   "branch": "Signature hash flags (SIGHASH)",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "base = [L.SIGHASH_ALL, L.SIGHASH_NONE, L.SIGHASH_SINGLE]\nacp = L.SIGHASH_ANYONECANPAY\ncombos = [b | acp for b in base]\ncombos",
+   "show": [
+    {
+     "expression": "base + [acp]",
+     "expected": "[1, 2, 3, 128]"
+    },
+    {
+     "expression": "combos",
+     "expected": "[129, 130, 131]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "What each flag commits to",
+   "slide": 15,
+   "branch": "Signature hash flags (SIGHASH)",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "flags = (1, 2, 3, 0x81, 0x82, 0x83)\ncm = {f: C.sighash_commitments(f) for f in flags}\ncount = {hex(f): sum(cm[f].values()) for f in flags}\nlist(count.values())",
+   "show": [
+    {
+     "expression": "count",
+     "expected": "{'0x1': 5, '0x2': 2, '0x3': 3, '0x81': 3, '0x82': 1, '0x83': 2}"
+    },
+    {
+     "expression": "list(count.values())",
+     "expected": "[5, 2, 3, 3, 1, 2]"
+    },
+    {
+     "expression": "[''.join('Y' if x else '.' for x in cm[f].values()) for f in flags]",
+     "expected": "['YYYYY', 'Y...Y', 'Y.Y.Y', '..YYY', '....Y', '..Y.Y']"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "SIGHASH_SINGLE with no matching output",
+   "slide": 16,
+   "branch": "Signature hash flags (SIGHASH)",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "tx = C.make_tx(3, 1)\nd = lambda i: L.sighash_legacy(b'\\x51', tx, i, 3).hex()\ndigests = [d(i)[:8] for i in range(3)]\nbuggy = [x == '01000000' for x in digests]\nbuggy",
+   "show": [
+    {
+     "expression": "digests",
+     "expected": "['11a21de8', '01000000', '01000000']"
+    },
+    {
+     "expression": "buggy",
+     "expected": "[False, True, True]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "The Schnorr protocol with whole numbers",
+   "slide": 19,
+   "branch": "Schnorr signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "t = C.toy_protocol(x=3, G_=5, k=7, e=11)\ns, check = t['s'], t['holds']\nleak = t['xG'] // 5\nleak",
+   "show": [
+    {
+     "expression": "t",
+     "expected": "{'xG': 15, 'kG': 35, 's': 40, 'sG': 200, 'exG': 165, 'holds': True, 'divide_back': 3}"
+    },
+    {
+     "expression": "(s, check)",
+     "expected": "(40, True)"
+    },
+    {
+     "expression": "leak",
+     "expected": "3"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "From identity proof to signature",
+   "slide": 21,
+   "branch": "Schnorr signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "x, k, e = 1234567, 7654321, 99999\npm, pa = L.point_mul, L.point_add\nX, R = pm(x), pm(k)\ns = (k + e * x) % L.N\nchk = lambda t: pm(t) == pa(R, pm(e, X))\nproof = [chk(s), chk(s + 1)]\nsig = C.fs_sign(x, b'A', k)\nsigs = [C.fs_verify(X, m, sig) for m in (b'A', b'B')]\nsigs",
+   "show": [
+    {
+     "expression": "proof",
+     "expected": "[True, False]"
+    },
+    {
+     "expression": "sigs",
+     "expected": "[True, False]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "BIP340: x-only keys and 64-byte signatures",
+   "slide": 24,
+   "branch": "Schnorr signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "sk = 0x3b78ce563f89a0ed9414f5aa28ad0d96d6795f9c63\nmsg = L.sha256(b'ch08')\npub, sig = L.schnorr_pubkey(sk), L.schnorr_sign(sk, msg)\ncomp = L.pubkey_create(sk)\necdsa = L.ecdsa_sign(sk, msg)\nok = L.schnorr_verify(pub, msg, sig)\nsizes = [len(comp), len(pub), len(ecdsa), len(sig)]\nsizes",
+   "show": [
+    {
+     "expression": "sizes",
+     "expected": "[33, 32, 71, 64]"
+    },
+    {
+     "expression": "ok",
+     "expected": "True"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "Key cancellation against MuSig2",
+   "slide": 26,
+   "branch": "Schnorr signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "naive = C.key_cancellation(5, 7, 3, b'pay')\nmusig = C.musig2_cancellation_attempt()\n(naive, musig)",
+   "show": [
+    {
+     "expression": "naive",
+     "expected": "(True, True)"
+    },
+    {
+     "expression": "musig",
+     "expected": "False"
+    },
+    {
+     "expression": "(naive, musig)",
+     "expected": "((True, True), False)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "Shamir: any two of three shares",
+   "slide": 27,
+   "branch": "Schnorr signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "shares = C.shamir_split(31337, 2, [1, 2, 3], [77])\nfrom itertools import combinations\ncb = C.shamir_combine\nback = [cb(c) for c in combinations(shares, 2)]\nalone = cb(shares[:1])\nback",
+   "show": [
+    {
+     "expression": "shares",
+     "expected": "[(1, 31414), (2, 31491), (3, 31568)]"
+    },
+    {
+     "expression": "back",
+     "expected": "[31337, 31337, 31337]"
+    },
+    {
+     "expression": "alone",
+     "expected": "31414"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "ECDSA by the book's formulas, and the other S",
+   "slide": 30,
+   "branch": "ECDSA signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "x, h, k = 0x1234, 0x5678, 0x9abc\nR, s = C.ecdsa_sign_k(x, h, k)\nX = L.point_mul(x)\nv = lambda t: C.ecdsa_verify_K(X, h, R, t)\nboth = [v(s), v(L.N - s)]\nlowform = s <= L.N - s\nboth",
+   "show": [
+    {
+     "expression": "both",
+     "expected": "[True, True]"
+    },
+    {
+     "expression": "lowform",
+     "expected": "False"
+    },
+    {
+     "expression": "hex(s)[:14]",
+     "expected": "'0xd312ba095ee4'"
+    },
+    {
+     "expression": "hex(L.N - s)[:14]",
+     "expected": "'0x2ced45f6a11b'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "Inside a DER signature",
+   "slide": 32,
+   "branch": "ECDSA signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "sig = L.ecdsa_sign(K.SK, K.MSG) + b'\\x01'\nf = C.der_fields(sig)\nrows = [(n, len(v) // 2) for n, v in f]\ntotal = sum(b for n, b in rows)\ntotal",
+   "show": [
+    {
+     "expression": "[b for n, b in rows]",
+     "expected": "[1, 1, 1, 1, 32, 1, 1, 32, 1]"
+    },
+    {
+     "expression": "total",
+     "expected": "71"
+    },
+    {
+     "expression": "C.der_strict_ok(sig)",
+     "expected": "True"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "Policy is stricter than consensus",
+   "slide": 34,
+   "branch": "ECDSA signatures",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "sig = L.ecdsa_sign(K.SK, K.MSG)\nr, s = L.der_parse_lax(sig)[:2]\ntwin = L.der_encode(r, L.N - s)\npk = L.pubkey_create(K.SK)\nver = lambda g: L.ecdsa_verify(pk, K.MSG, g)\nlow = lambda g: L.is_low_s(g + b'\\x01')\nverdict = [(ver(g), low(g)) for g in (sig, twin)]\nverdict",
+   "show": [
+    {
+     "expression": "verdict",
+     "expected": "[(True, True), (True, False)]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "A reused nonce gives away the private key",
+   "slide": 38,
+   "branch": "Randomness and signature size",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "x, k, h1, h2 = 1234567, 7654321, 111, 222\nr, s1 = C.ecdsa_sign_k(x, h1, k)\nr2, s2 = C.ecdsa_sign_k(x, h2, k)\nrec = C.recover_key_from_reused_nonce\ngot, k2 = rec(r, s1, h1, s2, h2)\nfresh = C.ecdsa_sign_k(x, h2, k + 1)[0] != r\ngot == x",
+   "show": [
+    {
+     "expression": "r == r2",
+     "expected": "True"
+    },
+    {
+     "expression": "got == x",
+     "expected": "True"
+    },
+    {
+     "expression": "k2 == k",
+     "expected": "True"
+    },
+    {
+     "expression": "fresh",
+     "expected": "True"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 16,
+   "id": "ex16",
+   "name": "RFC 6979: the nonce from key and message",
+   "slide": 40,
+   "branch": "Randomness and signature size",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "h = L.sha256(b'sample')\nk1 = C.rfc6979_k(L.N, K.SK, h)\nk2 = C.rfc6979_k(L.N, K.SK, L.sha256(b'other'))\nagain = C.rfc6979_k(L.N, K.SK, h) == k1\nsame = L.ecdsa_sign(K.SK, h) == L.ecdsa_sign(K.SK, h)\nagain",
+   "show": [
+    {
+     "expression": "again",
+     "expected": "True"
+    },
+    {
+     "expression": "k1 != k2",
+     "expected": "True"
+    },
+    {
+     "expression": "same",
+     "expected": "True"
+    },
+    {
+     "expression": "hex(k1)[:14]",
+     "expected": "'0x1f8bce02bda8'"
+    },
+    {
+     "expression": "hex(k2)[:14]",
+     "expected": "'0x80fb94370ee8'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 17,
+   "id": "ex17",
+   "name": "Signature length and the high R",
+   "slide": 41,
+   "branch": "Randomness and signature size",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "ms = [L.sha256(b'm%d' % i) for i in range(200)]\nlens = [len(L.ecdsa_sign(K.SK, m)) for m in ms]\nfrom collections import Counter\ncnt = dict(sorted(Counter(lens).items()))\ncnt",
+   "show": [
+    {
+     "expression": "cnt",
+     "expected": "{70: 100, 71: 100}"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 18,
+   "id": "ex18",
+   "name": "Hashing grows with the square of the inputs",
+   "slide": 44,
+   "branch": "Segwit signing",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "ns = [1, 10, 100, 1000]\ntxs = [C.make_tx(n, 1) for n in ns]\nold = [C.legacy_bytes_hashed(t) for t in txs]\nnew = [C.bip143_bytes_hashed(t) for t in txs]\nratio = [round(a / b, 1) for a, b in zip(old, new)]\nratio",
+   "show": [
+    {
+     "expression": "ns",
+     "expected": "[1, 10, 100, 1000]"
+    },
+    {
+     "expression": "old",
+     "expected": "[146, 5150, 420500, 41107000]"
+    },
+    {
+     "expression": "new",
+     "expected": "[384, 2670, 25530, 254130]"
+    },
+    {
+     "expression": "ratio",
+     "expected": "[0.4, 1.9, 16.5, 161.8]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 19,
+   "id": "ex19",
+   "name": "BIP143 signs the amount being spent",
+   "slide": 45,
+   "branch": "Segwit signing",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "tx = C.make_tx(1, 1)\nsc = b'\\x76\\xa9\\x14' + b'\\x22' * 20 + b'\\x88\\xac'\nv0 = lambda a: L.sighash_v0(sc, tx, 0, 1, a).hex()[:12]\nds = [v0(5000), v0(5000), v0(5001)]\nlegacy = L.sighash_legacy(sc, tx, 0, 1).hex()[:12]\nds",
+   "show": [
+    {
+     "expression": "ds",
+     "expected": "['3d02f61132ca', '3d02f61132ca', '89c355aa699d']"
+    },
+    {
+     "expression": "legacy",
+     "expected": "'0d29c866d5f0'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 20,
+   "id": "ex20",
+   "name": "Dates behind the Schnorr patent and taproot",
+   "slide": 47,
+   "branch": "Since the book went to print",
+   "library": "sen0401_ch08_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "from datetime import date\nfiled, grant = date(1990, 2, 23), date(1991, 2, 19)\nt17 = grant.replace(year=grant.year + 17)\nt20 = filed.replace(year=filed.year + 20)\nterm_end = max(t17, t20)\ndays = (date(2021, 11, 14) - date(2009, 1, 3)).days\nterm_end",
+   "show": [
+    {
+     "expression": "str(t17)",
+     "expected": "'2008-02-19'"
+    },
+    {
+     "expression": "str(t20)",
+     "expected": "'2010-02-23'"
+    },
+    {
+     "expression": "str(term_end)",
+     "expected": "'2010-02-23'"
+    },
+    {
+     "expression": "term_end",
+     "expected": "datetime.date(2010, 2, 23)"
+    },
+    {
+     "expression": "days",
+     "expected": "4698"
+    }
+   ],
+   "result_picture": "table"
+  }
+ ]
+}
