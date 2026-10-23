@@ -1,0 +1,48 @@
+--- sen0401_deck_standard_check_v1_0_0.py	2026-10-22 21:31:21.458390634 +0300
++++ sen0401_deck_standard_check_v1_1_0.py	2026-10-23 22:07:08.612515066 +0300
+@@ -1,7 +1,7 @@
+ #!/usr/bin/env python3
+-"""sen0401_deck_standard_check v1.0.0 (python-pptx 1.0.2) - the deck standard of the SEN0401 lecture decks, D1 to D12, measured.
++"""sen0401_deck_standard_check v1.1.0 (python-pptx 1.0.2) - the deck standard of the SEN0401 lecture decks, D1 to D12, measured.
+ A NEW tool; it edits nothing and changes no gate. One named, exit-coded result per element; the measured number is printed for each.
+-Usage:   sen0401_deck_standard_check_v1_0_0.py NN [deck.pptx]      NN = chapter number (05, 06 ...). Without deck.pptx the newest .pptx of 03-materials/chNN is read.
++Usage:   sen0401_deck_standard_check_v1_1_0.py NN [deck.pptx]      NN = chapter number (05, 06 ...). Without deck.pptx the newest .pptx of 03-materials/chNN is read.
+ Environment: SEN0401_ROOT (default the parent of this file's folder).
+ Result words, as printed: PASS, FAIL, NOT_MEASURED (the input of the measure is missing), CANNOT_RUN (the tool failed). Exit code 0 only when D1..D12 all PASS; 1 when any FAIL; 2 when any
+ NOT_MEASURED/CANNOT_RUN and none FAIL. A skip is not a pass. The file names itself FAILING when an element fails.
+@@ -17,7 +17,7 @@
+                  above or below it (the note stands beside the code). Captions shorter than 8 words and the 'run under Python' stamp do not count.
+   D3 measure   : share of code slides that have BOTH the explanation for every code box AND a visual result (target 100 percent).
+   analogy      : a text box that starts with 'ANALOGY' or 'EVERYDAY' (the marker the standard asks for), or contains 'is like a/an/the', 'are like', 'think of', 'just as', 'imagine' (case-insensitive).
+-  key concept  : every primary-source concept of the chapter research (03-materials/chNN/rdodi/sen0401_chNN_research_vX_Y_Z.ttl, the newest; resources of class sen0401:PrimarySourceConcept,
++  key concept  : every primary-source concept of the chapter research (03-materials/chNN/rdodi/sen0401_chNN_research_vX_Y_Z.ttl, the newest; resources of class sen0401:PrimarySourceConcept or sen0414:PrimarySourceConcept,
+                  label in rdfs:label), de-duplicated by normalised label. Normalised: lower case, parenthesis text removed, non-alphanumerics to one space, a trailing 's' of each word dropped.
+   concept shown: the normalised label occurs, as a phrase, in the normalised text of a slide (all text boxes and tables of the slide; notes are not slide text).
+   D4 measure   : share of key concepts that occur in an analogy-marked text box (target 100 percent).
+@@ -39,7 +39,7 @@
+                  for a frame with wrap='none' the room is the distance from the box's left edge to the slide's right edge. A line over the room wraps (or leaves the slide): D12 target 0 such lines.
+ Facts printed for every deck: slides, code slides, native charts, analogy text boxes, longest text box in words (the facts of the baseline decks).
+ """
+-__version__ = "1.0.0"
++__version__ = "1.1.0"
+ import glob, os, re, sys
+ 
+ TOOL = os.path.dirname(os.path.abspath(__file__))
+@@ -145,7 +145,7 @@
+     if not f:
+         return None, []
+     txt = open(f, encoding="utf-8").read()
+-    labs = re.findall(r"a sen0401:PrimarySourceConcept\s*;\s*rdfs:label\s+\"((?:[^\"\\]|\\.)*)\"", txt)
++    labs = re.findall(r"a sen04(?:01|14):PrimarySourceConcept\s*;\s*rdfs:label\s+\"((?:[^\"\\]|\\.)*)\"", txt)
+     seen, out = set(), []
+     for l in labs:
+         k = norm(l)
+@@ -202,7 +202,7 @@
+ 
+ def main(argv):
+     if len(argv) < 2:
+-        print("usage: sen0401_deck_standard_check_v1_0_0.py NN [deck.pptx]"); return 2
++        print("usage: sen0401_deck_standard_check_v1_1_0.py NN [deck.pptx]"); return 2
+     ch = argv[1].zfill(2)
+     deck = argv[2] if len(argv) > 2 else newest(os.path.join(ROOT, "03-materials", "ch%s" % ch, "*.pptx"))
+     if not deck or not os.path.exists(deck):
