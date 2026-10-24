@@ -1,0 +1,21 @@
+--- sen0401_page_test_v9_36_0.py	2026-10-22 21:38:00.096539338 +0300
++++ sen0401_page_test_v9_37_0.py	2026-10-24 13:35:52.333984172 +0300
+@@ -4,7 +4,8 @@
+ slice, so different questions get different answers; a menu click changes the main area and leaves the
+ detail card closed; the card opens only on an explicit request; the tab row is the sub-menu of the
+ selected top-level item. Every stored result must also equal what the build's interpreter printed."""
+-__version__ = "9.36.0"
++__version__ = "9.37.0"
++# 9.37.0 (SEN0401, over 9.36.0; ex:CR3_Repair20): the ONLY change is the wait in the P2 chapter-code step: after the run button is clicked the test waits until the result element [data-cc-result] no longer shows the template placeholder 'Running...' and holds text or a visual (same 90 s bound), then reads. Every other feature, threshold and message is that of 9.36.0.
+ # 9.36.0 (SEN0401, over 9.35.1; owner-directed remedy of chapters 5 and 6, ex:CR3_Remedy56): the features P1, P2, P3, P4, P5, P6, P8, P9 and P11 of the page standard 9.52 are ADDED at the end of the run; every feature of 9.35.1 is unchanged. They apply to a page that declares <meta name="page-standard" content="9.52"> and are reported SKIP (page does not declare the standard) otherwise; the environment switch FORCE_STANDARD=1 applies them to any page. P7 (zoom) and P10 (visualised results) are measured by the existing diagram checks and inside P2.
+ # 9.35.1 (SEN0401, over 9.35.0; owner's decision of Thursday 2026-10-22 08:35 Istanbul, ex:CR3_PageGates option A): the one assertion on the mentioned-together relationships of the ERD's sections choice applies by what the page has. A page with 'mentions' relations between two different sections keeps r2 > r3; a page with relations between two sections but no 'mentions' (the section links of chapters 10 and 11 are all 'operates on') requires r2 == r3 and r2 > 0, because the toggle has nothing to remove; the NOREL branch is unchanged. Reason: 9.35.0 assumed that every page with a relation between two sections has 'mentions'. No other check changed.
+ # 9.35.0 (SEN0401, over 9.34.0; found on the chapter 8 page): the fill-the-blank question type is required only when some example's code holds a number to blank (`digits`, computed since 9.32.0 and not used); a chapter whose examples are calls of its own library holds none, so the type is reported as a SKIP with its reason. No other check changed.
+@@ -1523,7 +1524,7 @@
+                         if not (code or "").strip(): bad.append("%d %s: editor empty" % (i + 1, CCI[i]["name"])); continue
+                         pg.evaluate("()=>{const r=document.querySelector('[data-cc-result]');if(r)r.innerHTML=''}")
+                         pg.locator("[data-cc-run]").first.click(timeout=10000)
+-                        pg.wait_for_function("()=>{const r=document.querySelector('[data-cc-result]');return r&&(r.textContent.trim().length>0||r.querySelector('svg,canvas,img,table'))}", timeout=90000)
++                        pg.wait_for_function("()=>{const r=document.querySelector('[data-cc-result]');if(!r)return false;const t=r.textContent.trim();const ph=/^Running(\\.\\.\\.|\\u2026)$/.test(t);return !ph&&(t.length>0||!!r.querySelector('svg,canvas,img,table'))}", timeout=90000)
+                         pg.wait_for_timeout(300)
+                         res = pg.evaluate("()=>{const r=document.querySelector('[data-cc-result]');return {t:r.textContent.trim().slice(0,160),v:!!r.querySelector('svg,canvas,img,table,meter,progress,[data-vis],.vis,.viz,.bar')}}")
+                         ran += 1
