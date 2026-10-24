@@ -1,0 +1,5061 @@
+{
+ "meta": {
+  "title": "Chapter 7: Authorization and Authentication",
+  "sub": "SEN0401, third-edition deck standard D1-D12",
+  "version": "2.1.0",
+  "python": "3.14.6",
+  "total": 61,
+  "redesign": "2026-10-23, task TK_Ch07_Deck_Build: the deck rebuilt to the deck standard D1-D12 from the chapter research, with its chapter-code manifest",
+  "notes": "short reader's prose: 2-4 sentences, at most 60 words",
+  "analogies": [
+   {
+    "concept": "Scripts and the Script language",
+    "analogy": "A script is a lock and key recipe that every node checks the same way.",
+    "slide": 5
+   },
+   {
+    "concept": "Transaction Scripts and Script Language",
+    "analogy": "Think of a rulebook that every cashier in the world reads the same way.",
+    "slide": 6
+   },
+   {
+    "concept": "Turing Incompleteness",
+    "analogy": "Think of a recipe without a repeat-forever step.",
+    "slide": 6
+   },
+   {
+    "concept": "Stateless Verification",
+    "analogy": "Think of a sum whose answer never depends on the day or the machine.",
+    "slide": 6
+   },
+   {
+    "concept": "Script Construction",
+    "analogy": "Think of a lock made by one person and a key cut by another.",
+    "slide": 6
+   },
+   {
+    "concept": "The script execution stack",
+    "analogy": "Think of a pile of plates where you touch only the top one.",
+    "slide": 8
+   },
+   {
+    "concept": "A simple script",
+    "analogy": "Think of a till that adds two prices and checks the total.",
+    "slide": 8
+   },
+   {
+    "concept": "Separate execution of output and input scripts",
+    "analogy": "Think of two people in two rooms passing one tray through a hatch.",
+    "slide": 8
+   },
+   {
+    "concept": "script",
+    "analogy": "Think of a shopping list that also says what to do with each item.",
+    "slide": 8
+   },
+   {
+    "concept": "stack",
+    "analogy": "Think of a spike on a desk where notes are pushed on top.",
+    "slide": 11
+   },
+   {
+    "concept": "Turing complete",
+    "analogy": "Think of a full workshop, where Script offers one screwdriver.",
+    "slide": 11
+   },
+   {
+    "concept": "output script",
+    "analogy": "Think of the padlock a payer fastens onto a box.",
+    "slide": 11
+   },
+   {
+    "concept": "input script",
+    "analogy": "Think of the key that is held up to the padlock.",
+    "slide": 11
+   },
+   {
+    "concept": "scriptSig",
+    "analogy": "Think of the signature card that is presented at the counter.",
+    "slide": 12
+   },
+   {
+    "concept": "scriptPubKey",
+    "analogy": "Think of the plate on a mailbox that says who may open it.",
+    "slide": 12
+   },
+   {
+    "concept": "Locking a coin to a key",
+    "analogy": "A key lock is a safe-deposit box labelled with a fingerprint.",
+    "slide": 13
+   },
+   {
+    "concept": "Pay to Public Key Hash",
+    "analogy": "Think of a deposit box labelled with a fingerprint instead of a face.",
+    "slide": 14
+   },
+   {
+    "concept": "public key hash",
+    "analogy": "Think of a library card number instead of the reader's full name.",
+    "slide": 14
+   },
+   {
+    "concept": "OP_CHECKSIG",
+    "analogy": "Think of a guard comparing the signature on a form with the one on file.",
+    "slide": 14
+   },
+   {
+    "concept": "signature hash",
+    "analogy": "Think of the summary page that is initialled instead of the whole contract.",
+    "slide": 16
+   },
+   {
+    "concept": "hash type",
+    "analogy": "Think of a stamp saying which pages of the contract the signature covers.",
+    "slide": 16
+   },
+   {
+    "concept": "DER",
+    "analogy": "Think of a form with fixed boxes where each number must go.",
+    "slide": 16
+   },
+   {
+    "concept": "Scripted multisignatures",
+    "analogy": "A multisignature is a vault that opens when enough directors turn their keys.",
+    "slide": 19
+   },
+   {
+    "concept": "Scripted Multisignatures",
+    "analogy": "Think of a vault that opens when two of three directors turn their keys.",
+    "slide": 20
+   },
+   {
+    "concept": "An Oddity in CHECKMULTISIG Execution",
+    "analogy": "Think of a vending machine that always takes one coin more than the price.",
+    "slide": 20
+   },
+   {
+    "concept": "multisignature",
+    "analogy": "Think of a cheque that needs two signatures.",
+    "slide": 20
+   },
+   {
+    "concept": "OP_CHECKMULTISIG",
+    "analogy": "Think of a panel that checks signatures in the order of the names.",
+    "slide": 22
+   },
+   {
+    "concept": "dummy element",
+    "analogy": "Think of a blank page that the form insists on.",
+    "slide": 22
+   },
+   {
+    "concept": "Pay to script hash",
+    "analogy": "A script hash is a sealed envelope that shows only a code number.",
+    "slide": 23
+   },
+   {
+    "concept": "Pay to Script Hash",
+    "analogy": "Think of a sealed envelope whose outside shows only a code number.",
+    "slide": 24
+   },
+   {
+    "concept": "P2SH Addresses",
+    "analogy": "Think of a box number at the post office that stands for a whole office.",
+    "slide": 24
+   },
+   {
+    "concept": "Benefits of P2SH",
+    "analogy": "Think of the sender writes a short address and the receiver carries the key ring.",
+    "slide": 24
+   },
+   {
+    "concept": "Redeem Script and Validation",
+    "analogy": "Think of opening the envelope at the counter so the clerk can read it.",
+    "slide": 26
+   },
+   {
+    "concept": "redeem script",
+    "analogy": "Think of the letter inside the sealed envelope.",
+    "slide": 26
+   },
+   {
+    "concept": "P2SH address",
+    "analogy": "Think of one box number with a check digit.",
+    "slide": 26
+   },
+   {
+    "concept": "Data and timelocks",
+    "analogy": "A timelock is a post-dated cheque; a data output is a note on a noticeboard.",
+    "slide": 27
+   },
+   {
+    "concept": "Data Recording Output (OP_RETURN)",
+    "analogy": "Think of a note pinned to a public noticeboard.",
+    "slide": 28
+   },
+   {
+    "concept": "Transaction Lock Time Limitations",
+    "analogy": "Think of a post-dated cheque that its writer can replace before the date.",
+    "slide": 28
+   },
+   {
+    "concept": "Check Lock Time Verify (OP_CLTV)",
+    "analogy": "Think of a savings bond that cannot be cashed before its date.",
+    "slide": 28
+   },
+   {
+    "concept": "Relative Timelocks",
+    "analogy": "Think of a gift card that works only a week after purchase.",
+    "slide": 28
+   },
+   {
+    "concept": "Relative Timelocks with OP_CSV",
+    "analogy": "Think of a clerk who checks the purchase date on your receipt.",
+    "slide": 30
+   },
+   {
+    "concept": "OP_RETURN",
+    "analogy": "Think of a stop sign at the end of a road.",
+    "slide": 30
+   },
+   {
+    "concept": "data carrier output",
+    "analogy": "Think of a luggage tag that holds a few words.",
+    "slide": 30
+   },
+   {
+    "concept": "lock time",
+    "analogy": "Think of the not-before date on an invitation.",
+    "slide": 30
+   },
+   {
+    "concept": "OP_CHECKLOCKTIMEVERIFY",
+    "analogy": "Think of the date check at the door of a theatre.",
+    "slide": 32
+   },
+   {
+    "concept": "sequence",
+    "analogy": "Think of the number on a bakery ticket that shows how long you have waited.",
+    "slide": 32
+   },
+   {
+    "concept": "OP_CHECKSEQUENCEVERIFY",
+    "analogy": "Think of a stopwatch that must reach the agreed time.",
+    "slide": 32
+   },
+   {
+    "concept": "Flow control and complex scripts",
+    "analogy": "Flow control is a fork in the road with a checkpoint on each path.",
+    "slide": 33
+   },
+   {
+    "concept": "Scripts with Flow Control (Conditional Clauses)",
+    "analogy": "Think of a road with a fork.",
+    "slide": 34
+   },
+   {
+    "concept": "Conditional Clauses with VERIFY Opcodes",
+    "analogy": "Think of a security gate that turns people away at once.",
+    "slide": 34
+   },
+   {
+    "concept": "Using Flow Control in Scripts",
+    "analogy": "Think of a form that says: if married fill box A, else box B.",
+    "slide": 34
+   },
+   {
+    "concept": "Complex Script Example",
+    "analogy": "Think of a company safe with three different ways to open it.",
+    "slide": 34
+   },
+   {
+    "concept": "OP_IF",
+    "analogy": "Think of a turnstile that opens on a yes.",
+    "slide": 36
+   },
+   {
+    "concept": "conditional clause",
+    "analogy": "Think of a footnote that applies only in a special case.",
+    "slide": 36
+   },
+   {
+    "concept": "OP_VERIFY",
+    "analogy": "Think of a bouncer who checks one thing and sends you home.",
+    "slide": 36
+   },
+   {
+    "concept": "Miniscript",
+    "analogy": "Think of a spreadsheet formula that is checked before you save it.",
+    "slide": 36
+   },
+   {
+    "concept": "Segregated witness scripts",
+    "analogy": "Segregated witness moves the proof to a window beside the counter.",
+    "slide": 37
+   },
+   {
+    "concept": "Segregated Witness Output and Transaction Examples",
+    "analogy": "Think of worked examples at the back of a driving manual.",
+    "slide": 38
+   },
+   {
+    "concept": "Pay to witness public key hash (P2WPKH)",
+    "analogy": "Think of the same fingerprint lock with the key shown at a side window.",
+    "slide": 38
+   },
+   {
+    "concept": "Wallet construction of P2WPKH",
+    "analogy": "Think of a cashier assembling a receipt together with its annex.",
+    "slide": 38
+   },
+   {
+    "concept": "Pay to witness script hash (P2WSH)",
+    "analogy": "Think of the sealed envelope, opened at the side window.",
+    "slide": 38
+   },
+   {
+    "concept": "P2WPKH",
+    "analogy": "a motorway where most cars already use the new lane.",
+    "slide": 40
+   },
+   {
+    "concept": "Differentiating between P2WPKH and P2WSH",
+    "analogy": "Think of telling a postcode from a full address by its length.",
+    "slide": 41
+   },
+   {
+    "concept": "Upgrading to Segregated Witness",
+    "analogy": "Think of adding a new lane to a road without closing it.",
+    "slide": 41
+   },
+   {
+    "concept": "Embedding segregated witness inside P2SH",
+    "analogy": "Think of a new letter inside an old envelope.",
+    "slide": 41
+   },
+   {
+    "concept": "Nested pay to witness public key hash",
+    "analogy": "Think of a small box inside a larger box.",
+    "slide": 41
+   },
+   {
+    "concept": "Nested pay to witness script hash",
+    "analogy": "Think of a sealed envelope inside a courier bag.",
+    "slide": 42
+   },
+   {
+    "concept": "segregated witness",
+    "analogy": "Think of keeping the passport photo off the ticket number.",
+    "slide": 42
+   },
+   {
+    "concept": "witness program",
+    "analogy": "Think of an extension number that tells the switchboard where to connect.",
+    "slide": 42
+   },
+   {
+    "concept": "P2WPKH",
+    "analogy": "Think of a nickname for a long job title.",
+    "slide": 42
+   },
+   {
+    "concept": "P2WSH",
+    "analogy": "Think of an acronym on a name badge.",
+    "slide": 43
+   },
+   {
+    "concept": "bech32",
+    "analogy": "Think of a spelling checker built into the address.",
+    "slide": 43
+   },
+   {
+    "concept": "nested segregated witness",
+    "analogy": "Think of a modern phone in an old phone case.",
+    "slide": 43
+   },
+   {
+    "concept": "soft fork",
+    "analogy": "Think of a stricter speed limit that old cars can still obey.",
+    "slide": 43
+   },
+   {
+    "concept": "Script trees and key tweaks",
+    "analogy": "A script tree is a menu of which only the ordered dish is shown.",
+    "slide": 45
+   },
+   {
+    "concept": "Merklized Alternative Script Trees (MAST)",
+    "analogy": "Think of a restaurant menu where you read out only the dish you ordered.",
+    "slide": 46
+   },
+   {
+    "concept": "Pay to Contract (P2C)",
+    "analogy": "Think of a wax seal that also encodes the fingerprint of the contract.",
+    "slide": 46
+   },
+   {
+    "concept": "Scriptless Multisignatures and Threshold Signatures",
+    "analogy": "Think of a choir that sings with one voice.",
+    "slide": 46
+   },
+   {
+    "concept": "MAST",
+    "analogy": "Think of a tournament bracket where only one team's path is shown.",
+    "slide": 46
+   },
+   {
+    "concept": "merkle root",
+    "analogy": "Think of the seal on top of a pyramid of stamped boxes.",
+    "slide": 48
+   },
+   {
+    "concept": "membership proof",
+    "analogy": "Think of the chain of members who vouch that someone belongs to a club.",
+    "slide": 48
+   },
+   {
+    "concept": "key tweak",
+    "analogy": "Think of a tiny adjustment screw on a lock.",
+    "slide": 48
+   },
+   {
+    "concept": "scriptless multisignature",
+    "analogy": "Think of a group letter that looks like one person's.",
+    "slide": 48
+   },
+   {
+    "concept": "threshold signature",
+    "analogy": "Think of a council where any two of three may sign for the town.",
+    "slide": 49
+   },
+   {
+    "concept": "partial public key",
+    "analogy": "Think of one voice of a choir, added to the others.",
+    "slide": 49
+   },
+   {
+    "concept": "Taproot and tapscript",
+    "analogy": "Taproot is a front door with a hidden side entrance.",
+    "slide": 50
+   },
+   {
+    "concept": "Taproot",
+    "analogy": "Think of a front door with a hidden side entrance.",
+    "slide": 51
+   },
+   {
+    "concept": "Tapscript",
+    "analogy": "Think of the house rules for the side entrance.",
+    "slide": 51
+   },
+   {
+    "concept": "keypath spending",
+    "analogy": "Think of walking in through the front door with your key.",
+    "slide": 51
+   },
+   {
+    "concept": "scriptpath spending",
+    "analogy": "Think of using the side entrance and showing the pass for it.",
+    "slide": 51
+   },
+   {
+    "concept": "taproot internal key",
+    "analogy": "Think of the key blank before the locksmith adds a mark.",
+    "slide": 54
+   },
+   {
+    "concept": "taproot output key",
+    "analogy": "Think of the finished key as it is cut.",
+    "slide": 54
+   },
+   {
+    "concept": "leaf script",
+    "analogy": "Think of a dish at the end of a menu section.",
+    "slide": 54
+   },
+   {
+    "concept": "OP_CHECKSIGADD",
+    "analogy": "Think of a tally mark added for every valid signature.",
+    "slide": 54
+   },
+   {
+    "concept": "schnorr signature",
+    "analogy": "Think of handwriting that adds up neatly when several people write together.",
+    "slide": 56
+   },
+   {
+    "concept": "OP_SUCCESS",
+    "analogy": "Think of a green light reserved for traffic rules of the future.",
+    "slide": 56
+   },
+   {
+    "concept": "mutual satisfaction",
+    "analogy": "Think of neighbours who settle a dispute over the fence instead of in court.",
+    "slide": 56
+   }
+  ],
+  "coverage": {
+   "measure": "concepts of the research ontology whose label is on a slide",
+   "percent": 100.0
+  }
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 7: Scripts and Signatures",
+   "sub": "Authorization and authentication: scripts that lock coins, signatures that unlock them",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch07/assets/mbc3_0701.png",
+     "x": 4.1,
+     "y": 0.45,
+     "w": 5.4,
+     "h": 1.2
+    },
+    {
+     "t": "foot",
+     "x": 0.6,
+     "y": 4.1,
+     "w": 8.8,
+     "h": 0.4,
+     "fs": 10,
+     "body": "Figure: locking and unlocking scripts, Antonopoulos and Harding, Mastering Bitcoin 3e, CC BY-SA 4.0. Python 3.14.6, no Bitcoin Core node."
+    }
+   ],
+   "notes": "This deck explains how Bitcoin decides who may spend an output. The output carries a lock, the spender supplies the key, and every node runs both and accepts only a true result. Every spend shown ran in the chapter's own interpreter; no Bitcoin Core node was available where it was built.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "Nine parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 6.3,
+     "h": 3.5,
+     "cols": 3,
+     "fs": 11,
+     "subfs": 10,
+     "accent": [],
+     "items": [
+      {
+       "label": "1. Questions and the chapter map",
+       "sub": "(slides 3-4)"
+      },
+      {
+       "label": "2. Scripts and the Script language",
+       "sub": "(slides 5-12)"
+      },
+      {
+       "label": "3. Locking a coin to a key",
+       "sub": "(slides 13-18)"
+      },
+      {
+       "label": "4. Scripted multisignatures",
+       "sub": "(slides 19-22)"
+      },
+      {
+       "label": "5. Pay to script hash",
+       "sub": "(slides 23-26)"
+      },
+      {
+       "label": "6. Data and timelocks",
+       "sub": "(slides 27-32)"
+      },
+      {
+       "label": "7. Flow control and complex scripts",
+       "sub": "(slides 33-36)"
+      },
+      {
+       "label": "8. Segregated witness scripts",
+       "sub": "(slides 37-44)"
+      },
+      {
+       "label": "9. Script trees and key tweaks",
+       "sub": "(slides 45-49)"
+      },
+      {
+       "label": "10. Taproot and tapscript",
+       "sub": "(slides 50-61)"
+      }
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.4,
+     "w": 2.45,
+     "h": 3.5,
+     "vert": true,
+     "items": [
+      {
+       "n": "61",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "3",
+       "label": "true stories, each told by 5N1K"
+      },
+      {
+       "n": "15",
+       "label": "code examples with a picture of each result"
+      }
+     ]
+    }
+   ],
+   "notes": "The route has nine parts that follow the order in which Bitcoin gained its spending conditions. Three true stories and fifteen code examples are spread across them. The examples are listed in the same order in the chapter code tab of the course page, so every slide can be rerun.",
+   "bg": "light",
+   "take": "Nine parts, fifteen runs and three true stories"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions; we return to each",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 3.5,
+     "fs": 12.0,
+     "items": [
+      "How do an output script and an input script together decide a spend?",
+      "Why is Script not Turing complete, and why can every node verify it?",
+      "How do key hashes, multisignatures and script hashes move cost to the spender?",
+      "How do lock time and sequence make a spend wait?",
+      "How does segregated witness fix malleability without splitting the network?",
+      "What does taproot hide, and what does a key path or script path reveal?",
+      "What does tapscript change in the language?"
+     ]
+    }
+   ],
+   "notes": "The seven questions are the chapter's own, shortened so that each has an answer on a slide. We return to them in the summary. A reader who can answer all seven has understood the chapter.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "One chapter, nine parts",
+   "sub": "The concept map the whole deck hangs on",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 3.4,
+     "cols": 3,
+     "fs": 12.5,
+     "subfs": 10.5,
+     "accent": [
+      8
+     ],
+     "items": [
+      {
+       "label": "Scripts and the Script language",
+       "sub": "14 concepts"
+      },
+      {
+       "label": "Locking a coin to a key",
+       "sub": "6 concepts"
+      },
+      {
+       "label": "Scripted multisignatures",
+       "sub": "5 concepts"
+      },
+      {
+       "label": "Pay to script hash",
+       "sub": "6 concepts"
+      },
+      {
+       "label": "Data and timelocks",
+       "sub": "11 concepts"
+      },
+      {
+       "label": "Flow control and complex scripts",
+       "sub": "8 concepts"
+      },
+      {
+       "label": "Segregated witness scripts",
+       "sub": "16 concepts"
+      },
+      {
+       "label": "Script trees and key tweaks",
+       "sub": "10 concepts"
+      },
+      {
+       "label": "Taproot and tapscript",
+       "sub": "11 concepts"
+      }
+     ]
+    }
+   ],
+   "notes": "The chapter has nine parts and 87 concepts. Each part gets a divider, concept cards with everyday comparisons and code that runs, and some parts a true story. The deck follows the order in which Bitcoin gained its spending conditions.",
+   "bg": "light",
+   "take": "Nine parts; every slide today lives on this map"
+  },
+  {
+   "kind": "section",
+   "title": "Scripts and the Script language",
+   "sub": "A script is a lock and key recipe that every node checks the same way.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Language and limits",
+       "meaning": "What Script is, and why it is kept small and free of loops.",
+       "analogy": "Think of a pocket calculator rather than a full computer.",
+       "hM": 0.43,
+       "hA": 0.43
+      },
+      {
+       "pill": "Locking and running",
+       "meaning": "How an output script and an input script run one after the other.",
+       "analogy": "Think of a padlock and the key that must be shown to it.",
+       "hM": 0.43,
+       "hA": 0.43
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956
+     ],
+     "cells": [
+      {
+       "t": "Language",
+       "hot": true
+      },
+      {
+       "t": "Keys",
+       "hot": false
+      },
+      {
+       "t": "Multisig",
+       "hot": false
+      },
+      {
+       "t": "P2SH",
+       "hot": false
+      },
+      {
+       "t": "Time",
+       "hot": false
+      },
+      {
+       "t": "Flow",
+       "hot": false
+      },
+      {
+       "t": "Segwit",
+       "hot": false
+      },
+      {
+       "t": "Trees",
+       "hot": false
+      },
+      {
+       "t": "Taproot",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "Every coin is locked by a small program. This part shows the language, its stack and the two scripts that run one after the other. A bug of 2010 shows why they must run apart.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Scripts and the Script language (1 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.49,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Transaction Scripts and Script Language",
+       "meaning": "The small language in which every coin's spending rule is written.",
+       "analogy": "Think of a rulebook that every cashier in the world reads the same way.",
+       "hA": 0.89,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Turing Incompleteness",
+       "meaning": "Script has no loops, so every program ends.",
+       "analogy": "Think of a recipe without a repeat-forever step.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Stateless Verification",
+       "meaning": "A script's result depends only on the script and its inputs.",
+       "analogy": "Think of a sum whose answer never depends on the day or the machine.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Script Construction",
+       "meaning": "The lock and the unlocking data are built separately and checked together.",
+       "analogy": "Think of a lock made by one person and a key cut by another.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Transaction Scripts and Script Language, Turing Incompleteness, Stateless Verification and Script Construction. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Script is arithmetic on a stack",
+   "sub": "The smallest script of the chapter, run in the chapter's interpreter",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "ok = L.run('2 3', 'OP_ADD 5 OP_EQUAL')",
+         ""
+        ]
+       ],
+       "note": "A script is read left to right; numbers are pushed and operations use the top items.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "bad = L.run('2 3', 'OP_ADD 6 OP_EQUAL')",
+         ""
+        ]
+       ],
+       "note": "Change the five to a six and the same script fails.",
+       "y": 2.321,
+       "h": 0.341,
+       "ny": 2.692,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "code = L.assemble('2 3 OP_ADD 5 OP_EQUAL').hex()",
+         ""
+        ],
+        [
+         "res = [ok, bad, code]",
+         ""
+        ],
+        [
+         "res",
+         "['OK', 'EVAL_FALSE', '5253935587']"
+        ]
+       ],
+       "note": "The assembler turns the five words into five bytes.",
+       "y": 3.012,
+       "h": 0.882,
+       "ny": 3.924,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - names as in the chapter setup",
+     "capy": 4.204
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: the same script with a five and a six",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.75,
+      1.5
+     ],
+     "rows": [
+      [
+       "Program",
+       "Result"
+      ],
+      [
+       "2 3 OP_ADD 5 OP_EQUAL",
+       "OK"
+      ],
+      [
+       "2 3 OP_ADD 6 OP_EQUAL",
+       "EVAL_FALSE"
+      ],
+      [
+       "Assembled bytes",
+       "5253935587"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.44,
+     "w": 3.25,
+     "h": 0.86,
+     "body": "The sum is five, so the first script ends true and the second false. The five words assemble to five bytes.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "Script reads its words from left to right. Numbers are pushed on the stack, and OP_ADD replaces the top two by their sum. OP_EQUAL compares the sum with five, so the spend is true with five and false with six. It is example 1 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "Numbers are pushed; an operation takes its inputs from the top"
+  },
+  {
+   "kind": "content",
+   "title": "Scripts and the Script language (2 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.49,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "The script execution stack",
+       "meaning": "Items are pushed and popped in last-in, first-out order.",
+       "analogy": "Think of a pile of plates where you touch only the top one.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "A simple script",
+       "meaning": "2 3 OP_ADD 5 OP_EQUAL adds two numbers and compares the sum.",
+       "analogy": "Think of a till that adds two prices and checks the total.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Separate execution of output and input scripts",
+       "meaning": "The two scripts run apart; only the stack passes between them.",
+       "analogy": "Think of two people in two rooms passing one tray through a hatch.",
+       "hA": 0.89,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "script",
+       "meaning": "A list of data items and operation words.",
+       "analogy": "Think of a shopping list that also says what to do with each item.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover The script execution stack, A simple script, Separate execution of output and input scripts and script. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "The OP_RETURN bug of 2010",
+   "sub": "Joined scripts against separate scripts",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "joined = old_joined('OP_1 OP_RETURN', LOCK)",
+         ""
+        ]
+       ],
+       "note": "The first software joined both scripts into one program that stopped at OP_RETURN.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "now = L.run('OP_1 OP_RETURN', LOCK, flags=())",
+         ""
+        ]
+       ],
+       "note": "Today the scripts run apart, and OP_RETURN makes the spend fail.",
+       "y": 2.321,
+       "h": 0.341,
+       "ny": 2.692,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "key = '0x06' + b'secret'.hex()",
+         ""
+        ],
+        [
+         "real = L.run(key, LOCK, flags=())",
+         ""
+        ],
+        [
+         "res = [joined, now, real]",
+         ""
+        ],
+        [
+         "res",
+         "['OK', 'OP_RETURN', 'OK']"
+        ]
+       ],
+       "note": "Only the real secret opens the lock, in both engines.",
+       "y": 3.012,
+       "h": 1.063,
+       "ny": 4.105,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.385
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: a spend that has no secret, and one that has",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.75,
+      1.5
+     ],
+     "rows": [
+      [
+       "Engine",
+       "Result"
+      ],
+      [
+       "2010: joined scripts",
+       "OK"
+      ],
+      [
+       "Today: scripts apart",
+       "OP_RETURN"
+      ],
+      [
+       "Real secret, today",
+       "OK"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.44,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "In the old engine OK means that anyone could spend the coin. Today the same input fails with OP_RETURN.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "In 2010 the software joined the input script and the output script into one program. An input script of 1 then OP_RETURN ended the run with a true value before the lock ran. Today the scripts run apart. It is example 2 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "Run the two scripts apart, and fail closed on anything unknown"
+  },
+  {
+   "kind": "content",
+   "title": "The script that ended with a true result",
+   "sub": "A bug of 2010 that let anyone spend any output",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch07/assets/photo_satoshi_bust_budapest.jpg",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.6,
+     "h": 2.55,
+     "cap": "Bust of Satoshi Nakamoto, Budapest - Fekist, CC BY-SA 4.0"
+    },
+    {
+     "t": "beats",
+     "x": 3.4,
+     "y": 1.4,
+     "w": 6.1,
+     "h": 2.7,
+     "fs": 11.5,
+     "items": [
+      "WHAT: On 28 July 2010 two bugs were shown on the test network; one let a stranger spend coins that were not theirs.",
+      "WHY: The first software joined input and output script into one program, and OP_RETURN jumped to its end with a true result.",
+      "HOW: An input script of 1 then OP_RETURN ended the run true; version 0.3.5 fixed it, and later versions run the scripts apart.",
+      "SO WHAT: Many unused opcodes were disabled; in tapscript such values, like OP_LSHIFT (152), are now OP_SUCCESS."
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.5,
+     "w": 9.0,
+     "who": "Satoshi Nakamoto",
+     "where": "Bitcoin test network",
+     "when": "2010-07-28",
+     "link": "https://en.bitcoin.it/wiki/Common_Vulnerabilities_and_Exposures#CVE-2010-5141",
+     "linkText": "en.bitcoin.it"
+    }
+   ],
+   "notes": "This is a true story, dated 2010-07-28. On 28 July 2010 two bugs were discovered and demonstrated on the test network. The lesson: run the two scripts separately, and fail closed on anything unknown.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Scripts and the Script language (3 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.27,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "stack",
+       "meaning": "The pile of items on which a script works.",
+       "analogy": "Think of a spike on a desk where notes are pushed on top.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Turing complete",
+       "meaning": "A language that can compute anything given time; Script cannot.",
+       "analogy": "Think of a full workshop, where Script offers one screwdriver.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "output script",
+       "meaning": "The lock that the payer places on a coin.",
+       "analogy": "Think of the padlock a payer fastens onto a box.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "input script",
+       "meaning": "The data a spender shows to open the lock.",
+       "analogy": "Think of the key that is held up to the padlock.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover stack, Turing complete, output script and input script. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Scripts and the Script language (4 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "scriptSig",
+       "meaning": "The older name of the input script.",
+       "analogy": "Think of the signature card that is presented at the counter.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "scriptPubKey",
+       "meaning": "The older name of the output script.",
+       "analogy": "Think of the plate on a mailbox that says who may open it.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover scriptSig and scriptPubKey. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "section",
+   "title": "Locking a coin to a key",
+   "sub": "A key lock is a safe-deposit box labelled with a fingerprint.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Key and key hash",
+       "meaning": "How a coin is locked to a key, or to the hash of a key.",
+       "analogy": "Think of locking a door with the fingerprint of the key.",
+       "hM": 0.43,
+       "hA": 0.43
+      },
+      {
+       "pill": "Checking signatures",
+       "meaning": "How a signature is tied to the transaction and written down.",
+       "analogy": "Think of a cashier comparing your signature with your card.",
+       "hM": 0.43,
+       "hA": 0.43
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956
+     ],
+     "cells": [
+      {
+       "t": "Language",
+       "hot": false
+      },
+      {
+       "t": "Keys",
+       "hot": true
+      },
+      {
+       "t": "Multisig",
+       "hot": false
+      },
+      {
+       "t": "P2SH",
+       "hot": false
+      },
+      {
+       "t": "Time",
+       "hot": false
+      },
+      {
+       "t": "Flow",
+       "hot": false
+      },
+      {
+       "t": "Segwit",
+       "hot": false
+      },
+      {
+       "t": "Trees",
+       "hot": false
+      },
+      {
+       "t": "Taproot",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "The most common lock asks for a signature from one key. We lock a coin to the hash of a public key, check a signature, and see why the strict signature format caused a fork in 2015.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Locking a coin to a key (1 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.465,
+     "cols": 3,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Pay to Public Key Hash",
+       "meaning": "A coin locked to the hash of a public key.",
+       "analogy": "Think of a deposit box labelled with a fingerprint instead of a face.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "public key hash",
+       "meaning": "A 20-byte fingerprint of a public key.",
+       "analogy": "Think of a library card number instead of the reader's full name.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "OP_CHECKSIG",
+       "meaning": "Checks one signature against one public key.",
+       "analogy": "Think of a guard comparing the signature on a form with the one on file.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Pay to Public Key Hash, public key hash and OP_CHECKSIG. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "A key-hash lock, tried three ways",
+   "sub": "Pay to public key hash with a real signature",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "spk = L.p2pkh_script(L.hash160(K.pub(1)))",
+         ""
+        ],
+        [
+         "kind = (len(spk), L.classify(spk)[0])",
+         ""
+        ]
+       ],
+       "note": "The lock holds a 20-byte hash of the public key and fills 25 bytes.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "a = p2pkh()",
+         ""
+        ],
+        [
+         "b = p2pkh(signer=2)",
+         ""
+        ],
+        [
+         "c = p2pkh(amount_after=99999)",
+         ""
+        ],
+        [
+         "res = (a, b, c)",
+         ""
+        ],
+        [
+         "res",
+         "('OK', 'EVAL_FALSE', 'EVAL_FALSE')"
+        ]
+       ],
+       "note": "Three spends are tried: the right key, a wrong key, a changed amount.",
+       "y": 2.321,
+       "h": 1.243,
+       "ny": 3.594,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 3.874
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.24,
+     "body": "Result: four trials of one lock",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.74,
+     "w": 3.25,
+     "colW": [
+      1.45,
+      1.8
+     ],
+     "rows": [
+      [
+       "Spend",
+       "Result"
+      ],
+      [
+       "Lock: bytes, kind",
+       "25, pubkeyhash"
+      ],
+      [
+       "Right key",
+       "OK"
+      ],
+      [
+       "Wrong key",
+       "EVAL_FALSE"
+      ],
+      [
+       "Amount changed",
+       "EVAL_FALSE"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.54,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "Only the right key signing the real amount opens it; the other two fail with EVAL_FALSE.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "The lock holds the hash of a public key. The spender shows the key and a signature over the transaction. A wrong key fails, and so does a changed amount, because the signature covers the amount. It is example 3 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "Only the owner of the key, signing this exact transaction, opens the lock"
+  },
+  {
+   "kind": "content",
+   "title": "Locking a coin to a key (2 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.659,
+     "cols": 3,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "signature hash",
+       "meaning": "The digest of the transaction that a signature really signs.",
+       "analogy": "Think of the summary page that is initialled instead of the whole contract.",
+       "hA": 0.865,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "hash type",
+       "meaning": "A flag that says which parts of the transaction are signed.",
+       "analogy": "Think of a stamp saying which pages of the contract the signature covers.",
+       "hA": 0.865,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "DER",
+       "meaning": "The strict byte format in which a signature is written.",
+       "analogy": "Think of a form with fixed boxes where each number must go.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover signature hash, hash type and DER. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "A DER signature, strict and loose",
+   "sub": "Why the encoding of a signature is a consensus rule",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "sig = L.ecdsa_sign(K.secret(1), L.sha256(b'pay Bob'))",
+         ""
+        ]
+       ],
+       "note": "A signature is made over the hash of a message.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "full = sig + b'\\x01'",
+         ""
+        ],
+        [
+         "facts = [len(full), full[0], L.is_low_s(full)]",
+         ""
+        ]
+       ],
+       "note": "With its hash type it is 72 bytes, starts with 0x30 and has a low s.",
+       "y": 2.141,
+       "h": 0.521,
+       "ny": 2.692,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "nod = L.MAINNET_FLAGS - {'DERSIG'}",
+         ""
+        ],
+        [
+         "old = p2pkh(loose=True, flags=nod)",
+         ""
+        ],
+        [
+         "res = [old, p2pkh(loose=True)]",
+         ""
+        ],
+        [
+         "res",
+         "['OK', 'SIG_DER']"
+        ]
+       ],
+       "note": "A padded signature passes old rules but fails the strict DER rule.",
+       "y": 3.012,
+       "h": 1.063,
+       "ny": 4.105,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.385
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: one signature, two rule sets",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.85,
+      1.4
+     ],
+     "rows": [
+      [
+       "Check",
+       "Result"
+      ],
+      [
+       "Length with hash type",
+       "72"
+      ],
+      [
+       "First byte (0x30 = 48)",
+       "48"
+      ],
+      [
+       "Low s",
+       "yes"
+      ],
+      [
+       "Padded, old rules",
+       "OK"
+      ],
+      [
+       "Padded, DER rule",
+       "SIG_DER"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.04,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "The same padded signature passes without the DER rule and fails with it, with the error SIG_DER.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A signature is two numbers, r and s, written in DER with a hash type at the end. A padded form was once accepted. Since BIP66 only the strict form is valid, which is the rule behind the fork of 2015. It is example 4 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "A rule that nodes check for themselves cannot be skipped"
+  },
+  {
+   "kind": "content",
+   "title": "Half the miners did not check the block",
+   "sub": "Strict DER signatures, and the fork of 4 July 2015",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch07/assets/photo_bitcoin_mining_farm.jpg",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 3.5,
+     "h": 2.55,
+     "cap": "A bitcoin mining farm, 2014 - Marko Ahtisaari, CC BY 2.0"
+    },
+    {
+     "t": "beats",
+     "x": 4.3,
+     "y": 1.4,
+     "w": 5.2,
+     "h": 2.7,
+     "fs": 11.5,
+     "items": [
+      "WHAT: On 4 July 2015, at block 363,725, strict DER signatures (BIP66) took effect, and a fork of six blocks followed.",
+      "WHY: About half of the hash rate mined without fully validating, so it built on an invalid block of a miner that had not upgraded.",
+      "HOW: The fork lasted from 02:10 to 03:50 UTC, a second of three blocks followed on 5 July, and the first showed no double spend.",
+      "SO WHAT: Bitcoin Core 0.9.5 and later checked the rule and were unaffected: a rule you do not check protects nobody."
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.5,
+     "w": 9.0,
+     "who": "Pieter Wuille, miners",
+     "where": "Block 363,725",
+     "when": "2015-07-04",
+     "link": "https://bitcoin.org/en/alert/2015-07-04-spv-mining",
+     "linkText": "bitcoin.org"
+    }
+   ],
+   "notes": "This is a true story, dated 2015-07-04. BIP66 made strict DER the only valid encoding of a signature, and it took effect once 950 of the last 1,000 blocks were version 3, which happened early on 4 July 2015, at block 363,725. The lesson: a rule that you do not check for yourself protects nobody.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Scripted multisignatures",
+   "sub": "A multisignature is a vault that opens when enough directors turn their keys.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "The t-of-k script",
+       "meaning": "The shape of a lock that needs t of k keys, and how large it may grow.",
+       "analogy": "Think of a safe with several keyholes.",
+       "hM": 0.43,
+       "hA": 0.235
+      },
+      {
+       "pill": "The extra element",
+       "meaning": "Why one useless item must sit in front of the signatures.",
+       "analogy": "Think of a turnstile that swallows one token too many.",
+       "hM": 0.43,
+       "hA": 0.43
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956
+     ],
+     "cells": [
+      {
+       "t": "Language",
+       "hot": false
+      },
+      {
+       "t": "Keys",
+       "hot": false
+      },
+      {
+       "t": "Multisig",
+       "hot": true
+      },
+      {
+       "t": "P2SH",
+       "hot": false
+      },
+      {
+       "t": "Time",
+       "hot": false
+      },
+      {
+       "t": "Flow",
+       "hot": false
+      },
+      {
+       "t": "Segwit",
+       "hot": false
+      },
+      {
+       "t": "Trees",
+       "hot": false
+      },
+      {
+       "t": "Taproot",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "A lock can ask for t signatures out of k keys. We run a real two-of-three spend, see why the signatures must follow the order of the keys, and meet the extra element that the opcode pops.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Scripted multisignatures (1 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.685,
+     "cols": 3,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Scripted Multisignatures",
+       "meaning": "A script that wants t signatures out of k keys.",
+       "analogy": "Think of a vault that opens when two of three directors turn their keys.",
+       "hA": 0.89,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "An Oddity in CHECKMULTISIG Execution",
+       "meaning": "The opcode pops one item too many, so a dummy is needed.",
+       "analogy": "Think of a vending machine that always takes one coin more than the price.",
+       "hA": 0.89,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "multisignature",
+       "meaning": "More than one key must approve a spend.",
+       "analogy": "Think of a cheque that needs two signatures.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Scripted Multisignatures, An Oddity in CHECKMULTISIG Execution and multisignature. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "A 2-of-3 multisignature",
+   "sub": "Signatures in key order, and the extra element",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "ok = K.ms_spend(2, 3, [0, 2])",
+         ""
+        ],
+        [
+         "swap = K.ms_spend(2, 3, [2, 0])",
+         ""
+        ],
+        [
+         "few = K.ms_spend(2, 3, [1])",
+         ""
+        ]
+       ],
+       "note": "Signatures must follow the order of the keys; one signature is too few.",
+       "y": 1.45,
+       "h": 0.702,
+       "ny": 2.182,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "dummy = K.ms_spend(2, 3, [0, 1], dummy=b'\\x01')",
+         ""
+        ]
+       ],
+       "note": "CHECKMULTISIG pops one item too many; a non-empty dummy is refused.",
+       "y": 2.682,
+       "h": 0.341,
+       "ny": 3.053,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "res = [ok, swap, few]",
+         ""
+        ],
+        [
+         "res",
+         "['OK', 'EVAL_FALSE', 'INVALID_STACK_OPERATION']"
+        ]
+       ],
+       "note": "The script itself is 105 bytes, mostly three public keys.",
+       "y": 3.373,
+       "h": 0.702,
+       "ny": 4.105,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.385
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: five trials of a 2-of-3 lock",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.4,
+      1.85
+     ],
+     "rows": [
+      [
+       "Spend",
+       "Result"
+      ],
+      [
+       "Keys 0 and 2, in order",
+       "OK"
+      ],
+      [
+       "Keys 2 and 0",
+       "EVAL_FALSE"
+      ],
+      [
+       "Only key 1",
+       "INVALID_STACK_OPERATION"
+      ],
+      [
+       "Dummy not empty",
+       "SIG_NULLDUMMY"
+      ]
+     ],
+     "fs": 9,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.74,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "The script is 105 bytes long. Only signatures in the order of the keys, behind an empty dummy, pass.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A two-of-three lock lists three keys and wants two signatures in the same order. A single signature fails. The opcode also pops one item too many, so a dummy sits in front and must be empty. It is example 5 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "The signatures must follow the order of the keys, after one empty dummy"
+  },
+  {
+   "kind": "content",
+   "title": "Scripted multisignatures (2 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "OP_CHECKMULTISIG",
+       "meaning": "Checks t signatures against k keys, in order.",
+       "analogy": "Think of a panel that checks signatures in the order of the names.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "dummy element",
+       "meaning": "The unused item that the extra pop consumes.",
+       "analogy": "Think of a blank page that the form insists on.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover OP_CHECKMULTISIG and dummy element. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "section",
+   "title": "Pay to script hash",
+   "sub": "A script hash is a sealed envelope that shows only a code number.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Hashing the script",
+       "meaning": "The lock holds only the hash; the script is revealed at spending.",
+       "analogy": "Think of sealing a contract in an envelope.",
+       "hM": 0.43,
+       "hA": 0.235
+      },
+      {
+       "pill": "What the hash changes",
+       "meaning": "Who pays for the size of the script, and which rules apply.",
+       "analogy": "Think of a post office that charges by the envelope.",
+       "hM": 0.43,
+       "hA": 0.43
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956
+     ],
+     "cells": [
+      {
+       "t": "Language",
+       "hot": false
+      },
+      {
+       "t": "Keys",
+       "hot": false
+      },
+      {
+       "t": "Multisig",
+       "hot": false
+      },
+      {
+       "t": "P2SH",
+       "hot": true
+      },
+      {
+       "t": "Time",
+       "hot": false
+      },
+      {
+       "t": "Flow",
+       "hot": false
+      },
+      {
+       "t": "Segwit",
+       "hot": false
+      },
+      {
+       "t": "Trees",
+       "hot": false
+      },
+      {
+       "t": "Taproot",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "A long lock is costly for the payer. Pay to script hash puts only a hash in the output and lets the spender reveal the script. We build one and watch a wrong script fail.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Pay to script hash: concepts (1 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.659,
+     "cols": 3,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Pay to Script Hash",
+       "meaning": "A coin locked to the hash of a whole script.",
+       "analogy": "Think of a sealed envelope whose outside shows only a code number.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "P2SH Addresses",
+       "meaning": "Addresses that start with a 3 and stand for a script hash.",
+       "analogy": "Think of a box number at the post office that stands for a whole office.",
+       "hA": 0.865,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "Benefits of P2SH",
+       "meaning": "The payer writes a short lock; the spender carries the long script.",
+       "analogy": "Think of the sender writes a short address and the receiver carries the key ring.",
+       "hA": 0.865,
+       "hB": 0.625,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Pay to Script Hash, P2SH Addresses and Benefits of P2SH. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Pay to script hash",
+   "sub": "The payer sees a hash, the spender shows the script",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "spk = L.p2sh_script(L.hash160(RED))",
+         ""
+        ],
+        [
+         "addr = L.script_to_address(spk)",
+         ""
+        ]
+       ],
+       "note": "The lock holds only the 20-byte hash of the script: 23 bytes.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "ok = K.ms_spend(2, 3, [0, 1], wrap='p2sh')",
+         ""
+        ],
+        [
+         "bad = K.p2sh_spend(RED, hashed=RED + b'\\x00')",
+         ""
+        ]
+       ],
+       "note": "The spender reveals the script; a script that does not hash to the lock fails.",
+       "y": 2.321,
+       "h": 0.521,
+       "ny": 2.872,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "res = [addr[:6], len(spk), ok, bad]",
+         ""
+        ],
+        [
+         "res",
+         "['3BuKam', 23, 'OK', 'EVAL_FALSE']"
+        ]
+       ],
+       "note": "Addresses of this kind start with a 3.",
+       "y": 3.372,
+       "h": 0.702,
+       "ny": 4.104,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.384
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: the hash lock and two reveals",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.6,
+      1.65
+     ],
+     "rows": [
+      [
+       "Quantity",
+       "Result"
+      ],
+      [
+       "Address begins",
+       "3BuKam"
+      ],
+      [
+       "Lock, bytes",
+       "23"
+      ],
+      [
+       "Right script shown",
+       "OK"
+      ],
+      [
+       "Other script shown",
+       "EVAL_FALSE"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.74,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "The lock is 23 bytes however long the script is. A script that does not match the hash fails.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "The output holds only the 20-byte hash of the script, so the payer pays for a short lock. The spender reveals the script, nodes hash it, compare, and then run it. A script that hashes differently fails. It is example 6 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "The long lock moves from the payer to the spender"
+  },
+  {
+   "kind": "content",
+   "title": "Pay to script hash: concepts (2 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.88,
+     "cols": 3,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Redeem Script and Validation",
+       "meaning": "The spender reveals the script; nodes hash it and then run it.",
+       "analogy": "Think of opening the envelope at the counter so the clerk can read it.",
+       "hA": 1.085,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "redeem script",
+       "meaning": "The script whose hash locked the coin.",
+       "analogy": "Think of the letter inside the sealed envelope.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "P2SH address",
+       "meaning": "One such address, written in Base58Check with a checksum.",
+       "analogy": "Think of one box number with a check digit.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Redeem Script and Validation, redeem script and P2SH address. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "section",
+   "title": "Data and timelocks",
+   "sub": "A timelock is a post-dated cheque; a data output is a note on a noticeboard.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Recording data",
+       "meaning": "A few bytes of data go on chain without a spendable coin.",
+       "analogy": "Think of a noticeboard that nobody can walk away with.",
+       "hM": 0.413,
+       "hA": 0.413
+      },
+      {
+       "pill": "Absolute timelocks",
+       "meaning": "A transaction or a coin that waits for a fixed time or height.",
+       "analogy": "Think of a savings bond with a fixed date.",
+       "hM": 0.413,
+       "hA": 0.413
+      },
+      {
+       "pill": "Relative timelocks",
+       "meaning": "A coin that waits for an age, counted from the day it was mined.",
+       "analogy": "Think of a gift card that works a week after purchase.",
+       "hM": 0.599,
+       "hA": 0.413
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956
+     ],
+     "cells": [
+      {
+       "t": "Language",
+       "hot": false
+      },
+      {
+       "t": "Keys",
+       "hot": false
+      },
+      {
+       "t": "Multisig",
+       "hot": false
+      },
+      {
+       "t": "P2SH",
+       "hot": false
+      },
+      {
+       "t": "Time",
+       "hot": true
+      },
+      {
+       "t": "Flow",
+       "hot": false
+      },
+      {
+       "t": "Segwit",
+       "hot": false
+      },
+      {
+       "t": "Trees",
+       "hot": false
+      },
+      {
+       "t": "Taproot",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "Two special locks. One records a few bytes of data and can never be spent. The others make a coin wait, until a time or block, or for an age counted from the day it was mined.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Data and timelocks: concepts (1 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.27,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Data Recording Output (OP_RETURN)",
+       "meaning": "An unspendable output that carries a few bytes of data.",
+       "analogy": "Think of a note pinned to a public noticeboard.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Transaction Lock Time Limitations",
+       "meaning": "Lock time stops a transaction, not a spender.",
+       "analogy": "Think of a post-dated cheque that its writer can replace before the date.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Check Lock Time Verify (OP_CLTV)",
+       "meaning": "A script rule: this coin is not spendable before a time or height.",
+       "analogy": "Think of a savings bond that cannot be cashed before its date.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Relative Timelocks",
+       "meaning": "A wait counted from the day the coin was mined.",
+       "analogy": "Think of a gift card that works only a week after purchase.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Data Recording Output (OP_RETURN), Transaction Lock Time Limitations, Check Lock Time Verify (OP_CLTV) and Relative Timelocks. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "A lock until block 800,000",
+   "sub": "OP_CHECKLOCKTIMEVERIFY on a real spend",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "seq = 0xfffffffe",
+         ""
+        ],
+        [
+         "ok = K.key_spend(CLTV, locktime=800000, sequence=seq)",
+         ""
+        ]
+       ],
+       "note": "The sequence must not be final, or the lock time is ignored.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "early = K.key_spend(CLTV, locktime=799999, sequence=seq)",
+         ""
+        ]
+       ],
+       "note": "A lock time one block too early fails.",
+       "y": 2.321,
+       "h": 0.341,
+       "ny": 2.692,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "final = K.key_spend(CLTV, locktime=800000)",
+         ""
+        ],
+        [
+         "res = [ok, early, final]",
+         ""
+        ],
+        [
+         "res",
+         "['OK', 'UNSATISFIED_LOCKTIME', 'UNSATISFIED_LOCKTIME']"
+        ]
+       ],
+       "note": "A final sequence switches the lock time off, and the script fails.",
+       "y": 3.012,
+       "h": 0.882,
+       "ny": 3.924,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.204
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.24,
+     "body": "Result: three spends of one script",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.74,
+     "w": 3.25,
+     "colW": [
+      1.55,
+      1.7
+     ],
+     "rows": [
+      [
+       "Lock time of the spend",
+       "Result"
+      ],
+      [
+       "800,000, not final",
+       "OK"
+      ],
+      [
+       "799,999, not final",
+       "UNSATISFIED_LOCKTIME"
+      ],
+      [
+       "800,000, final",
+       "UNSATISFIED_LOCKTIME"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.24,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "Only a lock time that reaches 800,000, with a sequence that is not final, satisfies the script.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "The script holds a block number. The spending transaction must carry a lock time of at least that number, and its sequence must not be final. One block too early fails, and so does a final sequence. It is example 7 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "The transaction's lock time must reach the number in the script"
+  },
+  {
+   "kind": "content",
+   "title": "Data and timelocks: concepts (2 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Relative Timelocks with OP_CSV",
+       "meaning": "The script rule that enforces a relative wait.",
+       "analogy": "Think of a clerk who checks the purchase date on your receipt.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "OP_RETURN",
+       "meaning": "The word that ends a script in failure and marks data outputs.",
+       "analogy": "Think of a stop sign at the end of a road.",
+       "hA": 0.67,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "data carrier output",
+       "meaning": "The relay policy's name for an OP_RETURN output.",
+       "analogy": "Think of a luggage tag that holds a few words.",
+       "hA": 0.67,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "lock time",
+       "meaning": "A field with the earliest time or block for a transaction.",
+       "analogy": "Think of the not-before date on an invitation.",
+       "hA": 0.67,
+       "hB": 0.235,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Relative Timelocks with OP_CSV, OP_RETURN, data carrier output and lock time. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "A wait of 4,320 blocks",
+   "sub": "OP_CHECKSEQUENCEVERIFY counts the age of the coin",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "ok = K.key_spend(CSV, version=2, sequence=4320)",
+         ""
+        ]
+       ],
+       "note": "Version 2 and a sequence of 4,320 satisfy the script: thirty days of blocks.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "early = K.key_spend(CSV, version=2, sequence=4319)",
+         ""
+        ],
+        [
+         "v1 = K.key_spend(CSV, version=1, sequence=4320)",
+         ""
+        ]
+       ],
+       "note": "One block short fails, and so does version 1.",
+       "y": 2.321,
+       "h": 0.521,
+       "ny": 2.872,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "bit31 = 0x80000000 | 4320",
+         ""
+        ],
+        [
+         "off = K.key_spend(CSV, version=2, sequence=bit31)",
+         ""
+        ],
+        [
+         "off",
+         "'UNSATISFIED_LOCKTIME'"
+        ]
+       ],
+       "note": "Bit 31 set disables the relative lock, and the script fails.",
+       "y": 3.192,
+       "h": 0.882,
+       "ny": 4.104,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.384
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.24,
+     "body": "Result: four spends of one script",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.74,
+     "w": 3.25,
+     "colW": [
+      1.2,
+      2.05
+     ],
+     "rows": [
+      [
+       "Spend",
+       "Result"
+      ],
+      [
+       "Version 2, 4,320",
+       "OK"
+      ],
+      [
+       "Version 2, 4,319",
+       "UNSATISFIED_LOCKTIME"
+      ],
+      [
+       "Version 1, 4,320",
+       "UNSATISFIED_LOCKTIME"
+      ],
+      [
+       "Bit 31 set",
+       "UNSATISFIED_LOCKTIME"
+      ]
+     ],
+     "fs": 9,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.54,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "One block short, the old version, or a disabled lock each fail with UNSATISFIED_LOCKTIME.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A relative lock counts from the block that confirmed the coin. The input's sequence must reach 4,320 blocks, about thirty days, and the transaction must be version 2. Setting bit 31 turns the lock off. It is example 8 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "The sequence of the input must reach the number in the script"
+  },
+  {
+   "kind": "content",
+   "title": "Data and timelocks: concepts (3 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.659,
+     "cols": 3,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "OP_CHECKLOCKTIMEVERIFY",
+       "meaning": "The full name of OP_CLTV.",
+       "analogy": "Think of the date check at the door of a theatre.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "sequence",
+       "meaning": "A field of each input whose use includes the relative wait.",
+       "analogy": "Think of the number on a bakery ticket that shows how long you have waited.",
+       "hA": 0.865,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "OP_CHECKSEQUENCEVERIFY",
+       "meaning": "The full name of OP_CSV.",
+       "analogy": "Think of a stopwatch that must reach the agreed time.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover OP_CHECKLOCKTIMEVERIFY, sequence and OP_CHECKSEQUENCEVERIFY. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "section",
+   "title": "Flow control and complex scripts",
+   "sub": "Flow control is a fork in the road with a checkpoint on each path.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Conditionals and guards",
+       "meaning": "Branches that choose a path, and checks that stop a script early.",
+       "analogy": "Think of a fork in the road with a checkpoint.",
+       "hM": 0.43,
+       "hA": 0.235
+      },
+      {
+       "pill": "Complex scripts",
+       "meaning": "A real lock that mixes partners, a lawyer and delays.",
+       "analogy": "Think of a company safe with three ways to open it.",
+       "hM": 0.43,
+       "hA": 0.43
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956
+     ],
+     "cells": [
+      {
+       "t": "Language",
+       "hot": false
+      },
+      {
+       "t": "Keys",
+       "hot": false
+      },
+      {
+       "t": "Multisig",
+       "hot": false
+      },
+      {
+       "t": "P2SH",
+       "hot": false
+      },
+      {
+       "t": "Time",
+       "hot": false
+      },
+      {
+       "t": "Flow",
+       "hot": true
+      },
+      {
+       "t": "Segwit",
+       "hot": false
+      },
+      {
+       "t": "Trees",
+       "hot": false
+      },
+      {
+       "t": "Taproot",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "A script can choose between paths, and a check can stop it early. We combine both in a capital account that partners open at once, a lawyer opens after thirty days, and the lawyer alone after ninety.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Flow (1 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.49,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Scripts with Flow Control (Conditional Clauses)",
+       "meaning": "A script can choose between several paths.",
+       "analogy": "Think of a road with a fork.",
+       "hA": 0.695,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "Conditional Clauses with VERIFY Opcodes",
+       "meaning": "VERIFY words stop the script at once when a check fails.",
+       "analogy": "Think of a security gate that turns people away at once.",
+       "hA": 0.89,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Using Flow Control in Scripts",
+       "meaning": "IF, ELSE and ENDIF select one of several spending paths.",
+       "analogy": "Think of a form that says: if married fill box A, else box B.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Complex Script Example",
+       "meaning": "Mohammed's capital account: partners, or a lawyer after a delay.",
+       "analogy": "Think of a company safe with three different ways to open it.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Scripts with Flow Control (Conditional Clauses), Conditional Clauses with VERIFY Opcodes, Using Flow Control in Scripts and Complex Script Example. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Three ways out of one output",
+   "sub": "Partners at once, a lawyer after 30 days, the lawyer alone after 90",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "size = len(K.moh_script())",
+         ""
+        ],
+        [
+         "p1 = K.moh_spend(1)",
+         ""
+        ]
+       ],
+       "note": "Path one needs two of three partners and no waiting.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "p2 = [K.moh_spend(2, sequence=s) for s in (4320, 4319)]",
+         ""
+        ]
+       ],
+       "note": "Path two: the lawyer and one partner, after 4,320 blocks.",
+       "y": 2.321,
+       "h": 0.341,
+       "ny": 2.692,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "p3 = [K.moh_spend(3, sequence=s) for s in (12960, 4320)]",
+         ""
+        ],
+        [
+         "p3",
+         "['OK', 'UNSATISFIED_LOCKTIME']"
+        ]
+       ],
+       "note": "Path three: the lawyer alone, after 12,960 blocks.",
+       "y": 3.012,
+       "h": 0.702,
+       "ny": 3.744,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.024
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: the script of 192 bytes, six spends",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.35,
+      1.9
+     ],
+     "rows": [
+      [
+       "Path and wait",
+       "Result"
+      ],
+      [
+       "1: partners, none",
+       "OK"
+      ],
+      [
+       "2: lawyer, 4,320",
+       "OK"
+      ],
+      [
+       "2: lawyer, 4,319",
+       "UNSATISFIED_LOCKTIME"
+      ],
+      [
+       "3: lawyer, 12,960",
+       "OK"
+      ],
+      [
+       "3: lawyer, 4,320",
+       "UNSATISFIED_LOCKTIME"
+      ]
+     ],
+     "fs": 9,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.04,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "Each path works only after its wait; asking one block early fails with UNSATISFIED_LOCKTIME.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "Mohammed's capital account uses OP_IF to pick a path. Two of three partners may spend at once. The lawyer with one partner must wait 4,320 blocks, and the lawyer alone 12,960. Each path runs for real. It is example 9 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "A conditional script lets one output have several spending paths"
+  },
+  {
+   "kind": "content",
+   "title": "Flow (2 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.27,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "OP_IF",
+       "meaning": "Runs the next clause only if the top item is true.",
+       "analogy": "Think of a turnstile that opens on a yes.",
+       "hA": 0.67,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "conditional clause",
+       "meaning": "One branch of a script that runs only under a condition.",
+       "analogy": "Think of a footnote that applies only in a special case.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "OP_VERIFY",
+       "meaning": "Fails the script unless the top item is true.",
+       "analogy": "Think of a bouncer who checks one thing and sends you home.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Miniscript",
+       "meaning": "A structured language that compiles to Script and can be analysed.",
+       "analogy": "Think of a spreadsheet formula that is checked before you save it.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover OP_IF, conditional clause, OP_VERIFY and Miniscript. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "section",
+   "title": "Segregated witness scripts",
+   "sub": "Segregated witness moves the proof to a window beside the counter.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Witness programs",
+       "meaning": "How a segregated witness lock is written and addressed.",
+       "analogy": "Think of a postcode that also names the kind of building.",
+       "hM": 0.43,
+       "hA": 0.43
+      },
+      {
+       "pill": "The upgrade",
+       "meaning": "How the change reached old nodes without splitting the network.",
+       "analogy": "Think of a new lane that old cars can simply ignore.",
+       "hM": 0.43,
+       "hA": 0.43
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956
+     ],
+     "cells": [
+      {
+       "t": "Language",
+       "hot": false
+      },
+      {
+       "t": "Keys",
+       "hot": false
+      },
+      {
+       "t": "Multisig",
+       "hot": false
+      },
+      {
+       "t": "P2SH",
+       "hot": false
+      },
+      {
+       "t": "Time",
+       "hot": false
+      },
+      {
+       "t": "Flow",
+       "hot": false
+      },
+      {
+       "t": "Segwit",
+       "hot": true
+      },
+      {
+       "t": "Trees",
+       "hot": false
+      },
+      {
+       "t": "Taproot",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "Segregated witness moves the proof out of the transaction identifier. We spend a witness key hash, look at what real inputs of one block spend, and see why this upgrade was a soft fork.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Segregated witness scripts (1 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.49,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Segregated Witness Output and Transaction Examples",
+       "meaning": "Real outputs and transactions that use segregated witness.",
+       "analogy": "Think of worked examples at the back of a driving manual.",
+       "hA": 0.89,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Pay to witness public key hash (P2WPKH)",
+       "meaning": "A key-hash lock whose proof lives in the witness.",
+       "analogy": "Think of the same fingerprint lock with the key shown at a side window.",
+       "hA": 0.89,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Wallet construction of P2WPKH",
+       "meaning": "How a wallet builds the output and the witness for a spend.",
+       "analogy": "Think of a cashier assembling a receipt together with its annex.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Pay to witness script hash (P2WSH)",
+       "meaning": "A script-hash lock whose script is revealed in the witness.",
+       "analogy": "Think of the sealed envelope, opened at the side window.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Segregated Witness Output and Transaction Examples, Pay to witness public key hash (P2WPKH), Wallet construction of P2WPKH and Pay to witness script hash (P2WSH). Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Pay to witness public key hash",
+   "sub": "A key-hash spend with the proof in the witness",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "ok = [K.wpkh_spend(), K.wpkh_spend(nested=True)]",
+         ""
+        ]
+       ],
+       "note": "A witness key-hash spend works directly and nested in a script hash.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "wrong = K.wpkh_spend(signed_amount=99999)",
+         ""
+        ]
+       ],
+       "note": "The signature commits to the amount, so a wrong amount fails.",
+       "y": 2.141,
+       "h": 0.341,
+       "ny": 2.512,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "prog = L.p2wpkh_script(L.hash160(K.pub(1)))",
+         ""
+        ],
+        [
+         "addr = L.script_to_address(prog)",
+         ""
+        ],
+        [
+         "addr",
+         "'bc1qm5gqhe7e46jhyy2ca00x66slmrlljwa33n9fts'"
+        ]
+       ],
+       "note": "The address is bech32 and begins with bc1q.",
+       "y": 2.832,
+       "h": 0.882,
+       "ny": 3.744,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.024
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.24,
+     "body": "Result: a witness key-hash spend",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.74,
+     "w": 3.25,
+     "colW": [
+      1.4,
+      1.85
+     ],
+     "rows": [
+      [
+       "Spend",
+       "Result"
+      ],
+      [
+       "Direct",
+       "OK"
+      ],
+      [
+       "Nested in P2SH",
+       "OK"
+      ],
+      [
+       "Amount changed",
+       "EVAL_FALSE"
+      ],
+      [
+       "Address",
+       "bc1qm5gqhe7e..."
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.54,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "The signature covers the amount, so a changed amount fails. The address starts with bc1q.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A witness key-hash output is 22 bytes. The signature and the key travel in the witness, not in the input script. They work directly and nested in a script hash, and the signature covers the amount. It is example 10 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "The signature commits to the amount; the address is bech32"
+  },
+  {
+   "kind": "content",
+   "title": "What 1,022 real inputs spend",
+   "sub": "Block 775,072, classified by the chapter's own Script interpreter, bytes from mempool.space",
+   "items": [
+    {
+     "t": "chart",
+     "ctype": "bar",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 5.8,
+     "h": 3.45,
+     "labels": [
+      "P2WPKH",
+      "P2PKH",
+      "P2SH-P2WPKH",
+      "P2WSH",
+      "P2SH-P2WSH",
+      "P2SH multisig",
+      "taproot"
+     ],
+     "series": [
+      {
+       "name": "inputs",
+       "data": [
+        626.0,
+        194.0,
+        95.0,
+        57.0,
+        34.0,
+        10.0,
+        6.0
+       ]
+      }
+     ],
+     "dataLabels": true,
+     "dlFs": 9,
+     "dlPos": "outEnd"
+    },
+    {
+     "t": "text",
+     "x": 6.55,
+     "y": 1.45,
+     "w": 2.95,
+     "h": 0.5,
+     "body": "Result: what 1,022 real inputs spend",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "text",
+     "x": 6.55,
+     "y": 2.05,
+     "w": 2.95,
+     "h": 1.5,
+     "body": "The chapter's interpreter ran every input of the first 599 non-coinbase transactions of block 775,072 and sorted them by the kind of output they spend.",
+     "fs": 11.5,
+     "font": "B",
+     "color": "ink"
+    },
+    {
+     "t": "text",
+     "x": 6.55,
+     "y": 3.7,
+     "w": 2.95,
+     "h": 1.2,
+     "body": "Witness key hashes lead; taproot is still rare. Think of a motorway where most cars already use the new lane.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "The first 599 transactions of block 775,072 hold 1,022 inputs. Our interpreter verified each of them and sorted them by spending type. Segwit key hashes dominate, legacy key hashes follow, and taproot is still a handful.",
+   "bg": "light",
+   "take": "Most real coins already move through witness programs"
+  },
+  {
+   "kind": "content",
+   "title": "Segregated witness scripts (2 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.49,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Differentiating between P2WPKH and P2WSH",
+       "meaning": "The program length tells them apart: 20 or 32 bytes.",
+       "analogy": "Think of telling a postcode from a full address by its length.",
+       "hA": 0.89,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Upgrading to Segregated Witness",
+       "meaning": "How old and new software live side by side.",
+       "analogy": "Think of adding a new lane to a road without closing it.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Embedding segregated witness inside P2SH",
+       "meaning": "A witness program wrapped in a script hash for old wallets.",
+       "analogy": "Think of a new letter inside an old envelope.",
+       "hA": 0.89,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "Nested pay to witness public key hash",
+       "meaning": "P2WPKH placed inside P2SH.",
+       "analogy": "Think of a small box inside a larger box.",
+       "hA": 0.695,
+       "hB": 0.235,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Differentiating between P2WPKH and P2WSH, Upgrading to Segregated Witness, Embedding segregated witness inside P2SH and Nested pay to witness public key hash. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Segregated witness scripts (3 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.27,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Nested pay to witness script hash",
+       "meaning": "P2WSH placed inside P2SH.",
+       "analogy": "Think of a sealed envelope inside a courier bag.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "segregated witness",
+       "meaning": "The upgrade that moves signatures out of the transaction identifier.",
+       "analogy": "Think of keeping the passport photo off the ticket number.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "witness program",
+       "meaning": "The version and hash that lock a segwit output.",
+       "analogy": "Think of an extension number that tells the switchboard where to connect.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "P2WPKH",
+       "meaning": "The short name of pay to witness public key hash.",
+       "analogy": "Think of a nickname for a long job title.",
+       "hA": 0.67,
+       "hB": 0.235,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Nested pay to witness script hash, segregated witness, witness program and P2WPKH. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Segregated witness scripts (4 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.27,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "P2WSH",
+       "meaning": "The short name of pay to witness script hash.",
+       "analogy": "Think of an acronym on a name badge.",
+       "hA": 0.475,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "bech32",
+       "meaning": "The segwit address format, with a checksum that finds typos.",
+       "analogy": "Think of a spelling checker built into the address.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "nested segregated witness",
+       "meaning": "Segwit hidden inside the older script hash format.",
+       "analogy": "Think of a modern phone in an old phone case.",
+       "hA": 0.67,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "soft fork",
+       "meaning": "A rule change that old nodes still accept.",
+       "analogy": "Think of a stricter speed limit that old cars can still obey.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover P2WSH, bech32, nested segregated witness and soft fork. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Hard fork or soft fork?",
+   "sub": "Why segregated witness could be activated without splitting the network",
+   "items": [
+    {
+     "t": "compare",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 9.0,
+     "h": 3.4,
+     "fs": 12.5,
+     "left": {
+      "head": "A hard fork loosens the rules",
+      "rows": [
+       "Blocks that old nodes reject become valid.",
+       "Every node must upgrade, or the chain splits.",
+       "Like a new road standard that old cars cannot use."
+      ]
+     },
+     "right": {
+      "head": "A soft fork tightens the rules",
+      "rows": [
+       "New nodes reject more; they accept nothing new.",
+       "Old nodes still follow the chain and accept its blocks.",
+       "Like a stricter speed limit that old cars can still obey."
+      ]
+     }
+    }
+   ],
+   "notes": "Segregated witness was a soft fork. Old nodes saw the new outputs as anyone-can-spend scripts and accepted the blocks, while upgraded nodes enforced the witness rules. That is why it could be activated without a split.",
+   "bg": "light",
+   "take": "A soft fork can only restrict; old nodes keep accepting the blocks"
+  },
+  {
+   "kind": "section",
+   "title": "Script trees and key tweaks",
+   "sub": "A script tree is a menu of which only the ordered dish is shown.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Script trees",
+       "meaning": "Many spending rules hide behind one hash.",
+       "analogy": "Think of a menu where only the ordered dish is shown.",
+       "hM": 0.235,
+       "hA": 0.43
+      },
+      {
+       "pill": "Key tweaks",
+       "meaning": "A key is changed a little to commit to hidden data.",
+       "analogy": "Think of an engraved key that carries a hidden code.",
+       "hM": 0.43,
+       "hA": 0.43
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956
+     ],
+     "cells": [
+      {
+       "t": "Language",
+       "hot": false
+      },
+      {
+       "t": "Keys",
+       "hot": false
+      },
+      {
+       "t": "Multisig",
+       "hot": false
+      },
+      {
+       "t": "P2SH",
+       "hot": false
+      },
+      {
+       "t": "Time",
+       "hot": false
+      },
+      {
+       "t": "Flow",
+       "hot": false
+      },
+      {
+       "t": "Segwit",
+       "hot": false
+      },
+      {
+       "t": "Trees",
+       "hot": true
+      },
+      {
+       "t": "Taproot",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "Two ideas that taproot combines. A tree of scripts is committed to by one hash, and a key can be tweaked to commit to hidden data, so many signers look like one.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Script trees and key tweaks (1 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.49,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Merklized Alternative Script Trees (MAST)",
+       "meaning": "Many scripts sit under one hash; a spend shows only one.",
+       "analogy": "Think of a restaurant menu where you read out only the dish you ordered.",
+       "hA": 0.89,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Pay to Contract (P2C)",
+       "meaning": "A key is tweaked so that it commits to a contract.",
+       "analogy": "Think of a wax seal that also encodes the fingerprint of the contract.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Scriptless Multisignatures and Threshold Signatures",
+       "meaning": "Many signers combine into one key and one signature.",
+       "analogy": "Think of a choir that sings with one voice.",
+       "hA": 0.89,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "MAST",
+       "meaning": "The short name of the script tree.",
+       "analogy": "Think of a tournament bracket where only one team's path is shown.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Merklized Alternative Script Trees (MAST), Pay to Contract (P2C), Scriptless Multisignatures and Threshold Signatures and MAST. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "A proof grows with the logarithm",
+   "sub": "How many hashes a script tree reveals",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "proof = [len(p) for p in K.tap_tree(MOH_LEAVES)[1]]",
+         ""
+        ]
+       ],
+       "note": "Each of three scripts needs its sibling hashes as a proof.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "ns = (3, 8, 1024, 2**20)",
+         ""
+        ],
+        [
+         "depth = [(n - 1).bit_length() for n in ns]",
+         ""
+        ],
+        [
+         "depth",
+         "[2, 3, 10, 20]"
+        ]
+       ],
+       "note": "A tree of n scripts needs about log2 of n hashes per spend.",
+       "y": 2.141,
+       "h": 0.882,
+       "ny": 3.053,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 3.333
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: hashes in a proof, by scripts in the tree",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "chart",
+     "ctype": "bar",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "h": 2.27,
+     "labels": [
+      "3",
+      "8",
+      "1,024",
+      "1,048,576"
+     ],
+     "series": [
+      {
+       "name": "hashes in the proof",
+       "data": [
+        2.0,
+        3.0,
+        10.0,
+        20.0
+       ]
+      }
+     ],
+     "dataLabels": true,
+     "dlFs": 9,
+     "dlPos": "outEnd"
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.31,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "Our three scripts need 2, 2, 1 hashes each. A tree of 1,048,576 scripts needs only 20.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A spender reveals one script and the sibling hashes up to the root. Our three scripts need two, two and one. Every doubling of the tree adds one hash, so a tree of a million scripts needs twenty. It is example 11 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "A million scripts need only twenty hashes in a proof"
+  },
+  {
+   "kind": "content",
+   "title": "Script trees and key tweaks (2 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.27,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "merkle root",
+       "meaning": "The single hash at the top of a tree of hashes.",
+       "analogy": "Think of the seal on top of a pyramid of stamped boxes.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "membership proof",
+       "meaning": "The sibling hashes that prove a leaf belongs to the tree.",
+       "analogy": "Think of the chain of members who vouch that someone belongs to a club.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "key tweak",
+       "meaning": "A small number, derived from a hash, added to a key.",
+       "analogy": "Think of a tiny adjustment screw on a lock.",
+       "hA": 0.67,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "scriptless multisignature",
+       "meaning": "A joint signature that shows no script at all.",
+       "analogy": "Think of a group letter that looks like one person's.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover merkle root, membership proof, key tweak and scriptless multisignature. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Script trees and key tweaks (3 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.27,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "threshold signature",
+       "meaning": "Any t of n holders can sign for one shared key.",
+       "analogy": "Think of a council where any two of three may sign for the town.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "partial public key",
+       "meaning": "One signer's share, added to the others to make the joint key.",
+       "analogy": "Think of one voice of a choir, added to the others.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover threshold signature and partial public key. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "section",
+   "title": "Taproot and tapscript",
+   "sub": "Taproot is a front door with a hidden side entrance.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Taproot outputs",
+       "meaning": "One output key that is spent with a signature or with a script.",
+       "analogy": "Think of a front door with a hidden side entrance.",
+       "hM": 0.43,
+       "hA": 0.43
+      },
+      {
+       "pill": "Tapscript",
+       "meaning": "The script rules that apply inside a taproot spend.",
+       "analogy": "Think of the house rules for the side entrance.",
+       "hM": 0.43,
+       "hA": 0.43
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956,
+      0.956
+     ],
+     "cells": [
+      {
+       "t": "Language",
+       "hot": false
+      },
+      {
+       "t": "Keys",
+       "hot": false
+      },
+      {
+       "t": "Multisig",
+       "hot": false
+      },
+      {
+       "t": "P2SH",
+       "hot": false
+      },
+      {
+       "t": "Time",
+       "hot": false
+      },
+      {
+       "t": "Flow",
+       "hot": false
+      },
+      {
+       "t": "Segwit",
+       "hot": false
+      },
+      {
+       "t": "Trees",
+       "hot": false
+      },
+      {
+       "t": "Taproot",
+       "hot": true
+      }
+     ]
+    }
+   ],
+   "notes": "Taproot gives an output one key that hides a tree. We spend it by key and by script, count signatures with a new opcode, and end with a story of a patented signature.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Taproot and tapscript: concepts (1 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.27,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Taproot",
+       "meaning": "An output that is a key which may hide a script tree.",
+       "analogy": "Think of a front door with a hidden side entrance.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Tapscript",
+       "meaning": "The script rules inside taproot spends.",
+       "analogy": "Think of the house rules for the side entrance.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "keypath spending",
+       "meaning": "Spend with one signature for the output key.",
+       "analogy": "Think of walking in through the front door with your key.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "scriptpath spending",
+       "meaning": "Reveal one leaf script, its proof and its data.",
+       "analogy": "Think of using the side entrance and showing the pass for it.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover Taproot, Tapscript, keypath spending and scriptpath spending. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Taproot: a key path spend",
+   "sub": "One signature, no script revealed",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "par, q = L.taproot_tweak_pubkey(K.xpub(1), b'')",
+         ""
+        ]
+       ],
+       "note": "The output key is the internal key plus a tweak; here there is no script.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "addr = L.script_to_address(L.p2tr_script(q))",
+         ""
+        ],
+        [
+         "kind = (addr[:6], len(q))",
+         ""
+        ]
+       ],
+       "note": "The address begins with bc1p and the key takes 32 bytes.",
+       "y": 2.321,
+       "h": 0.521,
+       "ny": 2.872,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "r, wit, wt = K.tr_keypath(1)",
+         ""
+        ],
+        [
+         "bad = K.tr_keypath(1, MOH_LEAVES, tamper='untweaked')[0]",
+         ""
+        ],
+        [
+         "res = (r, len(wit[0]), wt, bad)",
+         ""
+        ],
+        [
+         "res",
+         "('OK', 64, 308, 'SCHNORR_SIG')"
+        ]
+       ],
+       "note": "One 64-byte signature spends it; an untweaked key is refused.",
+       "y": 3.192,
+       "h": 1.063,
+       "ny": 4.285,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.565
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.24,
+     "body": "Result: one key path spend",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.74,
+     "w": 3.25,
+     "colW": [
+      1.6,
+      1.65
+     ],
+     "rows": [
+      [
+       "Quantity",
+       "Result"
+      ],
+      [
+       "Address begins",
+       "bc1pwd"
+      ],
+      [
+       "Output key, bytes",
+       "32"
+      ],
+      [
+       "Key path spend",
+       "OK"
+      ],
+      [
+       "Signature, bytes",
+       "64"
+      ],
+      [
+       "Weight units",
+       "308"
+      ],
+      [
+       "Untweaked key",
+       "SCHNORR_SIG"
+      ]
+     ],
+     "fs": 9,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.14,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "One 64-byte signature spends it. A key that was not tweaked as the output says fails with SCHNORR_SIG.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A taproot output holds one 32-byte key. Spending by key path needs a single 64-byte Schnorr signature, and nothing about the hidden scripts is revealed. A key that was not tweaked correctly is refused. It is example 12 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "The output key is the internal key plus a tweak"
+  },
+  {
+   "kind": "content",
+   "title": "From a patented signature to taproot",
+   "sub": "Taproot took effect at block 709,632 in 2021",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch07/assets/photo_claus_schnorr_1986.jpg",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.6,
+     "h": 2.55,
+     "cap": "Claus-Peter Schnorr, 1986 - Konrad Jacobs, CC BY-SA 2.0 de"
+    },
+    {
+     "t": "beats",
+     "x": 3.4,
+     "y": 1.4,
+     "w": 6.1,
+     "h": 2.7,
+     "fs": 11.5,
+     "items": [
+      "WHAT: At block 709,632, mined on 14 November 2021, the taproot rules and Schnorr signatures (BIPs 340 to 342) took effect.",
+      "WHY: Claus Schnorr had patented his signature, which kept it out of open standards for almost two decades; ECDSA was used instead.",
+      "HOW: BIP340 was assigned in January 2020; a soft fork then added taproot and tapscript to the running chain.",
+      "SO WHAT: A key path spend is one 64-byte signature that looks the same whether one person or a million made it."
+     ]
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.5,
+     "w": 9.0,
+     "who": "Claus-Peter Schnorr",
+     "where": "Block 709,632",
+     "when": "2021-11-14",
+     "link": "https://mempool.space/block/0000000000000000000687bca986194dc2c1f949318629b44bb54ec0a94d8244",
+     "linkText": "mempool.space"
+    }
+   ],
+   "notes": "This is a true story, dated 2021-11-14. Claus Schnorr patented the signature algorithm he discovered and kept it out of open standards and open-source software for almost two decades, so cryptographers of the early 1990s built the DSA family that led to the ECDSA signatures Bitcoin used from its first release.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Taproot and tapscript: concepts (2 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.27,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "taproot internal key",
+       "meaning": "The key before the tweak is added.",
+       "analogy": "Think of the key blank before the locksmith adds a mark.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "taproot output key",
+       "meaning": "The tweaked key that appears in the output.",
+       "analogy": "Think of the finished key as it is cut.",
+       "hA": 0.475,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "leaf script",
+       "meaning": "A script at the end of a branch of the tree.",
+       "analogy": "Think of a dish at the end of a menu section.",
+       "hA": 0.475,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "OP_CHECKSIGADD",
+       "meaning": "Adds one to a counter for each valid signature.",
+       "analogy": "Think of a tally mark added for every valid signature.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover taproot internal key, taproot output key, leaf script and OP_CHECKSIGADD. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Taproot: the script path",
+   "sub": "Reveal one script of the tree and its proof",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "res = [moh_tap(i)[0] for i in range(3)]",
+         ""
+        ]
+       ],
+       "note": "Each of the three leaves of the account script can be spent.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "tap = [moh_tap(i)[2] for i in range(3)]",
+         ""
+        ]
+       ],
+       "note": "Weight units of each spend as a taproot script path.",
+       "y": 2.141,
+       "h": 0.341,
+       "ny": 2.512,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "wsh = [moh_wsh(p) for p in (1, 2, 3)]",
+         ""
+        ],
+        [
+         "res",
+         "['OK', 'OK', 'OK']"
+        ]
+       ],
+       "note": "The same three paths as a witness script hash spend.",
+       "y": 2.832,
+       "h": 0.702,
+       "ny": 3.564,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 3.844
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: weight units of three spends, two ways",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "chart",
+     "ctype": "bar",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "h": 2.07,
+     "labels": [
+      "path 1",
+      "path 2",
+      "path 3"
+     ],
+     "series": [
+      {
+       "name": "taproot script path",
+       "data": [
+        577.0,
+        617.0,
+        414.0
+       ]
+      },
+      {
+       "name": "witness script hash",
+       "data": [
+        585.0,
+        584.0,
+        509.0
+       ]
+      }
+     ],
+     "dataLabels": true,
+     "dlFs": 9,
+     "dlPos": "outEnd"
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.11,
+     "w": 3.25,
+     "h": 0.86,
+     "body": "All three paths verify (OK, OK, OK). Orange bars: taproot script path; green bars: the same path as a witness script hash.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "Spending by script path reveals one leaf script, its data and a control block with the proof. All three paths of the account script verify. Their weights are close to those of the same paths in a witness script hash. It is example 13 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "Each path costs about as much as a plain witness script"
+  },
+  {
+   "kind": "content",
+   "title": "Taproot and tapscript: concepts (3 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.659,
+     "cols": 3,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "schnorr signature",
+       "meaning": "A short signature that adds up when many signers sign.",
+       "analogy": "Think of handwriting that adds up neatly when several people write together.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "OP_SUCCESS",
+       "meaning": "Opcode values that make a tapscript succeed, kept for upgrades.",
+       "analogy": "Think of a green light reserved for traffic rules of the future.",
+       "hA": 0.865,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "mutual satisfaction",
+       "meaning": "All parties agree, so the script never needs to be shown.",
+       "analogy": "Think of neighbours who settle a dispute over the fence instead of in court.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards cover schnorr signature, OP_SUCCESS and mutual satisfaction. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Counting signatures: OP_CHECKSIGADD",
+   "sub": "Tapscript's replacement for CHECKMULTISIG",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "s = K.csa_script([0, 1, 2], 2)",
+         ""
+        ],
+        [
+         "sizes = (len(s), len(RED))",
+         ""
+        ]
+       ],
+       "note": "The same 2-of-3 rule written with CHECKSIGADD is a byte shorter.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "items = [b'', ('sig', 1), ('sig', 0)]",
+         ""
+        ],
+        [
+         "ok = K.tr_spend([s], 0, items)[0]",
+         ""
+        ]
+       ],
+       "note": "Two valid signatures and one empty slot satisfy it.",
+       "y": 2.321,
+       "h": 0.521,
+       "ny": 2.872,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "few = K.tr_spend([s], 0, [b'', b'', ('sig', 0)])[0]",
+         ""
+        ],
+        [
+         "res = [ok, few]",
+         ""
+        ],
+        [
+         "res",
+         "['OK', 'EVAL_FALSE']"
+        ]
+       ],
+       "note": "With only one valid signature the count stays below two and the script fails.",
+       "y": 3.192,
+       "h": 0.882,
+       "ny": 4.104,
+       "nh": 0.41
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.564
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: the same rule, two ways of writing it",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.85,
+      1.4
+     ],
+     "rows": [
+      [
+       "Quantity",
+       "Result"
+      ],
+      [
+       "CHECKSIGADD script, bytes",
+       "104"
+      ],
+      [
+       "Old 2-of-3 script, bytes",
+       "105"
+      ],
+      [
+       "Two signatures",
+       "OK"
+      ],
+      [
+       "One signature",
+       "EVAL_FALSE"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.74,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "The tapscript form is one byte shorter. Two valid signatures reach the count; one does not.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "Tapscript drops the old multisignature opcode. A script checks each key in turn and adds one to a counter per valid signature, then compares the counter with t. The script is a byte shorter than before. It is example 14 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "Each valid signature adds one; an empty slot adds nothing"
+  },
+  {
+   "kind": "content",
+   "title": "Opcodes kept for upgrades",
+   "sub": "OP_SUCCESS in tapscript",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "n = sum(1 for o in range(256) if L.is_op_success(o))",
+         ""
+        ]
+       ],
+       "note": "In tapscript, 87 opcode values succeed on sight.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "ok = K.tr_spend([bytes([0x51, 152])], 0, [])[0]",
+         ""
+        ]
+       ],
+       "note": "A tapscript with opcode 152 succeeds at once.",
+       "y": 2.141,
+       "h": 0.341,
+       "ny": 2.512,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "old = L.run('OP_1 OP_LSHIFT', 'OP_1', flags=())",
+         ""
+        ],
+        [
+         "res = [n, ok, old]",
+         ""
+        ],
+        [
+         "res",
+         "[87, 'OK', 'DISABLED_OPCODE']"
+        ]
+       ],
+       "note": "The same word, a disabled shift, fails in an old script.",
+       "y": 2.832,
+       "h": 0.882,
+       "ny": 3.744,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - L, K and the chapter setup as on slide 7",
+     "capy": 4.024
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: unknown words in tapscript and in an old script",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.7,
+      1.55
+     ],
+     "rows": [
+      [
+       "Quantity",
+       "Result"
+      ],
+      [
+       "OP_SUCCESS values",
+       "87"
+      ],
+      [
+       "Opcode 152 in tapscript",
+       "OK"
+      ],
+      [
+       "Same word, old script",
+       "DISABLED_OPCODE"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.44,
+     "w": 3.25,
+     "h": 0.86,
+     "body": "Of 256 opcode values, 87 are OP_SUCCESS. The disabled shift fails in an old script with DISABLED_OPCODE.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "In tapscript 87 opcode values are OP_SUCCESS: a script that contains one succeeds on sight. This leaves room for future soft forks. The disabled shift of the old language still fails in an old script. It is example 15 in the chapter code tab of the course page.",
+   "bg": "light",
+   "take": "Unknown opcodes succeed, so soft forks can give them a meaning"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per group of parts, each provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.3,
+     "fs": 12.5,
+     "items": [
+      "A coin is locked by a script; the spender's script is the key, and the two run apart on a stack.",
+      "Key hashes, multisignatures and script hashes lock a coin to what the spender can prove, and move the long lock to the spender.",
+      "Lock time and sequence make a spend wait, and flow control gives one output several ways out.",
+      "Segregated witness moves the proof out of the identifier, as a soft fork that old nodes accept.",
+      "Taproot commits to a tree of scripts with one key, so agreement looks like a single signature."
+     ]
+    }
+   ],
+   "notes": "These five lines are the deck in miniature. A line that feels unproven should send you back to its code slide, because every result in it was computed there. The chapter code tab of the course page lets you rerun all fifteen examples.",
+   "bg": "light",
+   "take": "If a line feels unproven, the code slide of its part carries the receipt"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Resources for further reading and watching; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 3.6,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read and explore",
+       "rows": [
+        [
+         "Bitcoin white paper (PDF)",
+         "https://bitcoin.org/bitcoin.pdf",
+         "Nakamoto's nine pages of 31 October 2008"
+        ],
+        [
+         "Script (Bitcoin Wiki)",
+         "https://en.bitcoin.it/wiki/Script",
+         "Every opcode with its effect and status"
+        ],
+        [
+         "Optech topic: Taproot",
+         "https://bitcoinops.org/en/topics/taproot/",
+         "Summary of taproot with links to newsletters and code"
+        ],
+        [
+         "Taproot (Bitcoin Wiki)",
+         "https://en.bitcoin.it/wiki/Taproot",
+         "Plain description of the taproot soft fork"
+        ]
+       ]
+      },
+      {
+       "head": "Standards",
+       "rows": [
+        [
+         "BIP 66: Strict DER signatures (spec)",
+         "https://bips.dev/66/",
+         "The rule behind the July 2015 fork"
+        ],
+        [
+         "BIP 141: Segregated Witness (spec)",
+         "https://bips.dev/141/",
+         "Witness programs and how they are validated"
+        ],
+        [
+         "BIP 341: Taproot spending rules (spec)",
+         "https://bips.dev/341/",
+         "Key path, script path and the commitment"
+        ],
+        [
+         "BIP 342: Tapscript validation (spec)",
+         "https://bips.dev/342/",
+         "The script rules inside a taproot spend"
+        ]
+       ]
+      },
+      {
+       "head": "The stories",
+       "rows": [
+        [
+         "script.cpp of Bitcoin 0.3.0 (source)",
+         "https://raw.githubusercontent.com/bitcoin/bitcoin/v0.3.0/script.cpp",
+         "The early script engine, as it was released"
+        ],
+        [
+         "CVE-2010-5141 entry (Bitcoin Wiki)",
+         "https://en.bitcoin.it/wiki/Common_Vulnerabilities_and_Exposures#CVE-2010-5141",
+         "The early script bug, in the list of known vulnerabilities"
+        ],
+        [
+         "Alert: Some Miners Generating Invalid Blocks",
+         "https://bitcoin.org/en/alert/2015-07-04-spv-mining",
+         "The notice of 4 July 2015 about unvalidated blocks"
+        ]
+       ]
+      },
+      {
+       "head": "Community",
+       "rows": [
+        [
+         "Bitcoin Stack Exchange (Q&A site)",
+         "https://bitcoin.stackexchange.com",
+         "Search or ask any technical question; answers are voted"
+        ],
+        [
+         "Delving Bitcoin (forum)",
+         "https://delvingbitcoin.org/",
+         "Developers discuss script and consensus changes in the open"
+        ]
+       ]
+      },
+      {
+       "head": "Watch",
+       "rows": [
+        [
+         "Schnorr: Optech workshop 1.1 (video)",
+         "https://www.youtube.com/embed/wybiVFdknhg",
+         "Bitcoin Optech's workshop on the signature scheme of chapter 7"
+        ],
+        [
+         "Tapscript: Optech workshop 2.3 (video)",
+         "https://www.youtube.com/embed/nXGe9_M5pjk",
+         "Bitcoin Optech on the three small changes of tapscript"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "Everything here is free to read or watch. A good exercise is to take any spend from the explorer and run it through the chapter's interpreter. The course page for chapter 7 carries the full resource list.",
+   "bg": "light",
+   "take": "Run a real spend through the interpreter and match the explorer's verdict"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "How a lock and a key decide a spend",
+      "How signatures and script hashes are checked",
+      "How timelocks shape who spends, and when",
+      "What segwit and taproot change"
+     ]
+    }
+   ],
+   "notes": "Four claims, each carried by runs of the chapter's own interpreter on slides of this deck. The course page for chapter 7 has every word behind them, the stories with their sources, and the question bank to test yourself.",
+   "bg": "dark"
+  }
+ ]
+}
