@@ -275,7 +275,7 @@ def code_slide(e):
     rh = round(EST(reading, 11.5, RW, 0.0082) * 0.2 + 0.06, 3); ry = round(4.97 - rh, 3)
     vy = round(1.45 + lab_h + 0.05, 3); vh = round(ry - 0.1 - vy, 3)
     items, _, _ = visual(ex, RX, RW, vy, vh)
-    cap = ("run under Python %s - L, K and the chapter setup as on slide %d" % (PY, FIRST_CODE[0])) if FIRST_CODE else ("run under Python %s - L, K, LOCK, RED, CLTV, CSV and MOH_LEAVES come from the chapter setup" % PY)
+    cap = ("run under Python %s - L, K and the chapter setup as on slide %d" % (PY, FIRST_CODE[0])) if FIRST_CODE else ("run under Python %s - names as in the chapter setup" % PY)
     blocks = {"t": "codeblocks", "x": X_, "w": W_, "fs": fs, "nfs": 10.5, "groups": gl, "cap": cap, "capy": capy}
     res_label = {"t": "text", "x": RX, "y": 1.45, "w": RW, "h": lab_h, "body": lab, "fs": 11, "font": "B", "bold": True, "color": "mute"}
     if items[0]["t"] == "table": ry = round(min(ry, vy + len(items[0]["rows"]) * items[0]["rowH"] + 0.3), 3)       # under the table, not at the foot of the slide
@@ -312,6 +312,7 @@ STORY_FACT = {  # at most 22 characters each, because the renderer's fact row cu
 }
 STORY_SUB = {"OpReturnBug": "A bug of 2010 that let anyone spend any output", "DerFork": "Strict DER signatures, and the fork of 4 July 2015",
              "SchnorrToTaproot": "Taproot took effect at block 709,632 in 2021"}
+STORY_TITLE = {"SchnorrToTaproot": "From a patented signature to taproot"}
 STORY_BOX = {"photo_bitcoin_mining_farm.jpg": (3.5, 2.55)}        # a wide picture needs a wider frame to meet the 8 percent of the slide that D5 asks for
 
 
@@ -329,7 +330,7 @@ def story_slide(sid):
     tail = " The lesson: %s." % (st["lesson"][0].lower() + st["lesson"][1:]).rstrip(".")
     if W(notes + tail) <= 60: notes += tail
     if W(notes) > 60: notes = "This is a true story, dated %s. The lesson: %s." % (st["when"], (st["lesson"][0].lower() + st["lesson"][1:]).rstrip("."))
-    return add("content", st["title"], STORY_SUB[sid], items, notes)
+    return add("content", STORY_TITLE.get(sid, st["title"]), STORY_SUB[sid], items, notes)
 
 
 def census_slide():
