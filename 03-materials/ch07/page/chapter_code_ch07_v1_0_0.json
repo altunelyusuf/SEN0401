@@ -1,0 +1,384 @@
+{
+ "manifest": "chapter_code_ch07_v1_0_0",
+ "chapter": 7,
+ "deck": "SEN0401_Ch07_AuthorizationAuthentication_3e_v2_0_0.pptx",
+ "deck_version": "2.0.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the two library modules defined in the page",
+ "library": {
+  "module": "sen0401_ch07_deck_lib_v1_0_0",
+  "file": "08-tooling/sen0401_ch07_deck_lib_v1_0_0.py",
+  "sha256": "d388bc8ce99a294330072fde9ec9978c015c7b0717438cf074385b8e60ed444c",
+  "import": "import sen0401_ch07_deck_lib_v1_0_0 as K",
+  "data_files": [
+   {
+    "module": "sen0401_ch07_script_lib_v1_0_0",
+    "file": "08-tooling/sen0401_ch07_script_lib_v1_0_0.py",
+    "sha256": "abb114830d1a96b1ec6c7b39feba02939fc60c9cb48f91e5ac5ffe3beff1de6c",
+    "import": "import sen0401_ch07_script_lib_v1_0_0 as L"
+   }
+  ]
+ },
+ "setup": {
+  "code": "# setup: the chapter's script library and the worked-example helpers; the page runs this before every example\nimport sen0401_ch07_script_lib_v1_0_0 as L\nimport sen0401_ch07_deck_lib_v1_0_0 as K\nfrom sen0401_ch07_deck_lib_v1_0_0 import p2pkh, old_joined, LOCK, CLTV, CSV, RED, MOH_LEAVES, MOH_ITEMS, moh_tap, moh_wsh\n"
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "Stack arithmetic: 2 3 OP_ADD 5 OP_EQUAL",
+   "slide": 7,
+   "branch": "Scripts and the Script language",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "ok = L.run('2 3', 'OP_ADD 5 OP_EQUAL')\nbad = L.run('2 3', 'OP_ADD 6 OP_EQUAL')\ncode = L.assemble('2 3 OP_ADD 5 OP_EQUAL').hex()\nres = [ok, bad, code]\nres",
+   "show": [
+    {
+     "expression": "res",
+     "expected": "['OK', 'EVAL_FALSE', '5253935587']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "The OP_RETURN bug of 2010",
+   "slide": 9,
+   "branch": "Scripts and the Script language",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "joined = old_joined('OP_1 OP_RETURN', LOCK)\nnow = L.run('OP_1 OP_RETURN', LOCK, flags=())\nkey = '0x06' + b'secret'.hex()\nreal = L.run(key, LOCK, flags=())\nres = [joined, now, real]\nres",
+   "show": [
+    {
+     "expression": "res",
+     "expected": "['OK', 'OP_RETURN', 'OK']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "Pay to public key hash: the right key and the wrong one",
+   "slide": 15,
+   "branch": "Locking a coin to a key",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "spk = L.p2pkh_script(L.hash160(K.pub(1)))\nkind = (len(spk), L.classify(spk)[0])\na = p2pkh()\nb = p2pkh(signer=2)\nc = p2pkh(amount_after=99999)\nres = (a, b, c)\nres",
+   "show": [
+    {
+     "expression": "kind",
+     "expected": "(25, 'pubkeyhash')"
+    },
+    {
+     "expression": "res",
+     "expected": "('OK', 'EVAL_FALSE', 'EVAL_FALSE')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "A DER signature, strict and loose",
+   "slide": 17,
+   "branch": "Locking a coin to a key",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "sig = L.ecdsa_sign(K.secret(1), L.sha256(b'pay Bob'))\nfull = sig + b'\\x01'\nfacts = [len(full), full[0], L.is_low_s(full)]\nnod = L.MAINNET_FLAGS - {'DERSIG'}\nold = p2pkh(loose=True, flags=nod)\nres = [old, p2pkh(loose=True)]\nres",
+   "show": [
+    {
+     "expression": "facts",
+     "expected": "[72, 48, True]"
+    },
+    {
+     "expression": "res",
+     "expected": "['OK', 'SIG_DER']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "A 2-of-3 multisignature and its extra element",
+   "slide": 21,
+   "branch": "Scripted multisignatures",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "ok = K.ms_spend(2, 3, [0, 2])\nswap = K.ms_spend(2, 3, [2, 0])\nfew = K.ms_spend(2, 3, [1])\ndummy = K.ms_spend(2, 3, [0, 1], dummy=b'\\x01')\nres = [ok, swap, few]\nres",
+   "show": [
+    {
+     "expression": "res",
+     "expected": "['OK', 'EVAL_FALSE', 'INVALID_STACK_OPERATION']"
+    },
+    {
+     "expression": "dummy",
+     "expected": "'SIG_NULLDUMMY'"
+    },
+    {
+     "expression": "len(RED)",
+     "expected": "105"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "Pay to script hash and the redeem script",
+   "slide": 25,
+   "branch": "Pay to script hash",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "spk = L.p2sh_script(L.hash160(RED))\naddr = L.script_to_address(spk)\nok = K.ms_spend(2, 3, [0, 1], wrap='p2sh')\nbad = K.p2sh_spend(RED, hashed=RED + b'\\x00')\nres = [addr[:6], len(spk), ok, bad]\nres",
+   "show": [
+    {
+     "expression": "res",
+     "expected": "['3BuKam', 23, 'OK', 'EVAL_FALSE']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "OP_CHECKLOCKTIMEVERIFY: not before block 800,000",
+   "slide": 29,
+   "branch": "Data and timelocks",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "seq = 0xfffffffe\nok = K.key_spend(CLTV, locktime=800000, sequence=seq)\nearly = K.key_spend(CLTV, locktime=799999, sequence=seq)\nfinal = K.key_spend(CLTV, locktime=800000)\nres = [ok, early, final]\nres",
+   "show": [
+    {
+     "expression": "res",
+     "expected": "['OK', 'UNSATISFIED_LOCKTIME', 'UNSATISFIED_LOCKTIME']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "OP_CHECKSEQUENCEVERIFY: a wait of 4,320 blocks",
+   "slide": 31,
+   "branch": "Data and timelocks",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "ok = K.key_spend(CSV, version=2, sequence=4320)\nearly = K.key_spend(CSV, version=2, sequence=4319)\nv1 = K.key_spend(CSV, version=1, sequence=4320)\nbit31 = 0x80000000 | 4320\noff = K.key_spend(CSV, version=2, sequence=bit31)\noff",
+   "show": [
+    {
+     "expression": "ok",
+     "expected": "'OK'"
+    },
+    {
+     "expression": "early",
+     "expected": "'UNSATISFIED_LOCKTIME'"
+    },
+    {
+     "expression": "v1",
+     "expected": "'UNSATISFIED_LOCKTIME'"
+    },
+    {
+     "expression": "off",
+     "expected": "'UNSATISFIED_LOCKTIME'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "Mohammed's capital account: three paths",
+   "slide": 35,
+   "branch": "Flow control and complex scripts",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "size = len(K.moh_script())\np1 = K.moh_spend(1)\np2 = [K.moh_spend(2, sequence=s) for s in (4320, 4319)]\np3 = [K.moh_spend(3, sequence=s) for s in (12960, 4320)]\np3",
+   "show": [
+    {
+     "expression": "size",
+     "expected": "192"
+    },
+    {
+     "expression": "p1",
+     "expected": "'OK'"
+    },
+    {
+     "expression": "p2",
+     "expected": "['OK', 'UNSATISFIED_LOCKTIME']"
+    },
+    {
+     "expression": "p3",
+     "expected": "['OK', 'UNSATISFIED_LOCKTIME']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "Pay to witness public key hash",
+   "slide": 39,
+   "branch": "Segregated witness scripts",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "ok = [K.wpkh_spend(), K.wpkh_spend(nested=True)]\nwrong = K.wpkh_spend(signed_amount=99999)\nprog = L.p2wpkh_script(L.hash160(K.pub(1)))\naddr = L.script_to_address(prog)\naddr",
+   "show": [
+    {
+     "expression": "ok",
+     "expected": "['OK', 'OK']"
+    },
+    {
+     "expression": "wrong",
+     "expected": "'EVAL_FALSE'"
+    },
+    {
+     "expression": "addr",
+     "expected": "'bc1qm5gqhe7e46jhyy2ca00x66slmrlljwa33n9fts'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "A script tree: the proof grows with the logarithm",
+   "slide": 47,
+   "branch": "Script trees and key tweaks",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "proof = [len(p) for p in K.tap_tree(MOH_LEAVES)[1]]\nns = (3, 8, 1024, 2**20)\ndepth = [(n - 1).bit_length() for n in ns]\ndepth",
+   "show": [
+    {
+     "expression": "proof",
+     "expected": "[2, 2, 1]"
+    },
+    {
+     "expression": "ns",
+     "expected": "(3, 8, 1024, 1048576)"
+    },
+    {
+     "expression": "depth",
+     "expected": "[2, 3, 10, 20]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "Taproot: a key path spend",
+   "slide": 52,
+   "branch": "Taproot and tapscript",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "par, q = L.taproot_tweak_pubkey(K.xpub(1), b'')\naddr = L.script_to_address(L.p2tr_script(q))\nkind = (addr[:6], len(q))\nr, wit, wt = K.tr_keypath(1)\nbad = K.tr_keypath(1, MOH_LEAVES, tamper='untweaked')[0]\nres = (r, len(wit[0]), wt, bad)\nres",
+   "show": [
+    {
+     "expression": "kind",
+     "expected": "('bc1pwd', 32)"
+    },
+    {
+     "expression": "res",
+     "expected": "('OK', 64, 308, 'SCHNORR_SIG')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "Taproot: three script path spends",
+   "slide": 55,
+   "branch": "Taproot and tapscript",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "res = [moh_tap(i)[0] for i in range(3)]\ntap = [moh_tap(i)[2] for i in range(3)]\nwsh = [moh_wsh(p) for p in (1, 2, 3)]\nres",
+   "show": [
+    {
+     "expression": "res",
+     "expected": "['OK', 'OK', 'OK']"
+    },
+    {
+     "expression": "tap",
+     "expected": "[577, 617, 414]"
+    },
+    {
+     "expression": "wsh",
+     "expected": "[585, 584, 509]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "OP_CHECKSIGADD: 2-of-3 in tapscript",
+   "slide": 57,
+   "branch": "Taproot and tapscript",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "s = K.csa_script([0, 1, 2], 2)\nsizes = (len(s), len(RED))\nitems = [b'', ('sig', 1), ('sig', 0)]\nok = K.tr_spend([s], 0, items)[0]\nfew = K.tr_spend([s], 0, [b'', b'', ('sig', 0)])[0]\nres = [ok, few]\nres",
+   "show": [
+    {
+     "expression": "sizes",
+     "expected": "(104, 105)"
+    },
+    {
+     "expression": "res",
+     "expected": "['OK', 'EVAL_FALSE']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "OP_SUCCESS: opcodes kept for upgrades",
+   "slide": 58,
+   "branch": "Taproot and tapscript",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "n = sum(1 for o in range(256) if L.is_op_success(o))\nok = K.tr_spend([bytes([0x51, 152])], 0, [])[0]\nold = L.run('OP_1 OP_LSHIFT', 'OP_1', flags=())\nres = [n, ok, old]\nres",
+   "show": [
+    {
+     "expression": "res",
+     "expected": "[87, 'OK', 'DISABLED_OPCODE']"
+    }
+   ],
+   "result_picture": "table"
+  }
+ ]
+}
