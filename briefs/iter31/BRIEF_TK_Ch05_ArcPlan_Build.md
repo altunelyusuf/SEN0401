@@ -1,6 +1,6 @@
 # Brief for the executor session SEN0401-I31-arcplan-ch05
 
-Generated from the register sen0401_slides_lineage_v0_359_0.ttl. Task TK_Ch05_ArcPlan_Build (state in the register: Proposed).
+Generated from the register sen0401_slides_lineage_v0_360_0.ttl. Task TK_Ch05_ArcPlan_Build (state in the register: Ready).
 Executor session name: **SEN0401-I31-arcplan-ch05**. The register's note on 'work begun' for this task names this session.
 
 ## Why this work exists (the owner's words)

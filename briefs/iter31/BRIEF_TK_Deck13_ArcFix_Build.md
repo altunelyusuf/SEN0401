@@ -1,6 +1,6 @@
 # Brief for the executor session SEN0401-I31-deck-ch13-arcfix
 
-Generated from the register sen0401_slides_lineage_v0_359_0.ttl. Task TK_Deck13_ArcFix_Build (state in the register: Proposed).
+Generated from the register sen0401_slides_lineage_v0_360_0.ttl. Task TK_Deck13_ArcFix_Build (state in the register: Ready).
 Executor session name: **SEN0401-I31-deck-ch13-arcfix**. The register's note on 'work begun' for this task names this session.
 
 ## Why this work exists (the owner's words)
