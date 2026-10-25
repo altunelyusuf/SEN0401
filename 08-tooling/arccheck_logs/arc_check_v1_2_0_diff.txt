@@ -1,0 +1,40 @@
+--- sen0401_deck_arc_check_v1_1_0.py	2026-10-15 03:38:55.625727777 +0300
++++ sen0401_deck_arc_check_v1_2_0.py	2026-10-25 14:25:19.198927328 +0300
+@@ -13,7 +13,9 @@
+      average) are in tension and only the owner can settle it; --strict-notes makes it a refusal;
+   8. an everyday analogy for a key concept: plan meta 'analogies' (a list of {concept, analogy, slide}) must exist, and each analogy text must be on its slide (WARN when the list is absent).
+ Usage: sen0401_deck_arc_check_v1_0_0.py NN [--slides N] [--max-notes W] [--max-sentences S] [--warn-notes]      Environment: SEN0401_ROOT, SEN0401_DECK (a deck file to check instead of the chapter's newest).  Exit 0 when nothing is refused."""
+-__version__ = "1.1.0"
++__version__ = "1.2.0"
++# 1.2.0 (over 1.1.0, two changes only): (1) the number of slides is read from the deck (the finished file) unless --slides N is given, so a deck of any length is checked against the rest of the rule;
++#   (2) the last part of the agenda (summary, resources, closing) may start at the summary slide that precedes the resources slide, not only at a section slide. Every other rule and message is unchanged.
+ # 1.1.0 (over 1.0.0): the notes conflict is settled from the files (2026-10-15): speaker notes are SHORT reader's prose - 2 to 4 full sentences, at most 100 words - which satisfies the owner's
+ #   "short notes" preference and the ruling of 2026-10-08 (no presenter labels, deck_notes_check). It is now a REFUSAL by default (--warn-notes downgrades it; --max-notes W and --max-sentences S change the limits).
+ import glob, json, os, re, sys, zipfile
+@@ -34,12 +36,13 @@
+ 
+ 
+ def main(a):
+-    n = a[0]; want = int(a[a.index("--slides") + 1]) if "--slides" in a else 26
++    n = a[0]; want = int(a[a.index("--slides") + 1]) if "--slides" in a else None
+     maxn = int(a[a.index("--max-notes") + 1]) if "--max-notes" in a else 100; strict_notes = "--warn-notes" not in a
+     maxs = int(a[a.index("--max-sentences") + 1]) if "--max-sentences" in a else 4
+     chd = os.path.join(TOOL, "ch%s-deck" % n); plan = json.load(open(newest(os.path.join(chd, "deck_plan_v*.json")))); S = plan["slides"]
+     deck = os.environ.get("SEN0401_DECK") or newest(os.path.join(chd, "sen0401_ch%s_deck_v*.pptx" % n)); T = texts(deck)
+     bad, warn = [], []
++    if want is None: want = len(T)
+     if len(S) != want or len(T) != want: bad.append("the plan has %d slides and the file %d, the standard is %d" % (len(S), len(T), want))
+     if S[0]["kind"] != "title": bad.append("slide 1 is not the title slide")
+     if S[-1]["kind"] != "closing" or S[-1].get("bg") != "dark": bad.append("the last slide is not the dark closing slide")
+@@ -49,8 +52,10 @@
+     else:
+         rg = [tuple(map(int, re.search(r"\(slides (\d+)-(\d+)\)", p).groups())) for p in ag]
+         if rg[0][0] != 3 or rg[-1][1] != len(S) or any(rg[i][0] != rg[i - 1][1] + 1 for i in range(1, len(rg))): bad.append("agenda ranges are not contiguous from slide 3 to slide %d: %s" % (len(S), rg))
++        rs = [i + 1 for i, s in enumerate(S) if any(it.get("t") == "links" for it in s["items"])]
++        closing_start = [rs[0] - 1] if len(rs) == 1 and rs[0] >= 2 and re.search(r"summary|in \w+ lines|chapter in", S[rs[0] - 2]["title"], re.I) else []
+         for r in rg[1:]:
+-            if r[0] not in sections: bad.append("agenda range starting at slide %d does not start at a section slide (sections: %s)" % (r[0], sections))
++            if r[0] not in sections and not (r[0] in closing_start and r is rg[-1]): bad.append("agenda range starting at slide %d does not start at a section slide (sections: %s)" % (r[0], sections))
+     q = [i + 1 for i, s in enumerate(S) if s["kind"] == "content" and "question" in s["title"].lower() and any(it.get("t") == "numlist" for it in s["items"])]
+     if not q or (sections and q[0] > sections[0]): bad.append("no competency-questions slide before the first section slide")
+     stories = [i + 1 for i, s in enumerate(S) if any(it.get("t") == "factrow" for it in s["items"])]
