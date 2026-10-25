@@ -1,0 +1,45 @@
+--- 08-tooling/sen0401_deck_arc_check_v1_2_0.py	2026-10-25 14:25:19.198927328 +0300
++++ 08-tooling/sen0401_deck_arc_check_v1_3_0.py	2026-10-25 14:46:36.728220116 +0300
+@@ -13,7 +13,10 @@
+      average) are in tension and only the owner can settle it; --strict-notes makes it a refusal;
+   8. an everyday analogy for a key concept: plan meta 'analogies' (a list of {concept, analogy, slide}) must exist, and each analogy text must be on its slide (WARN when the list is absent).
+ Usage: sen0401_deck_arc_check_v1_0_0.py NN [--slides N] [--max-notes W] [--max-sentences S] [--warn-notes]      Environment: SEN0401_ROOT, SEN0401_DECK (a deck file to check instead of the chapter's newest).  Exit 0 when nothing is refused."""
+-__version__ = "1.2.0"
++__version__ = "1.3.0"
++# 1.3.0 (over 1.2.0, two changes only): (1) without SEN0401_DECK the deck to check is the newest deck (by version in the file name) of the chapter in 03-materials/chNN, falling back to
++#   chNN-deck only when 03-materials has none; (2) a plan and a deck of different length, or a slide index of the plan that is not in the deck, is REFUSED with a message naming both lengths (exit 1), never an IndexError.
++#   Every other rule and message is unchanged.
+ # 1.2.0 (over 1.1.0, two changes only): (1) the number of slides is read from the deck (the finished file) unless --slides N is given, so a deck of any length is checked against the rest of the rule;
+ #   (2) the last part of the agenda (summary, resources, closing) may start at the summary slide that precedes the resources slide, not only at a section slide. Every other rule and message is unchanged.
+ # 1.1.0 (over 1.0.0): the notes conflict is settled from the files (2026-10-15): speaker notes are SHORT reader's prose - 2 to 4 full sentences, at most 100 words - which satisfies the owner's
+@@ -25,6 +28,7 @@
+ ROOT = os.environ.get("SEN0401_ROOT") or os.path.dirname(TOOL)
+ vkey = lambda p: [int(x) for x in re.findall(r"_v(\d+)_(\d+)_(\d+)", p)[-1]]
+ newest = lambda pat: sorted(glob.glob(pat), key=vkey)[-1]
++newest_of = lambda files: sorted(files, key=vkey)[-1]
+ VIDEO = re.compile(r"youtube\.com|youtu\.be|vimeo\.com|ocw\.mit\.edu|coursera\.org|edx\.org|video|\.mp4|peertube|media\.ccc\.de|bitcointv|learningbitcoin", re.I)
+ 
+ 
+@@ -40,8 +44,11 @@
+     maxn = int(a[a.index("--max-notes") + 1]) if "--max-notes" in a else 100; strict_notes = "--warn-notes" not in a
+     maxs = int(a[a.index("--max-sentences") + 1]) if "--max-sentences" in a else 4
+     chd = os.path.join(TOOL, "ch%s-deck" % n); plan = json.load(open(newest(os.path.join(chd, "deck_plan_v*.json")))); S = plan["slides"]
+-    deck = os.environ.get("SEN0401_DECK") or newest(os.path.join(chd, "sen0401_ch%s_deck_v*.pptx" % n)); T = texts(deck)
++    delivered = glob.glob(os.path.join(ROOT, "03-materials", "ch%s" % n, "*_v*_*_*.pptx"))
++    deck = os.environ.get("SEN0401_DECK") or (newest_of(delivered) if delivered else newest(os.path.join(chd, "sen0401_ch%s_deck_v*.pptx" % n))); T = texts(deck)
+     bad, warn = [], []
++    if len(S) != len(T):
++        bad.append("plan/deck mismatch: the plan has %d slides and the deck file %s has %d slides" % (len(S), os.path.basename(deck), len(T)))
+     if want is None: want = len(T)
+     if len(S) != want or len(T) != want: bad.append("the plan has %d slides and the file %d, the standard is %d" % (len(S), len(T), want))
+     if S[0]["kind"] != "title": bad.append("slide 1 is not the title slide")
+@@ -91,7 +98,8 @@
+     if not an: warn.append("plan meta has no 'analogies' list: no everyday analogy is declared for any key concept (car keys / house keys style)")
+     else:
+         for x in an:
+-            if x["analogy"] not in " ".join(T[x["slide"] - 1]): bad.append("analogy for %s is not on slide %s" % (x["concept"], x["slide"]))
++            if not 1 <= x["slide"] <= len(T): bad.append("plan/deck mismatch: the analogy for %s is on slide %s, which is not in the deck (%d slides; the plan has %d)" % (x["concept"], x["slide"], len(T), len(S)))
++            elif x["analogy"] not in " ".join(T[x["slide"] - 1]): bad.append("analogy for %s is not on slide %s" % (x["concept"], x["slide"]))
+     print("sen0401_deck_arc_check %s (chapter %s): %d slides, sections %s, story slides %s, resources slide %s, notes %d..%d words (mean %d); %d refusal(s), %d warning(s)"
+           % (__version__, n, len(S), sections, stories, res, min(lens), max(lens), sum(lens) // len(lens), len(bad), len(warn)))
+     for b in bad: print("  REFUSED", b)
