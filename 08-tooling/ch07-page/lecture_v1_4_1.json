@@ -1,0 +1,541 @@
+{
+ "chapter": 7,
+ "deck": "sen0401_ch07_deck_v2_2_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 7: Scripts and Signatures",
+   "say": "This deck explains how Bitcoin decides who may spend an output. The output carries a lock, the spender supplies the key, and every node runs both and accepts only a true result. Every spend shown ran in the chapter's own interpreter; no Bitcoin Core node was available where it was built.",
+   "takeaway": "Authorization and authentication: scripts that lock coins, signatures that unlock them"
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has nine parts that follow the order in which Bitcoin gained its spending conditions. Three true stories and fifteen code examples are spread across them. The examples are listed in the same order in the chapter code tab of the course page, so every slide can be rerun.",
+   "takeaway": "Nine parts, fifteen runs and three true stories"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The seven questions are the chapter's own, shortened so that each has an answer on a slide. We return to them in the summary. A reader who can answer all seven has understood the chapter.",
+   "takeaway": "Its own competency questions; we return to each"
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, nine parts",
+   "say": "The chapter has nine parts and 87 concepts. Each part gets a divider, concept cards with everyday comparisons and code that runs, and some parts a true story. The deck follows the order in which Bitcoin gained its spending conditions.",
+   "takeaway": "Nine parts; every slide today lives on this map"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "Scripts and the Script language",
+   "say": "Every coin is locked by a small program. This part shows the language, its stack and the two scripts that run one after the other. A bug of 2010 shows why they must run apart.",
+   "takeaway": "A script is a lock and key recipe that every node checks the same way."
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Scripts and the Script language (1 of 4)",
+   "say": "These cards cover Transaction Scripts and Script Language, Turing Incompleteness, Stateless Verification and Script Construction. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "Script is arithmetic on a stack",
+   "say": "Script reads its words from left to right. Numbers are pushed on the stack, and OP_ADD replaces the top two by their sum. OP_EQUAL compares the sum with five, so the spend is true with five and false with six. It is example 1 in the chapter code tab of the course page.",
+   "takeaway": "Numbers are pushed; an operation takes its inputs from the top"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "Scripts and the Script language (2 of 4)",
+   "say": "These cards cover The script execution stack, A simple script, Separate execution of output and input scripts and script. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "The OP_RETURN bug of 2010",
+   "say": "In 2010 the software joined the input script and the output script into one program. An input script of 1 then OP_RETURN ended the run with a true value before the lock ran. Today the scripts run apart. It is example 2 in the chapter code tab of the course page.",
+   "takeaway": "Run the two scripts apart, and fail closed on anything unknown"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "The script that ended with a true result",
+   "say": "This is a true story, dated 2010-07-28. On 28 July 2010 two bugs were discovered and demonstrated on the test network. The lesson: run the two scripts separately, and fail closed on anything unknown.",
+   "read": {
+    "label": "en.bitcoin.it",
+    "url": "https://en.bitcoin.it/wiki/Common_Vulnerabilities_and_Exposures#CVE-2010-5141"
+   },
+   "takeaway": "A bug of 2010 that let anyone spend any output",
+   "concept": "OpReturnBug"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Scripts and the Script language (3 of 4)",
+   "say": "These cards cover stack, Turing complete, output script and input script. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "Scripts and the Script language (4 of 4)",
+   "say": "These cards cover scriptSig and scriptPubKey. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 13,
+   "kind": "section",
+   "title": "Locking a coin to a key",
+   "say": "The most common lock asks for a signature from one key. We lock a coin to the hash of a public key, check a signature, and see why the strict signature format caused a fork in 2015.",
+   "takeaway": "A key lock is a safe-deposit box labelled with a fingerprint."
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Locking a coin to a key (1 of 2)",
+   "say": "These cards cover Pay to Public Key Hash, public key hash and OP_CHECKSIG. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "A key-hash lock, tried three ways",
+   "say": "The lock holds the hash of a public key. The spender shows the key and a signature over the transaction. A wrong key fails, and so does a changed amount, because the signature covers the amount. It is example 3 in the chapter code tab of the course page.",
+   "takeaway": "Only the owner of the key, signing this exact transaction, opens the lock"
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Locking a coin to a key (2 of 2)",
+   "say": "These cards cover signature hash, hash type and DER. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "A DER signature, strict and loose",
+   "say": "A signature is two numbers, r and s, written in DER with a hash type at the end. A padded form was once accepted. Since BIP66 only the strict form is valid, which is the rule behind the fork of 2015. It is example 4 in the chapter code tab of the course page.",
+   "takeaway": "A rule that nodes check for themselves cannot be skipped"
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Half the miners did not check the block",
+   "say": "This is a true story, dated 2015-07-04. BIP66 made strict DER the only valid encoding of a signature, and it took effect once 950 of the last 1,000 blocks were version 3, which happened early on 4 July 2015, at block 363,725. The lesson: a rule that you do not check for yourself protects nobody.",
+   "read": {
+    "label": "bitcoin.org",
+    "url": "https://bitcoin.org/en/alert/2015-07-04-spv-mining"
+   },
+   "takeaway": "Strict DER signatures, and the fork of 4 July 2015",
+   "concept": "SignatureEncoding"
+  },
+  {
+   "n": 19,
+   "kind": "section",
+   "title": "Scripted multisignatures",
+   "say": "A lock can ask for t signatures out of k keys. We run a real two-of-three spend, see why the signatures must follow the order of the keys, and meet the extra element that the opcode pops.",
+   "takeaway": "A multisignature is a vault that opens when enough directors turn their keys."
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Scripted multisignatures (1 of 2)",
+   "say": "These cards cover Scripted Multisignatures, An Oddity in CHECKMULTISIG Execution and multisignature. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "A 2-of-3 multisignature",
+   "say": "A two-of-three lock lists three keys and wants two signatures in the same order. A single signature fails. The opcode also pops one item too many, so a dummy sits in front and must be empty. It is example 5 in the chapter code tab of the course page.",
+   "takeaway": "The signatures must follow the order of the keys, after one empty dummy"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "Scripted multisignatures (2 of 2)",
+   "say": "These cards cover OP_CHECKMULTISIG and dummy element. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 23,
+   "kind": "section",
+   "title": "Pay to script hash",
+   "say": "A long lock is costly for the payer. Pay to script hash puts only a hash in the output and lets the spender reveal the script. We build one and watch a wrong script fail.",
+   "takeaway": "A script hash is a sealed envelope that shows only a code number."
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "Pay to script hash: concepts (1 of 2)",
+   "say": "These cards cover Pay to Script Hash, P2SH Addresses and Benefits of P2SH. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Pay to script hash",
+   "say": "The output holds only the 20-byte hash of the script, so the payer pays for a short lock. The spender reveals the script, nodes hash it, compare, and then run it. A script that hashes differently fails. It is example 6 in the chapter code tab of the course page.",
+   "takeaway": "The long lock moves from the payer to the spender"
+  },
+  {
+   "n": 26,
+   "kind": "content",
+   "title": "Pay to script hash: concepts (2 of 2)",
+   "say": "These cards cover Redeem Script and Validation, redeem script and P2SH address. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 27,
+   "kind": "section",
+   "title": "Data and timelocks",
+   "say": "Two special locks. One records a few bytes of data and can never be spent. The others make a coin wait, until a time or block, or for an age counted from the day it was mined.",
+   "takeaway": "A timelock is a post-dated cheque; a data output is a note on a noticeboard."
+  },
+  {
+   "n": 28,
+   "kind": "content",
+   "title": "Data and timelocks: concepts (1 of 3)",
+   "say": "These cards cover Data Recording Output (OP_RETURN), Transaction Lock Time Limitations, Check Lock Time Verify (OP_CLTV) and Relative Timelocks. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "A lock until block 800,000",
+   "say": "The script holds a block number. The spending transaction must carry a lock time of at least that number, and its sequence must not be final. One block too early fails, and so does a final sequence. It is example 7 in the chapter code tab of the course page.",
+   "takeaway": "The transaction's lock time must reach the number in the script"
+  },
+  {
+   "n": 30,
+   "kind": "content",
+   "title": "Data and timelocks: concepts (2 of 3)",
+   "say": "These cards cover Relative Timelocks with OP_CSV, OP_RETURN, data carrier output and lock time. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 31,
+   "kind": "content",
+   "title": "A wait of 4,320 blocks",
+   "say": "A relative lock counts from the block that confirmed the coin. The input's sequence must reach 4,320 blocks, about thirty days, and the transaction must be version 2. Setting bit 31 turns the lock off. It is example 8 in the chapter code tab of the course page.",
+   "takeaway": "The sequence of the input must reach the number in the script"
+  },
+  {
+   "n": 32,
+   "kind": "content",
+   "title": "Data and timelocks: concepts (3 of 3)",
+   "say": "These cards cover OP_CHECKLOCKTIMEVERIFY, sequence and OP_CHECKSEQUENCEVERIFY. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 33,
+   "kind": "section",
+   "title": "Flow control and complex scripts",
+   "say": "A script can choose between paths, and a check can stop it early. We combine both in a capital account that partners open at once, a lawyer opens after thirty days, and the lawyer alone after ninety.",
+   "takeaway": "Flow control is a fork in the road with a checkpoint on each path."
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "Flow (1 of 2)",
+   "say": "These cards cover Scripts with Flow Control (Conditional Clauses), Conditional Clauses with VERIFY Opcodes, Using Flow Control in Scripts and Complex Script Example. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 35,
+   "kind": "content",
+   "title": "Three ways out of one output",
+   "say": "Mohammed's capital account uses OP_IF to pick a path. Two of three partners may spend at once. The lawyer with one partner must wait 4,320 blocks, and the lawyer alone 12,960. It is example 9 in the chapter code tab of the course page.",
+   "takeaway": "A conditional script lets one output have several spending paths"
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "Flow (2 of 2)",
+   "say": "These cards cover OP_IF, conditional clause, OP_VERIFY and Miniscript. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 37,
+   "kind": "section",
+   "title": "Segregated witness scripts",
+   "say": "Segregated witness moves the proof out of the transaction identifier. We spend a witness key hash, look at what real inputs of one block spend, and see why this upgrade was a soft fork.",
+   "takeaway": "Segregated witness moves the proof to a window beside the counter."
+  },
+  {
+   "n": 38,
+   "kind": "content",
+   "title": "Segregated witness scripts (1 of 4)",
+   "say": "These cards cover Segregated Witness Output and Transaction Examples, Pay to witness public key hash (P2WPKH), Wallet construction of P2WPKH and Pay to witness script hash (P2WSH). Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 39,
+   "kind": "content",
+   "title": "Pay to witness public key hash",
+   "say": "A witness key-hash output is 22 bytes. The signature and the key travel in the witness, not in the input script. They work directly and nested in a script hash, and the signature covers the amount. It is example 10 in the chapter code tab of the course page.",
+   "takeaway": "The signature commits to the amount; the address is bech32"
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "What 1,022 real inputs spend",
+   "say": "The first 599 transactions of block 775,072 hold 1,022 inputs. Our interpreter verified each of them and sorted them by spending type. Segwit key hashes dominate, legacy key hashes follow, and taproot is still a handful.",
+   "takeaway": "Most real coins already move through witness programs"
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "Segregated witness scripts (2 of 4)",
+   "say": "These cards cover Differentiating between P2WPKH and P2WSH, Upgrading to Segregated Witness, Embedding segregated witness inside P2SH and Nested pay to witness public key hash. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 42,
+   "kind": "content",
+   "title": "Segregated witness scripts (3 of 4)",
+   "say": "These cards cover Nested pay to witness script hash, segregated witness, witness program and P2WPKH. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 43,
+   "kind": "content",
+   "title": "Segregated witness scripts (4 of 4)",
+   "say": "These cards cover P2WSH, bech32, nested segregated witness and soft fork. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 44,
+   "kind": "content",
+   "title": "Hard fork or soft fork?",
+   "say": "Segregated witness was a soft fork. Old nodes saw the new outputs as anyone-can-spend scripts and accepted the blocks, while upgraded nodes enforced the witness rules. That is why it could be activated without a split.",
+   "takeaway": "A soft fork can only restrict; old nodes keep accepting the blocks"
+  },
+  {
+   "n": 45,
+   "kind": "section",
+   "title": "Script trees and key tweaks",
+   "say": "Two ideas that taproot combines. A tree of scripts is committed to by one hash, and a key can be tweaked to commit to hidden data, so many signers look like one.",
+   "takeaway": "A script tree is a menu of which only the ordered dish is shown."
+  },
+  {
+   "n": 46,
+   "kind": "content",
+   "title": "Script trees and key tweaks (1 of 3)",
+   "say": "These cards cover Merklized Alternative Script Trees (MAST), Pay to Contract (P2C), Scriptless Multisignatures and Threshold Signatures and MAST. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 47,
+   "kind": "content",
+   "title": "A proof grows with the logarithm",
+   "say": "A spender reveals one script and the sibling hashes up to the root. Our three scripts need two, two and one. Every doubling of the tree adds one hash, so a tree of a million scripts needs twenty. It is example 11 in the chapter code tab of the course page.",
+   "takeaway": "A million scripts need only twenty hashes in a proof"
+  },
+  {
+   "n": 48,
+   "kind": "content",
+   "title": "Script trees and key tweaks (2 of 3)",
+   "say": "These cards cover merkle root, membership proof, key tweak and scriptless multisignature. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 49,
+   "kind": "content",
+   "title": "Script trees and key tweaks (3 of 3)",
+   "say": "These cards cover threshold signature and partial public key. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 50,
+   "kind": "section",
+   "title": "Taproot and tapscript",
+   "say": "Taproot gives an output one key that hides a tree. We spend it by key and by script, count signatures with a new opcode, and end with a story of a patented signature.",
+   "takeaway": "Taproot is a front door with a hidden side entrance."
+  },
+  {
+   "n": 51,
+   "kind": "content",
+   "title": "Taproot and tapscript: concepts (1 of 3)",
+   "say": "These cards cover Taproot, Tapscript, keypath spending and scriptpath spending. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 52,
+   "kind": "content",
+   "title": "Taproot: a key path spend",
+   "say": "A taproot output holds one 32-byte key. Spending by key path needs a single 64-byte Schnorr signature, and nothing about the hidden scripts is revealed. A key that was not tweaked correctly is refused. It is example 12 in the chapter code tab of the course page.",
+   "takeaway": "The output key is the internal key plus a tweak"
+  },
+  {
+   "n": 53,
+   "kind": "content",
+   "title": "From a patented signature to taproot",
+   "say": "This is a true story, dated 2021-11-14. Claus Schnorr patented the signature algorithm he discovered and kept it out of open standards and open-source software for almost two decades, so cryptographers of the early 1990s built the DSA family that led to the ECDSA signatures Bitcoin used from its first release.",
+   "read": {
+    "label": "mempool.space",
+    "url": "https://mempool.space/block/0000000000000000000687bca986194dc2c1f949318629b44bb54ec0a94d8244"
+   },
+   "takeaway": "Taproot took effect at block 709,632 in 2021",
+   "concept": "Taproot"
+  },
+  {
+   "n": 54,
+   "kind": "content",
+   "title": "Taproot and tapscript: concepts (2 of 3)",
+   "say": "These cards cover taproot internal key, taproot output key, leaf script and OP_CHECKSIGADD. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 55,
+   "kind": "content",
+   "title": "Taproot: the script path",
+   "say": "Spending by script path reveals one leaf script, its data and a control block with the proof. All three paths of the account script verify. Their weights are close to those of the same paths in a witness script hash. It is example 13 in the chapter code tab of the course page.",
+   "takeaway": "Each path costs about as much as a plain witness script"
+  },
+  {
+   "n": 56,
+   "kind": "content",
+   "title": "Taproot and tapscript: concepts (3 of 3)",
+   "say": "These cards cover schnorr signature, OP_SUCCESS and mutual satisfaction. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 7.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 57,
+   "kind": "content",
+   "title": "Counting signatures: OP_CHECKSIGADD",
+   "say": "Tapscript drops the old multisignature opcode. A script checks each key in turn and adds one to a counter per valid signature, then compares the counter with t. The script is a byte shorter than before. It is example 14 in the chapter code tab of the course page.",
+   "takeaway": "Each valid signature adds one; an empty slot adds nothing"
+  },
+  {
+   "n": 58,
+   "kind": "content",
+   "title": "Opcodes kept for upgrades",
+   "say": "In tapscript 87 opcode values are OP_SUCCESS: a script that contains one succeeds on sight. This leaves room for future soft forks. The disabled shift of the old language still fails in an old script. It is example 15 in the chapter code tab of the course page.",
+   "takeaway": "Unknown opcodes succeed, so soft forks can give them a meaning"
+  },
+  {
+   "n": 59,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. A line that feels unproven should send you back to its code slide, because every result in it was computed there. The chapter code tab of the course page lets you rerun all fifteen examples.",
+   "takeaway": "If a line feels unproven, the code slide of its part carries the receipt"
+  },
+  {
+   "n": 60,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch. A good exercise is to take any spend from the explorer and run it through the chapter's interpreter. The course page for chapter 7 carries the full resource list.",
+   "links": [
+    {
+     "group": "Read and explore",
+     "label": "Bitcoin white paper (PDF)",
+     "url": "https://bitcoin.org/bitcoin.pdf",
+     "finds": "Nakamoto's nine pages of 31 October 2008"
+    },
+    {
+     "group": "Read and explore",
+     "label": "Script (Bitcoin Wiki)",
+     "url": "https://en.bitcoin.it/wiki/Script",
+     "finds": "Every opcode with its effect and status"
+    },
+    {
+     "group": "Read and explore",
+     "label": "Optech topic: Taproot",
+     "url": "https://bitcoinops.org/en/topics/taproot/",
+     "finds": "Summary of taproot with links to newsletters and code"
+    },
+    {
+     "group": "Read and explore",
+     "label": "Taproot (Bitcoin Wiki)",
+     "url": "https://en.bitcoin.it/wiki/Taproot",
+     "finds": "Plain description of the taproot soft fork"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 66: Strict DER signatures (spec)",
+     "url": "https://bips.dev/66/",
+     "finds": "The rule behind the July 2015 fork"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 141: Segregated Witness (spec)",
+     "url": "https://bips.dev/141/",
+     "finds": "Witness programs and how they are validated"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 341: Taproot spending rules (spec)",
+     "url": "https://bips.dev/341/",
+     "finds": "Key path, script path and the commitment"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 342: Tapscript validation (spec)",
+     "url": "https://bips.dev/342/",
+     "finds": "The script rules inside a taproot spend"
+    },
+    {
+     "group": "The stories",
+     "label": "script.cpp of Bitcoin 0.3.0 (source)",
+     "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/v0.3.0/script.cpp",
+     "finds": "The early script engine, as it was released"
+    },
+    {
+     "group": "The stories",
+     "label": "CVE-2010-5141 entry (Bitcoin Wiki)",
+     "url": "https://en.bitcoin.it/wiki/Common_Vulnerabilities_and_Exposures#CVE-2010-5141",
+     "finds": "The early script bug, in the list of known vulnerabilities"
+    },
+    {
+     "group": "The stories",
+     "label": "Alert: Some Miners Generating Invalid Blocks",
+     "url": "https://bitcoin.org/en/alert/2015-07-04-spv-mining",
+     "finds": "The notice of 4 July 2015 about unvalidated blocks"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Stack Exchange (Q&A site)",
+     "url": "https://bitcoin.stackexchange.com",
+     "finds": "Search or ask any technical question; answers are voted"
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin (forum)",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers discuss script and consensus changes in the open"
+    },
+    {
+     "group": "Watch",
+     "label": "Schnorr: Optech workshop 1.1 (video)",
+     "url": "https://www.youtube.com/embed/wybiVFdknhg",
+     "finds": "Bitcoin Optech's workshop on the signature scheme of chapter 7"
+    },
+    {
+     "group": "Watch",
+     "label": "Tapscript: Optech workshop 2.3 (video)",
+     "url": "https://www.youtube.com/embed/nXGe9_M5pjk",
+     "finds": "Bitcoin Optech on the three small changes of tapscript"
+    }
+   ],
+   "takeaway": "Run a real spend through the interpreter and match the explorer's verdict"
+  },
+  {
+   "n": 61,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by runs of the chapter's own interpreter on slides of this deck. The course page for chapter 7 has every word behind them, the stories with their sources, and the question bank to test yourself.",
+   "takeaway": "And where each claim gets its proof"
+  }
+ ],
+ "_note": "lecture_v1_4_0.json (the deck export of the chapter 07 deck v2_2_0, untouched) with the deck's takeaway as takeaway and, on each story slide, the first concept of the story that the page has as concept; made by ch07-page/lecture_derive_v1_4_1.py"
+}
