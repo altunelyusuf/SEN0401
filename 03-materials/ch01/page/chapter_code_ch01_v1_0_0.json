@@ -1,0 +1,421 @@
+{
+ "manifest": "chapter_code_ch01_v1_0_0",
+ "chapter": 1,
+ "deck": "SEN0401_Ch01_Introduction_3e_v3_0_0.pptx",
+ "deck_version": "3.0.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the library defined in the page",
+ "library": {
+  "module": "sen0401_ch01_lib_v1_0_0",
+  "file": "08-tooling/sen0401_ch01_lib_v1_0_0.py",
+  "sha256": "d142a1b7a23b831f9555fbaf7180dcfc7e414eb727e280726d05b7b611c855b5",
+  "import": "from sen0401_ch01_lib_v1_0_0 import *"
+ },
+ "setup": {
+  "code": "# setup: the chapter library of the page (helper functions, the saved block-0 script and the documented prices); the page runs this before every example\nimport hashlib\nfrom decimal import Decimal\nfrom sen0401_ch01_lib_v1_0_0 import *",
+  "data": {}
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "Read the headline in block zero",
+   "slide": 8,
+   "branch": "Origins",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "raw = bytes.fromhex(COINBASE_HEX)\nhead, text = raw[:8], raw[8:].decode()\nsizes = [len(head), len(text)]\nsizes",
+   "show": [
+    {
+     "expression": "sizes",
+     "expected": "[8, 69]"
+    },
+    {
+     "expression": "head.hex()",
+     "expected": "'04ffff001d010445'"
+    },
+    {
+     "expression": "text",
+     "expected": "'The Times 03/Jan/2009 Chancellor on brink of second bailout for banks'"
+    },
+    {
+     "expression": "len(raw)",
+     "expected": "77"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "One bitcoin counted in satoshis",
+   "slide": 20,
+   "branch": "Money",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "from decimal import Decimal\nsats = int(Decimal('0.001') * COIN)\nunits = [COIN, COIN // 1000, 1]\nunits",
+   "show": [
+    {
+     "expression": "sats",
+     "expected": "100000"
+    },
+    {
+     "expression": "units",
+     "expected": "[100000000, 100000, 1]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "The subsidy at five block heights",
+   "slide": 21,
+   "branch": "Money",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "heights = [0, 210000, 420000, 630000, 840000]\nsubs = [subsidy(h) for h in heights]\nratios = [a / b for a, b in zip(subs, subs[1:])]\nsubs",
+   "show": [
+    {
+     "expression": "subs",
+     "expected": "[50.0, 25.0, 12.5, 6.25, 3.125]"
+    },
+    {
+     "expression": "ratios",
+     "expected": "[2.0, 2.0, 2.0, 2.0]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "The 21 million cap is a sum of eras",
+   "slide": 22,
+   "branch": "Money",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "eras = [(50 * COIN >> k) * HALVING for k in range(33)]\ncap = sum(eras) / COIN\ncap",
+   "show": [
+    {
+     "expression": "cap",
+     "expected": "20999999.9769"
+    },
+    {
+     "expression": "[sum(eras[:k + 1]) // COIN for k in range(8)]",
+     "expected": "[10500000, 15750000, 18375000, 19687500, 20343750, 20671875, 20835937, 20917968]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "No one sets the price: trades do",
+   "slide": 23,
+   "branch": "Money",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "trades = [(0.5, 31000), (0.2, 12600), (1.0, 63100)]\nprices = [round(u / b, 2) for b, u in trades]\navg = round(vwap([(b, u / b) for b, u in trades]), 2)\navg",
+   "show": [
+    {
+     "expression": "trades",
+     "expected": "[(0.5, 31000), (0.2, 12600), (1.0, 63100)]"
+    },
+    {
+     "expression": "prices",
+     "expected": "[62000.0, 63000.0, 63100.0]"
+    },
+    {
+     "expression": "avg",
+     "expected": "62764.71"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "The Pizza Day coins, repriced",
+   "slide": 25,
+   "branch": "Money",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "coins = 10000\nval = {d: int(coins * p) for d, p in PIZZA.items()}\nlist(val.values())",
+   "show": [
+    {
+     "expression": "list(val.keys())",
+     "expected": "['2010-05', '2011-02', '2013-11', '2017-12', '2021-11', '2026-10']"
+    },
+    {
+     "expression": "list(val.values())",
+     "expected": "[41, 10000, 10000000, 196000000, 690000000, 854090000]"
+    },
+    {
+     "expression": "round(val['2026-10'] / val['2010-05'])",
+     "expected": "20831463"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "Work that is hard to find and easy to check",
+   "slide": 29,
+   "branch": "Network",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "data = b'alice pays bob 1'\ntries = [mine(data, z)[0] + 1 for z in (1, 2, 3, 4)]\nn, d = mine(data, 4)\ncheck = hashlib.sha256(data + b'%d' % n).hexdigest()\ntries",
+   "show": [
+    {
+     "expression": "tries",
+     "expected": "[9, 223, 1208, 57247]"
+    },
+    {
+     "expression": "check == d",
+     "expected": "True"
+    },
+    {
+     "expression": "d[:12]",
+     "expected": "'0000789b01f7'"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "A double spend is refused",
+   "slide": 33,
+   "branch": "Network",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "book = Ledger({'c1': 'alice'})\nfirst = book.pay('c1', 'bob')\nsecond = book.pay('c1', 'carol')\nbook.owner",
+   "show": [
+    {
+     "expression": "first",
+     "expected": "'accepted: coin c1 now belongs to bob'"
+    },
+    {
+     "expression": "second",
+     "expected": "'refused: coin c1 is already spent'"
+    },
+    {
+     "expression": "book.owner",
+     "expected": "{'c1': 'bob'}"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "A chain that notices tampering",
+   "slide": 34,
+   "branch": "Network",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "blocks = chain(['pay A', 'pay B', 'pay C'])\nbefore = verify(blocks)\nblocks[1]['text'] = 'pay Z'\nafter = verify(blocks)\nafter",
+   "show": [
+    {
+     "expression": "before",
+     "expected": "3"
+    },
+    {
+     "expression": "after",
+     "expected": "1"
+    },
+    {
+     "expression": "[verify(blocks[:k]) == k for k in (1, 2, 3)]",
+     "expected": "[True, False, False]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "What the outputs leave over is the fee",
+   "slide": 36,
+   "branch": "Network",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "inputs = [100000]\noutputs = [20000, 75000]\nfee = sum(inputs) - sum(outputs)\nshare = round(100 * fee / sum(inputs), 1)\nfee",
+   "show": [
+    {
+     "expression": "fee",
+     "expected": "5000"
+    },
+    {
+     "expression": "share",
+     "expected": "5.0"
+    },
+    {
+     "expression": "sum(inputs)",
+     "expected": "100000"
+    },
+    {
+     "expression": "outputs",
+     "expected": "[20000, 75000]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "A recovery phrase stretched into a seed",
+   "slide": 46,
+   "branch": "Wallets",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "words = TEST_PHRASE.split()\nrounds = (1, 10, 2048)\nseeds = [stretch(TEST_PHRASE, n)[:8] for n in rounds]\nseeds",
+   "show": [
+    {
+     "expression": "len(words)",
+     "expected": "12"
+    },
+    {
+     "expression": "rounds",
+     "expected": "(1, 10, 2048)"
+    },
+    {
+     "expression": "seeds",
+     "expected": "['64d8279a', '297e090a', '5eb00bbd']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "An address is a hash with a checksum",
+   "slide": 50,
+   "branch": "First use",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "version = bytes([0])\npayload = version + bytes.fromhex(GENESIS_HASH160)\ncheck = dsha(payload)[:4]\naddress = base58(payload + check)\naddress",
+   "show": [
+    {
+     "expression": "address",
+     "expected": "'1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'"
+    },
+    {
+     "expression": "check.hex()",
+     "expected": "'c29b7d93'"
+    },
+    {
+     "expression": "len(payload + check)",
+     "expected": "25"
+    },
+    {
+     "expression": "payload[1:].hex()",
+     "expected": "'62e907b15cbf27d5425399ebf6f0fb50ebb88f18'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "An invoice is a link with an amount",
+   "slide": 51,
+   "branch": "First use",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "req = parse_uri(BIP21_URI)\nsats = int(Decimal(req['amount']) * COIN)\nsats",
+   "show": [
+    {
+     "expression": "req",
+     "expected": "{'address': '175tWpb8K1S7NmH4Zx6rewF9WQrcZv245W', 'amount': '0.00015', 'label': \"Bob's Cafe\", 'message': 'One coffee'}"
+    },
+    {
+     "expression": "sats",
+     "expected": "15000"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "Sending: coins in, payment and change out",
+   "slide": 53,
+   "branch": "First use",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "coins = [50000, 30000, 80000]\npay, fee = 60000, 1500\npick = min(c for c in coins if c >= pay + fee)\nchange = pick - pay - fee\nchange",
+   "show": [
+    {
+     "expression": "pick",
+     "expected": "80000"
+    },
+    {
+     "expression": "pay",
+     "expected": "60000"
+    },
+    {
+     "expression": "fee",
+     "expected": "1500"
+    },
+    {
+     "expression": "change",
+     "expected": "18500"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "A channel needs two transactions, not one per payment",
+   "slide": 58,
+   "branch": "Foundations",
+   "library": "sen0401_ch01_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "payments = [1, 10, 100, 1000]\nonchain = payments\nsaved = [n - 2 for n in payments]\nsaved",
+   "show": [
+    {
+     "expression": "onchain",
+     "expected": "[1, 10, 100, 1000]"
+    },
+    {
+     "expression": "saved",
+     "expected": "[-1, 8, 98, 998]"
+    }
+   ],
+   "result_picture": "table"
+  }
+ ]
+}
