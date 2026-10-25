@@ -1,0 +1,375 @@
+{
+ "manifest": "chapter_code_ch02_v1_0_0",
+ "chapter": 2,
+ "deck": "SEN0401_Ch02_HowBitcoinWorks_3e_v3_0_0.pptx",
+ "deck_version": "3.0.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the chapter library defined in the page; the manifest equals the deck's code boxes",
+ "library": {
+  "module": "sen0401_ch02_tx_lib_v1_0_0",
+  "file": "08-tooling/sen0401_ch02_tx_lib_v1_0_0.py",
+  "sha256": "26fac8e6f9890667ca64186e39de3975b8ef976b021113fb18df9aec8083778d",
+  "import": "import sen0401_ch02_tx_lib_v1_0_0 as T",
+  "requires": "Python standard library only (hashlib, math, struct, urllib.parse)"
+ },
+ "setup": {
+  "code": "# setup: the chapter library of the page (T = the chapter 2 library); the page runs this before every example\nimport hashlib\nimport urllib.parse\nimport sen0401_ch02_tx_lib_v1_0_0 as T",
+  "data": {}
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "Satoshis are whole numbers",
+   "slide": 8,
+   "branch": "Buying from an Online Store",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "btc = '0.01577764'\nsats = T.to_sats(btc)\nback = T.to_btc(sats)\n(sats, back)",
+   "show": [
+    {
+     "expression": "(sats, back)",
+     "expected": "(1577764, '0.01577764')"
+    },
+    {
+     "expression": "T.to_sats('0.00075')",
+     "expected": "75000"
+    },
+    {
+     "expression": "T.to_sats('1')",
+     "expected": "100000000"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "Reading Bob's invoice",
+   "slide": 9,
+   "branch": "Buying from an Online Store",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "u = urllib.parse.urlsplit(T.INVOICE)\nq = urllib.parse.parse_qs(u.query)\n[u.scheme, q['amount'][0], q['label'][0]]",
+   "show": [
+    {
+     "expression": "[u.scheme, q['amount'][0], q['label'][0]]",
+     "expected": "['bitcoin', '0.01577764', \"Bob's Store\"]"
+    },
+    {
+     "expression": "u.path[:12]",
+     "expected": "'bc1qk2g6u8p4'"
+    },
+    {
+     "expression": "T.to_sats(q['amount'][0])",
+     "expected": "1577764"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "Inputs equal outputs plus the fee",
+   "slide": 12,
+   "branch": "Bitcoin Transactions",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "ins, outs = T.ALICE_IN, T.ALICE_OUT\nfee = sum(ins) - sum(outs)\n(sum(ins), sum(outs), fee)",
+   "show": [
+    {
+     "expression": "(sum(ins), sum(outs), fee)",
+     "expected": "(100000, 95000, 5000)"
+    },
+    {
+     "expression": "outs",
+     "expected": "[75000, 20000]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "The txid is shown backwards",
+   "slide": 13,
+   "branch": "Bitcoin Transactions",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "raw = bytes.fromhex(T.PREV_RAW)\nshown = raw[::-1].hex()\n(raw.hex()[:8], shown[:8])",
+   "show": [
+    {
+     "expression": "(raw.hex()[:8], shown[:8])",
+     "expected": "('eb3ae38f', '4ac54180')"
+    },
+    {
+     "expression": "(raw.hex()[-8:], shown[-8:])",
+     "expected": "('8041c54a', '8fe33aeb')"
+    },
+    {
+     "expression": "len(raw)",
+     "expected": "32"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "Size in virtual bytes and the fee rate",
+   "slide": 14,
+   "branch": "Bitcoin Transactions",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "weight = 569\nvbytes = -(-weight // 4)\nrate = round(5000 / vbytes, 2)\n(vbytes, rate)",
+   "show": [
+    {
+     "expression": "(vbytes, rate)",
+     "expected": "(143, 34.97)"
+    },
+    {
+     "expression": "weight / 4",
+     "expected": "142.25"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "Which outputs are still unspent",
+   "slide": 16,
+   "branch": "Bitcoin Transactions",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "C = T.CHAIN\nused = {i for a, b in C.values() for i in a}\nval = {o: v for _, b in C.values() for o, v in b.items()}\nfree = [o for o in val if o not in used]\nfree",
+   "show": [
+    {
+     "expression": "free",
+     "expected": "['Tx1:1', 'Tx2:0', 'Tx3:0']"
+    },
+    {
+     "expression": "val",
+     "expected": "{'Tx1:0': 100000, 'Tx1:1': 500000, 'Tx2:0': 20000, 'Tx2:1': 75000, 'Tx3:0': 67000}"
+    },
+    {
+     "expression": "sorted(used)",
+     "expected": "['Tx0:0', 'Tx1:0', 'Tx2:1']"
+    },
+    {
+     "expression": "[sum(val[i] for i in C[t][0]) - sum(C[t][1].values()) for t in ('Tx2', 'Tx3')]",
+     "expected": "[5000, 8000]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "Coin selection: pick, pay, change back",
+   "slide": 18,
+   "branch": "Coin Selection",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "vals, need = [60000, 30000, 25000], 80000\npick, change = T.select(vals, need)\n(pick, change)",
+   "show": [
+    {
+     "expression": "(pick, change)",
+     "expected": "([60000, 30000], 10000)"
+    },
+    {
+     "expression": "sum(pick)",
+     "expected": "90000"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "Three common shapes of a transaction",
+   "slide": 19,
+   "branch": "Coin Selection",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "F = T.FORMS\nshape = {k: (len(a), len(b)) for k, (a, b) in F.items()}\nfee = {k: sum(a) - sum(b) for k, (a, b) in F.items()}\nfee",
+   "show": [
+    {
+     "expression": "fee",
+     "expected": "{'payment': 5000, 'consolidation': 1500, 'batching': 3000}"
+    },
+    {
+     "expression": "shape",
+     "expected": "{'payment': (1, 2), 'consolidation': (3, 1), 'batching': (1, 4)}"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "A higher fee rate leaves less change",
+   "slide": 22,
+   "branch": "Constructing a Transaction",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "vb = 143\nrates = [10, 20, 35, 100]\nchange = [100000 - 75000 - r * vb for r in rates]\nchange",
+   "show": [
+    {
+     "expression": "change",
+     "expected": "[23570, 22140, 19995, 10700]"
+    },
+    {
+     "expression": "[r * vb for r in rates]",
+     "expected": "[1430, 2860, 5005, 14300]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "One more zero, many more tries",
+   "slide": 25,
+   "branch": "Adding the Transaction to the Blockchain",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "data = 'Hello, world! '\nok = lambda n, z: T.sha(data + str(n)).startswith('0' * z)\nfind = lambda z: next(n for n in range(10**7) if ok(n, z))\n[find(z) for z in (1, 2, 3, 4)]",
+   "show": [
+    {
+     "expression": "[find(z) for z in (1, 2, 3, 4)]",
+     "expected": "[33, 302, 10182, 32977]"
+    },
+    {
+     "expression": "T.sha(data + str(find(4)))[:12]",
+     "expected": "'0000c9266638'"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "The first block header is 80 bytes",
+   "slide": 26,
+   "branch": "Adding the Transaction to the Blockchain",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "hdr = T.genesis_header()\nh = T.block_hash(hdr)\n(len(hdr), h[:20])",
+   "show": [
+    {
+     "expression": "(len(hdr), h[:20])",
+     "expected": "(80, '000000000019d6689c08')"
+    },
+    {
+     "expression": "h",
+     "expected": "'000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f'"
+    },
+    {
+     "expression": "[len(hdr[a:b]) for a, b in ((0, 4), (4, 36), (36, 68), (68, 72), (72, 76), (76, 80))]",
+     "expected": "[4, 32, 32, 4, 4, 4]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "Nakamoto's catch-up table, recomputed",
+   "slide": 28,
+   "branch": "Adding the Transaction to the Blockchain",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "q10 = [round(T.catch_up(0.1, z), 7) for z in range(7)]\nq30 = [round(T.catch_up(0.3, z), 7) for z in range(7)]\n(q10[1], q10[6])",
+   "show": [
+    {
+     "expression": "(q10[1], q10[6])",
+     "expected": "(0.2045873, 0.0002428)"
+    },
+    {
+     "expression": "q10",
+     "expected": "[1.0, 0.2045873, 0.0509779, 0.0131722, 0.0034552, 0.0009137, 0.0002428]"
+    },
+    {
+     "expression": "q30",
+     "expected": "[1.0, 0.6277491, 0.4457171, 0.3245841, 0.2391269, 0.1773523, 0.1321112]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "The reward halves every 210,000 blocks",
+   "slide": 30,
+   "branch": "Spending the Transaction",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "era = T.HALVING_INTERVAL\nreward = lambda h: 50 * T.COIN >> h // era\n[reward(h * era) / T.COIN for h in range(6)]",
+   "show": [
+    {
+     "expression": "[reward(h * era) / T.COIN for h in range(6)]",
+     "expected": "[50.0, 25.0, 12.5, 6.25, 3.125, 1.5625]"
+    },
+    {
+     "expression": "era",
+     "expected": "210000"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "Two outputs that wrapped around",
+   "slide": 32,
+   "branch": "Spending the Transaction",
+   "library": "sen0401_ch02_tx_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "big = 9223372036854277039\ntotal = big + big\nstored = T.wrap64(total)\n(stored, stored < 0)",
+   "show": [
+    {
+     "expression": "(stored, stored < 0)",
+     "expected": "(-997538, True)"
+    },
+    {
+     "expression": "total",
+     "expected": "18446744073708554078"
+    },
+    {
+     "expression": "big",
+     "expected": "9223372036854277039"
+    }
+   ],
+   "result_picture": "table"
+  }
+ ]
+}

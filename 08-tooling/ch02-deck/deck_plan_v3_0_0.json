@@ -1,0 +1,989 @@
+{
+ "meta": {
+  "title": "Chapter 2: How Bitcoin Works",
+  "sub": "SEN0401, third-edition deck 3.0.0",
+  "version": "3.0.0",
+  "python": "3.14.6",
+  "total": 35,
+  "redesign": "2026-10-25, task TK_Ch02_Deck_Build_R24: content, analogies, code with explanation beside it and the result as a picture, dividers with meanings, deck standard D1-D12",
+  "notes": "short reader's prose: 2-4 sentences, at most 60 words",
+  "analogies": [
+   {
+    "concept": "How Bitcoin Works",
+    "analogy": "Think of tracking a parcel from the shop to your door.",
+    "slide": 5
+   },
+   {
+    "concept": "Bitcoin Overview",
+    "analogy": "Think of a town where every shop keeps an identical ledger.",
+    "slide": 5
+   },
+   {
+    "concept": "satoshi",
+    "analogy": "Think of the cent, only a million times smaller.",
+    "slide": 5
+   },
+   {
+    "concept": "Transaction Inputs and Outputs",
+    "analogy": "Think of handing over banknotes and receiving new ones.",
+    "slide": 10
+   },
+   {
+    "concept": "Transaction Chains",
+    "analogy": "Think of a trail of signed receipts, each naming the one before.",
+    "slide": 10
+   },
+   {
+    "concept": "Making Change",
+    "analogy": "Think of paying with a 20 note for a 15 item and getting 5 back.",
+    "slide": 10
+   },
+   {
+    "concept": "input",
+    "analogy": "Think of a banknote you hand over to the cashier.",
+    "slide": 11
+   },
+   {
+    "concept": "output",
+    "analogy": "Think of a banknote you receive in return.",
+    "slide": 11
+   },
+   {
+    "concept": "Common Transaction Forms",
+    "analogy": "Think of a single cheque, a deposit of coins and a payroll run.",
+    "slide": 17
+   },
+   {
+    "concept": "consolidation transaction",
+    "analogy": "Think of swapping a jar of small coins for one banknote.",
+    "slide": 17
+   },
+   {
+    "concept": "change address",
+    "analogy": "Think of a new envelope addressed to yourself.",
+    "slide": 17
+   },
+   {
+    "concept": "Getting the Right Inputs",
+    "analogy": "Think of counting coins onto the counter before paying.",
+    "slide": 20
+   },
+   {
+    "concept": "Creating the Outputs",
+    "analogy": "Think of filling in the payee and the amount on a cheque.",
+    "slide": 20
+   },
+   {
+    "concept": "transaction fee",
+    "analogy": "Think of the postage stamp that pays the post office.",
+    "slide": 20
+   },
+   {
+    "concept": "Bitcoin Mining",
+    "analogy": "Think of rolling dice until a very rare number turns up.",
+    "slide": 23
+   },
+   {
+    "concept": "confirmation",
+    "analogy": "Think of more witnesses signing a contract.",
+    "slide": 23
+   },
+   {
+    "concept": "genesis block",
+    "analogy": "Think of page one of a ledger, printed into the binding.",
+    "slide": 23
+   },
+   {
+    "concept": "consensus rules",
+    "analogy": "Think of the rules of chess that every player and referee enforce.",
+    "slide": 29
+   },
+   {
+    "concept": "block explorer",
+    "analogy": "Think of a parcel tracker for money.",
+    "slide": 29
+   }
+  ],
+  "honesty": {
+   "title": [
+    "no Bitcoin Core node"
+   ],
+   "no_node": true,
+   "notExecuted": [],
+   "recorded": [],
+   "standin": {
+    "31": [
+     "stand-in"
+    ]
+   },
+   "vectors": []
+  }
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 2: How Bitcoin Works",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/shot_bitcoinqt_0_5_2.png"
+    },
+    {
+     "t": "foot"
+    }
+   ],
+   "bg": "light",
+   "n": 1,
+   "notes": "Chapter 1 asked what Bitcoin is. Chapter 2 follows one payment, Alice paying Bob's Store, from the invoice to the blockchain. Every number in this deck was computed with the chapter's own Python library.",
+   "sub": ""
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "items": [
+    {
+     "t": "boxes"
+    },
+    {
+     "t": "stat"
+    }
+   ],
+   "take": "Six parts, three true stories, fourteen examples",
+   "n": 2,
+   "notes": "The route has six parts that follow one payment from the invoice to the spending. Three true stories and fourteen code examples are spread across them, and every example has a picture of its result.",
+   "bg": "light",
+   "sub": ""
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "items": [
+    {
+     "t": "numlist",
+     "items": [
+      "What do Alice's payment and Bob's invoice contain?",
+      "Why must inputs equal outputs plus a fee, and where does change come from?",
+      "How does a wallet choose coins and build the outputs?",
+      "How does a payment travel to a miner and into a block?",
+      "What makes a payment harder to reverse with each confirmation?",
+      "Which rules does every node check, and what if a block breaks one?"
+     ]
+    }
+   ],
+   "n": 3,
+   "notes": "The six questions are the chapter's own, rewritten so that each has an answer on a slide. We return to them in the summary. A reader who can answer all six has understood the chapter.",
+   "bg": "light",
+   "sub": ""
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in one picture",
+   "items": [
+    {
+     "t": "flow",
+     "steps": [
+      "1 Invoice",
+      "2 Transaction",
+      "3 Coins",
+      "4 Build",
+      "5 Block",
+      "6 Spend"
+     ]
+    },
+    {
+     "t": "text"
+    }
+   ],
+   "take": "Six steps, one payment: from invoice to a spendable coin",
+   "n": 4,
+   "notes": "Six steps carry one payment. Alice reads an invoice, a transaction is formed, coins are chosen, the wallet builds and signs it, a miner puts it in a block, and Bob can spend it. The parts of this deck follow the same path.",
+   "bg": "light",
+   "sub": ""
+  },
+  {
+   "kind": "section",
+   "title": "Buying from an Online Store",
+   "sub": "Alice pays Bob's Store: one real payment, followed all the way",
+   "items": [
+    {
+     "t": "groups",
+     "items": [
+      {
+       "pill": "How Bitcoin Works",
+       "meaning": "One payment is followed from the shop's invoice to the blockchain.",
+       "analogy": "Think of tracking a parcel from the shop to your door."
+      },
+      {
+       "pill": "Bitcoin Overview",
+       "meaning": "Users, wallets, nodes and miners share one record that nobody owns.",
+       "analogy": "Think of a town where every shop keeps an identical ledger."
+      },
+      {
+       "pill": "satoshi",
+       "meaning": "The smallest unit: one hundred-millionth of a bitcoin.",
+       "analogy": "Think of the cent, only a million times smaller."
+      }
+     ]
+    },
+    {
+     "t": "striptable"
+    }
+   ],
+   "bg": "light",
+   "n": 5,
+   "notes": "Part 1 starts where Alice does: with an invoice from an online store. We meet the whole system first, then the smallest unit of money and the link that carries the invoice."
+  },
+  {
+   "kind": "content",
+   "title": "Four roles, one network",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/c2s04_overview.png"
+    },
+    {
+     "t": "cards"
+    }
+   ],
+   "take": "No single owner: wallets sign, nodes check, miners bundle",
+   "n": 6,
+   "notes": "Four roles share the work. Users hold wallets that sign payments, nodes check the rules and pass transactions on, and miners bundle waiting transactions into blocks that everyone copies. Nobody owns the record.",
+   "bg": "light",
+   "sub": ""
+  },
+  {
+   "kind": "content",
+   "title": "Five free bitcoins for every visitor",
+   "sub": "11 June 2010 · how a first coin reached its owner",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/photo_gavin_andresen.jpg",
+     "cap": "Picture: Gavin Andresen, Web Summit 2014 - Stephen McCarthy, CC BY 2.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "items": [
+      "WHO Gavin Andresen, a software developer who later led the Bitcoin software after Satoshi Nakamoto left.",
+      "WHAT A website that gave five bitcoins to every visitor who solved a CAPTCHA.",
+      "WHEN 2010-06-11 (11 June 2010)",
+      "WHERE A website announced on the bitcointalk forum; Andresen worked from Massachusetts.",
+      "WHY Almost nowhere sold bitcoin in 2010, so he gave coins away to seed the first users.",
+      "HOW He stocked the site with 1,100 of his own bitcoins and paid five to each request."
+     ]
+    },
+    {
+     "t": "factrow",
+     "who": "Gavin Andresen, the developer Satoshi later handed the project to",
+     "where": "freebitcoins.appspot.com, announced on the bitcointalk forum",
+     "when": "2010-06-11",
+     "link": "https://bitcointalk.org/index.php?topic=183.0",
+     "linkText": "Get 5 free bitcoins (bitcointalk thread)"
+    }
+   ],
+   "take": "Before exchanges, distribution itself had to be invented",
+   "n": 7,
+   "notes": "Alice needs bitcoin before she can pay Bob. In 2010 there was almost nowhere to buy it, so Gavin Andresen gave five coins to every visitor of his website. Thousands of people got their first bitcoin this way.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Satoshis are whole numbers",
+   "sub": "Converting the invoice amount without decimals",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex01"
+    },
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/c2s07_fractions.jpg"
+    },
+    {
+     "t": "table",
+     "ex": "ex01"
+    }
+   ],
+   "take": "Inside the network every amount is a whole number of satoshis",
+   "n": 8,
+   "notes": "Bitcoin counts in satoshis, one hundred-millionth of a bitcoin. Decimals are only for people. Converting with whole numbers keeps every digit, which floating point would not.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Reading Bob's invoice",
+   "sub": "A payment link is a small, readable address",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex02"
+    },
+    {
+     "t": "table",
+     "ex": "ex02"
+    }
+   ],
+   "take": "One link carries the address, the amount and the label",
+   "n": 9,
+   "notes": "BIP 21 defines the bitcoin link that wallets and QR codes use. We split it into its parts with the standard library. The wallet then knows whom to pay, how much, and what to call the payee.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Bitcoin Transactions",
+   "sub": "Inputs, outputs, chains and change",
+   "items": [
+    {
+     "t": "groups",
+     "items": [
+      {
+       "pill": "Transaction Inputs and Outputs",
+       "meaning": "Inputs spend earlier outputs; outputs lock new amounts to new owners.",
+       "analogy": "Think of handing over banknotes and receiving new ones."
+      },
+      {
+       "pill": "Transaction Chains",
+       "meaning": "Each input points to an earlier output, back to where the coins began.",
+       "analogy": "Think of a trail of signed receipts, each naming the one before."
+      },
+      {
+       "pill": "Making Change",
+       "meaning": "Part of a spent coin returns to you as a new output.",
+       "analogy": "Think of paying with a 20 note for a 15 item and getting 5 back."
+      }
+     ]
+    },
+    {
+     "t": "striptable"
+    }
+   ],
+   "bg": "light",
+   "n": 10,
+   "notes": "Part 2 opens the payment itself. A transaction is a ledger entry: it spends earlier outputs and creates new ones, and the difference is the fee."
+  },
+  {
+   "kind": "content",
+   "title": "Inputs and outputs",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/mbc3_0202.png"
+    },
+    {
+     "t": "cards"
+    }
+   ],
+   "take": "An input spends an earlier output; an output creates a new one",
+   "n": 11,
+   "notes": "A transaction is double-entry bookkeeping: the inputs on the left, the outputs on the right, and the difference is the fee. An input spends an earlier output; an output locks an amount to a new owner.",
+   "bg": "light",
+   "sub": ""
+  },
+  {
+   "kind": "content",
+   "title": "Inputs equal outputs plus the fee",
+   "sub": "Alice's payment as double-entry bookkeeping",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex03"
+    },
+    {
+     "t": "chart",
+     "ex": "ex03"
+    }
+   ],
+   "take": "Whatever the outputs do not claim becomes the miner's fee",
+   "n": 12,
+   "notes": "A transaction balances like a ledger. The inputs add up to 100,000 satoshis and the outputs to 95,000. The difference of 5,000 is written nowhere; it is implied, and the miner collects it.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The txid is shown backwards",
+   "sub": "The same 32 bytes in two orders",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex04"
+    },
+    {
+     "t": "table",
+     "ex": "ex04"
+    }
+   ],
+   "take": "Explorers show the identifier in reverse byte order",
+   "n": 13,
+   "notes": "The identifier of Alice's earlier transaction is a 32-byte hash. Inside a transaction it is stored one way, and block explorers print it the other way round. Reversing the bytes converts between them.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Size in virtual bytes and the fee rate",
+   "sub": "How a miner compares transactions",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex05"
+    },
+    {
+     "t": "table",
+     "ex": "ex05"
+    }
+   ],
+   "take": "Miners rank transactions by fee per virtual byte",
+   "n": 14,
+   "notes": "Alice's transaction weighs 569 units, which is 143 virtual bytes. Her fee of 5,000 satoshis divided by 143 gives about 35 satoshis per virtual byte. Blocks have limited room, so miners pick the best rates first.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "A chain of transactions",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/mbc3_0203.png"
+    },
+    {
+     "t": "cards"
+    }
+   ],
+   "take": "Follow the arrows backwards to find where a coin came from",
+   "n": 15,
+   "notes": "Figure 2-3 shows three linked transactions. Each input names an earlier output, so the coins can be traced back; an output that nobody has spent yet is a coin that still exists.",
+   "bg": "light",
+   "sub": ""
+  },
+  {
+   "kind": "content",
+   "title": "Which outputs are still unspent",
+   "sub": "Walking the chain of figure 2-3",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex06"
+    },
+    {
+     "t": "table",
+     "ex": "ex06"
+    }
+   ],
+   "take": "Unspent outputs are the coins that exist right now",
+   "n": 16,
+   "notes": "Each transaction in the chain spends an earlier output and creates new ones. Collecting what was spent leaves the unspent outputs. Wallets and nodes keep exactly this set, because only these coins can be spent.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Coin Selection",
+   "sub": "Which coins to spend, and what shape the payment takes",
+   "items": [
+    {
+     "t": "groups",
+     "items": [
+      {
+       "pill": "Common Transaction Forms",
+       "meaning": "Payment, consolidation and batching are shapes of inputs and outputs.",
+       "analogy": "Think of a single cheque, a deposit of coins and a payroll run."
+      },
+      {
+       "pill": "consolidation transaction",
+       "meaning": "Many small inputs are merged into one output.",
+       "analogy": "Think of swapping a jar of small coins for one banknote."
+      },
+      {
+       "pill": "change address",
+       "meaning": "A fresh address of your own that receives the change.",
+       "analogy": "Think of a new envelope addressed to yourself."
+      }
+     ]
+    },
+    {
+     "t": "striptable"
+    }
+   ],
+   "bg": "light",
+   "n": 17,
+   "notes": "Part 3 asks how a wallet chooses what to spend. Coins are spent whole, so the choice decides the change, and the same rule produces payments, consolidations and batches."
+  },
+  {
+   "kind": "content",
+   "title": "Coin selection: pick, pay, change back",
+   "sub": "A wallet chooses coins to cover a payment",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex07"
+    },
+    {
+     "t": "chart",
+     "ex": "ex07"
+    }
+   ],
+   "take": "Coins are taken whole, so the surplus returns as change",
+   "n": 18,
+   "notes": "A wallet cannot cut a coin in two. It takes whole coins until the payment is covered, then sends the surplus back to itself as change. Real wallets use smarter rules, but this is the idea.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Three common shapes of a transaction",
+   "sub": "Counting inputs, outputs and the fee",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex08"
+    },
+    {
+     "t": "table",
+     "ex": "ex08"
+    }
+   ],
+   "take": "The same ledger rule fits every shape",
+   "n": 19,
+   "notes": "Three forms cover most transactions. A payment spends a coin and returns change. A consolidation merges many small coins into one, and batching pays many people at once. In every case inputs minus outputs is the fee.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Constructing a Transaction",
+   "sub": "The wallet assembles, prices and signs the payment",
+   "items": [
+    {
+     "t": "groups",
+     "items": [
+      {
+       "pill": "Getting the Right Inputs",
+       "meaning": "Find unspent outputs that together cover the payment and the fee.",
+       "analogy": "Think of counting coins onto the counter before paying."
+      },
+      {
+       "pill": "Creating the Outputs",
+       "meaning": "Write down who receives how much, and where the change goes.",
+       "analogy": "Think of filling in the payee and the amount on a cheque."
+      },
+      {
+       "pill": "transaction fee",
+       "meaning": "Inputs minus outputs: the difference that the miner keeps.",
+       "analogy": "Think of the postage stamp that pays the post office."
+      }
+     ]
+    },
+    {
+     "t": "striptable"
+    }
+   ],
+   "bg": "light",
+   "n": 20,
+   "notes": "Part 4 builds Alice's transaction step by step. The wallet finds inputs, writes the outputs, leaves a fee and signs, and the fee rate decides how much change comes back."
+  },
+  {
+   "kind": "content",
+   "title": "From coins to a signed transaction",
+   "items": [
+    {
+     "t": "flow",
+     "steps": [
+      "1 Inputs",
+      "2 Outputs",
+      "3 Fee",
+      "4 Sign",
+      "5 Send"
+     ]
+    },
+    {
+     "t": "text"
+    }
+   ],
+   "take": "The wallet only decides inputs, outputs and fee; the rules do the rest",
+   "n": 21,
+   "notes": "The wallet builds Alice's transaction in five steps. It finds the inputs, writes the outputs, leaves the fee, signs every input and broadcasts the result to a node, which passes it on.",
+   "bg": "light",
+   "sub": ""
+  },
+  {
+   "kind": "content",
+   "title": "A higher fee rate leaves less change",
+   "sub": "Pricing the payment before signing",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex09"
+    },
+    {
+     "t": "chart",
+     "ex": "ex09"
+    }
+   ],
+   "take": "The wallet decides the fee; the change is what remains",
+   "n": 22,
+   "notes": "When the wallet builds the outputs it chooses a fee rate. The fee is the rate times the size. The change output is what is left after paying Bob and the fee, so a higher rate means smaller change.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Adding the Transaction to the Blockchain",
+   "sub": "From a node's inbox to a block that others build on",
+   "items": [
+    {
+     "t": "groups",
+     "items": [
+      {
+       "pill": "Bitcoin Mining",
+       "meaning": "Miners search for a number that makes a block of transactions valid.",
+       "analogy": "Think of rolling dice until a very rare number turns up."
+      },
+      {
+       "pill": "confirmation",
+       "meaning": "Every block built on top makes the payment harder to reverse.",
+       "analogy": "Think of more witnesses signing a contract."
+      },
+      {
+       "pill": "genesis block",
+       "meaning": "The first block of the chain, fixed in the software of every node.",
+       "analogy": "Think of page one of a ledger, printed into the binding."
+      }
+     ]
+    },
+    {
+     "t": "striptable"
+    }
+   ],
+   "bg": "light",
+   "n": 23,
+   "notes": "Part 5 follows the signed transaction to a block. Miners search for a lucky number, the block is added, and every block on top makes the payment harder to reverse."
+  },
+  {
+   "kind": "content",
+   "title": "Height, depth and confirmations",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/mbc3_0207.png"
+    },
+    {
+     "t": "cards"
+    }
+   ],
+   "take": "More blocks on top means a payment that is harder to reverse",
+   "n": 24,
+   "notes": "Alice's transaction sits in block 277,316. A block's height counts from the genesis block, and its depth counts the blocks on top. Each block on top is one more confirmation, and a block explorer shows all of it.",
+   "bg": "light",
+   "sub": ""
+  },
+  {
+   "kind": "content",
+   "title": "One more zero, many more tries",
+   "sub": "Mining as a search for a lucky number",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex10"
+    },
+    {
+     "t": "chart",
+     "ex": "ex10"
+    }
+   ],
+   "take": "Mining is a search; more zeros means more work",
+   "n": 25,
+   "notes": "A miner changes a number, the nonce, and hashes again until the result starts with enough zeros. Nobody can shortcut the search, but anyone can check the answer with one hash. The network sets how many zeros are needed.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The first block header is 80 bytes",
+   "sub": "Hashing the genesis block's header",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex11"
+    },
+    {
+     "t": "table",
+     "ex": "ex11"
+    }
+   ],
+   "take": "A block's name is the hash of its 80-byte header",
+   "n": 26,
+   "notes": "The genesis block was mined on 3 January 2009. Its header packs a version, the previous block, a summary of the transactions, a time, a difficulty and a nonce. Hashing it twice gives the famous name that starts with ten zeros.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Nine pages, one table of probabilities",
+   "sub": "31 October 2008 · section 11 of the white paper",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/photo_satoshi_bust_budapest.jpg",
+     "cap": "Picture: Satoshi bust, Budapest - Fekist, CC BY-SA 4.0, Wikimedia Commons"
+    },
+    {
+     "t": "beats",
+     "items": [
+      "WHO Satoshi Nakamoto, the pseudonymous author, writing to a cryptography mailing list.",
+      "WHAT A nine-page paper whose section 11 tabulates an attacker's chance of catching up.",
+      "WHEN 2008-10-31 (31 October 2008)",
+      "WHERE The metzdowd.com cryptography mailing list; the PDF now sits on bitcoin.org.",
+      "WHY To show with numbers that waiting for confirmations makes a double spend unlikely.",
+      "HOW A random walk models the race of an honest chain against a secret one; the next slide reruns it."
+     ]
+    },
+    {
+     "t": "factrow",
+     "who": "Satoshi Nakamoto, the pseudonymous author, writing to the readers of the metzdowd.com cryptography mailing list",
+     "where": "the metzdowd.com cryptography mailing list and bitcoin.org",
+     "when": "2008-10-31",
+     "link": "https://bitcoin.org/bitcoin.pdf",
+     "linkText": "Bitcoin white paper (PDF)"
+    }
+   ],
+   "take": "A confirmation is a probability statement, and you can compute it",
+   "n": 27,
+   "notes": "The white paper reached its readers on 31 October 2008. Its section 11 does something rare for a systems paper: it computes the attacker's odds. The next slide reruns that computation.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Nakamoto's catch-up table, recomputed",
+   "sub": "Section 11 of the white paper, run again",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex12"
+    },
+    {
+     "t": "chart",
+     "ex": "ex12"
+    }
+   ],
+   "take": "Every confirmation makes a reversal much less likely",
+   "n": 28,
+   "notes": "Section 11 of the white paper computes how likely an attacker is to catch up. We reran the formula and obtained the paper's table to seven places. The chance drops fast with every block, which is why six confirmations became a habit.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Spending the Transaction",
+   "sub": "When Bob may spend, and what every node checks first",
+   "items": [
+    {
+     "t": "groups",
+     "items": [
+      {
+       "pill": "consensus rules",
+       "meaning": "Rules that every node checks the same way; a block that breaks one is refused.",
+       "analogy": "Think of the rules of chess that every player and referee enforce."
+      },
+      {
+       "pill": "block explorer",
+       "meaning": "A website where anyone can look up blocks, transactions and addresses.",
+       "analogy": "Think of a parcel tracker for money."
+      }
+     ]
+    },
+    {
+     "t": "striptable"
+    }
+   ],
+   "bg": "light",
+   "n": 29,
+   "notes": "Part 6 closes the loop. Bob can spend his new output, and every node checks the same rules, so that a block which breaks one is refused."
+  },
+  {
+   "kind": "content",
+   "title": "The reward halves every 210,000 blocks",
+   "sub": "One of the consensus rules, in one line",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex13"
+    },
+    {
+     "t": "chart",
+     "ex": "ex13"
+    }
+   ],
+   "take": "Halving is a rule every node enforces, not a promise",
+   "n": 30,
+   "notes": "The block reward is a consensus rule. Every node computes it the same way and refuses a block that claims more. Halving every 210,000 blocks, about four years, is what limits the total number of bitcoin.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The day someone printed 184 billion bitcoin",
+   "sub": "15 August 2010 · block 74,638",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch02/assets/photo_bitcoin_logo.png",
+     "cap": "Picture: Bitcoin logo - Grayliptrot, public domain, Wikimedia Commons - a stand-in, since no free picture of the event exists"
+    },
+    {
+     "t": "beats",
+     "items": [
+      "WHO An unknown attacker; Jeff Garzik, who spotted the block; Satoshi Nakamoto, who patched the software.",
+      "WHAT A block paid out about 184 billion bitcoin, thousands of times the 21 million limit.",
+      "WHEN 2010-08-15 (15 August 2010)",
+      "WHERE Block 74,638 of the Bitcoin chain, discussed live on the bitcointalk forum.",
+      "WHY Two outputs were so large that their sum overflowed and passed the checks; no rule limited the amounts.",
+      "HOW Garzik flagged the block within the hour; Satoshi shipped version 0.3.10 about five hours later and the honest chain overtook it."
+     ]
+    },
+    {
+     "t": "factrow",
+     "who": "Jeff Garzik, the developer who spotted the block, and Satoshi Nakamoto, who patched the software; the attacker is unknown",
+     "where": "block 74,638, discussed live on the bitcointalk forum",
+     "when": "2010-08-15",
+     "link": "https://en.bitcoin.it/wiki/Value_overflow_incident",
+     "linkText": "Value overflow incident (Bitcoin Wiki)"
+    }
+   ],
+   "take": "Validation by every node is the immune system - and it worked",
+   "n": 31,
+   "notes": "On 15 August 2010 block 74,638 created about 184 billion bitcoin out of an overflow. Every node checks every rule, and this one rule was missing. Within hours the software was fixed and the honest chain, without the forged coins, won.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Two outputs that wrapped around",
+   "sub": "Block 74,638 and the value overflow of 2010",
+   "items": [
+    {
+     "t": "codeblocks",
+     "ex": "ex14"
+    },
+    {
+     "t": "table",
+     "ex": "ex14"
+    }
+   ],
+   "take": "One overflow created 184 billion bitcoin; one new rule ended it",
+   "n": 32,
+   "notes": "In August 2010 a block paid out two huge outputs. Their sum overflowed a 64-bit integer, so the software thought the outputs were small. A new rule was shipped within hours, and the honest chain, without the forged coins, won.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Summary: the six answers",
+   "items": [
+    {
+     "t": "table"
+    }
+   ],
+   "take": "Inputs, outputs, fee, mining, confirmations, rules",
+   "n": 33,
+   "notes": "Each row answers one of the six opening questions in a line. If you can say each answer in your own words, using the everyday pictures of this chapter, you have the chapter.",
+   "bg": "light",
+   "sub": ""
+  },
+  {
+   "kind": "content",
+   "title": "Resources: read, try, watch, ask",
+   "items": [
+    {
+     "t": "links",
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "Mastering Bitcoin, chapter 2 (source text)",
+         "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/third_edition_print1/ch02_overview.adoc",
+         "The chapter this deck follows."
+        ],
+        [
+         "Developer guide: transactions",
+         "https://developer.bitcoin.org/devguide/transactions.html",
+         "Inputs, outputs and fees in detail."
+        ]
+       ]
+      },
+      {
+       "head": "Standards and papers",
+       "rows": [
+        [
+         "Bitcoin white paper",
+         "https://bitcoin.org/bitcoin.pdf",
+         "Nine pages; section 11 holds the catch-up table."
+        ],
+        [
+         "BIP 21: payment links",
+         "https://bips.dev/21/",
+         "The standard behind Bob's invoice link."
+        ],
+        [
+         "Bitcoin Core releases",
+         "https://bitcoincore.org/en/releases/",
+         "The software that checks every rule."
+        ]
+       ]
+      },
+      {
+       "head": "Try",
+       "rows": [
+        [
+         "mempool.space block explorer",
+         "https://mempool.space/",
+         "Look up any transaction, block or fee."
+        ],
+        [
+         "Anders Brownworth's blockchain demo",
+         "https://andersbrownworth.com/blockchain/hash",
+         "Hash, block and mine in the browser."
+        ]
+       ]
+      },
+      {
+       "head": "Watch",
+       "rows": [
+        [
+         "MIT 15.S12 Blockchain and Money",
+         "https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/",
+         "A full university course, free."
+        ]
+       ]
+      },
+      {
+       "head": "Community",
+       "rows": [
+        [
+         "Bitcoin Optech topics",
+         "https://bitcoinops.org/en/topics/",
+         "Short explainers on how the technology works."
+        ],
+        [
+         "Bitcoin Stack Exchange",
+         "https://bitcoin.stackexchange.com/",
+         "Ask a question, read the answers."
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "take": "Look up a real transaction in a block explorer today",
+   "n": 34,
+   "notes": "These links are all open and free. Start with the chapter source and the white paper, try the block explorer on a real payment, and use the MIT course for the wider story of blockchain and money.",
+   "bg": "light",
+   "sub": ""
+  },
+  {
+   "kind": "closing",
+   "title": "Questions?",
+   "items": [
+    {
+     "t": "bullets",
+     "items": [
+      "Next: chapter 3, Bitcoin Core, the reference implementation"
+     ]
+    }
+   ],
+   "bg": "dark",
+   "n": 35,
+   "notes": "That is the whole path of one payment. Chapter 3 opens the software that checks every rule, Bitcoin Core, and shows how to run it yourself. Bring your questions.",
+   "sub": ""
+  }
+ ]
+}
