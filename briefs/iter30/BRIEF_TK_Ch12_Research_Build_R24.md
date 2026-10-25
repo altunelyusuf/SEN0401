@@ -1,6 +1,6 @@
 # Brief for the executor session SEN0401-I30-research-ch12
 
-Generated from the register sen0401_slides_lineage_v0_338_0.ttl. Task TK_Ch12_Research_Build_R24 (state in the register: Proposed).
+Generated from the register sen0401_slides_lineage_v0_339_0.ttl. Task TK_Ch12_Research_Build_R24 (state in the register: Ready).
 Executor session name: **SEN0401-I30-research-ch12**. The register's note on 'work begun' for this task names this session.
 
 ## Why this work exists (the coordinator's order)
