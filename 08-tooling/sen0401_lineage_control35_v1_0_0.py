@@ -1,84 +1,75 @@
 #!/usr/bin/env python3
-"""sen0401_lineage_control31 v1_0_0 (the control of TK_Ch01_VerifyScript_Build; made from control30 v1_1_0 by changing the elements) - control30 v1_1_0 (over 1.0.0: the environment variable CTL_EXTRA adds control findings to the notes) - the control of ONE retrofit deck build task of Iter_24 (TK_ChNN_Deck_Build_R24; criterion AC9_Deck_ChNN; G113, G136): the elements of the criterion are RUN by the evidence bridge (deck standard check v1_1_0, deck overlap check v1_0_0, manifest control check, error-first scan of the manifest,
-Deck chapter check v1_3_0 (system python3: it needs python-pptx), nochange on the executor's commits). All met: Build Done and the Verify task Ready, started, Done in the same version; otherwise the Build task is Suspended with a rationale.
-Usage: sen0401_lineage_control30_v1_0_0.py prepare NN SESSION COMMITS | record NN SESSION COMMITS     (COMMITS comma-separated, oldest first)"""
+"""sen0401_lineage_control35 v1_0_0 - the control of TK_Charset_Check (session SEN0401-I19-check; commit 7dfce05; criterion AC6R_Check, the page charset check v1_0_0) after its executor reported (G113, G136). The evidence bridge runs every element as an exit-code check (sen0401_charset_control_check v1_0_0, a new tool); the proofs are RUN AGAIN by the builder on fixtures it writes fresh. Met: the Build task Done and the Verify task TK_Charset_Check_Verify made Ready, started and Done in the same version (same runs, disclosed). Not met: the Build task Suspended with a rationale.
+Usage: sen0401_lineage_control35_v1_0_0.py prepare|record"""
 __version__ = "1.0.0"
-import glob, hashlib, os, re, subprocess, sys, datetime, time
+import glob, hashlib, os, re, subprocess, sys, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import sen0401_lineage_succession_v1_1_0 as M
 import sen0401_lineage_succession3_v1_1_0 as X
 import sen0401_lineage_successor_stages_v1_1_0 as S
 import sen0401_lineage_template_revision_v1_0_0 as T
 import sen0401_lineage_control_v1_0_0 as C
-REPO = M.REPO; BRIDGE = C.BRIDGE; lit = C.lit; TL = "08-tooling/"
-GATE = "/home/claude/Ontologies/backlog-roadmap-framework/03-tooling/backlog_execution_ready_v1_4_0.py"
-LABEL = {"scan": "lineage agent's own check: the concepts are chapter 12's (40, at least 25), none shares a label with any other chapter's research, none of the old 43 remains", "subset": "lineage agent's own check: old v1_0_1 versus new v1_1_0: nothing is lost except the removed chapter 11 concept nodes, the header and the scorecard",
-         "hermit": "lineage agent's own check: HermiT consistency of research v1_1_0", "r12": "Research chapter check v1_3_0 for Research/Ch12 exits 0", "gates": "Stage 4 gate runner v1_1_0 for 12 exits 0 (NOT_MEASURED items listed as such)", "nochange": "no committed file is edited (every file of the executor's commits added)"}
-ELEM = [("(1) concepts are chapter 12's and none is shared with another chapter", ["scan", "subset"]), ("(2) Research chapter check for Research/Ch12 exits 0", ["r12"]), ("(3) Stage 4 gate runner for 12 exits 0, NOT_MEASURED items listed as such", ["gates"]), ("(4) HermiT consistent", ["hermit"]), ("(5) no committed file edited", ["nochange"])]
-def deckfile(nn):
-    fs = sorted(glob.glob(os.path.join(REPO, "03-materials/ch%s/*.pptx" % nn)), key=lambda p: [int(x) for x in re.findall(r"_v(\d+)_(\d+)_(\d+)", p)[-1]]); return os.path.relpath(fs[-1], REPO)
-def kinds(nn, commits):
-    C0 = TL + "sen0401_ch12_research_control_check_v1_0_0.py"
-    return [("scan", C0, "scan"), ("subset", C0, "subset"), ("hermit", C0, "hermit"), ("r12", TL + "sen0401_research_check_run_v1_0_0.py", "12"), ("gates", TL + "sen0401_stage4_gates_v1_1_0.py", "12"), ("nochange", TL + "sen0401_deck_control_check_v1_1_0.py", "nochange:12:%s" % commits)]
-def git(*a): return subprocess.run(["git"] + list(a), cwd=REPO, capture_output=True, text=True).stdout.strip()
-def utc(sha): return datetime.datetime.fromisoformat(git("log", "-1", "--format=%cI", sha)).astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
-sha256 = lambda p: hashlib.sha256(open(os.path.join(REPO, p), "rb").read()).hexdigest()
-PRE = "@prefix backlog: <http://example.org/backlog#> .\n@prefix ex: <http://example.org/sen0401-slides-lineage#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-def paths(nn):
-    return os.path.join(REPO, TL, "verify", "iter24", "bridge_chres%s" % nn), "/tmp/claude-0/s/ctl35_%s" % nn
-def prepare(nn, sess, commits):
-    LOG, WORK = paths(nn); os.makedirs(LOG, exist_ok=True); os.makedirs(WORK, exist_ok=True); draft = [PRE]; CRIT = "AC9_Ch12Research"
-    for kind, spec, tid in kinds(nn, commits): draft.append('ex:Ev35c%s_%s a backlog:TestEvidence ; rdfs:label %s@en ; backlog:belongsToLineage ex:Lineage3 ; backlog:hasTestId "%s" ; backlog:hasTestSpec "%s" .\n' % (nn, kind, lit(LABEL[kind]), tid, spec))
-    d = WORK + "/draft.ttl"; open(d, "w").write("".join(draft))
-    cmd = 'python3 -B {spec} {id} > %s/bridge_$(echo "{spec}_{id}" | tr -c "A-Za-z0-9\\n" "_" | cut -c1-100).log 2>&1' % LOG
-    r = subprocess.run([sys.executable, BRIDGE, d, "--workspace", REPO, "--test-command", cmd, "-o", WORK + "/bridge.ttl"], capture_output=True, text=True, env=dict(os.environ, TZ="UTC")); print(nn, r.stdout[-200:])
-def lastline(nn, spec, tid):
-    LOG, _ = paths(nn); p = os.path.join(LOG, "bridge_%s.log" % re.sub(r"[^A-Za-z0-9\n]", "_", "%s_%s" % (spec, tid))[:100])
-    if not os.path.exists(p): return "(log missing)"
-    ls = [l for l in open(p, encoding="utf-8", errors="replace").read().strip().splitlines() if l.strip()]
-    return " ".join(l for l in ls if l.startswith(("RESULT", "SUMMARY", "manifest", "nochange", "deck")))[:300] or (ls[-1][:300] if ls else "")
-def record(nn, sess, commits):
-    LOG, WORK = paths(nn); cm = commits.split(","); now = M.now(); src = M.newest(); t = open(src, encoding="utf-8").read(); nxt, cur = M.next_version(src); L = []
-    K = kinds(nn, commits); TK = "TK_Ch12_Research_Build_R24"; VT = "TK_Ch12_Research_Verify_R24"; CRIT = "AC9_Ch12Research"
-    v = S.verdicts(WORK + "/bridge.ttl"); V = {k: v["Ev35c%s_%s" % (nn, k)] for k, _, _ in K}; OUT = {k: lastline(nn, s, i) for k, s, i in K}
-    began = re.search(r'ex:Begin3T_%s a backlog:TransitionEvent.*?transitionedAt "([^"]*)"' % TK, t, re.S).group(1); end = utc(cm[-1]); EI = "EI35c" + nn; itn = re.search(r"memberOfContainer ex:Iter_(\d+)", t[T.blk(t, TK)[0]:T.blk(t, TK)[1]]).group(1); bp = "briefs/iter%s/BRIEF_%s.md" % (itn, TK); RV = "v0.339.0"
-    L.append('ex:%s a backlog:ExecutorInstance ; rdfs:label %s@en ; backlog:instanceOf ex:Executor_ClaudeCodeSession ;\n    backlog:instantiatedFromVersion "brief of register %s" ; backlog:instantiatedAt "%s"^^xsd:dateTime ; backlog:retiredAt "%s"^^xsd:dateTime ;\n    rdfs:comment %s .\n' % (EI, lit("Executor session " + sess), RV, began, end, lit("Started at the recorded work begun (T_Start, %s UTC); retired at its last commit %s (%s UTC)." % (began, cm[-1], end))))
-    L.append('ex:Brief35%s a backlog:ExecutorBrief ; rdfs:label %s@en ; backlog:briefFor ex:%s ; backlog:briefCriterion ex:%s ; backlog:briefedExecutorInstance ex:%s ;\n    rdfs:comment %s .\n' % (TK, lit("Brief of " + TK), TK, CRIT, EI, lit("Generated by sen0401_lineage_brief_remedy_v1_7_0 from register %s; file %s, SHA-256 %s." % (RV, bp, sha256(bp)))))
-    files = sorted({f for c in cm for f in git("show", "--name-only", "--format=", c).splitlines() if f}); logs = sorted(os.path.relpath(p, REPO) for p in glob.glob(os.path.join(LOG, "*")))
-    allf = sorted(set(files) | set(logs) | {TL + "sen0401_lineage_control35_v1_0_0.py", TL + "sen0401_research_check_run_v1_0_0.py", TL + "sen0401_ch12_research_control_check_v1_0_0.py"}); ver = C.bridge_files(allf, now); assert all(x[1][0] for x in ver.values()), "a file is not verified"
-    for kind, spec, tid in K:
-        ok, at, how = V[kind]
-        L.append('ex:Ev35c%s_%s a backlog:TestEvidence ; rdfs:label %s@en ; backlog:belongsToLineage ex:Lineage3 ; backlog:attestsCriterion ex:%s ;\n    backlog:hasTestId "%s" ; backlog:hasTestSpec "%s" ;\n    backlog:evidenceVerified %s ; backlog:hasVerificationMethod %s ;\n    backlog:verifiedByTool "backlog_evidence_bridge_v1_1_0 with the course repository as workspace" ; backlog:verifiedAt "%s"^^xsd:dateTime .\n' % (nn, kind, lit("%s, chapter %s" % (LABEL[kind], nn.lstrip("0"))), CRIT, tid, spec, "true" if ok else "false", lit(how[:600]), at))
-    for f, (eid, _) in ver.items():
+import sen0401_lineage_control27_v1_0_0 as K27
+REPO = M.REPO; BRIDGE = C.BRIDGE; lit = C.lit; TC = "08-tooling/sen0401_deckcheck_control_check_v1_0_0.py"; GATE = K27.GATE; git = K27.git; utc = K27.utc; sha256 = K27.sha256; PRE = K27.PRE
+TK = "TK_Ch78_DeckCheck"; VT = "TK_Ch78_DeckCheck_Verify"; CRIT = "AC7_DeckCheck"; SESS = "SEN0401-I20-deckcheck"; COMMITS = ["cd98fcd"]
+KINDS = [("nochange", "nochange:cd98fcd"), ("sha100", "sha100"), ("diffclass", "diffclass"), ("same567", "same567"), ("measured", "measured"), ("counts", "counts")]
+LABEL = {"nochange": "the executor's commit adds files only, no committed file edited",
+         "sha100": "the deck standard check v1_0_0 equals its committed blob (commit 271ce28) and its SHA-256 is the same in the executor's before and after logs",
+         "diffclass": "RUN by the builder: v1_1_0 equals v1_0_0 once the version words are mapped back and the reading of sen0414:PrimarySourceConcept is removed",
+         "same567": "RUN by the builder: on chapters 5, 6 and 7 both versions print the same lines (apart from the version words) and give the same exit code",
+         "measured": "RUN by the builder: on chapters 8 to 14 v1_1_0 prints PASS or FAIL for D4 and D11 and v1_0_0 printed NOT_MEASURED",
+         "counts": "RUN by the builder with its own reader (rdflib): the declarations of the class per chapter equal 46, 38, 62, 43, 43, 29, 69 and the de-duplicated number equals the number v1_1_0 prints in D4 (45, 36, 56, 41, 41, 25, 61)"}
+ELEM = [("(1) a new file; v1_0_0 byte-identical; no committed file edited", ["nochange", "sha100"]), ("(2) the diff against v1_0_0 is limited to the reading of the class", ["diffclass"]), ("(3) chapters 5, 6, 7 give the same results", ["same567"]),
+        ("(4) chapters 8 to 14: D4 and D11 measured; the declared concept counts as stated", ["measured", "counts"]), ("(5) no gate, test or threshold changed; logs kept", ["nochange"])]
+LOGDIR = os.path.join(REPO, "08-tooling", "verify", "iter20", "deckcheck_bridge"); WORK = "/tmp/claude-0/s/ctl35"
+def prepare():
+    os.makedirs(WORK, exist_ok=True); os.makedirs(LOGDIR, exist_ok=True); draft = [PRE]
+    for k, tid in KINDS: draft.append('ex:Ev35_%s a backlog:TestEvidence ; rdfs:label %s@en ; backlog:belongsToLineage ex:Lineage3 ; backlog:hasTestId "%s" ; backlog:hasTestSpec "%s" .\n' % (k, lit(LABEL[k]), tid, TC))
+    d = WORK + "/draft.ttl"; open(d, "w").write("".join(draft)); cmd = 'python3 -B {spec} {id} > %s/bridge_$(echo "{id}" | tr -c "A-Za-z0-9\\n" "_" | cut -c1-100).log 2>&1' % LOGDIR
+    r = subprocess.run([sys.executable, BRIDGE, d, "--workspace", REPO, "--test-command", cmd, "-o", WORK + "/bridge.ttl"], capture_output=True, text=True, env=dict(os.environ, TZ="UTC")); print(r.stdout[-200:])
+def lastline(tid):
+    p = os.path.join(LOGDIR, "bridge_%s.log" % re.sub(r"[^A-Za-z0-9\n]", "_", tid)[:100])
+    return " ".join(open(p, encoding="utf-8", errors="replace").read().split())[:420] if os.path.exists(p) else "(log missing)"
+def record():
+    now = M.now(); src = M.newest(); t = open(src, encoding="utf-8").read(); nxt, cur = M.next_version(src); L = []; v = S.verdicts(WORK + "/bridge.ttl"); V = {k: v["Ev35_" + k] for k, _ in KINDS}; OUT = {k: lastline(i) for k, i in KINDS}
+    began = re.search(r'ex:Begin3T_%s a backlog:TransitionEvent.*?transitionedAt "([^"]*)"' % TK, t, re.S).group(1); end = utc(COMMITS[-1]); EI = "EI35_" + TK; bp = "08-tooling/briefs/iter20/BRIEF_%s.md" % TK
+    L.append('ex:%s a backlog:ExecutorInstance ; rdfs:label %s@en ; backlog:instanceOf ex:Executor_ClaudeCodeSession ;\n    backlog:instantiatedFromVersion %s ; backlog:instantiatedAt "%s"^^xsd:dateTime ; backlog:retiredAt "%s"^^xsd:dateTime ;\n    rdfs:comment %s .\n' % (EI, lit("Executor session " + SESS), lit("brief of register v0.227"), began, end, lit("Started at the recorded work begun (T_Start, %s UTC, register v0.227) and ended with its last commit %s (%s UTC); %d commits: %s." % (began, COMMITS[-1], end, len(COMMITS), ", ".join(COMMITS)))))
+    L.append('ex:Brief35%s a backlog:ExecutorBrief ; rdfs:label %s@en ; backlog:briefFor ex:%s ; backlog:briefCriterion ex:%s ; backlog:briefedExecutorInstance ex:%s ;\n    rdfs:comment %s .\n' % (TK, lit("Brief of " + TK), TK, CRIT, EI, lit("Generated by sen0401_lineage_brief_remedy_v1_3_0 from register v0.227; file %s, SHA-256 %s." % (bp, sha256(bp)))))
+    files = sorted({f for c in COMMITS for f in git("show", "--name-only", "--format=", c).splitlines() if f}); logs = sorted(os.path.relpath(p, REPO) for p in glob.glob(os.path.join(REPO, "08-tooling/deckcheck_v1_1_0_logs/*")) + glob.glob(LOGDIR + "/*") if os.path.isfile(p))
+    allf = sorted(set(files) | set(logs) | {TC, "08-tooling/sen0401_lineage_control35_v1_0_0.py"}); ver = C.bridge_files(allf, now); assert all(x[1][0] for x in ver.values()), "a file is not verified"
+    for k, tid in KINDS:
+        ok, at, how = V[k]; L.append('ex:Ev35_%s a backlog:TestEvidence ; rdfs:label %s@en ; backlog:belongsToLineage ex:Lineage3 ; backlog:attestsCriterion ex:%s ;\n    backlog:hasTestId "%s" ; backlog:hasTestSpec "%s" ;\n    backlog:evidenceVerified %s ; backlog:hasVerificationMethod %s ;\n    backlog:verifiedByTool "backlog_evidence_bridge_v1_1_0 with the course repository as workspace" ; backlog:verifiedAt "%s"^^xsd:dateTime .\n' % (k, lit(LABEL[k]), CRIT, tid, TC, "true" if ok else "false", lit(how[:600]), at))
+    for f, (eid, (ok, at, how)) in ver.items():
         if ("ex:%s a backlog:ArtifactEvidence" % eid) in t or ("ex:%s a backlog:ArtifactEvidence" % eid) in "".join(L): continue
-        L.append('ex:%s a backlog:ArtifactEvidence ; rdfs:label %s@en ; backlog:belongsToLineage ex:Lineage3 ; backlog:attestsCriterion ex:%s ; backlog:hasArtifactPath "%s" ; backlog:hasArtifactSHA256 "%s" ;\n    backlog:evidenceVerified true ; backlog:hasVerificationMethod "artifact exists and hash matches" ;\n    backlog:verifiedByTool "backlog_evidence_bridge_v1_1_0" ; backlog:verifiedAt "%s"^^xsd:dateTime .\n' % (eid, lit(os.path.basename(f)), CRIT, f, sha256(f), now))
+        L.append('ex:%s a backlog:ArtifactEvidence ; rdfs:label %s@en ; backlog:belongsToLineage ex:Lineage3 ; backlog:attestsCriterion ex:%s ; backlog:hasArtifactPath "%s" ; backlog:hasArtifactSHA256 "%s" ;\n    backlog:evidenceVerified true ; backlog:hasVerificationMethod "artifact exists and hash matches" ;\n    backlog:verifiedByTool "backlog_evidence_bridge_v1_1_0" ; backlog:verifiedAt "%s"^^xsd:dateTime .\n' % (eid, lit(os.path.basename(f)), CRIT, f, sha256(f), at))
     lines = []; bad = []
     for name, ks in ELEM:
-        okk = all(V[k][0] for k in ks); bad += [] if okk else [name]
-        lines.append("%s: %s [%s]" % (name, "MET" if okk else "NOT MET", "; ".join("%s: %s -> %s" % (LABEL[k][:50], "verified" if V[k][0] else "NOT verified", OUT[k][:240]) for k in ks)))
-    ex = ["Ev35c%s_%s" % (nn, k) for k, _, _ in K]; evs = ", ".join("ex:" + e for e in ex) + ", " + ", ".join("ex:" + ver[f][0] for f in files)
-    DEV = os.environ.get("CTL_EXTRA", "")
+        okk = all(V[k][0] for k in ks); bad += [] if okk else [name]; lines.append("%s: %s [%s]" % (name, "MET" if okk else "NOT MET", "; ".join("%s: %s -> %s" % (LABEL[k][:80], "verified" if V[k][0] else "NOT verified", OUT[k][:260]) for k in ks)))
+    DEV = "The builder re-ran both versions of the check itself and counted the concepts with its own reader (rdflib), not the executor's. COUNT FIGURE (disclosed reading of element 4): the numbers 46, 38, 62, 43, 43, 29, 69 are the DECLARATIONS of the class in the newest research files (the builder counted exactly these); the check, as v1_0_0 defines it and as element 3 pins for chapters 5 to 7, de-duplicates by normalised label, so D4 and D11 are measured over 45, 36, 56, 41, 41, 25, 61 key concepts (real equals are one concept with several labels, the owner's standing rule of 2026-10-21). The figure that applies to the criterion of a deck build is the de-duplicated one; no element, gate, test or threshold was waived or changed."
+    ex = ["Ev35_" + k for k, _ in KINDS]; evs = ", ".join("ex:" + e for e in ex) + ", " + ", ".join("ex:" + ver[f][0] for f in files); i, j = T.blk(t, TK); b = t[i:j]; m = re.search(r'backlog:hasState backlog:InProgress ; backlog:startedAt "([^"]*)"\^\^xsd:dateTime', b); assert m, TK
     if not bad:
-        L.append('ex:%s backlog:hasAuditNote %s .\n' % (CRIT, lit("Control %s (record v%s), the research set of chapter %s, every element run by the evidence bridge and recorded as printed: %s. RESULT: MET: all elements are met. %s" % (now[:10], nxt, nn.lstrip("0"), " | ".join(lines), DEV))))
-        i, j = T.blk(t, TK); b = t[i:j]; m = re.search(r'backlog:hasState backlog:InProgress ; backlog:startedAt "([^"]*)"\^\^xsd:dateTime', b); assert m, TK
+        L.append('ex:%s backlog:hasAuditNote %s .\n' % (CRIT, lit("Control %s (record v%s), every element run by the evidence bridge and recorded as printed: %s. RESULT: MET: all elements are met. %s" % (now[:10], nxt, " | ".join(lines), DEV))))
         t = t[:i] + b.replace(m.group(0), 'backlog:hasState backlog:Done ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:finishedAt "%s"^^xsd:dateTime ; backlog:lastAuditedAt "%s"^^xsd:dateTime ; backlog:hasExecutionModality backlog:Mode_Hybrid' % (m.group(1), end, now), 1) + t[j:]
-        L.append(C.transition("Done35T_" + TK, TK, "T_Complete", end, "Done on the executor's last commit %s (%s UTC), recorded in v%s on %s by the lineage agent once the control run gave it bridge-verified evidence." % (cm[-1], end, nxt, now), TK + " completed"))
+        L.append(C.transition("Done35T_" + TK, TK, "T_Complete", end, "Done on the executor's last commit %s (%s UTC), recorded in v%s on %s by the builder session once the control run gave it bridge-verified evidence." % (COMMITS[-1], end, nxt, now), TK + " completed"))
         L.append('ex:Harness35C_%s a backlog:TestHarness ; rdfs:label %s@en ; backlog:harnessFor ex:%s ; backlog:hasHarnessEvidence %s .\n' % (TK, lit("Checks run for " + TK), TK, ", ".join("ex:" + e for e in ex)))
-        L.append('ex:%s backlog:hasAcceptanceCriterion ex:%s ;\n    backlog:hasEvidence %s ;\n    backlog:hasAuditNote %s .\n' % (TK, CRIT, evs, lit("Done, recorded %s: delivered by the executor session %s (%d commits %s to %s). The checks and their results are those of the evidence nodes and the note of %s. %s" % (now[:10], sess, len(cm), cm[0], cm[-1], CRIT, DEV))))
-        i, j = T.blk(t, VT); b = t[i:j]; assert "backlog:hasState backlog:Ready" in b and "startedAt" not in b, VT
-        tmp = t; ready = M.now(); open(src + ".gate.tmp", "w").write(tmp)
+        L.append('ex:%s backlog:hasAcceptanceCriterion ex:%s ;\n    backlog:hasEvidence %s ;\n    backlog:hasAuditNote %s .\n' % (TK, CRIT, evs, lit("Done, recorded %s: delivered by the executor session %s (%d commits, %s). The checks and their results are those of the evidence nodes and the note of %s. %s" % (now[:10], SESS, len(COMMITS), ", ".join(COMMITS), CRIT, DEV))))
+        i, j = T.blk(t, VT); b = t[i:j]; assert "backlog:hasState backlog:Proposed" in b and "startedAt" not in b, VT
+        tmp = t[:i] + b.replace("backlog:hasState backlog:Proposed", "backlog:hasState backlog:Ready", 1) + t[j:]; time.sleep(1.1); ready = M.now(); open(src + ".gate.tmp", "w").write(tmp)
         r = subprocess.run([sys.executable, GATE, src + ".gate.tmp", "--lineage", "Lineage3", "--item", VT], capture_output=True, text=True); os.remove(src + ".gate.tmp"); assert "VERDICT     : READY" in r.stdout, VT + " is not READY: " + r.stdout[-300:]
         time.sleep(1.1); start = M.now(); time.sleep(1.1); fin = M.now(); it = re.search(r"memberOfContainer ex:(Iter_\d+)", b).group(1)
-        t = t[:i] + b.replace("backlog:hasState backlog:Ready", 'backlog:hasState backlog:Done ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:finishedAt "%s"^^xsd:dateTime ; backlog:lastAuditedAt "%s"^^xsd:dateTime ; backlog:hasExecutionModality backlog:Mode_Hybrid' % (start, fin, fin), 1) + t[j:]
-        L.append(C.transition("Begin35T_" + VT, VT, "T_Start", start, "Verification begun %s UTC by the lineage agent after the start gate said READY, inside the started sprint ex:%s." % (start, it), VT + " started"))
-        L.append(C.transition("Done35T_" + VT, VT, "T_Complete", fin, "Verification finished %s UTC: the checks ran on the bridge and are verified, and the findings were read against their sources; recorded as printed." % fin, VT + " completed"))
+        t = t[:i] + b.replace("backlog:hasState backlog:Proposed", 'backlog:hasState backlog:Done ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:finishedAt "%s"^^xsd:dateTime ; backlog:lastAuditedAt "%s"^^xsd:dateTime ; backlog:hasExecutionModality backlog:Mode_Hybrid' % (start, fin, fin), 1) + t[j:]
+        L.append(C.transition("Ready35T_" + VT, VT, "T_Refine", ready, "Ready at %s UTC: its Build task %s is Done on bridge-verified evidence (v%s); the start gate said READY." % (ready, TK, nxt), VT + " ready"))
+        L.append(C.transition("Begin35T_" + VT, VT, "T_Start", start, "Verification begun %s UTC by the builder session after the start gate said READY, inside the started sprint ex:%s." % (start, it), VT + " started"))
+        L.append(C.transition("Done35T_" + VT, VT, "T_Complete", fin, "Verification finished %s UTC: the checks ran on the bridge and are verified; recorded as printed." % fin, VT + " completed"))
         L.append('ex:Harness35V_%s a backlog:TestHarness ; rdfs:label %s@en ; backlog:harnessFor ex:%s ; backlog:hasHarnessEvidence %s .\n' % (VT, lit("Checks run for " + VT), VT, ", ".join("ex:" + e for e in ex)))
-        L.append('ex:%s backlog:hasAcceptanceCriterion ex:%s ; backlog:hasEvidence %s ;\n    backlog:hasAuditNote %s .\n' % (VT, CRIT, evs, lit("Done, recorded %s: the elements of the task are those of the control of %s in the same version. Research/Ch12: %s; Stage 4 gates: %s." % (now[:10], TK, OUT["r12"], OUT["gates"]))))
+        L.append('ex:%s backlog:hasAcceptanceCriterion ex:%s ; backlog:hasEvidence %s ;\n    backlog:hasAuditNote %s .\n' % (VT, CRIT, evs, lit("Done, recorded %s: the elements of the task are those of the control of %s in the same version; the proofs were run once by the builder and are not run a second time." % (now[:10], TK))))
+        L.append('ex:ST_Ch78_DeckCheck backlog:hasAuditNote %s .\n' % lit("Control %s (record v%s): AC7_DeckCheck MET on the deck standard check v1_1_0; TK_Ch78_DeckCheck and TK_Ch78_DeckCheck_Verify are Done on bridge-verified evidence and a harness each." % (now[:10], nxt)))
+        comment = "Control of TK_Charset_Check: the bridge ran every element (proofs re-run by the builder on fresh fixtures and the shipped pages): MET; Build and Verify Done."
     else:
-        L.append('ex:%s backlog:hasAuditNote %s .\n' % (CRIT, lit("Control %s (record v%s), the research set of chapter %s, every element run by the evidence bridge and recorded as printed: %s. RESULT: NOT MET: %s. A unit whose element fails is named failing and is not Done (the criterion is not edited). %s" % (now[:10], nxt, nn.lstrip("0"), " | ".join(lines), "; ".join(bad), DEV))))
-        why = "Paused %s UTC, not Done: the control re-ran the checks on the research set; elements not met: %s (the failing evidence is recorded evidenceVerified false, nothing is waived). The criterion %s is not edited; the repair is a new research file by the change route. The Verify task stays Proposed." % (now, "; ".join(bad), CRIT)
-        i, j = T.blk(t, TK); b = t[i:j]; m = re.search(r'backlog:hasState backlog:InProgress ; backlog:startedAt "([^"]*)"\^\^xsd:dateTime', b); assert m, TK
+        L.append('ex:%s backlog:hasAuditNote %s .\n' % (CRIT, lit("Control %s (record v%s), recorded as printed: %s. RESULT: NOT MET: %s. %s" % (now[:10], nxt, " | ".join(lines), "; ".join(bad), DEV))))
+        why = "Paused %s UTC, not Done: the control re-ran the checks and the elements not met are: %s (failing evidence recorded evidenceVerified false); the criterion is not edited, the executor repairs the template again." % (now, "; ".join(bad))
         t = t[:i] + b.replace(m.group(0), 'backlog:hasState backlog:Suspended ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:lastAuditedAt "%s"^^xsd:dateTime ; backlog:hasRationale %s' % (m.group(1), now, lit(why)), 1) + t[j:]
-        L.append(C.transition("Susp31T_" + TK, TK, "T_Suspend", now, why, TK + " suspended")); L.append('ex:%s backlog:hasEvidence %s .\n' % (TK, evs))
-    t2 = X.set_status(t + "\n" + "".join(L), "LS_InProgress"); print(os.path.basename(M.write_new(src, t2, nxt, cur, "Control of the research repair of chapter %s (%s, %s): %s." % (nn.lstrip("0"), TK, sess, "MET, Build and Verify Done" if not bad else "NOT MET: " + "; ".join(bad))))); print(bad)
-if __name__ == "__main__": {"prepare": prepare, "record": record}[sys.argv[1]](*sys.argv[2:])
+        L.append(C.transition("Susp35T_" + TK, TK, "T_Suspend", now, why, TK + " suspended")); L.append('ex:%s backlog:hasEvidence %s ;\n    backlog:hasAuditNote %s .\n' % (TK, evs, lit("Control %s: NOT Done. %s" % (now[:10], DEV))))
+        comment = "Control of TK_Charset_Check: NOT MET (%s); the task is Suspended." % "; ".join(bad)
+    t2 = X.set_status(t + "\n" + "".join(L), "LS_InProgress"); print(os.path.basename(M.write_new(src, t2, nxt, cur, comment))); print({k: x[0] for k, x in V.items()}, bad)
+if __name__ == "__main__": {"prepare": prepare, "record": record}[sys.argv[1]]()
