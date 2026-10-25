@@ -1,0 +1,13 @@
+-__version__ = "1.1.0"
++__version__ = "1.2.0"
++# 1.2.0 (over 1.1.0, two changes only): (1) the number of slides is read from the deck (the finished file) unless --slides N is given, so a deck of any length is checked against the rest of the rule;
++#   (2) the last part of the agenda (summary, resources, closing) may start at the summary slide that precedes the resources slide, not only at a section slide. Every other rule and message is unchanged.
+-    n = a[0]; want = int(a[a.index("--slides") + 1]) if "--slides" in a else 26
++    n = a[0]; want = int(a[a.index("--slides") + 1]) if "--slides" in a else None
++    if want is None: want = len(T)
++        rs = [i + 1 for i, s in enumerate(S) if any(it.get("t") == "links" for it in s["items"])]
++        closing_start = [rs[0] - 1] if len(rs) == 1 and rs[0] >= 2 and re.search(r"summary|in \w+ lines|chapter in", S[rs[0] - 2]["title"], re.I) else []
+-            if r[0] not in sections: bad.append("agenda range starting at slide %d does not start at a section slide (sections: %s)" % (r[0], sections))
++            if r[0] not in sections and not (r[0] in closing_start and r is rg[-1]): bad.append("agenda range starting at slide %d does not start at a section slide (sections: %s)" % (r[0], sections))
+changed lines: 11
+RESULT PASS
