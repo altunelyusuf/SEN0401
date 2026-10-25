@@ -1,0 +1,700 @@
+{
+ "manifest": "chapter_code_ch09_v1_0_0",
+ "chapter": 9,
+ "deck": "SEN0401_Ch09_TransactionFees_3e_v2_0_0.pptx",
+ "deck_version": "2.0.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the library defined in the page",
+ "library": {
+  "module": "sen0401_ch09_lib",
+  "file": "03-materials/ch09/assets/sen0401_ch09_lib-1.0.2-py3-none-any.whl",
+  "sha256": "dd31ef4d639d622d862cc8ca7ea2a50d3dffdf405e72bd9765037d63f53390fe",
+  "modules": [
+   "sen0401_ch09_lib_v1_0_1"
+  ],
+  "import": "import sen0401_ch09_lib_v1_0_1 as L"
+ },
+ "setup": {
+  "code": "# setup: the chapter library of the page (L = the chapter 9 library, with the recorded runs of Bitcoin Core 31.1 and the census of two blocks, R, R2 and C); the page boots these names\nimport sen0401_ch09_lib_v1_0_1 as L\nR, R2, C = L.run(), L.run2(), L.census()\nB = C['blocks']",
+  "data": {}
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "A fee is a difference, not a field",
+   "slide": 7,
+   "branch": "Who pays the fee",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "a = R['fee_arith']\nt = L.parse_tx(a['tx']['hex'])\nhas_fee = 'fee' in t\nn_in, n_out = len(t['vin']), len(t['vout'])\nouts = sum(o['value'] for o in t['vout'])\nins = round(a['inputs_btc'] * 1e8)\nfee = ins - outs\n(has_fee, fee)",
+   "show": [
+    {
+     "expression": "(has_fee, fee)",
+     "expected": "(False, 1900000000)"
+    },
+    {
+     "expression": "(n_in, n_out)",
+     "expected": "(1, 1)"
+    },
+    {
+     "expression": "ins",
+     "expected": "2000000000"
+    },
+    {
+     "expression": "outs",
+     "expected": "100000000"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "A forgotten change output pays the miner",
+   "slide": 9,
+   "branch": "Who pays the fee",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "a = R['fee_arith']\nwhy = a['testmempoolaccept']['reject-reason']\nerr = a['sendrawtransaction_default']['error']\nguard = 'maxfeerate' in err\nbs = a['blockstats']\npay = bs['subsidy'] + bs['totalfee']\npaid = a['coinbase_out_sat'] == pay\n(why, guard, paid)",
+   "show": [
+    {
+     "expression": "(why, guard, paid)",
+     "expected": "('max-fee-exceeded', True, True)"
+    },
+    {
+     "expression": "bs['subsidy']",
+     "expected": "2500000000"
+    },
+    {
+     "expression": "bs['totalfee']",
+     "expected": "1900000000"
+    },
+    {
+     "expression": "a['coinbase_out_sat']",
+     "expected": "4400000000"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "A signed payment cannot be edited",
+   "slide": 11,
+   "branch": "Who pays the fee",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "w = R2['tamper']\no, t = w['original'], w['tampered']\nok = [o['allowed'], t['allowed']]\nwhy = t['reject-reason'].split(' (')[0]\nd = w['output0_original_sat']\ncut = d - w['output0_tampered_sat']\n(ok, cut)",
+   "show": [
+    {
+     "expression": "(ok, cut)",
+     "expected": "([True, False], 5000)"
+    },
+    {
+     "expression": "why",
+     "expected": "'mempool-script-verify-flag-failed'"
+    },
+    {
+     "expression": "d",
+     "expected": "50000000"
+    },
+    {
+     "expression": "w['output0_tampered_sat']",
+     "expected": "49995000"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "Size, weight and virtual size",
+   "slide": 14,
+   "branch": "Fees and fee rates",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "x = R['rbf']['t1']\nt = L.parse_tx(x['hex'])\nsizes = [t['base_size'], t['size']]\nwv = [t['weight'], t['vsize']]\nratio = round(x['vsize'] / x['weight'], 4)\nsizes + wv",
+   "show": [
+    {
+     "expression": "sizes + wv",
+     "expected": "[113, 222, 561, 141]"
+    },
+    {
+     "expression": "ratio",
+     "expected": "0.2513"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "A fee rate and its units",
+   "slide": 15,
+   "branch": "Fees and fee rates",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "x = R['rbf']['t1']\nrate = x['fee_sat'] / x['vsize']\na = float(L.btc_kvb_to_sat_vb('0.00006570'))\nb = float(L.btc_kvb_to_sat_vb('0.00001225'))\np = R['units']['fee_rate_sat_vb_10']['ok']['fee']\nq = R['units']['feeRate_btc_kvb_0.0001']['ok']['fee']\nsame = p == q\n(rate, a, b, same)",
+   "show": [
+    {
+     "expression": "(rate, a, b, same)",
+     "expected": "(2.0, 6.57, 1.225, True)"
+    },
+    {
+     "expression": "x['fee_sat']",
+     "expected": "282"
+    },
+    {
+     "expression": "x['vsize']",
+     "expected": "141"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "Space in a block is limited",
+   "slide": 16,
+   "branch": "Fees and fee rates",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "src = 'core_src_consensus_consensus.h'\nlimit = int(L.const(src, 'MAX_BLOCK_WEIGHT'))\nw = B['840000']['weight']\nshare = round(100 * w / limit, 2)\n(w, limit, share)",
+   "show": [
+    {
+     "expression": "(w, limit, share)",
+     "expected": "(3993281, 4000000, 99.83)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "The minimum relay fee",
+   "slide": 17,
+   "branch": "Fees and fee rates",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "m = list(R['minrelay'].values())[:3]\nfees = [v['fee_sat'] for v in m]\ntaken = [v['result']['ok'][0]['allowed'] for v in m]\nfloor = R2['mempool_min']['minrelaytxfee'] * 1e8 / 1000\nneed = int(141 * floor) + 1\n(fees, taken, need)",
+   "show": [
+    {
+     "expression": "(fees, taken, need)",
+     "expected": "([8, 14, 15], [False, False, True], 15)"
+    },
+    {
+     "expression": "floor",
+     "expected": "0.1"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "Dust and the wallet's own floor",
+   "slide": 18,
+   "branch": "Fees and fee rates",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "w = R2['wallet_min']\nks = ['fee_rate_0.5', 'fee_rate_0.1', 'fee_rate_1']\nwal = ['ok' in w[k] for k in ks]\nsz = {'P2WPKH': 31, 'P2TR': 43, 'P2A': 13}\ndust = {k: (n + 67) * 3 for k, n in sz.items()}\ndust",
+   "show": [
+    {
+     "expression": "dust",
+     "expected": "{'P2WPKH': 294, 'P2TR': 330, 'P2A': 240}"
+    },
+    {
+     "expression": "wal",
+     "expected": "[False, False, True]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "An estimate needs history",
+   "slide": 21,
+   "branch": "Fee estimation",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "f = R['estimate_fresh']['ok']['errors'][0]\nn = R['estimate']['rounds']\nE = R['estimate']['results']\nfr = lambda t: E[f'{t}_default']['ok']['feerate']\nrates = [round(fr(t) * 1e5, 3) for t in (2, 6, 25)]\nrates",
+   "show": [
+    {
+     "expression": "rates",
+     "expected": "[1.225, 1.173, 1.173]"
+    },
+    {
+     "expression": "f",
+     "expected": "'Insufficient data or no feerate found'"
+    },
+    {
+     "expression": "n",
+     "expected": "120"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "How far the estimator can see",
+   "slide": 22,
+   "branch": "Fee estimation",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "E = R['estimate']['results']\nseen = E['144_default']['ok']['blocks']\nts = (2, 6, 25, 144)\neco = [E[f'{t}_economical'] for t in ts]\ndft = [E[f'{t}_default'] for t in ts]\nsame = eco == dft\ncons = E['144_default'] == E['144_conservative']\n(seen, same, cons)",
+   "show": [
+    {
+     "expression": "(seen, same, cons)",
+     "expected": "(60, True, False)"
+    },
+    {
+     "expression": "R['estimate']['tip']",
+     "expected": "231"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "Two blocks, two fee markets",
+   "slide": 23,
+   "branch": "Fee estimation",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "a = L.census_stats(840000)\nb = L.census_stats(971489)\nn = a['n']\nmed = [a['median_rate'], b['median_rate']]\nmed",
+   "show": [
+    {
+     "expression": "med",
+     "expected": "[1436.45, 3.02]"
+    },
+    {
+     "expression": "n",
+     "expected": "599"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "The opt-in replacement signal",
+   "slide": 26,
+   "branch": "Replace by fee (RBF)",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "sig = L.rbf_signal\nflags = [sig([0xfffffffd]), sig([0xfffffffe])]\nmixed = sig([0xffffffff, 0xfffffffd])\na = L.census_stats(840000)\nb = L.census_stats(971489)\nshare = [a['signal_rbf'], b['signal_rbf']]\n(flags, mixed, share)",
+   "show": [
+    {
+     "expression": "(flags, mixed, share)",
+     "expected": "([True, False], True, [485, 273])"
+    },
+    {
+     "expression": "a['n']",
+     "expected": "599"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "A replacement must pay enough",
+   "slide": 27,
+   "branch": "Replace by fee (RBF)",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "X = R['rbf']\nks = ['lower_fee', 'equal_fee']\nks += ['short_by_one', 'exactly_enough']\nfees = [X[k]['fee_sat'] for k in ks]\ntaken = ['ok' in X[k]['result'] for k in ks]\nneed = L.min_replacement_fee(564, 141)\n(fees, taken)",
+   "show": [
+    {
+     "expression": "(fees, taken)",
+     "expected": "([514, 564, 578, 579], [False, False, False, True])"
+    },
+    {
+     "expression": "need",
+     "expected": "579"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "Full replacement is the default",
+   "slide": 28,
+   "branch": "Replace by fee (RBF)",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "x = R['rbf']\nseq = x['t1']['sequence']\nfull = x['fullrbf_flag']\nswapped = 'ok' in x['t2']['result']\no = R2['removed_option']\nm = o['message']\ngone = (o['exit_code'], 'mempoolfullrbf=0' in m)\n(full, seq, swapped, gone)",
+   "show": [
+    {
+     "expression": "(full, seq, swapped, gone)",
+     "expected": "(True, 4294967295, True, (1, True))"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "Paying the payee twice",
+   "slide": 30,
+   "branch": "Replace by fee (RBF)",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "h = R2['hazard']\ni = h['inputs']\nc01 = L.conflict(i['v0'], i['v1'])\nc12 = L.conflict(i['v1'], i['v2'])\nc02 = L.conflict(i['v0'], i['v2'])\nasked = h['payee_asked_sat']\ngot = h['payee_received_sat']\n(asked, got, [c01, c12, c02])",
+   "show": [
+    {
+     "expression": "(asked, got, [c01, c12, c02])",
+     "expected": "(40000000, 80000000, [True, True, False])"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 16,
+   "id": "ex16",
+   "name": "A child lifts its parent",
+   "slide": 34,
+   "branch": "Child pays for parent (CPFP)",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "w = R['ancestor_mining']['cpfp_wins']\nE = w['mempoolentries']\nfee = w['fees_sat']\nrate = lambda k: fee[k] / E[k]['vsize']\nalone = [rate('P'), rate('C')]\nc = E['P']\nfee_c = c['fees']['chunk'] * 1e8\npair = round(fee_c / (c['chunkweight'] / 4), 2)\n(alone, pair)",
+   "show": [
+    {
+     "expression": "(alone, pair)",
+     "expected": "([1.0, 100.0], 50.77)"
+    },
+    {
+     "expression": "fee",
+     "expected": "{'A': 2820, 'P': 141, 'C': 14100}"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 17,
+   "id": "ex17",
+   "name": "A weak child does not help",
+   "slide": 35,
+   "branch": "Child pays for parent (CPFP)",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "w = R['ancestor_mining']['cpfp_loses']\nE, fee = w['mempoolentries'], w['fees_sat']\nc = E['P']\ntot = fee['P'] + fee['C']\npair = round(tot / (c['chunkweight'] / 4), 2)\nmined = lambda k: w[k]['txid'] in w['block_txids']\nfirst = [mined('A'), mined('P')]\n(pair, first)",
+   "show": [
+    {
+     "expression": "(pair, first)",
+     "expected": "(3.02, [True, False])"
+    },
+    {
+     "expression": "fee",
+     "expected": "{'A': 2820, 'P': 141, 'C': 705}"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 18,
+   "id": "ex18",
+   "name": "Package relay",
+   "slide": 36,
+   "branch": "Child pays for parent (CPFP)",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "p = R['package']\nsolo = p['v2_parent_alone']['ok'][0]['reject-details']\nalone = L.reason(p['child_alone'])\nmsg = p['submitpackage_v2']['ok']['package_msg']\nmsg",
+   "show": [
+    {
+     "expression": "msg",
+     "expected": "'success'"
+    },
+    {
+     "expression": "solo",
+     "expected": "'min relay fee not met, 8 < 15'"
+    },
+    {
+     "expression": "alone",
+     "expected": "'bad-txns-inputs-missingorspent'"
+    },
+    {
+     "expression": "p['v2_parent']['fee_sat']",
+     "expected": "8"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 19,
+   "id": "ex19",
+   "name": "Cluster limits",
+   "slide": 37,
+   "branch": "Child pays for parent (CPFP)",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "c = R['cluster']\nmi = c['mempoolinfo']\nlim = (mi['limitclustercount'], mi['limitclustersize'])\nch = c['chain']\ntried = (ch['attempted'], ch['accepted'])\nwhy = L.reason(ch['first_refusal'])\nok26 = ch['accepted_26th']\n(lim, tried, why, ok26)",
+   "show": [
+    {
+     "expression": "(lim, tried, why, ok26)",
+     "expected": "((64, 101000), (65, 64), 'too-large-cluster', True)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 20,
+   "id": "ex20",
+   "name": "Mempool size and expiry",
+   "slide": 38,
+   "branch": "Child pays for parent (CPFP)",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "o = 'core_src_kernel_mempool_options.h'\nsize = int(L.const(o, 'DEFAULT_MAX_MEMPOOL_SIZE_MB'))\nhours = int(L.const(o, 'DEFAULT_MEMPOOL_EXPIRY_HOURS'))\ndays = hours // 24\n(size, hours, days)",
+   "show": [
+    {
+     "expression": "(size, hours, days)",
+     "expected": "(300, 336, 14)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 21,
+   "id": "ex21",
+   "name": "A big child pins its parent",
+   "slide": 41,
+   "branch": "Pinning and anchors",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "P = R['pinning']\nv2, v3 = P['v2'], P['v3']\ncost2 = v2['replacement_enough']['fee_sat']\ncost3 = v3['replacement_enough']['fee_sat']\nratio = round(cost2 / cost3)\n(cost2, cost3, ratio)",
+   "show": [
+    {
+     "expression": "(cost2, cost3, ratio)",
+     "expected": "(450780, 5145, 88)"
+    },
+    {
+     "expression": "v2['child']['vsize']",
+     "expected": "90012"
+    },
+    {
+     "expression": "v3['child']['vsize']",
+     "expected": "885"
+    },
+    {
+     "expression": "v2['parent']['fee_sat']",
+     "expected": "705"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 22,
+   "id": "ex22",
+   "name": "TRUC limits on a family",
+   "slide": 42,
+   "branch": "Pinning and anchors",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "t = R['truc']\nwhy = L.reason\nbad = 'TRUC-violation' in why(t['big_child']['result'])\nok = 'ok' in t['child1']['result']\nr1 = why(t['sibling_same_rate']['result'])\nr2 = t['sibling_higher_rate']['result']\nev = ['sibling eviction' in r1, 'ok' in r2]\n(bad, ok, ev)",
+   "show": [
+    {
+     "expression": "(bad, ok, ev)",
+     "expected": "(True, True, [True, True])"
+    },
+    {
+     "expression": "t['big_child']['vsize']",
+     "expected": "1350"
+    },
+    {
+     "expression": "t['child1']['vsize']",
+     "expected": "141"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 23,
+   "id": "ex23",
+   "name": "Pay to anchor",
+   "slide": 43,
+   "branch": "Pinning and anchors",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "p = R['package']\npar = L.parse_tx(p['truc_parent']['hex'])\no = par['vout'][0]\nanchor = (o['spk'], o['value'], par['version'])\nalone = L.reason(p['parent_alone'])\nmsg = p['submitpackage_truc']['ok']['package_msg']\nkid = L.parse_tx(p['anchor_child']['hex'])\nempty = [v['witness'] for v in kid['vin']].count([])\nanchor",
+   "show": [
+    {
+     "expression": "anchor",
+     "expected": "('51024e73', 0, 3)"
+    },
+    {
+     "expression": "alone",
+     "expected": "'min relay fee not met, 0 < 13'"
+    },
+    {
+     "expression": "msg",
+     "expected": "'success'"
+    },
+    {
+     "expression": "empty",
+     "expected": "1"
+    },
+    {
+     "expression": "p['anchor_child']['fee_sat']",
+     "expected": "10000"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 24,
+   "id": "ex24",
+   "name": "The carve-out limit",
+   "slide": 44,
+   "branch": "Pinning and anchors",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "p = 'core_src_policy_policy.h'\nlim = int(L.const(p, 'EXTRA_DESCENDANT_TX_SIZE_LIMIT'))\nbk = 'book_ch09_fees.adoc'\nsaid = 'additional transaction up to 1,000 vbytes'\nbook = L.has(bk, said)\nn = 'core_relnotes_31.0.html'\ngone = L.has(n, 'removed from the mempool logic')\n(lim, book, gone)",
+   "show": [
+    {
+     "expression": "(lim, book, gone)",
+     "expected": "(10000, True, True)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 25,
+   "id": "ex25",
+   "name": "Fees against the subsidy",
+   "slide": 48,
+   "branch": "Fee sniping and incentives",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "a, b = B['840000']['extras'], B['971489']['extras']\nfees, reward = a['totalFees'], a['reward']\nsubsidy = reward - fees\nf = lambda z: z['totalFees'] / z['reward']\nshare = [round(100 * f(z), 2) for z in (a, b)]\nshare",
+   "show": [
+    {
+     "expression": "share",
+     "expected": "[92.33, 0.46]"
+    },
+    {
+     "expression": "subsidy",
+     "expected": "312500000"
+    },
+    {
+     "expression": "fees",
+     "expected": "3762561499"
+    },
+    {
+     "expression": "reward",
+     "expected": "4075061499"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 26,
+   "id": "ex26",
+   "name": "Odds of winning a sniping race",
+   "slide": 50,
+   "branch": "Fee sniping and incentives",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "xs = [0.1, 0.3, 0.45, 0.5]\nodds = [L.snipe_probability(x) for x in xs]\npct = [round(100 * p, 2) for p in odds]\npct",
+   "show": [
+    {
+     "expression": "pct",
+     "expected": "[1.23, 18.37, 66.94, 100.0]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 27,
+   "id": "ex27",
+   "name": "Wallets lock to the chain tip",
+   "slide": 52,
+   "branch": "Fee sniping and incentives",
+   "library": "sen0401_ch09_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "s = R['sniping']['samples']\ngap = sorted(z['tip'] - z['locktime'] for z in s)\nat_tip = gap.count(0)\nback = [g for g in gap if g]\nlate = L.is_final(100001, 100001, [0xfffffffd])\n(at_tip, back, late)",
+   "show": [
+    {
+     "expression": "(at_tip, back, late)",
+     "expected": "(56, [6, 28, 35, 54], False)"
+    },
+    {
+     "expression": "len(s)",
+     "expected": "60"
+    },
+    {
+     "expression": "R2['locktime_block']['mempool_next']['reject-reason']",
+     "expected": "'non-final'"
+    },
+    {
+     "expression": "[L.census_stats(h)['locktime_prev_height'] for h in (840000, 971489)]",
+     "expected": "[89, 33]"
+    },
+    {
+     "expression": "L.census_stats(840000)['n']",
+     "expected": "599"
+    }
+   ],
+   "result_picture": "table"
+  }
+ ]
+}
