@@ -1,0 +1,137 @@
+"""Every code listing of the SEN0401 chapter 12 deck 2.0.0 (Mining and Consensus; a NEW file, the deck 1.1.0 and its examples_v1_0_0.py stay unchanged) and the source of the chapter-code
+manifest chapter_code_ch12_v1_0_0.json that the page's chapter-code tab reads. One entry per code slide, in SLIDE ORDER. A listing is a list of GROUPS; a group is a few single-line
+statements and the plain-language note that explains them (the deck standard asks for an explanation beside every code box). Every statement is ONE line. The last row of a listing is an
+expression (`final`, which is also in `show`): the slide prints its value under it, the only REPL text of the slide; the full result of the example is drawn as a chart or a table beside
+the listing from the recorded `show` values (examples_run_v2_0_0.py), never typed. A statement is at most 56 characters, so that a code line never wraps (deck standard D12).
+Every example uses only what the chapter wheel of the page holds (sen0401_ch12_lib-1.0.1: the chapter library, the saved sources and the single regtest record of Bitcoin Core 31.1 inside
+it): none reads a file outside the wheel, so each runs in the browser as it runs here. The mempool.space files are NOT in the wheel; the few public figures taken from them (two block
+times, the bits of a block, the hash rate and the difficulty of 15 October 2026) are written into the listing as plain numbers and said so on the slide. L is the chapter library, R the
+regtest record, src/seen/cv/pw/hw the helpers of the setup (the same names as the earlier deck's setup)."""
+__version__ = "2.0.0"
+
+PRELUDE = """import sen0401_ch12_lib_v1_0_0 as L, hashlib, math
+R = L.run()
+src, seen, cv, pw = L.const, L.has, L.chain_value, L.p_attacker_ever_wins
+hw = lambda n, w='w': hashlib.sha256(('Hello, ' + w + 'orld! ' + str(n) + chr(10)).encode()).hexdigest()
+"""
+G = lambda note, *lines: {"lines": list(lines), "note": note}
+
+EXAMPLES = [
+  # ---------------------------------------------------------------- part A: money and rewards
+  {"id": "ex01", "name": "Halving every 210,000 blocks", "branch": "MoneyCreation", "final": "(btc, last)",
+   "groups": [G("The reward is cut in half at each multiple of 210,000 blocks, which is about every four years.", "hs = [0, 210000, 420000, 630000, 840000]"),
+              G("Each height becomes a subsidy in coins; the halving is a right shift of whole satoshis.", "btc = [L.subsidy(h) / 1e8 for h in hs]"),
+              G("After the 33rd halving the subsidy is a single satoshi, and after the 34th it is zero.", "last = L.subsidy(33 * 210000 - 1)", "(btc, last)")],
+   "show": ["btc", "last", "L.subsidy(34 * 210000)", "(btc, last)"]},
+  {"id": "ex02", "name": "The 21 million limit and the float erratum", "branch": "MoneyCreation", "final": "(tot, short, type(fl).__name__)",
+   "groups": [G("Adding the 33 non-zero rewards, in whole satoshis, gives the real total supply.", "tot = L.total_supply()"),
+              G("The total falls a little short of 21 million coins, counted in satoshis.", "short = 21 * 10 ** 14 - tot"),
+              G("The book's script divides with a slash, which Python 3 turns into a float division.", "fl = L.book_script_as_printed()", "(tot, short, type(fl).__name__)")],
+   "show": ["tot", "short", "type(fl).__name__", "fl", "(tot, short, type(fl).__name__)"]},
+  {"id": "ex03", "name": "The reward is subsidy plus fees", "branch": "MoneyCreation", "final": "(r['subsidy'], r['fees'], ok, bad)",
+   "groups": [G("Bitcoin Core, on a private chain, offers a block template that states the reward.", "r = R['b5_reward']"),
+              G("The reward it offers equals the subsidy plus the fees of the chosen transactions.", "ok = r['coinbasevalue'] == r['subsidy'] + r['fees']"),
+              G("A miner may claim less than the reward, but one satoshi more is refused.", "m = R['b5_modest']['coinbase_output_sat']", "bad = R['b4_rules']['reward_one_satoshi_too_high']", "(r['subsidy'], r['fees'], ok, bad)")],
+   "show": ["r['subsidy']", "r['fees']", "r['coinbasevalue']", "ok", "m", "bad", "R['b5_greedy_submit']", "(r['subsidy'], r['fees'], ok, bad)"]},
+  # ---------------------------------------------------------------- part B: verifying
+  {"id": "ex04", "name": "A transaction faces a checklist", "branch": "DecentralizedConsensus", "final": "(len(why), ok)",
+   "groups": [G("Bitcoin Core, on a private chain, was asked to test several spoiled transactions.", "c = R['b3_tx_checklist']", "ks = ['duplicate_input', 'negative_output']"),
+              G("Each broken rule gets a name; a coinbase may be spent only after 100 confirmations.", "ks += ['coinbase_99_confirmations']", "why = [c[k]['reject-reason'] for k in ks]"),
+              G("With 100 confirmations the same spend is allowed.", "ok = c['coinbase_100_confirmations']['allowed']", "(len(why), ok)")],
+   "show": ["why", "ok", "c['locktime_in_the_future']['reject-reason']", "(len(why), ok)"]},
+  {"id": "ex05", "name": "A block faces its own checklist", "branch": "DecentralizedConsensus", "final": "(len(rules), ok)",
+   "groups": [G("The same node was given blocks that each broke exactly one rule.", "rules = R['b4_rules']"),
+              G("Each broken rule answers with a short reason; the valid block is accepted.", "ok = rules['valid_block']"),
+              G("The reasons name the rule: the reward, the height, the merkle root and the clock.", "(len(rules), ok)")],
+   "show": ["len(rules)", "ok", "rules['reward_one_satoshi_too_high']", "rules['no_height_in_coinbase']", "rules['merkle_root_wrong']",
+            "rules['time_equal_to_median_time_past']", "rules['time_two_hours_and_a_second_ahead']", "rules['version_1']", "(len(rules), ok)"]},
+  {"id": "ex06", "name": "The best chain has the most work", "branch": "DecentralizedConsensus", "final": "(w1, w2, a['tip_is_y2'])",
+   "groups": [G("Two competing branches were built on a private chain; the first had paid Carol.", "a, b = R['b7_after'], R['b7_before']"),
+              G("The chain work of each tip is a number; the larger number wins, not the longer chain.", "w1 = int(a['chainwork_x'], 16)", "w2 = int(a['chainwork_tip'], 16)"),
+              G("After the switch the payment has fewer confirmations than before, and Carol holds nothing.", "(w1, w2, a['tip_is_y2'])")],
+   "show": ["w1", "w2", "a['tip_is_y2']", "b['carol_received']", "a['carol_received']", "b['pay_confirmations']", "a['pay_confirmations']", "(w1, w2, a['tip_is_y2'])"]},
+  # ---------------------------------------------------------------- part C: the candidate block
+  {"id": "ex07", "name": "The coinbase of Bitcoin Core today", "branch": "BuildingTheCandidateBlock", "final": "(w, k['height'], hx)",
+   "groups": [G("Bitcoin Core builds a block template; its weight limit leaves room for the header.", "t = R['b1_template0']", "w = t['weightlimit']"),
+              G("The coinbase script starts with the block height as a short pushed number.", "k = R['b5_core_coinbase']", "hx = L.push_num(k['height']).hex()"),
+              G("Other fields are set by Core, not by the book: the lock time and the sequence.", "(w, k['height'], hx)")],
+   "show": ["w", "k['height']", "hx", "k['scriptsig']", "k['locktime'] == k['height'] - 1", "hex(k['sequence'])", "k['version']", "(w, k['height'], hx)"]},
+  {"id": "ex08", "name": "The header of a mined block", "branch": "BuildingTheCandidateBlock", "final": "(h['bytes'], h['version'], ok)",
+   "groups": [G("The 80-byte header of a regtest block is taken apart into its six fields.", "h = L.header(R['b1_getblock_raw_header'])"),
+              G("The hash of the header must not be larger than the target that its bits describe.", "ok = L.pow_ok(h['hash'], h['bits'])"),
+              G("Regtest has a huge target, so one zero bit of hash is enough.", "z = L.leading_zero_bits(h['hash'])", "(h['bytes'], h['version'], ok)")],
+   "show": ["h['bytes']", "h['version']", "h['bits']", "h['nonce']", "z", "ok", "(h['bytes'], h['version'], ok)"]},
+  {"id": "ex09", "name": "The extra nonce changes the merkle root", "branch": "BuildingTheCandidateBlock", "final": "(t1 != t2, m1 != m2, n1 == n2)",
+   "groups": [G("A miner built the same block twice, changing only a counter in the coinbase script.", "e = R['b5_extranonce']"),
+              G("The coinbase transaction id differs, so the merkle root differs as well.", "t1, t2 = e['coinbase_txid_1'], e['coinbase_txid_2']", "m1, m2 = e['merkle_1'], e['merkle_2']"),
+              G("The nonce in the header is the same in both, but the header hash is not.", "n1, n2 = e['nonce_1'], e['nonce_2']", "(t1 != t2, m1 != m2, n1 == n2)")],
+   "show": ["t1 != t2", "m1 != m2", "n1 == n2", "e['hash_1'] != e['hash_2']", "(t1 != t2, m1 != m2, n1 == n2)"]},
+  # ---------------------------------------------------------------- part D: proof of work
+  {"id": "ex10", "name": "Proof of work is a nonce lottery", "branch": "ProofOfWork", "final": "(up, t)",
+   "groups": [G("A small w gives the book's hash; the capital W it types gives another.", "lo = hw(32)[:8]", "up = hw(32, 'W')[:8]"),
+              G("A try counts if the hash starts with z zero digits.", "ns = range(1, 10 ** 6)", "ok = lambda n, z: hw(n).startswith('0' * z)", "f = lambda z: next(n for n in ns if ok(n, z))"),
+              G("Tries needed for one, two, three and four zero digits.", "t = [f(z) for z in (1, 2, 3, 4)]", "(up, t)")],
+   "show": ["lo", "up", "t", "(up, t)"]},
+  {"id": "ex11", "name": "Target, bits and difficulty", "branch": "ProofOfWork", "final": "(tg.bit_length(), round(d))",
+   "groups": [G("The header stores the target in four bytes: one for the size, three for the digits.", "tg = L.bits_to_target('1903a30c')"),
+              G("Difficulty compares this target with the easiest one that Bitcoin allows.", "d = L.difficulty('1903a30c')"),
+              G("A smaller target means more zero bits at the start of a valid hash.", "need = 256 - tg.bit_length()", "(tg.bit_length(), round(d))")],
+   "show": ["tg.bit_length()", "round(d)", "need", "hex(L.target_to_bits(tg))", "(tg.bit_length(), round(d))"]},
+  {"id": "ex12", "name": "The wait of a one-terahash miner", "branch": "ProofOfWork", "final": "(round(days, 1), blocks)",
+   "groups": [G("At that difficulty a block takes about difficulty times 2 to the 32 hashes.", "d = L.difficulty('1903a30c')", "secs = d * 2 ** 32 / 1e12"),
+              G("One terahash a second waits this many days, or blocks.", "days = secs / 86400", "blocks = round(secs / 600)"),
+              G("Today's difficulty, typed in, estimates the network hash rate.", "d2 = 132716002350731.3", "hr = f'{d2 * 2 ** 32 / 600:.2e}'", "(round(days, 1), blocks)")],
+   "show": ["round(days, 1)", "blocks", "hr", "(round(days, 1), blocks)"]},
+  {"id": "ex13", "name": "Retargeting on a real epoch", "branch": "ProofOfWork", "final": "(z - a, hex(new), bias)",
+   "groups": [G("Block times of 838,656 and 840,671 and the bits of the period are typed from the saved headers.", "a, z, bits = 1712783853, 1713969900, '17034219'"),
+              G("The rule of pow.cpp scales the target by the real time over the intended 14 days.", "new = L.retarget(a, z, bits)"),
+              G("The result is the bits of block 840,672; counting 2,016 blocks instead of 2,015 gaps would add a small bias.", "bias = round((2016 / 2015 - 1) * 100, 3)", "(z - a, hex(new), bias)")],
+   "show": ["z - a", "hex(new)", "new == 0x170331db", "round(1209600 / (z - a), 4)", "bias", "(z - a, hex(new), bias)"]},
+  {"id": "ex14", "name": "The factor-of-four clamp", "branch": "ProofOfWork", "final": "r",
+   "groups": [G("A very fast or very slow period cannot change the target by more than a factor of four.", "t0 = L.bits_to_target('17034219')", "rt = lambda s: L.retarget(0, s, '17034219')"),
+              G("New target over old target, for a period too fast, on time and too slow.", "tg = lambda s: L.bits_to_target(rt(s)) / t0"),
+              G("The ratios stop at one quarter and four.", "r = [round(tg(s), 2) for s in (10**5, 1209600, 10**7)]", "r")],
+   "show": ["r", "hex(rt(10 ** 5))", "hex(rt(10 ** 7))"]},
+  {"id": "ex15", "name": "Regtest never retargets, testnet4 has BIP 94", "branch": "ProofOfWork", "final": "(no[2], b94[1])",
+   "groups": [G("Each chain has constants in chainparams.cpp: first, whether the target is never adjusted.", "ch = ['main', 'testnet4', 'regtest']", "no = [cv(c, r'fPowNoRetargeting = (\\w+)') for c in ch]"),
+              G("Second, whether the BIP 94 branch of the retarget code is switched on.", "b94 = [cv(c, r'enforce_BIP94 = (\\w+)') for c in ch]"),
+              G("On regtest the bits stay the same, even after 2,016 blocks.", "(no[2], b94[1])")],
+   "show": ["no", "b94", "R['b2_bits']['2017']", "seen('core_src_pow.cpp', 'enforce_BIP94')", "(no[2], b94[1])"]},
+  # ---------------------------------------------------------------- part E: competition
+  {"id": "ex16", "name": "When the 32-bit nonce runs out", "branch": "MiningCompetition", "final": "(bits, f'{per:.1e}')",
+   "groups": [G("The hash rate of 15 October 2026, typed from the saved figure, in hashes a second.", "h = 1.029e21"),
+              G("A miner could empty the 32-bit nonce this many times in every second.", "per = h / 2 ** 32"),
+              G("Version rolling adds 16 free bits; the extra nonce adds more in the coinbase.", "bits = [32, bin(0x1fffe000).count('1')]", "(bits, f'{per:.1e}')")],
+   "show": ["bits", "f'{per:.1e}'", "R['b10_rolled']['rolled_bits']", "R['b10_rolled']['versionHex']", "(bits, f'{per:.1e}')"]},
+  {"id": "ex17", "name": "Why a small miner joins a pool", "branch": "MiningCompetition", "final": "w",
+   "groups": [G("The network finds 144 blocks a day. A miner with a share s expects 144 times s of them.", "shares = [0.1, 0.01, 0.001, 0.0001]"),
+              G("The wait for one block is the inverse of that rate, here in days.", "w = [round(1 / (144 * s), 1) for s in shares]"),
+              G("A pool pays out small, regular shares instead of one rare block.", "w")],
+   "show": ["w", "[round(144 * s, 3) for s in shares]"]},
+  {"id": "ex18", "name": "Odds of a hash rate attack", "branch": "MiningCompetition", "final": "(odds, thr)",
+   "groups": [G("Nakamoto's formula: the chance that an attacker with a share q ever catches up from six blocks.", "qs = [0.1, 0.3, 0.45]", "odds = [round(pw(q, 6), 4) for q in qs]"),
+              G("Selfish mining pays above a share that depends on how many honest miners follow the selfish block.", "g = [0, 0.5, 1]", "thr = [round((1 - x) / (3 - 2 * x), 4) for x in g]"),
+              G("The thresholds fall from one third towards zero as more honest miners follow.", "(odds, thr)")],
+   "show": ["odds", "thr", "(odds, thr)"]},
+  # ---------------------------------------------------------------- part F: changing the rules
+  {"id": "ex19", "name": "A hard fork splits, a soft fork does not", "branch": "ChangingConsensusRules", "final": "(r['lax_node'], r['strict_node'], c['same_tip'])",
+   "groups": [G("A node with the old, looser rule and a node with the new, stricter rule saw the same block.", "r = R['b9_lax_block']"),
+              G("The loose node accepts a block with no height; the strict node refuses it.", "c = R['b9_lax_chain']"),
+              G("The loose chain goes on, the strict node follows only blocks that obey: the two tips differ.", "(r['lax_node'], r['strict_node'], c['same_tip'])")],
+   "show": ["r['lax_node']", "r['strict_node']", "c['same_tip']", "c['height_L']", "c['height_S']", "(r['lax_node'], r['strict_node'], c['same_tip'])"]},
+  {"id": "ex20", "name": "The minority chain is slow", "branch": "ChangingConsensusRules", "final": "d",
+   "groups": [G("After a split a branch keeps the old difficulty but only a share of the hash rate.", "sh = [0.8, 0.5, 0.2, 0.1]"),
+              G("Blocks come more slowly; this is the time of 2,016 blocks, in days.", "d = [round(L.blocks_per_period(s)[1]) for s in sh]"),
+              G("A branch with a tenth of the power needs 140 days for what took 14.", "d")],
+   "show": ["d", "[round(L.blocks_per_period(s)[0]) for s in sh]"]},
+  {"id": "ex21", "name": "BIP 9 states and the 90 percent vote", "branch": "ChangingConsensusRules", "final": "(st[-1], th)",
+   "groups": [G("Bitcoin Core, on a private chain, reported the state of a test deployment at six heights.", "v = R['b8_versionbits']['V']['rows']", "st = [x['status'] for x in v]"),
+              G("Bits 9 asked for 95 percent of 2,016 blocks; the Speedy Trial of taproot asked for 90.", "th = [math.ceil(0.95 * 2016), math.ceil(0.9 * 2016)]"),
+              G("The version of block 709,632 signals bit 2.", "(st[-1], th)")],
+   "show": ["st", "th", "[x['height'] for x in v]", "L.signals(0x20200004, 2)", "v[1]['statistics']['threshold']", "v[1]['statistics']['period']", "(st[-1], th)"]},
+  {"id": "ex22", "name": "Buried deployments in chainparams.cpp", "branch": "ChangingConsensusRules", "final": "hs",
+   "groups": [G("Old soft forks are now written as plain heights in the source code.", "pats = 'BIP34 BIP66 CSV Segwit'.split()", "pt = r'%sHeight = (\\d+)'"),
+              G("Read the height of each from the saved chainparams.cpp for the main chain.", "hs = [int(cv('main', pt % p)) for p in pats]"),
+              G("A buried fork is no longer voted on; it is simply part of the rules.", "hs")],
+   "show": ["hs", "pats"]},
+]
