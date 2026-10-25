@@ -1,0 +1,702 @@
+{
+ "manifest": "chapter_code_ch10_v1_0_0",
+ "chapter": 10,
+ "deck": "SEN0401_Ch10_TheBitcoinNetwork_3e_v2_0_0.pptx",
+ "deck_version": "2.0.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the library defined in the page",
+ "library": {
+  "module": "sen0401_ch10_lib",
+  "file": "03-materials/ch10/assets/sen0401_ch10_lib-1.0.0-py3-none-any.whl",
+  "sha256": "8f9aaf7ee9915157e94a21271215a3e6fc43464929c5a8a890f299c048364d99",
+  "modules": [
+   "sen0401_ch10_lib_v1_0_0",
+   "sen0401_ch10_p2p_v1_0_0"
+  ],
+  "import": "import sen0401_ch10_lib_v1_0_0 as L, sen0401_ch10_p2p_v1_0_0 as P"
+ },
+ "setup": {
+  "code": "# setup: the chapter library of the page (L = chapter 10 library, P = the wire code written independently of Bitcoin Core, R = the recorded run of Bitcoin Core 31.1); the page boots these names\nimport sen0401_ch10_lib_v1_0_0 as L\nimport sen0401_ch10_p2p_v1_0_0 as P\nR = L.run()\nsrc, seen = L.const, L.has",
+  "data": {}
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "The handshake: version first, verack to accept",
+   "slide": 7,
+   "branch": "Who is on the network",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "e = R['e1_handshake']; v = e['node_version']\nseq = [c for t, c, n in e['sequence']]\nk = ('user_agent', 'version', 'start_height')\nhello = tuple(v[x] for x in k)\nhello",
+   "show": [
+    {
+     "expression": "seq",
+     "expected": "['version', 'wtxidrelay', 'sendaddrv2', 'verack', 'sendcmpct', 'ping', 'getheaders', 'inv', 'feefilter']"
+    },
+    {
+     "expression": "hello",
+     "expected": "('/Satoshi:31.1.0/', 70016, 2099)"
+    },
+    {
+     "expression": "e['magic']",
+     "expected": "'fabfb5da'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "A message is a 24-byte header and a payload",
+   "slide": 8,
+   "branch": "Who is on the network",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "f = P.frame('verack', b'', 'main')\nn = int.from_bytes(f[16:20], 'little')\nc = f[4:16].rstrip(b'\\0').decode()\nparts = (f[:4].hex(), c, n, f[20:].hex())\nparts",
+   "show": [
+    {
+     "expression": "parts",
+     "expected": "('f9beb4d9', 'verack', 0, '5df6e0e2')"
+    },
+    {
+     "expression": "len(f)",
+     "expected": "24"
+    },
+    {
+     "expression": "P.MAGIC['main'].hex()",
+     "expected": "'f9beb4d9'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "Services: what a node offers",
+   "slide": 10,
+   "branch": "Who is on the network",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "full = R['networkinfo_A']['localservicesnames']\npruned = R['e10_pruned']['services']\ngone = [s for s in full if s not in pruned]\ngone",
+   "show": [
+    {
+     "expression": "full",
+     "expected": "['NETWORK', 'WITNESS', 'NETWORK_LIMITED', 'P2P_V2']"
+    },
+    {
+     "expression": "pruned",
+     "expected": "['WITNESS', 'NETWORK_LIMITED', 'P2P_V2']"
+    },
+    {
+     "expression": "gone",
+     "expected": "['NETWORK']"
+    },
+    {
+     "expression": "list(P.SERVICE_BITS.values())",
+     "expected": "['NETWORK', 'BLOOM', 'WITNESS', 'COMPACT_FILTERS', 'NETWORK_LIMITED', 'P2P_V2']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "DNS seeds hand out peer addresses",
+   "slide": 14,
+   "branch": "Peers, blocks and transactions",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "d = R['e11_dns_seeds']\nn = [len(v['ipv4']) for v in d['answers'].values()]\nf = 'core_src_kernel_chainparams.cpp'\nport = src(f, 'nDefaultPort')\n(len(n), min(n), max(n), port)",
+   "show": [
+    {
+     "expression": "list(d['answers'])",
+     "expected": "['dnsseed.bluematt.me.', 'dnsseed.emzy.de.', 'seed.mainnet.achownodes.xyz.', 'seed.bitcoin.sipa.be.', 'seed.bitcoin.jonasschnelli.ch.', 'seed.btc.petertodd.net.', 'seed.bitcoin.wiz.biz.', 'seed.bitcoin.sprovoost.nl.']"
+    },
+    {
+     "expression": "n",
+     "expected": "[21, 29, 20, 25, 24, 24, 21, 23]"
+    },
+    {
+     "expression": "(len(n), min(n), max(n), port)",
+     "expected": "(8, 20, 29, '8333')"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "addr against addrv2",
+   "slide": 15,
+   "branch": "Peers, blocks and transactions",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "a = R['e9_addr']\nv2 = a['with_sendaddrv2']['addrv2']\nnp = 'core_src_net_processing.cpp'\ncap = src(np, 'MAX_PCT_ADDR_TO_SEND')\n(v2['count'], v2['networks'], v2['addr_len'], cap)",
+   "show": [
+    {
+     "expression": "a['without']['addr']['count']",
+     "expected": "23"
+    },
+    {
+     "expression": "v2['count']",
+     "expected": "23"
+    },
+    {
+     "expression": "v2['networks']",
+     "expected": "[1, 2]"
+    },
+    {
+     "expression": "v2['addr_len']",
+     "expected": "[4, 16]"
+    },
+    {
+     "expression": "cap",
+     "expected": "'23'"
+    },
+    {
+     "expression": "(v2['count'], v2['networks'], v2['addr_len'], cap)",
+     "expected": "(23, [1, 2], [4, 16], '23')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "Connection types and their limits",
+   "slide": 16,
+   "branch": "Peers, blocks and transactions",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "t = R['e8_types']\nn = 'core_src_net.h'\nfull = src(n, 'MAX_OUTBOUND_FULL_RELAY_CONNECTIONS')\nro = src(n, 'MAX_BLOCK_RELAY_ONLY_CONNECTIONS')\ntotal = src(n, 'DEFAULT_MAX_PEER_CONNECTIONS')\n(full, ro, total)",
+   "show": [
+    {
+     "expression": "t",
+     "expected": "[['addr-fetch', True, True, 'v2'], ['block-relay-only', False, False, 'v1'], ['outbound-full-relay', True, True, 'v2']]"
+    },
+    {
+     "expression": "(full, ro, total)",
+     "expected": "('8', '2', '125')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "Headers first: 80 bytes a block",
+   "slide": 18,
+   "branch": "Peers, blocks and transactions",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "h = R['e2_headers']\ngot = [h['first_count'], h['second_count']]\n(got, h['header_size'], h['height'])",
+   "show": [
+    {
+     "expression": "got",
+     "expected": "[2000, 101]"
+    },
+    {
+     "expression": "[h['first_bytes'], h['second_bytes']]",
+     "expected": "[162003, 8182]"
+    },
+    {
+     "expression": "h['header_size']",
+     "expected": "80"
+    },
+    {
+     "expression": "h['height']",
+     "expected": "2101"
+    },
+    {
+     "expression": "(got, h['header_size'], h['height'])",
+     "expected": "([2000, 101], 80, 2101)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "Relay by wtxid and the fee filter",
+   "slide": 20,
+   "branch": "Peers, blocks and transactions",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "r = R['e5_relay']; k = r['invs']\nlo, hi = r['feerate_low'], r['feerate_high']\nrates = (round(lo, 1), round(hi, 1))\nff = r['peer_feefilter_sat_per_kvb']\nh = k['normal_wtxidrelay'], k['feefilter_5sat']\nheard = (len(h[0]), len(h[1]))\n(ff, rates, heard)",
+   "show": [
+    {
+     "expression": "ff",
+     "expected": "5000"
+    },
+    {
+     "expression": "rates",
+     "expected": "(2.0, 20.0)"
+    },
+    {
+     "expression": "heard",
+     "expected": "(2, 1)"
+    },
+    {
+     "expression": "(ff, rates, heard)",
+     "expected": "(5000, (2.0, 20.0), (2, 1))"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "An orphan waits for its parent",
+   "slide": 21,
+   "branch": "Peers, blocks and transactions",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "o = R['e4_orphan']\nearly = o['child_in_mempool_after_child']\nask = hex(o['node_asked_for_parent'][0][0])\nk = 'parent_in_mempool_after', 'child_in_mempool_after'\nlate = tuple(o[x] for x in k)\n(early, ask, late)",
+   "show": [
+    {
+     "expression": "early",
+     "expected": "False"
+    },
+    {
+     "expression": "ask",
+     "expected": "'0x40000001'"
+    },
+    {
+     "expression": "late",
+     "expected": "(True, True)"
+    },
+    {
+     "expression": "(early, ask, late)",
+     "expected": "(False, '0x40000001', (True, True))"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "Every node has its own memory pool",
+   "slide": 22,
+   "branch": "Peers, blocks and transactions",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "m = R['e10_mempool_vs_utxo']\nb = m['before_block']\npools = (b['F_mempool'], b['G_mempool'])\nsame = m['utxo_hash_F'] == m['utxo_hash_G']\n(pools, same, m['utxo_count_F'])",
+   "show": [
+    {
+     "expression": "pools",
+     "expected": "(6, 0)"
+    },
+    {
+     "expression": "same",
+     "expected": "True"
+    },
+    {
+     "expression": "m['utxo_count_F']",
+     "expected": "107"
+    },
+    {
+     "expression": "(pools, same, m['utxo_count_F'])",
+     "expected": "((6, 0), True, 107)"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "Compact blocks: 332 bytes instead of 3,062",
+   "slide": 24,
+   "branch": "Peers, blocks and transactions",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "c = R['e3_compact']\nids = (c['short_id_count'], c['short_id_bytes'])\nsizes = (c['cmpctblock_bytes'], c['full_block_bytes'])\nratio = round(sizes[0] / sizes[1], 4)\nsizes",
+   "show": [
+    {
+     "expression": "sizes",
+     "expected": "(332, 3062)"
+    },
+    {
+     "expression": "ids",
+     "expected": "(12, 6)"
+    },
+    {
+     "expression": "ratio",
+     "expected": "0.1084"
+    },
+    {
+     "expression": "c['prefilled_indexes']",
+     "expected": "[0]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "The block-finding race",
+   "slide": 27,
+   "branch": "Peers, blocks and transactions",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "delays = [1, 5, 10, 30, 60]\nrival = L.rival_block_probability\np = [round(rival(s), 4) for s in delays]\np",
+   "show": [
+    {
+     "expression": "delays",
+     "expected": "[1, 5, 10, 30, 60]"
+    },
+    {
+     "expression": "p",
+     "expected": "[0.0017, 0.0083, 0.0165, 0.0488, 0.0952]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "A parity part rebuilds a lost part",
+   "slide": 29,
+   "branch": "Peers, blocks and transactions",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "parts = [b'compac', b't bloc', b'k mess', b'age!!!']\npar = L.parity_code(parts)\nlost = [parts[0], None, parts[2], parts[3]]\ngot = b''.join(L.rebuild(lost, par))\ngot",
+   "show": [
+    {
+     "expression": "parts",
+     "expected": "[b'compac', b't bloc', b'k mess', b'age!!!']"
+    },
+    {
+     "expression": "par.hex()",
+     "expected": "'1d0807585c52'"
+    },
+    {
+     "expression": "[i + 1 for i, x in enumerate(lost) if x is None]",
+     "expected": "[2]"
+    },
+    {
+     "expression": "L.rebuild(lost, par)[1]",
+     "expected": "b't bloc'"
+    },
+    {
+     "expression": "got",
+     "expected": "b'compact block message!!!'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "A light client checks a Merkle path",
+   "slide": 32,
+   "branch": "Light clients, privacy and transport",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "s = R['e6_spv']; e = R['e6_bloom_enabled']\nok = s['root_from_path'] == s['header_root']\nsizes = (s['proof_bytes'], e['full_block_bytes'])\n(s['path_len'], ok, sizes)",
+   "show": [
+    {
+     "expression": "sizes",
+     "expected": "(215, 4448)"
+    },
+    {
+     "expression": "ok",
+     "expected": "True"
+    },
+    {
+     "expression": "s['path_len']",
+     "expected": "3"
+    },
+    {
+     "expression": "s['block_tx_count']",
+     "expected": "5"
+    },
+    {
+     "expression": "(s['path_len'], ok, sizes)",
+     "expected": "(3, True, (215, 4448))"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "Double-spend odds fall with each confirmation",
+   "slide": 33,
+   "branch": "Light clients, privacy and transport",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "q = [0.1, 0.3]\nzs = (0, 3, 6)\nf = L.double_spend_probability\nodds = [[round(f(x, z), 4) for z in zs] for x in q]\nodds",
+   "show": [
+    {
+     "expression": "q",
+     "expected": "[0.1, 0.3]"
+    },
+    {
+     "expression": "zs",
+     "expected": "(0, 3, 6)"
+    },
+    {
+     "expression": "odds",
+     "expected": "[[1.0, 0.0132, 0.0002], [1.0, 0.3246, 0.1321]]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 16,
+   "id": "ex16",
+   "name": "A toy Bloom filter and its false positives",
+   "slide": 35,
+   "branch": "Light clients, privacy and transport",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "r = L.toy_bloom_experiment()\nok = r['inserted_ok']\n(r['fp_measured'], r['fp_formula'])",
+   "show": [
+    {
+     "expression": "r['inserted_ok']",
+     "expected": "True"
+    },
+    {
+     "expression": "r['bits_set']",
+     "expected": "6"
+    },
+    {
+     "expression": "r['fp_measured']",
+     "expected": "0.053"
+    },
+    {
+     "expression": "r['fp_formula']",
+     "expected": "0.031"
+    },
+    {
+     "expression": "(r['fp_measured'], r['fp_formula'])",
+     "expected": "(0.053, 0.031)"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 17,
+   "id": "ex17",
+   "name": "Bloom filters are off by default",
+   "slide": 36,
+   "branch": "Light clients, privacy and transport",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "d = R['e6_bloom_default']\nhas = 'BLOOM' in d['services_names']\ngone = d['disconnected_after_filterload']\ne = R['e6_bloom_enabled']\nn = len(e['matched_txids'])\ngot = (e['filter_bytes'], n, e['block_txs'])\n(has, gone, got)",
+   "show": [
+    {
+     "expression": "has",
+     "expected": "False"
+    },
+    {
+     "expression": "gone",
+     "expected": "True"
+    },
+    {
+     "expression": "got",
+     "expected": "(7, 1, 5)"
+    },
+    {
+     "expression": "(has, gone, got)",
+     "expected": "(False, True, (7, 1, 5))"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 18,
+   "id": "ex18",
+   "name": "Golomb coding sends differences",
+   "slide": 39,
+   "branch": "Light clients, privacy and transport",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "g = L.gcs_book_example()\nbits = (g['max_bits_original'], g['max_bits_deltas'])\n(g['deltas'], bits)",
+   "show": [
+    {
+     "expression": "g['sorted']",
+     "expected": "[379, 476, 653, 849, 900]"
+    },
+    {
+     "expression": "g['deltas']",
+     "expected": "[379, 97, 177, 196, 51]"
+    },
+    {
+     "expression": "bits",
+     "expected": "(10, 8)"
+    },
+    {
+     "expression": "g['equal']",
+     "expected": "True"
+    },
+    {
+     "expression": "(g['deltas'], bits)",
+     "expected": "([379, 97, 177, 196, 51], (10, 8))"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 19,
+   "id": "ex19",
+   "name": "Golomb-Rice coding is lossless",
+   "slide": 40,
+   "branch": "Light clients, privacy and transport",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "v = [379, 476, 653, 849, 900]\nr = L.rice_roundtrip(v, 7)\nsame = r['decoded'] == v\n(same, r['bits'], r['fixed_bits'], r['bytes'])",
+   "show": [
+    {
+     "expression": "same",
+     "expected": "True"
+    },
+    {
+     "expression": "r['bits']",
+     "expected": "44"
+    },
+    {
+     "expression": "r['fixed_bits']",
+     "expected": "50"
+    },
+    {
+     "expression": "r['bytes']",
+     "expected": "6"
+    },
+    {
+     "expression": "(same, r['bits'], r['fixed_bits'], r['bytes'])",
+     "expected": "(True, 44, 50, 6)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 20,
+   "id": "ex20",
+   "name": "A block filter rebuilt without Bitcoin Core",
+   "slide": 41,
+   "branch": "Light clients, privacy and transport",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "f = R['e7_filter']\nsame = (f['my_filter_equal'], f['my_header_equal'])\nk = ('n_elements', 'filter_bytes', 'bits_per_element')\nper = tuple(f[x] for x in k)\n(same, per, L.bip158_vectors())",
+   "show": [
+    {
+     "expression": "same",
+     "expected": "(True, True)"
+    },
+    {
+     "expression": "per",
+     "expected": "(104, 275, 21.15)"
+    },
+    {
+     "expression": "L.bip158_vectors()",
+     "expected": "(10, 10)"
+    },
+    {
+     "expression": "(same, per, L.bip158_vectors())",
+     "expected": "((True, True), (104, 275, 21.15), (10, 10))"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 21,
+   "id": "ex21",
+   "name": "Transport v1 shows its magic, v2 hides it",
+   "slide": 44,
+   "branch": "Light clients, privacy and transport",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "t = R['e8_transport']\nv1, v2 = t['v1'], t['v2']\nk = ('contains_magic', 'contains_version_command')\np1 = [v1[x] for x in k]\np2 = [v2[x] for x in k]\n(p1, p2, v2['entropy_first_4096'])",
+   "show": [
+    {
+     "expression": "p1",
+     "expected": "[True, True]"
+    },
+    {
+     "expression": "p2",
+     "expected": "[False, False]"
+    },
+    {
+     "expression": "v2['entropy_first_4096']",
+     "expected": "7.953"
+    },
+    {
+     "expression": "(p1, p2, v2['entropy_first_4096'])",
+     "expected": "([True, True], [False, False], 7.953)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 22,
+   "id": "ex22",
+   "name": "Networks a node can reach",
+   "slide": 46,
+   "branch": "Light clients, privacy and transport",
+   "library": "sen0401_ch10_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "nets = R['networkinfo_A']['networks']\nopen_ = [x['name'] for x in nets if x['reachable']]\no = R['e8_onion_node']['networks']\ntor = [x[0] for x in o if x[1]]\n(open_, tor)",
+   "show": [
+    {
+     "expression": "[(x['name'], x['reachable']) for x in nets]",
+     "expected": "[('ipv4', True), ('ipv6', True), ('onion', False), ('i2p', False), ('cjdns', False)]"
+    },
+    {
+     "expression": "[(x[0], x[1]) for x in o]",
+     "expected": "[('ipv4', False), ('ipv6', False), ('onion', True), ('i2p', False), ('cjdns', False)]"
+    },
+    {
+     "expression": "(open_, tor)",
+     "expected": "(['ipv4', 'ipv6'], ['onion'])"
+    }
+   ],
+   "result_picture": "table"
+  }
+ ]
+}
