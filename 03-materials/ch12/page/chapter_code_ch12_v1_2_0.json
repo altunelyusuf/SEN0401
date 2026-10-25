@@ -1,0 +1,802 @@
+{
+ "manifest": "chapter_code_ch12_v1_2_0",
+ "chapter": 12,
+ "deck": "SEN0401_Ch12_MiningAndConsensus_3e_v3_0_1.pptx",
+ "deck_version": "3.0.1",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the library defined in the page",
+ "library": {
+  "module": "sen0401_ch12_lib",
+  "file": "03-materials/ch12/assets/sen0401_ch12_lib-1.0.1-py3-none-any.whl",
+  "sha256": "17be534353bab3e4d423abe1db91fb0d43ae54d53c1e108cd02d7bb302c21054",
+  "modules": [
+   "sen0401_ch12_lib_v1_0_0",
+   "sen0401_ch10_p2p_v1_0_0"
+  ],
+  "import": "import sen0401_ch12_lib_v1_0_0 as L, hashlib, math"
+ },
+ "setup": {
+  "code": "# setup: the chapter library of the page (L = chapter 12 library, R = the single regtest record of Bitcoin Core 31.1 inside the same wheel; src, seen, cv, pw and hw are small helpers); the page boots these names\nimport sen0401_ch12_lib_v1_0_0 as L, hashlib, math\nR = L.run()\nsrc, seen, cv, pw = L.const, L.has, L.chain_value, L.p_attacker_ever_wins\nhw = lambda n, w='w': hashlib.sha256(('Hello, ' + w + 'orld! ' + str(n) + chr(10)).encode()).hexdigest()",
+  "data": {}
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "Halving every 210,000 blocks",
+   "slide": 7,
+   "branch": "Money and rewards",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "hs = [0, 210000, 420000, 630000, 840000]\nbtc = [L.subsidy(h) / 1e8 for h in hs]\nlast = L.subsidy(33 * 210000 - 1)\n(btc, last)",
+   "show": [
+    {
+     "expression": "btc",
+     "expected": "[50.0, 25.0, 12.5, 6.25, 3.125]"
+    },
+    {
+     "expression": "last",
+     "expected": "1"
+    },
+    {
+     "expression": "L.subsidy(34 * 210000)",
+     "expected": "0"
+    },
+    {
+     "expression": "(btc, last)",
+     "expected": "([50.0, 25.0, 12.5, 6.25, 3.125], 1)"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "The 21 million limit and the float erratum",
+   "slide": 8,
+   "branch": "Money and rewards",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "tot = L.total_supply()\nshort = 21 * 10 ** 14 - tot\nfl = L.book_script_as_printed()\n(tot, short, type(fl).__name__)",
+   "show": [
+    {
+     "expression": "tot",
+     "expected": "2099999997690000"
+    },
+    {
+     "expression": "short",
+     "expected": "2310000"
+    },
+    {
+     "expression": "type(fl).__name__",
+     "expected": "'float'"
+    },
+    {
+     "expression": "fl",
+     "expected": "2100000000000000.0"
+    },
+    {
+     "expression": "(tot, short, type(fl).__name__)",
+     "expected": "(2099999997690000, 2310000, 'float')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "The reward is subsidy plus fees",
+   "slide": 9,
+   "branch": "Money and rewards",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "r = R['b5_reward']\nok = r['coinbasevalue'] == r['subsidy'] + r['fees']\nm = R['b5_modest']['coinbase_output_sat']\nbad = R['b4_rules']['reward_one_satoshi_too_high']\n(r['subsidy'], r['fees'], ok, bad)",
+   "show": [
+    {
+     "expression": "r['subsidy']",
+     "expected": "305175"
+    },
+    {
+     "expression": "r['fees']",
+     "expected": "40194"
+    },
+    {
+     "expression": "r['coinbasevalue']",
+     "expected": "345369"
+    },
+    {
+     "expression": "ok",
+     "expected": "True"
+    },
+    {
+     "expression": "m",
+     "expected": "345368"
+    },
+    {
+     "expression": "bad",
+     "expected": "'bad-cb-amount'"
+    },
+    {
+     "expression": "R['b5_greedy_submit']",
+     "expected": "'bad-cb-amount'"
+    },
+    {
+     "expression": "(r['subsidy'], r['fees'], ok, bad)",
+     "expected": "(305175, 40194, True, 'bad-cb-amount')"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "A transaction faces a checklist",
+   "slide": 13,
+   "branch": "Verifying and agreeing",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "c = R['b3_tx_checklist']\nks = ['duplicate_input', 'negative_output']\nks += ['coinbase_99_confirmations']\nwhy = [c[k]['reject-reason'] for k in ks]\nok = c['coinbase_100_confirmations']['allowed']\n(len(why), ok)",
+   "show": [
+    {
+     "expression": "why",
+     "expected": "['bad-txns-inputs-duplicate', 'bad-txns-vout-negative', 'bad-txns-premature-spend-of-coinbase']"
+    },
+    {
+     "expression": "ok",
+     "expected": "True"
+    },
+    {
+     "expression": "c['locktime_in_the_future']['reject-reason']",
+     "expected": "'non-final'"
+    },
+    {
+     "expression": "(len(why), ok)",
+     "expected": "(3, True)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "A block faces its own checklist",
+   "slide": 14,
+   "branch": "Verifying and agreeing",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "rules = R['b4_rules']\nok = rules['valid_block']\n(len(rules), ok)",
+   "show": [
+    {
+     "expression": "len(rules)",
+     "expected": "14"
+    },
+    {
+     "expression": "ok",
+     "expected": "'accepted'"
+    },
+    {
+     "expression": "rules['reward_one_satoshi_too_high']",
+     "expected": "'bad-cb-amount'"
+    },
+    {
+     "expression": "rules['no_height_in_coinbase']",
+     "expected": "'bad-cb-height'"
+    },
+    {
+     "expression": "rules['merkle_root_wrong']",
+     "expected": "'bad-txnmrklroot'"
+    },
+    {
+     "expression": "rules['time_equal_to_median_time_past']",
+     "expected": "'time-too-old'"
+    },
+    {
+     "expression": "rules['time_two_hours_and_a_second_ahead']",
+     "expected": "'time-too-new'"
+    },
+    {
+     "expression": "rules['version_1']",
+     "expected": "'bad-version(0x00000001)'"
+    },
+    {
+     "expression": "(len(rules), ok)",
+     "expected": "(14, 'accepted')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "The best chain has the most work",
+   "slide": 15,
+   "branch": "Verifying and agreeing",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "a, b = R['b7_after'], R['b7_before']\nw1 = int(a['chainwork_x'], 16)\nw2 = int(a['chainwork_tip'], 16)\n(w1, w2, a['tip_is_y2'])",
+   "show": [
+    {
+     "expression": "w1",
+     "expected": "206"
+    },
+    {
+     "expression": "w2",
+     "expected": "208"
+    },
+    {
+     "expression": "a['tip_is_y2']",
+     "expected": "True"
+    },
+    {
+     "expression": "b['carol_received']",
+     "expected": "49.999"
+    },
+    {
+     "expression": "a['carol_received']",
+     "expected": "0.0"
+    },
+    {
+     "expression": "b['pay_confirmations']",
+     "expected": "1"
+    },
+    {
+     "expression": "a['pay_confirmations']",
+     "expected": "-2"
+    },
+    {
+     "expression": "(w1, w2, a['tip_is_y2'])",
+     "expected": "(206, 208, True)"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "The coinbase of Bitcoin Core today",
+   "slide": 18,
+   "branch": "Building the block",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "t = R['b1_template0']\nw = t['weightlimit']\nk = R['b5_core_coinbase']\nhx = L.push_num(k['height']).hex()\n(w, k['height'], hx)",
+   "show": [
+    {
+     "expression": "w",
+     "expected": "4000000"
+    },
+    {
+     "expression": "k['height']",
+     "expected": "2204"
+    },
+    {
+     "expression": "hx",
+     "expected": "'029c08'"
+    },
+    {
+     "expression": "k['scriptsig']",
+     "expected": "'029c0800'"
+    },
+    {
+     "expression": "k['locktime'] == k['height'] - 1",
+     "expected": "True"
+    },
+    {
+     "expression": "hex(k['sequence'])",
+     "expected": "'0xfffffffe'"
+    },
+    {
+     "expression": "k['version']",
+     "expected": "2"
+    },
+    {
+     "expression": "(w, k['height'], hx)",
+     "expected": "(4000000, 2204, '029c08')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "The header of a mined block",
+   "slide": 20,
+   "branch": "Building the block",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "h = L.header(R['b1_getblock_raw_header'])\nok = L.pow_ok(h['hash'], h['bits'])\nz = L.leading_zero_bits(h['hash'])\n(h['bytes'], h['version'], ok)",
+   "show": [
+    {
+     "expression": "h['bytes']",
+     "expected": "80"
+    },
+    {
+     "expression": "h['version']",
+     "expected": "536870912"
+    },
+    {
+     "expression": "h['bits']",
+     "expected": "'207fffff'"
+    },
+    {
+     "expression": "h['nonce']",
+     "expected": "0"
+    },
+    {
+     "expression": "z",
+     "expected": "6"
+    },
+    {
+     "expression": "ok",
+     "expected": "True"
+    },
+    {
+     "expression": "(h['bytes'], h['version'], ok)",
+     "expected": "(80, 536870912, True)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "The extra nonce changes the merkle root",
+   "slide": 21,
+   "branch": "Building the block",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "e = R['b5_extranonce']\nt1, t2 = e['coinbase_txid_1'], e['coinbase_txid_2']\nm1, m2 = e['merkle_1'], e['merkle_2']\nn1, n2 = e['nonce_1'], e['nonce_2']\n(t1 != t2, m1 != m2, n1 == n2)",
+   "show": [
+    {
+     "expression": "t1 != t2",
+     "expected": "True"
+    },
+    {
+     "expression": "m1 != m2",
+     "expected": "True"
+    },
+    {
+     "expression": "n1 == n2",
+     "expected": "True"
+    },
+    {
+     "expression": "e['hash_1'] != e['hash_2']",
+     "expected": "True"
+    },
+    {
+     "expression": "(t1 != t2, m1 != m2, n1 == n2)",
+     "expected": "(True, True, True)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "Proof of work is a nonce lottery",
+   "slide": 24,
+   "branch": "Proof of work",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "lo = hw(32)[:8]\nup = hw(32, 'W')[:8]\nns = range(1, 10 ** 6)\nok = lambda n, z: hw(n).startswith('0' * z)\nf = lambda z: next(n for n in ns if ok(n, z))\nt = [f(z) for z in (1, 2, 3, 4)]\n(up, t)",
+   "show": [
+    {
+     "expression": "lo",
+     "expected": "'09cb91f8'"
+    },
+    {
+     "expression": "up",
+     "expected": "'6bbe6a3d'"
+    },
+    {
+     "expression": "t",
+     "expected": "[32, 228, 3460, 27835]"
+    },
+    {
+     "expression": "(up, t)",
+     "expected": "('6bbe6a3d', [32, 228, 3460, 27835])"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "Target, bits and difficulty",
+   "slide": 27,
+   "branch": "Proof of work",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "tg = L.bits_to_target('1903a30c')\nd = L.difficulty('1903a30c')\nneed = 256 - tg.bit_length()\n(tg.bit_length(), round(d))",
+   "show": [
+    {
+     "expression": "tg.bit_length()",
+     "expected": "194"
+    },
+    {
+     "expression": "round(d)",
+     "expected": "1180923195"
+    },
+    {
+     "expression": "need",
+     "expected": "62"
+    },
+    {
+     "expression": "hex(L.target_to_bits(tg))",
+     "expected": "'0x1903a30c'"
+    },
+    {
+     "expression": "(tg.bit_length(), round(d))",
+     "expected": "(194, 1180923195)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "The wait of a one-terahash miner",
+   "slide": 28,
+   "branch": "Proof of work",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "d = L.difficulty('1903a30c')\nsecs = d * 2 ** 32 / 1e12\ndays = secs / 86400\nblocks = round(secs / 600)\nd2 = 132716002350731.3\nhr = f'{d2 * 2 ** 32 / 600:.2e}'\n(round(days, 1), blocks)",
+   "show": [
+    {
+     "expression": "round(days, 1)",
+     "expected": "58.7"
+    },
+    {
+     "expression": "blocks",
+     "expected": "8453"
+    },
+    {
+     "expression": "hr",
+     "expected": "'9.50e+20'"
+    },
+    {
+     "expression": "(round(days, 1), blocks)",
+     "expected": "(58.7, 8453)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "Retargeting on a real epoch",
+   "slide": 29,
+   "branch": "Proof of work",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "a, z, bits = 1712783853, 1713969900, '17034219'\nnew = L.retarget(a, z, bits)\nbias = round((2016 / 2015 - 1) * 100, 3)\n(z - a, hex(new), bias)",
+   "show": [
+    {
+     "expression": "z - a",
+     "expected": "1186047"
+    },
+    {
+     "expression": "hex(new)",
+     "expected": "'0x170331db'"
+    },
+    {
+     "expression": "new == 0x170331db",
+     "expected": "True"
+    },
+    {
+     "expression": "round(1209600 / (z - a), 4)",
+     "expected": "1.0199"
+    },
+    {
+     "expression": "bias",
+     "expected": "0.05"
+    },
+    {
+     "expression": "(z - a, hex(new), bias)",
+     "expected": "(1186047, '0x170331db', 0.05)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "The factor-of-four clamp",
+   "slide": 30,
+   "branch": "Proof of work",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "t0 = L.bits_to_target('17034219')\nrt = lambda s: L.retarget(0, s, '17034219')\ntg = lambda s: L.bits_to_target(rt(s)) / t0\nr = [round(tg(s), 2) for s in (10**5, 1209600, 10**7)]\nr",
+   "show": [
+    {
+     "expression": "r",
+     "expected": "[0.25, 1.0, 4.0]"
+    },
+    {
+     "expression": "hex(rt(10 ** 5))",
+     "expected": "'0x1700d086'"
+    },
+    {
+     "expression": "hex(rt(10 ** 7))",
+     "expected": "'0x170d0864'"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "Regtest never retargets, testnet4 has BIP 94",
+   "slide": 31,
+   "branch": "Proof of work",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "ch = ['main', 'testnet4', 'regtest']\nno = [cv(c, r'fPowNoRetargeting = (\\w+)') for c in ch]\nb94 = [cv(c, r'enforce_BIP94 = (\\w+)') for c in ch]\n(no[2], b94[1])",
+   "show": [
+    {
+     "expression": "no",
+     "expected": "['false', 'false', 'true']"
+    },
+    {
+     "expression": "b94",
+     "expected": "['false', 'true', 'opts']"
+    },
+    {
+     "expression": "R['b2_bits']['2017']",
+     "expected": "'207fffff'"
+    },
+    {
+     "expression": "seen('core_src_pow.cpp', 'enforce_BIP94')",
+     "expected": "True"
+    },
+    {
+     "expression": "(no[2], b94[1])",
+     "expected": "('true', 'true')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 16,
+   "id": "ex16",
+   "name": "When the 32-bit nonce runs out",
+   "slide": 34,
+   "branch": "Competition and attacks",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "h = 1.029e21\nper = h / 2 ** 32\nbits = [32, bin(0x1fffe000).count('1')]\n(bits, f'{per:.1e}')",
+   "show": [
+    {
+     "expression": "bits",
+     "expected": "[32, 16]"
+    },
+    {
+     "expression": "f'{per:.1e}'",
+     "expected": "'2.4e+11'"
+    },
+    {
+     "expression": "R['b10_rolled']['rolled_bits']",
+     "expected": "'0xe000'"
+    },
+    {
+     "expression": "R['b10_rolled']['versionHex']",
+     "expected": "'2000e000'"
+    },
+    {
+     "expression": "(bits, f'{per:.1e}')",
+     "expected": "([32, 16], '2.4e+11')"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 17,
+   "id": "ex17",
+   "name": "Why a small miner joins a pool",
+   "slide": 36,
+   "branch": "Competition and attacks",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "shares = [0.1, 0.01, 0.001, 0.0001]\nw = [round(1 / (144 * s), 1) for s in shares]\nw",
+   "show": [
+    {
+     "expression": "w",
+     "expected": "[0.1, 0.7, 6.9, 69.4]"
+    },
+    {
+     "expression": "[round(144 * s, 3) for s in shares]",
+     "expected": "[14.4, 1.44, 0.144, 0.014]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 18,
+   "id": "ex18",
+   "name": "Odds of a hash rate attack",
+   "slide": 38,
+   "branch": "Competition and attacks",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "qs = [0.1, 0.3, 0.45]\nodds = [round(pw(q, 6), 4) for q in qs]\ng = [0, 0.5, 1]\nthr = [round((1 - x) / (3 - 2 * x), 4) for x in g]\n(odds, thr)",
+   "show": [
+    {
+     "expression": "odds",
+     "expected": "[0.0002, 0.1321, 0.7661]"
+    },
+    {
+     "expression": "thr",
+     "expected": "[0.3333, 0.25, 0.0]"
+    },
+    {
+     "expression": "(odds, thr)",
+     "expected": "([0.0002, 0.1321, 0.7661], [0.3333, 0.25, 0.0])"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 19,
+   "id": "ex19",
+   "name": "A hard fork splits, a soft fork does not",
+   "slide": 41,
+   "branch": "Changing the rules",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "r = R['b9_lax_block']\nc = R['b9_lax_chain']\n(r['lax_node'], r['strict_node'], c['same_tip'])",
+   "show": [
+    {
+     "expression": "r['lax_node']",
+     "expected": "'accepted'"
+    },
+    {
+     "expression": "r['strict_node']",
+     "expected": "'bad-cb-height'"
+    },
+    {
+     "expression": "c['same_tip']",
+     "expected": "False"
+    },
+    {
+     "expression": "c['height_L']",
+     "expected": "6"
+    },
+    {
+     "expression": "c['height_S']",
+     "expected": "3"
+    },
+    {
+     "expression": "(r['lax_node'], r['strict_node'], c['same_tip'])",
+     "expected": "('accepted', 'bad-cb-height', False)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 20,
+   "id": "ex20",
+   "name": "The minority chain is slow",
+   "slide": 44,
+   "branch": "Changing the rules",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "sh = [0.8, 0.5, 0.2, 0.1]\nd = [round(L.blocks_per_period(s)[1]) for s in sh]\nd",
+   "show": [
+    {
+     "expression": "d",
+     "expected": "[18, 28, 70, 140]"
+    },
+    {
+     "expression": "[round(L.blocks_per_period(s)[0]) for s in sh]",
+     "expected": "[12, 20, 50, 100]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 21,
+   "id": "ex21",
+   "name": "BIP 9 states and the 90 percent vote",
+   "slide": 46,
+   "branch": "Changing the rules",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "v = R['b8_versionbits']['V']['rows']\nst = [x['status'] for x in v]\nth = [math.ceil(0.95 * 2016), math.ceil(0.9 * 2016)]\n(st[-1], th)",
+   "show": [
+    {
+     "expression": "st",
+     "expected": "['defined', 'started', 'started', 'locked_in', 'locked_in', 'active']"
+    },
+    {
+     "expression": "th",
+     "expected": "[1916, 1815]"
+    },
+    {
+     "expression": "[x['height'] for x in v]",
+     "expected": "[143, 144, 287, 288, 431, 432]"
+    },
+    {
+     "expression": "L.signals(0x20200004, 2)",
+     "expected": "True"
+    },
+    {
+     "expression": "v[1]['statistics']['threshold']",
+     "expected": "108"
+    },
+    {
+     "expression": "v[1]['statistics']['period']",
+     "expected": "144"
+    },
+    {
+     "expression": "(st[-1], th)",
+     "expected": "('active', [1916, 1815])"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 22,
+   "id": "ex22",
+   "name": "Buried deployments in chainparams.cpp",
+   "slide": 48,
+   "branch": "Changing the rules",
+   "library": "sen0401_ch12_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "pats = 'BIP34 BIP66 CSV Segwit'.split()\npt = r'%sHeight = (\\d+)'\nhs = [int(cv('main', pt % p)) for p in pats]\nhs",
+   "show": [
+    {
+     "expression": "hs",
+     "expected": "[227931, 363725, 419328, 481824]"
+    },
+    {
+     "expression": "pats",
+     "expected": "['BIP34', 'BIP66', 'CSV', 'Segwit']"
+    }
+   ],
+   "result_picture": "native chart"
+  }
+ ]
+}
