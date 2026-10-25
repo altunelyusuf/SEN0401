@@ -1,0 +1,16 @@
+-__version__ = "1.2.0"
++__version__ = "1.3.0"
++# 1.3.0 (over 1.2.0, two changes only): (1) without SEN0401_DECK the deck to check is the newest deck (by version in the file name) of the chapter in 03-materials/chNN, falling back to
++#   chNN-deck only when 03-materials has none; (2) a plan and a deck of different length, or a slide index of the plan that is not in the deck, is REFUSED with a message naming both lengths (exit 1),
++#   Every other rule and message is unchanged.
++newest_of = lambda files: sorted(files, key=vkey)[-1]
+-    deck = os.environ.get("SEN0401_DECK") or newest(os.path.join(chd, "sen0401_ch%s_deck_v*.pptx" % n)); T = texts(deck)
++    delivered = glob.glob(os.path.join(ROOT, "03-materials", "ch%s" % n, "*_v*_*_*.pptx"))
++    deck = os.environ.get("SEN0401_DECK") or (newest_of(delivered) if delivered else newest(os.path.join(chd, "sen0401_ch%s_deck_v*.pptx" % n))); T = texts(deck)
++    if len(S) != len(T):
++        bad.append("plan/deck mismatch: the plan has %d slides and the deck file %s has %d slides" % (len(S), os.path.basename(deck), len(T)))
+-            if x["analogy"] not in " ".join(T[x["slide"] - 1]): bad.append("analogy for %s is not on slide %s" % (x["concept"], x["slide"]))
++            if not 1 <= x["slide"] <= len(T): bad.append("plan/deck mismatch: the analogy for %s is on slide %s, which is not in the deck (%d slides; the plan has %d)" % (x["concept"], x["slide"], le
++            elif x["analogy"] not in " ".join(T[x["slide"] - 1]): bad.append("analogy for %s is not on slide %s" % (x["concept"], x["slide"]))
+changed lines: 14
+RESULT PASS
