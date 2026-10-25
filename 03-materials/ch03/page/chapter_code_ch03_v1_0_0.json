@@ -1,0 +1,526 @@
+{
+ "manifest": "chapter_code_ch03_v1_0_0",
+ "chapter": 3,
+ "deck": "SEN0401_Ch03_BitcoinCore_3e_v3_0_0.pptx",
+ "deck_version": "3.0.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the chapter library defined in the page; the manifest equals the deck's code boxes",
+ "library": {
+  "module": "sen0401_ch03_core_lib_v1_0_0",
+  "file": "08-tooling/sen0401_ch03_core_lib_v1_0_0.py",
+  "sha256": "5b4441bdd99a26df697929dfd2c2c2ef8005668d6af992010d009e871f771b42",
+  "import": "import sen0401_ch03_core_lib_v1_0_0 as T",
+  "requires": "Python standard library only (hashlib, hmac, json, struct, datetime; base64 is imported by the setup)"
+ },
+ "setup": {
+  "code": "# setup: the chapter library of the page (T = the chapter 3 library); the page runs this before every example\nimport base64\nimport datetime\nimport hashlib\nimport json\nimport sen0401_ch03_core_lib_v1_0_0 as T",
+  "data": {}
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "A version number that carries a vote",
+   "slide": 8,
+   "branch": "From Bitcoin to Bitcoin Core",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "v = 0x20000002\ntop = v >> 29\nbits = [b for b in range(29) if v >> b & 1]\n(hex(v), top, bits)",
+   "show": [
+    {
+     "expression": "(hex(v), top, bits)",
+     "expected": "('0x20000002', 1, [1])"
+    },
+    {
+     "expression": "bin(v)[2:].zfill(32)",
+     "expected": "'00100000000000000000000000000010'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "Release tags sort by number, not by letters",
+   "slide": 11,
+   "branch": "Bitcoin Development Environment",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "final = [t for t in T.TAGS if 'rc' not in t]\ntext = sorted(final)\nnum = sorted(final, key=T.version_key)\n(text[0], num[0])",
+   "show": [
+    {
+     "expression": "(text[0], num[0])",
+     "expected": "('v0.10.0', 'v0.9.5')"
+    },
+    {
+     "expression": "text[:4]",
+     "expected": "['v0.10.0', 'v0.21.2', 'v0.9.5', 'v22.0']"
+    },
+    {
+     "expression": "num[:4]",
+     "expected": "['v0.9.5', 'v0.10.0', 'v0.21.2', 'v22.0']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "What a release folder holds",
+   "slide": 12,
+   "branch": "Bitcoin Development Environment",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "bins = T.LAYOUT['bin']\nlibs = T.LAYOUT['libexec']\n(len(bins), len(libs), 'bitcoind' in bins)",
+   "show": [
+    {
+     "expression": "(len(bins), len(libs), 'bitcoind' in bins)",
+     "expected": "(7, 3, True)"
+    },
+    {
+     "expression": "[(b, T.ROLE[b]) for b in bins]",
+     "expected": "[('bitcoin', 'starts the other programs'), ('bitcoin-cli', 'calls the node by name'), ('bitcoin-qt', 'node with a window'), ('bitcoin-tx', 'builds and edits transactions'), ('bitcoin-util', 'small helper commands'), ('bitcoin-wallet', 'works on wallet files'), ('bitcoind', 'the node, as a daemon')]"
+    },
+    {
+     "expression": "libs",
+     "expected": "['bitcoin-gui', 'bitcoin-node', 'test_bitcoin']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "A download must match its published hash",
+   "slide": 14,
+   "branch": "Bitcoin Development Environment",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "listed = T.SUMS['bitcoin-31.1-x86_64-linux-gnu.tar.gz']\ncomputed = T.RECOMPUTED\n(listed == computed, listed[:12])",
+   "show": [
+    {
+     "expression": "(listed == computed, listed[:12])",
+     "expected": "(True, 'b80d9c3e04da')"
+    },
+    {
+     "expression": "len(listed)",
+     "expected": "64"
+    },
+    {
+     "expression": "computed[:12]",
+     "expected": "'b80d9c3e04da'"
+    }
+   ],
+   "result_picture": "diagram"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "The command line wins over the file",
+   "slide": 16,
+   "branch": "Running a Bitcoin Core Node",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "conf = T.parse_conf(T.CONF_TEXT)\ncli = {'dbcache': '2048'}\nused = {**conf, **cli}\nused",
+   "show": [
+    {
+     "expression": "used",
+     "expected": "{'dbcache': '2048', 'txindex': '1'}"
+    },
+    {
+     "expression": "conf",
+     "expected": "{'dbcache': '450', 'txindex': '1'}"
+    },
+    {
+     "expression": "cli",
+     "expected": "{'dbcache': '2048'}"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "How the database cache is shared out",
+   "slide": 18,
+   "branch": "Running a Bitcoin Core Node",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "total = 1024\nparts = T.cache_split(total)\n(parts, sum(parts))",
+   "show": [
+    {
+     "expression": "(parts, sum(parts))",
+     "expected": "((2, 8, 1014), 1024)"
+    },
+    {
+     "expression": "parts",
+     "expected": "(2, 8, 1014)"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "Pruning and the transaction index do not mix",
+   "slide": 19,
+   "branch": "Running a Bitcoin Core Node",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "a, b = {'prune': 550}, {'txindex': 1}\nc = {'prune': 550, 'txindex': 1}\n[T.check_options(o)[0] for o in (a, b, c)]",
+   "show": [
+    {
+     "expression": "[T.check_options(o)[0] for o in (a, b, c)]",
+     "expected": "['ok', 'ok', 'refused']"
+    },
+    {
+     "expression": "[T.check_options(o)[1] for o in (a, b, c)]",
+     "expected": "['no conflict', 'no conflict', 'prune mode is incompatible with txindex']"
+    },
+    {
+     "expression": "[a, b, c]",
+     "expected": "[{'prune': 550}, {'txindex': 1}, {'prune': 550, 'txindex': 1}]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "An alert text is cleaned before it runs",
+   "slide": 21,
+   "branch": "Running a Bitcoin Core Node",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "msg = \"x'; reboot; '\"\ncmd = 'notify.sh \"Alert: %s\"'\n(T.clean(msg), len(msg) - len(T.clean(msg)))",
+   "show": [
+    {
+     "expression": "(T.clean(msg), len(msg) - len(T.clean(msg)))",
+     "expected": "('x; reboot; ', 2)"
+    },
+    {
+     "expression": "T.alert_command(cmd, msg)",
+     "expected": "'notify.sh \"Alert: \\'x; reboot; \\'\"'"
+    },
+    {
+     "expression": "msg",
+     "expected": "\"x'; reboot; '\""
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "One JSON-RPC call and its reply",
+   "slide": 24,
+   "branch": "Bitcoin Core API",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "body = T.rpc_body('getblockchaininfo')\nreply = json.loads(T.REPLY)\nr = reply['result']\n(json.loads(body)['method'], r['blocks'], reply['error'])",
+   "show": [
+    {
+     "expression": "(json.loads(body)['method'], r['blocks'], reply['error'])",
+     "expected": "('getblockchaininfo', 799278, None)"
+    },
+    {
+     "expression": "reply['id']",
+     "expected": "'curltest'"
+    },
+    {
+     "expression": "sorted(reply)",
+     "expected": "['error', 'id', 'result']"
+    }
+   ],
+   "result_picture": "diagram"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "The cookie is a fresh password",
+   "slide": 25,
+   "branch": "Bitcoin Core API",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "cookie = '__cookie__:' + T.COOKIE\ntoken = base64.b64encode(cookie.encode()).decode()\nraw = bytes.fromhex(T.COOKIE)\n(len(T.COOKIE), len(raw), token[:12])",
+   "show": [
+    {
+     "expression": "(len(T.COOKIE), len(raw), token[:12])",
+     "expected": "(64, 32, 'X19jb29raWVf')"
+    },
+    {
+     "expression": "cookie[:11]",
+     "expected": "'__cookie__:'"
+    },
+    {
+     "expression": "'Basic ' + token[:12]",
+     "expected": "'Basic X19jb29raWVf'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "rpcauth stores a salted hash, not the password",
+   "slide": 26,
+   "branch": "Bitcoin Core API",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "salt = T.SALT\nline = T.rpcauth('alice', 'correct horse', salt)\n[len(x) for x in line.replace('$', ':').split(':')]",
+   "show": [
+    {
+     "expression": "[len(x) for x in line.replace('$', ':').split(':')]",
+     "expected": "[5, 32, 64]"
+    },
+    {
+     "expression": "line.split('$')",
+     "expected": "['alice:00112233445566778899aabbccddeeff', '26b9b3d74500792f83e3609dba8e7b357cac39ca6c187dde6aa86ec6cfeae275']"
+    },
+    {
+     "expression": "line == T.rpcauth('alice', 'wrong', salt)",
+     "expected": "False"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "Reading getblockchaininfo",
+   "slide": 27,
+   "branch": "Bitcoin Core API",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "i = json.loads(T.GETBLOCKCHAININFO)\n(i['chain'], i['blocks'], i['initialblockdownload'])",
+   "show": [
+    {
+     "expression": "(i['chain'], i['blocks'], i['initialblockdownload'])",
+     "expected": "('main', 0, True)"
+    },
+    {
+     "expression": "i['bestblockhash']",
+     "expected": "'000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f'"
+    },
+    {
+     "expression": "int(i['chainwork'], 16)",
+     "expected": "4295032833"
+    },
+    {
+     "expression": "i['difficulty']",
+     "expected": "1"
+    },
+    {
+     "expression": "i['verificationprogress']",
+     "expected": "7.061365181330129e-10"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "Decoding Alice's transaction",
+   "slide": 29,
+   "branch": "Exploring and Decoding Transactions",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "tx = json.loads(T.ALICE_DECODED)\nsat = lambda v: round(v * 10**8)\nouts = [(o['n'], sat(o['value'])) for o in tx['vout']]\nouts",
+   "show": [
+    {
+     "expression": "outs",
+     "expected": "[(0, 20000), (1, 75000)]"
+    },
+    {
+     "expression": "[o['scriptPubKey']['type'] for o in tx['vout']]",
+     "expected": "['witness_v1_taproot', 'witness_v0_keyhash']"
+    },
+    {
+     "expression": "tx['vsize']",
+     "expected": "143"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "The txid leaves the witness out",
+   "slide": 30,
+   "branch": "Exploring and Decoding Transactions",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "raw = bytes.fromhex(T.ALICE_HEX)\ntxid, wtxid = T.txid(raw), T.wtxid(raw)\n(txid[:16], wtxid[:16])",
+   "show": [
+    {
+     "expression": "(txid[:16], wtxid[:16])",
+     "expected": "('466200308696215b', 'f7cdbc7cf8b910d3')"
+    },
+    {
+     "expression": "txid == json.loads(T.ALICE_DECODED)['txid']",
+     "expected": "True"
+    },
+    {
+     "expression": "wtxid == json.loads(T.ALICE_DECODED)['hash']",
+     "expected": "True"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "Weight units and virtual bytes",
+   "slide": 31,
+   "branch": "Exploring and Decoding Transactions",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "raw = bytes.fromhex(T.ALICE_HEX)\nbase, wit = T.split_witness(raw)\nweight = 4 * len(base) + len(wit)\n(weight, -(-weight // 4))",
+   "show": [
+    {
+     "expression": "(weight, -(-weight // 4))",
+     "expected": "(569, 143)"
+    },
+    {
+     "expression": "(len(raw), len(base), len(wit))",
+     "expected": "(194, 125, 69)"
+    },
+    {
+     "expression": "json.loads(T.ALICE_DECODED)['weight']",
+     "expected": "569"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 16,
+   "id": "ex16",
+   "name": "A block's name is the hash of its header",
+   "slide": 34,
+   "branch": "Exploring Blocks",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "b = T.BLOCK_123456\nh = T.header(b)\nname = T.hash256(h)[::-1].hex()\n(len(h), name == b['id'], name[:24])",
+   "show": [
+    {
+     "expression": "(len(h), name == b['id'], name[:24])",
+     "expected": "(80, True, '0000000000002917ed80650c')"
+    },
+    {
+     "expression": "T.header_fields(b)",
+     "expected": "[('version', 4, '01000000'), ('previous block', 32, '9500c43a'), ('merkle root', 32, '6cd86237'), ('time', 4, 'a6c8cb4d'), ('bits', 4, 'b3936a1a'), ('nonce', 4, 'e3143991')]"
+    },
+    {
+     "expression": "name",
+     "expected": "'0000000000002917ed80650c6174aac8dfc46f5fe36480aaef682ff6cd83c3ca'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 17,
+   "id": "ex17",
+   "name": "Rebuilding the merkle root",
+   "slide": 35,
+   "branch": "Exploring Blocks",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "ids = T.TXIDS_123456\nroot, sizes = T.merkle(ids)\n(root[:16], sizes)",
+   "show": [
+    {
+     "expression": "(root[:16], sizes)",
+     "expected": "('0e60651a9934e8f0', [13, 7, 4, 2, 1])"
+    },
+    {
+     "expression": "root == T.BLOCK_123456['merkle_root']",
+     "expected": "True"
+    },
+    {
+     "expression": "root",
+     "expected": "'0e60651a9934e8f0decd1c5fde39309e48fca0cd1c84a21ddfde95033762d86c'"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 18,
+   "id": "ex18",
+   "name": "Median time of the last eleven blocks",
+   "slide": 36,
+   "branch": "Exploring Blocks",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "t = T.BLOCK_TIMES\nwindow = [t[h] for h in range(123446, 123457)]\nmedian = sorted(window)[5]\n(median, median == T.BLOCK_123456['mediantime'])",
+   "show": [
+    {
+     "expression": "(median, median == T.BLOCK_123456['mediantime'])",
+     "expected": "(1305197900, True)"
+    },
+    {
+     "expression": "[(x - window[0]) // 60 for x in window]",
+     "expected": "[0, 27, 48, 54, 70, 103, 129, 143, 146, 148, 151]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 19,
+   "id": "ex19",
+   "name": "How fresh are the alternative toolkits",
+   "slide": 39,
+   "branch": "Alternative Clients, Libraries, and Toolkits",
+   "library": "sen0401_ch03_core_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "days = T.age_days(T.QUERIED)\n(days['python-bitcoinlib'], days['bitcoinjs-lib'])",
+   "show": [
+    {
+     "expression": "(days['python-bitcoinlib'], days['bitcoinjs-lib'])",
+     "expected": "(1217, 25)"
+    },
+    {
+     "expression": "sorted(days.items(), key=lambda kv: kv[1])",
+     "expected": "[('bitcoinjs-lib', 25), ('btcd', 70), ('rust-bitcoin', 72), ('pycoin', 180), ('bitcore-lib', 438), ('bitcoinj', 588), ('bitcoin-s', 615), ('python-bitcoinlib', 1217), ('bcoin', 3003)]"
+    }
+   ],
+   "result_picture": "native chart"
+  }
+ ]
+}
