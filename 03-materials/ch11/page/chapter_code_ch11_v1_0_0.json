@@ -1,0 +1,575 @@
+{
+ "manifest": "chapter_code_ch11_v1_0_0",
+ "chapter": 11,
+ "deck": "SEN0401_Ch11_TheBlockchain_3e_v2_0_0.pptx",
+ "deck_version": "2.0.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the library defined in the page",
+ "library": {
+  "module": "sen0401_ch11_lib",
+  "file": "03-materials/ch11/assets/sen0401_ch11_lib-1.0.0-py3-none-any.whl",
+  "sha256": "6946a8f136bd777a3d6175514539902e23b2ee605028b13eb0d1d532c5db7477",
+  "modules": [
+   "sen0401_ch11_lib_v1_0_0",
+   "sen0401_ch10_p2p_v1_0_0"
+  ],
+  "import": "import sen0401_ch11_lib_v1_0_0 as L, hashlib"
+ },
+ "setup": {
+  "code": "# setup: the chapter library of the page (L = chapter 11 library, R = the single regtest record of Bitcoin Core 31.1 inside the same wheel); the page boots these names\nimport sen0401_ch11_lib_v1_0_0 as L, hashlib\nR = L.run()",
+  "data": {}
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "A block is a header, a count and transactions",
+   "slide": 7,
+   "branch": "The block and the chain",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "g = L.chainparams_genesis('main')\nsize = 80 + 1 + g['tx_bytes']\ncore = R['b1_genesis']['block']['size']\n(size, core, g['tx_bytes'])",
+   "show": [
+    {
+     "expression": "size",
+     "expected": "285"
+    },
+    {
+     "expression": "core",
+     "expected": "285"
+    },
+    {
+     "expression": "g['tx_bytes']",
+     "expected": "204"
+    },
+    {
+     "expression": "(size, core, g['tx_bytes'])",
+     "expected": "(285, 285, 204)"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "The 80-byte header has six fields",
+   "slide": 9,
+   "branch": "The block and the chain",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "hx = R['b3_headers_480_489'][0]\nb, h = bytes.fromhex(hx), L.header(hx)\ncuts = [0, 4, 36, 68, 72, 76, 80]\nwidths = [y - x for x, y in zip(cuts, cuts[1:])]\n(widths, len(b), h['bits'])",
+   "show": [
+    {
+     "expression": "widths",
+     "expected": "[4, 32, 32, 4, 4, 4]"
+    },
+    {
+     "expression": "len(b)",
+     "expected": "80"
+    },
+    {
+     "expression": "h['bits']",
+     "expected": "'207fffff'"
+    },
+    {
+     "expression": "hex(h['version'])",
+     "expected": "'0x20000000'"
+    },
+    {
+     "expression": "(widths, len(b), h['bits'])",
+     "expected": "([4, 32, 32, 4, 4, 4], 80, '207fffff')"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "Time, target and difficulty",
+   "slide": 11,
+   "branch": "The block and the chain",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "t0 = L.chainparams_genesis('main')['time']\nwhen = L.iso(t0)\nmtp = L.median_time_past(R['b3_timestamps_110_121'])\ntg = L.bits_to_target('1d00ffff')\ndiff = L.difficulty('1903a30c')\n(when, mtp, tg.bit_length(), round(diff))",
+   "show": [
+    {
+     "expression": "when",
+     "expected": "'2009-01-03 18:15:05'"
+    },
+    {
+     "expression": "mtp",
+     "expected": "1792052132"
+    },
+    {
+     "expression": "tg.bit_length()",
+     "expected": "224"
+    },
+    {
+     "expression": "round(diff)",
+     "expected": "1180923195"
+    },
+    {
+     "expression": "(when, mtp, tg.bit_length(), round(diff))",
+     "expected": "('2009-01-03 18:15:05', 1792052132, 224, 1180923195)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "The headline in the genesis block",
+   "slide": 13,
+   "branch": "The block and the chain",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "g = L.chainparams_genesis('main')\nmsg = g['message']\nzeros = L.leading_zero_hex(g['hash'])\n(msg[:24], zeros)",
+   "show": [
+    {
+     "expression": "msg",
+     "expected": "'The Times 03/Jan/2009 Chancellor on brink of second bailout for banks'"
+    },
+    {
+     "expression": "zeros",
+     "expected": "10"
+    },
+    {
+     "expression": "g['hash'][:16]",
+     "expected": "'000000000019d668'"
+    },
+    {
+     "expression": "g['time']",
+     "expected": "1231006505"
+    },
+    {
+     "expression": "(msg[:24], zeros)",
+     "expected": "('The Times 03/Jan/2009 Ch', 10)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "A block's name is the hash of its header",
+   "slide": 16,
+   "branch": "The block and the chain",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "g = L.chainparams_genesis('main')\nb = bytes.fromhex(g['header'])\nonce = hashlib.sha256(b).digest()[::-1].hex()\ntwice = L.sha256d(b)[::-1].hex()\n(once[:12], twice == g['hash'])",
+   "show": [
+    {
+     "expression": "once[:12]",
+     "expected": "'6dd6c5716cc8'"
+    },
+    {
+     "expression": "twice[:12]",
+     "expected": "'000000000019'"
+    },
+    {
+     "expression": "twice == g['hash']",
+     "expected": "True"
+    },
+    {
+     "expression": "(once[:12], twice == g['hash'])",
+     "expected": "('6dd6c5716cc8', True)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "Height in the coinbase and coinbase maturity",
+   "slide": 17,
+   "branch": "The block and the chain",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "c = R['b3_bip34']\nheights = sorted(L.bip34_height(v) for v in c.values())\nm = R['b7_maturity']\na, b = m['confirmations_99'], m['confirmations_100']\nok = [a['allowed'], b['allowed']]\n(heights, ok)",
+   "show": [
+    {
+     "expression": "heights",
+     "expected": "[1, 16, 17, 127, 128, 255, 256, 500]"
+    },
+    {
+     "expression": "ok",
+     "expected": "[False, True]"
+    },
+    {
+     "expression": "(heights, ok)",
+     "expected": "([1, 16, 17, 127, 128, 255, 256, 500], [False, True])"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "Back-links make the history hard to change",
+   "slide": 18,
+   "branch": "The block and the chain",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "hs = R['b3_headers_480_489']\np = [L.header(x) for x in hs]\nlink = lambda x, y: y['prev'] == x['hash']\nok = sum(map(link, p, p[1:]))\nt = L.tamper_chain(hs, 3)\n(ok, t['broken_links'], t['must_remine'])",
+   "show": [
+    {
+     "expression": "ok",
+     "expected": "9"
+    },
+    {
+     "expression": "t['broken_links']",
+     "expected": "[4]"
+    },
+    {
+     "expression": "t['must_remine']",
+     "expected": "7"
+    },
+    {
+     "expression": "t['own_hash_changed']",
+     "expected": "True"
+    },
+    {
+     "expression": "(ok, t['broken_links'], t['must_remine'])",
+     "expected": "(9, [4], 7)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "Forks and the attacker's odds",
+   "slide": 19,
+   "branch": "The block and the chain",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "f = R['b6_fork']\nsame = f['prev1'] == f['prev2'] == f['parent']\ngrew = f['active_is'] == f['extension']\ncu = lambda z: round(L.catchup(0.1, z), 7)\nodds = [cu(z) for z in (0, 1, 2, 6)]\n(same, grew, odds)",
+   "show": [
+    {
+     "expression": "same",
+     "expected": "True"
+    },
+    {
+     "expression": "grew",
+     "expected": "True"
+    },
+    {
+     "expression": "odds",
+     "expected": "[1.0, 0.2045873, 0.0509779, 0.0002428]"
+    },
+    {
+     "expression": "(same, grew, odds)",
+     "expected": "(True, True, [1.0, 0.2045873, 0.0509779, 0.0002428])"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "The merkle tree: many transactions, one root",
+   "slide": 22,
+   "branch": "Merkle trees",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "b = R['b4_blocks']['4']\nlv = [len(x) for x in L.merkle_levels(b['txids'])]\nroot = L.merkle_root(b['txids']) == b['merkleroot']\no = R['b4_blocks']['3']\nlo = [len(x) for x in L.merkle_levels(o['txids'])]\n(lv, lo, root)",
+   "show": [
+    {
+     "expression": "lv",
+     "expected": "[4, 2, 1]"
+    },
+    {
+     "expression": "lo",
+     "expected": "[3, 2, 1]"
+    },
+    {
+     "expression": "root",
+     "expected": "True"
+    },
+    {
+     "expression": "(lv, lo, root)",
+     "expected": "([4, 2, 1], [3, 2, 1], True)"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "A merkle proof is a short path of hashes",
+   "slide": 24,
+   "branch": "Merkle trees",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "b = R['b4_blocks']['16']\nids = b['txids']\np = L.merkle_path(ids, 10)\ngood = L.follow_path(ids[10], p) == b['merkleroot']\nsize = (len(p), 32 * len(p))\nsizes = [32 * L.depth(n) for n in (1024, 4096, 16000)]\n(size, good, sizes)",
+   "show": [
+    {
+     "expression": "size",
+     "expected": "(4, 128)"
+    },
+    {
+     "expression": "good",
+     "expected": "True"
+    },
+    {
+     "expression": "sizes",
+     "expected": "[320, 384, 448]"
+    },
+    {
+     "expression": "(size, good, sizes)",
+     "expected": "((4, 128), True, [320, 384, 448])"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "Two weaknesses of the merkle tree",
+   "slide": 26,
+   "branch": "Merkle trees",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "ids = [L.sha256d(bytes([i])).hex() for i in range(1, 7)]\ntwin = ids + [ids[4], ids[5]]\nsame = L.merkle_root(ids) == L.merkle_root(twin)\nm = R['b5_mutation']\n(same, m['n_original'], m['n_mutated'])",
+   "show": [
+    {
+     "expression": "same",
+     "expected": "True"
+    },
+    {
+     "expression": "m['n_original']",
+     "expected": "3"
+    },
+    {
+     "expression": "m['n_mutated']",
+     "expected": "4"
+    },
+    {
+     "expression": "m['submit_mutated']",
+     "expected": "{'ok': 'bad-txns-duplicate'}"
+    },
+    {
+     "expression": "m['tip_is_original']",
+     "expected": "True"
+    },
+    {
+     "expression": "(same, m['n_original'], m['n_mutated'])",
+     "expected": "(True, 3, 4)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "A light client verifies with a few hashes",
+   "slide": 27,
+   "branch": "Merkle trees",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "pm = R['b4_proof_for_k_of_16']['proof_hex']\nmb = L.parse_merkleblock(pm)\nn, k = mb['ntx'], len(mb['hashes'])\n(n, k, mb['total'])",
+   "show": [
+    {
+     "expression": "n",
+     "expected": "16"
+    },
+    {
+     "expression": "k",
+     "expected": "5"
+    },
+    {
+     "expression": "mb['total']",
+     "expected": "248"
+    },
+    {
+     "expression": "R['b4_proof_for_k_of_16']['verify'] == [R['b4_proof_for_k_of_16']['txid']]",
+     "expected": "True"
+    },
+    {
+     "expression": "(n, k, mb['total'])",
+     "expected": "(16, 5, 248)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "Five chains, one code base",
+   "slide": 30,
+   "branch": "Test blockchains",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "names = 'main test testnet4 signet regtest'.split()\nports = [L.chain_facts(k)['port'] for k in names]\ngb = [L.chain_facts(k)['assumed_gb'] for k in names]\nports",
+   "show": [
+    {
+     "expression": "ports",
+     "expected": "[8333, 18333, 48333, 38333, 18444]"
+    },
+    {
+     "expression": "gb",
+     "expected": "[856, 245, 31, 24, 0]"
+    },
+    {
+     "expression": "(ports, gb)",
+     "expected": "([8333, 18333, 48333, 38333, 18444], [856, 245, 31, 24, 0])"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "Testnet: the minimum-difficulty rule",
+   "slide": 32,
+   "branch": "Test blockchains",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "names = 'main test testnet4 signet regtest'.split()\nflags = [L.chain_facts(k)['min_diff'] for k in names]\nh = 'bitcoind_help_31.1.txt'\ndep = L.has(h, 'testnet3 is deprecated')\ng4 = L.chainparams_genesis('testnet4')['hash'][:16]\n(flags, dep)",
+   "show": [
+    {
+     "expression": "flags",
+     "expected": "[False, True, True, False, True]"
+    },
+    {
+     "expression": "dep",
+     "expected": "True"
+    },
+    {
+     "expression": "g4",
+     "expected": "'00000000da84f2ba'"
+    },
+    {
+     "expression": "(flags, dep)",
+     "expected": "([False, True, True, False, True], True)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "Every chain has its own address prefix",
+   "slide": 35,
+   "branch": "Test blockchains",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "names = 'main test testnet4 signet regtest'.split()\nf = [L.chain_facts(k) for k in names]\nhrp = [x['hrp'] for x in f]\np2pkh = [x['p2pkh'] for x in f]\na = R['b8_regtest_addresses']['bech32']\nhrp",
+   "show": [
+    {
+     "expression": "hrp",
+     "expected": "['bc', 'tb', 'tb', 'tb', 'bcrt']"
+    },
+    {
+     "expression": "p2pkh",
+     "expected": "[0, 111, 111, 111, 111]"
+    },
+    {
+     "expression": "a[:6]",
+     "expected": "'bcrt1q'"
+    },
+    {
+     "expression": "(hrp, p2pkh)",
+     "expected": "(['bc', 'tb', 'tb', 'tb', 'bcrt'], [0, 111, 111, 111, 111])"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 16,
+   "id": "ex16",
+   "name": "Signet: the challenge script and the magic",
+   "slide": 37,
+   "branch": "Test blockchains",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "c = R['b9_chains']['signet']['info']['signet_challenge']\nops = L.script_ops(c)\nmagic = L.signet_magic(c)\neasy = L.signet_magic('51')\n(len(c) // 2, magic, easy)",
+   "show": [
+    {
+     "expression": "ops",
+     "expected": "['OP_1', 'PUSH33', 'PUSH33', 'OP_2', 'OP_CHECKMULTISIG']"
+    },
+    {
+     "expression": "len(c) // 2",
+     "expected": "71"
+    },
+    {
+     "expression": "magic",
+     "expected": "'0a03cf40'"
+    },
+    {
+     "expression": "easy",
+     "expected": "'54d26fbd'"
+    },
+    {
+     "expression": "(len(c) // 2, magic, easy)",
+     "expected": "(71, '0a03cf40', '54d26fbd')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 17,
+   "id": "ex17",
+   "name": "Regtest: halving every 150 blocks",
+   "slide": 40,
+   "branch": "Test blockchains",
+   "library": "sen0401_ch11_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "half = L.chain_facts('regtest')['halving']\nhs = ['1', '149', '150', '299', '300', '450']\nbtc = [L.subsidy(int(h), half) / 10**8 for h in hs]\ns = R['b2_subsidy']\nsame = all(L.subsidy(int(h), half) == s[h] for h in s)\n(half, btc, same)",
+   "show": [
+    {
+     "expression": "half",
+     "expected": "150"
+    },
+    {
+     "expression": "btc",
+     "expected": "[50.0, 50.0, 25.0, 25.0, 12.5, 6.25]"
+    },
+    {
+     "expression": "same",
+     "expected": "True"
+    },
+    {
+     "expression": "(half, btc, same)",
+     "expected": "(150, [50.0, 50.0, 25.0, 25.0, 12.5, 6.25], True)"
+    }
+   ],
+   "result_picture": "native chart"
+  }
+ ]
+}
