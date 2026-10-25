@@ -1,0 +1,590 @@
+{
+ "chapter": 5,
+ "deck": "SEN0401_Ch05_WalletRecovery_3e_v3_2_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 5: Wallet Recovery",
+   "say": "Welcome to chapter five. A wallet is not a bag of coins but a bag of keys, and keys can be lost. Today we learn how one seed, written as twelve words, brings every key back.",
+   "takeaway": ""
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "Today has seven parts, and every part opens with a divider. The numbers are slide numbers, so you can jump back to any part. The code slides are numbered in order and match the course page.",
+   "takeaway": "Seven parts, and at the end a backup you have actually tested."
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "These seven questions are the chapter's own competency questions. If you can answer them at the end, you own the chapter. Keep them in mind as we move through the parts.",
+   "takeaway": "If you can answer these seven, chapter 5 is yours."
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, eight branches",
+   "say": "The chapter is a tree of eight branches. The bars count the concepts in each branch of the course ontology. Today we walk the spine: keys, codes, the BIP39 stack, the HD tree, paths, non-key data and deployment.",
+   "takeaway": "Today's spine: keys, codes, the tree, paths, backups."
+  },
+  {
+   "n": 5,
+   "kind": "content",
+   "title": "Two guesses from 7,002 bitcoin",
+   "say": "Stefan Thomas was paid 7,002 bitcoin in 2011 and locked the keys on an encrypted drive. He lost the password and has two guesses left. This chapter is the discipline that makes the story impossible to repeat.",
+   "read": {
+    "label": "NYT via Business Standard (news)",
+    "url": "https://www.business-standard.com/article/international/a-german-programmer-has-two-guesses-to-unlock-bitcoin-worth-240-million-121011400070_1.html"
+   },
+   "takeaway": "Memory is not a backup; a recovery code you never test is barely one",
+   "concept": "RecoveryCodes"
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "The tools we run today",
+   "say": "Every code slide uses the same small chapter library, written for reading and checked against the standards' test vectors. It is not for real money. The sample data names on the right are reused on every slide.",
+   "takeaway": "Same library, same data, every code slide: only the idea changes."
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "Part 1: Keys in wallets",
+   "say": "Part one asks what a wallet really holds and why one seed beats a bag of keys. Six concepts open the part. The picture shows the idea: one seed and a rule give every key.",
+   "takeaway": ""
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "What a wallet really holds",
+   "say": "A wallet database mostly holds keys. Some databases hold only public keys, so the application can watch funds but not spend them. Then an external signer, such as a hardware signing device, makes the signature.",
+   "takeaway": "Keys are the wallet; everything else can be rebuilt from them."
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "Three ways to make keys",
+   "say": "Independent keys are made one by one and each needs its own backup. A deterministic wallet derives every key from one seed. A hierarchical wallet adds a tree, so one seed also gives organised branches. A key tweak is the small step between keys.",
+   "takeaway": "Independent keys: a backup for each. Seed-based keys: one backup."
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Everyday pictures for part 1",
+   "say": "Each term gets one everyday picture. The recipe is the best one: ingredients are the seed, the recipe is the rule, and the dish is a key. Say the picture first, then the wallet meaning.",
+   "takeaway": "A seed is a recipe: keep the card, and you can cook every key again."
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Code 1: Loose keys versus one seed",
+   "say": "Here is deterministic generation in four lines. One secret and a rule give key number i. Asking again gives the same keys, which is why one backup of the seed is enough.",
+   "takeaway": "One seed, one backup, every key."
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "Part 2: Recovery codes",
+   "say": "Part two is about recovery codes. A code is the seed written for human hands. The book names several schemes and one important choice: the passphrase.",
+   "takeaway": ""
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "Six recovery code schemes",
+   "say": "BIP39 is the common scheme, and Electrum version two avoids a global word list. Aezeed adds versions and a wallet birthday, and Muun uses a non-word code. SLIP39 splits a seed into shares. Codex32 can be made by hand.",
+   "takeaway": "Same goal, different trade-offs: reliability, privacy, splitting."
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Why words, and what can go wrong",
+   "say": "Words were chosen so a code is easy to remember, but the book urges writing it down. A brainwallet is a phrase you invented, which is not random. Coercion is real: the list of attacks has grown, so the book's count is a floor.",
+   "takeaway": "Write it down, make it random, and do not depend on memory."
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "Everyday pictures for part 2, schemes",
+   "say": "Seven schemes, seven pictures. The torn map is the key image for SLIP39: three of five pieces reveal the treasure and two reveal nothing.",
+   "takeaway": "Seven schemes, seven pictures; the torn map is the one to remember."
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Everyday pictures for part 2, choices",
+   "say": "The passphrase is a second lock: lose it and the first lock is not enough. A decoy purse is how plausible deniability works. A brainwallet is the weak opposite of a random code.",
+   "takeaway": "A passphrase is a second lock: lose it, and the words alone open nothing."
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "Code 2: Codes check themselves differently",
+   "say": "Different schemes protect against typos in different ways. codex32 uses a long checksum that can be checked by hand. Electrum marks a seed with a version that is a prefix of an HMAC.",
+   "takeaway": "Every scheme has its own safety net."
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Code 3: Three of five shares recover the secret",
+   "say": "Secret sharing splits one secret into shares. Any three of five rebuild it; two reveal nothing. This is a small model, not SLIP39 itself, which works in a different field.",
+   "takeaway": "Any three recover; two learn nothing."
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Part 3: The BIP39 stack",
+   "say": "Part three follows BIP39 from random bits to a seed. First the code is generated: entropy, checksum, eleven-bit pieces, words. Then the code is stretched into a seed.",
+   "takeaway": ""
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Twelve words between you and 128 bits",
+   "say": "The team behind the first hardware signing device faced a human problem: nobody copies 128 bits without errors. Their answer, BIP 39, is the standard we run on the next slides.",
+   "read": {
+    "label": "BIP 39: Mnemonic code (spec)",
+    "url": "https://bips.dev/39/"
+   },
+   "takeaway": "The recovery code is an interface standard between humans and entropy",
+   "concept": "Bip39Code"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "Generating a recovery code",
+   "say": "Step one, generate entropy, and step two, hash it with SHA-256. Step three, append the first bits as a checksum. Step four, cut the result into eleven-bit pieces. Step five, look each piece up in the word list.",
+   "takeaway": "12 words x 11 bits = 132 bits = 128 of entropy + 4 of checksum."
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "Code 4: A hash function changes half its bits",
+   "say": "A hash function turns any input into a fixed-size fingerprint. SHA-256 is one. Change a single letter and about half of the 256 output bits flip, so no output hints at its input.",
+   "takeaway": "A tiny change makes a huge difference."
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Code 5: How many words for how much entropy",
+   "say": "BIP39 allows five entropy sizes. More entropy means more words and more security strength. The checksum grows with it: one bit per 32 bits of entropy.",
+   "takeaway": "More bits, more words, more security strength."
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "Code 6: From entropy to twelve words",
+   "say": "Each eleven-bit segment is a position in the BIP39 word list, 0 to 2047. The book's 128 bits of entropy become exactly the book's twelve words.",
+   "takeaway": "Every word is just an eleven-bit number."
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Code 7: The checksum catches a wrong word",
+   "say": "The last bits of a recovery code are a checksum of the entropy. Decoding recomputes it. Change one word and the check fails, so most typos are caught.",
+   "takeaway": "A checksum turns a silent typo into a loud error."
+  },
+  {
+   "n": 26,
+   "kind": "content",
+   "title": "Code 8: Text is normalised before stretching",
+   "say": "Computers can store the same letter in different ways. BIP39 first normalises the text, so a phrase gives one seed on every device and in every language setting.",
+   "takeaway": "Normalise first, so one phrase gives one seed."
+  },
+  {
+   "n": 27,
+   "kind": "content",
+   "title": "Code 9: PBKDF2 stretches the words with a salt",
+   "say": "A key-stretching function repeats work so each guess is slow for an attacker. BIP39 uses PBKDF2 with 2048 rounds and the word mnemonic as the salt. A different salt or round count gives an unrelated result.",
+   "takeaway": "Slow on purpose: 2048 rounds make every guess costly."
+  },
+  {
+   "n": 28,
+   "kind": "content",
+   "title": "Code 10: A passphrase opens a different wallet",
+   "say": "The passphrase is part of the salt. The same twelve words with another passphrase give a completely different wallet. That makes a decoy wallet possible, and it also means a forgotten passphrase loses the funds.",
+   "takeaway": "A passphrase is a second secret to back up."
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "Everyday pictures for part 3",
+   "say": "Entropy is the shuffled deck, the checksum the check digit, the word list the dictionary. Stretching is kneading: it takes effort, and effort is what slows an attacker.",
+   "takeaway": "Shuffle, tag, name, knead: that is a recovery code."
+  },
+  {
+   "n": 30,
+   "kind": "content",
+   "title": "Everyday pictures for part 3, the book's sections",
+   "say": "Each section of the book gets a picture too. The padlock is the one to keep: more entropy is a longer combination, and a passphrase is a second combination on the same lock.",
+   "takeaway": "More entropy is a longer combination; a passphrase is a second lock."
+  },
+  {
+   "n": 31,
+   "kind": "content",
+   "title": "Part 4: The HD wallet",
+   "say": "Part four builds the tree. One HMAC of the seed gives the master key and chain code. Every child comes from a parent, its chain code and an index. Extended keys write the pair as text.",
+   "takeaway": ""
+  },
+  {
+   "n": 32,
+   "kind": "content",
+   "title": "One seed, a tree of keys",
+   "say": "The picture is the book's: a seed becomes a master key, the master key has children, and each child has grandchildren. Every node is two 32-byte values, the key and its chain code, so the tree never runs dry.",
+   "takeaway": "From one seed grows a tree that backs up as one secret."
+  },
+  {
+   "n": 33,
+   "kind": "content",
+   "title": "Code 11: HMAC-SHA512 makes the master key",
+   "say": "HMAC-SHA512 mixes a secret key with data. Using the text Bitcoin seed as the key and the seed as data gives 64 bytes. The left half is the master private key, the right half the master chain code.",
+   "takeaway": "Half of the HMAC is the key, half the chain code."
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "Code 12: Child keys from a parent and an index",
+   "say": "A child key needs the parent key, the parent chain code and an index number. The chain code is what makes children unpredictable. Each child gets its own new chain code, so the tree can keep growing.",
+   "takeaway": "Three indexes, three unrelated children."
+  },
+  {
+   "n": 35,
+   "kind": "content",
+   "title": "Code 13: Hardened and normal children differ",
+   "say": "Indexes below 2 to the 31 are normal; from 2 to the 31 up they are hardened. A hardened child is derived from the private parent key, not its public key. In a path, the letter h means hardened.",
+   "takeaway": "The letter h in a path is a security decision."
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "Code 14: Why hardened steps protect the parent",
+   "say": "A normal child private key plus the parent's extended public key reveals the parent private key. Subtract the hash value and the parent falls out. A hardened step cannot be undone this way, so account levels are hardened.",
+   "takeaway": "Normal child plus xpub exposes the parent; hardening stops it."
+  },
+  {
+   "n": 37,
+   "kind": "content",
+   "title": "Code 15: Public keys derived without private keys",
+   "say": "Normal derivation works on public keys too. Route one derives the private child and then its public key. Route two never touches a private key. Both give the same public key.",
+   "takeaway": "Public keys alone can make the shop's addresses."
+  },
+  {
+   "n": 38,
+   "kind": "content",
+   "title": "Code 16: Extended keys, xprv and xpub",
+   "say": "An extended key is a key plus its chain code, written in Base58Check. It starts with xprv for private and xpub for public, and is 111 characters long. A four-byte fingerprint names the key.",
+   "takeaway": "xprv can spend; xpub can only watch."
+  },
+  {
+   "n": 39,
+   "kind": "content",
+   "title": "Code 17: 2 to the 31 children, normal and hardened",
+   "say": "The book says each parent can have 2,147,483,647 children. BIP32 says 2 to the 31 normal children and as many hardened ones. The book's figure is the largest normal index, not the count.",
+   "takeaway": "The book's 2,147,483,647 is the last index, not the count."
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "Everyday pictures for part 4, the tree",
+   "say": "The family tree fits well. The ancestor holds the master key, each child is born from a parent and a birth number, and the chain code is the family secret that keeps children unpredictable.",
+   "takeaway": "A parent plus a birth number makes a child; the chain code keeps it unpredictable."
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "Everyday pictures for part 4, extended keys",
+   "say": "An xprv is the whole archive; an xpub is the guest list. The firewall picture for hardened derivation is the one to remember: a leaked child must not open the parent.",
+   "takeaway": "Give out the guest list, never the archive."
+  },
+  {
+   "n": 42,
+   "kind": "content",
+   "title": "Everyday pictures for part 4, the book's sections",
+   "say": "The family tree is the main picture, and the rest follow from it. A parent hands a child a key, a firewall protects the parent, and two shelves hold the normal and the hardened children.",
+   "takeaway": "One family tree, with a firewall for hardened children."
+  },
+  {
+   "n": 43,
+   "kind": "content",
+   "title": "Part 5: Paths and descriptors",
+   "say": "Part five answers the question: given a recovery code, which keys does the wallet use? A path names a key. Standards fix common paths. A descriptor writes down both script and path.",
+   "takeaway": ""
+  },
+  {
+   "n": 44,
+   "kind": "content",
+   "title": "Code 18: Reading a key path level by level",
+   "say": "A path is a list of child numbers below the master key m. The first number, the purpose, names the scheme. BIP44 then fixes coin, account, change and address index. A trailing h marks a hardened step.",
+   "takeaway": "Purpose, coin, account, change, index."
+  },
+  {
+   "n": 45,
+   "kind": "content",
+   "title": "Code 19: Four standard paths, four address types",
+   "say": "Standards fix the purpose number: 44, 49, 84 and 86. A wallet that follows one needs no written path, an implicit path. The same recovery code gives four different kinds of address.",
+   "takeaway": "One recovery code, four kinds of address."
+  },
+  {
+   "n": 46,
+   "kind": "content",
+   "title": "Code 20: Our address equals the standard's own",
+   "say": "To trust a library, compare it with a published answer. BIP84 prints the first address of its test recovery code, and Bitcoin Core derives the same one. If a path is not standard, write it down: an explicit path.",
+   "takeaway": "Check your code against the published vector."
+  },
+  {
+   "n": 47,
+   "kind": "content",
+   "title": "Code 21: A key tweak makes the taproot key",
+   "say": "A key tweak is a number added to a key to make a related key. Taproot adds a hash-derived tweak to the internal key. The address encodes the tweaked output key, not the internal one.",
+   "takeaway": "Add a number to a key and you get a related key."
+  },
+  {
+   "n": 48,
+   "kind": "content",
+   "title": "Implicit and explicit paths",
+   "say": "A standard path needs no record because everyone knows it: that is implicit. A custom path must be written with the code: that is explicit. The book's table uses coin type one for BIP49, which is the testnet type.",
+   "takeaway": "Know which paths are implicit and write down the rest."
+  },
+  {
+   "n": 49,
+   "kind": "content",
+   "title": "Code 22: A descriptor with its checksum and origin",
+   "say": "A descriptor is text that names an output script and the keys behind it. BIP380 adds an eight-character checksum. The bracket at the start is the key origin: a fingerprint and the hardened path.",
+   "takeaway": "One line of text can rebuild the wallet's structure."
+  },
+  {
+   "n": 50,
+   "kind": "content",
+   "title": "Multisignature, multipath and miniscript",
+   "say": "Multisignature needs several keys: two of three is the usual example. A multipath descriptor writes the receiving and change branches once. Miniscript is a structured language for scripts that tools can analyse.",
+   "takeaway": "Descriptors keep the wallet's rules in one line of text."
+  },
+  {
+   "n": 51,
+   "kind": "content",
+   "title": "Everyday pictures for part 5",
+   "say": "A path is a street address down the tree. Implicit paths are the streets everyone knows; explicit paths are addresses you write on the envelope. A descriptor is the whole recipe card.",
+   "takeaway": "A path is a street address; a descriptor is the whole recipe card."
+  },
+  {
+   "n": 52,
+   "kind": "content",
+   "title": "Everyday pictures for part 5, the book's sections",
+   "say": "A path is the address of one room in a building, and navigating the tree is walking down the floors. Write the address down with the key, or the key may be found but never matched to its room.",
+   "takeaway": "Write the address down with the key, or the key never finds its room."
+  },
+  {
+   "n": 53,
+   "kind": "content",
+   "title": "Part 6: Data that is not keys",
+   "say": "Part six is about what a recovery code does not hold. Labels, protocol data such as Lightning channels, and the full database are not in the seed. They need their own backups.",
+   "takeaway": ""
+  },
+  {
+   "n": 54,
+   "kind": "content",
+   "title": "Code 23: Labels exported in the BIP329 format",
+   "say": "Labels are notes such as rent or salary. They are not derivable from the seed, so losing them loses your bookkeeping. BIP329 stores one JSON object per line, readable by any program.",
+   "takeaway": "Labels are data too: export them."
+  },
+  {
+   "n": 55,
+   "kind": "content",
+   "title": "Channels and encrypted backups",
+   "say": "The Lightning Network keeps payment state off the blockchain. A static channel backup is saved once, when a channel opens, and helps recovery after data loss, but cannot guarantee results. An encrypted wallet backup stores everything, encrypted with a key from the seed.",
+   "takeaway": "Keys come back from the seed; the rest needs its own copy."
+  },
+  {
+   "n": 56,
+   "kind": "content",
+   "title": "The 200,000 BTC in a forgotten wallet file",
+   "say": "In March 2014, three weeks into its bankruptcy, Mt. Gox said it had found about 200,000 bitcoin in an old-format wallet it thought was empty. Backups do not expire, and an untested file is not an empty one.",
+   "read": {
+    "label": "MtGox finds 200,000 Bitcoin (The Register)",
+    "url": "https://www.theregister.com/2014/03/21/mtgox_finds_200000_bitcoin_in_old_wallets/"
+   },
+   "takeaway": "Wallet files hold keys forever - label, test, and never discard them blindly",
+   "concept": "WalletDatabase"
+  },
+  {
+   "n": 57,
+   "kind": "content",
+   "title": "Part 7: Deploying and testing",
+   "say": "Part seven puts keys to work. A shop holds only an extended public key. Cold storage keeps keys offline. And the chapter ends with the most important habit: test the backup before you need it.",
+   "takeaway": ""
+  },
+  {
+   "n": 58,
+   "kind": "content",
+   "title": "Code 24: A web shop that holds no private key",
+   "say": "A shop can generate a fresh address per customer from an extended public key. The payment processor, such as BTCPay Server, does this. The shop never sees a private key, so a hacked server cannot spend.",
+   "takeaway": "Publish the xpub; the keys never touch the internet."
+  },
+  {
+   "n": 59,
+   "kind": "content",
+   "title": "Code 25: The gap limit decides how far a scan looks",
+   "say": "A recovery scan stops after a number of unused addresses in a row: the gap limit. If you used key 25 but skipped many keys, a small gap misses it. A bigger gap finds it.",
+   "takeaway": "A scan that stops too early misses your money."
+  },
+  {
+   "n": 60,
+   "kind": "content",
+   "title": "Code 26: A digital signature fails if the message changes",
+   "say": "A signing device signs the hash of a transaction with a private key. Anyone can verify with the public key. The signature is valid only for the message that was signed. This is a toy version, not for real money.",
+   "takeaway": "A signature binds one key to one message."
+  },
+  {
+   "n": 61,
+   "kind": "content",
+   "title": "Cold storage and the hardware signing device",
+   "say": "Cold storage keeps a reserve offline. A hardware signing device holds keys and signs without revealing them. A written backup of the recovery code is the last line of defence, kept apart from the device.",
+   "takeaway": "Offline keys, a device that signs, and a code on paper."
+  },
+  {
+   "n": 62,
+   "kind": "content",
+   "title": "Code 27: The restore drill, a typo opens another wallet",
+   "say": "A backup counts only after a successful restore. Write down the first address when the wallet is created, then restore from your written code and compare. One wrong word does not give an error, it gives a different, empty wallet.",
+   "takeaway": "Test the restore, not your luck."
+  },
+  {
+   "n": 63,
+   "kind": "content",
+   "title": "What a complete backup holds",
+   "say": "Data loss is perhaps the leading cause of lost bitcoin. A complete backup is a list: the recovery code, the passphrase if used, the paths or descriptors, other signers' public keys, and data that is not keys. Then test it.",
+   "takeaway": "A backup is complete when a restore drill succeeds."
+  },
+  {
+   "n": 64,
+   "kind": "content",
+   "title": "Everyday pictures for parts 6 and 7",
+   "say": "Labels are sticky notes, and they are not in the seed. A static channel backup is a photocopy: it helps but guarantees nothing. The gap limit is a patient postman who stops after a set number of empty mailboxes.",
+   "takeaway": "Notes, copies and mailboxes: each needs its own backup or setting."
+  },
+  {
+   "n": 65,
+   "kind": "content",
+   "title": "Check yourself",
+   "say": "Try each question aloud before you look at the slide. If you hesitate, go back to the slide named on the right. These are the questions the exam will build on.",
+   "takeaway": "Answer without looking, then check the code slide."
+  },
+  {
+   "n": 66,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "Five lines carry the chapter. Wallets derive keys from a seed, and a recovery code is entropy in words. A seed is stretched slowly, and the tree hands every purpose a numbered key. Last, a backup counts only once it has been restored.",
+   "takeaway": "If a line feels unproven, its part's code slides carry the receipt."
+  },
+  {
+   "n": 67,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "These are the places to read, check and ask. Start with the book chapter and the three BIPs. Use the tool only offline. The same code examples are on the course page, in the same order as the slides.",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Mastering Bitcoin, ch. 5: Wallets",
+     "url": "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/develop/ch05_wallets.adoc",
+     "finds": "Chapter text as AsciiDoc source, plain text, free to read"
+    },
+    {
+     "group": "Read",
+     "label": "NYT via Business Standard (news)",
+     "url": "https://www.business-standard.com/article/international/a-german-programmer-has-two-guesses-to-unlock-bitcoin-worth-240-million-121011400070_1.html",
+     "finds": "Popper's report of 12 Jan 2021, republished"
+    },
+    {
+     "group": "Read",
+     "label": "MtGox finds 200,000 Bitcoin (The Register)",
+     "url": "https://www.theregister.com/2014/03/21/mtgox_finds_200000_bitcoin_in_old_wallets/",
+     "finds": "Listed on the lecture's resources slide, group Read."
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 39: Mnemonic code",
+     "url": "https://bips.dev/39/",
+     "finds": "The word list and how seed words become a seed"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 32: HD wallets",
+     "url": "https://bips.dev/32/",
+     "finds": "How one seed derives a whole tree of keys"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 84: P2WPKH derivation",
+     "url": "https://bips.dev/84/",
+     "finds": "The m/84'/0'/0' path these slides derived"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 380: Output script descriptors",
+     "url": "https://bips.dev/380/",
+     "finds": "Listed on the lecture's resources slide, group Standards."
+    },
+    {
+     "group": "Seminal work",
+     "label": "Bitcoin: A Peer-to-Peer Electronic Cash System",
+     "url": "https://bitcoin.org/bitcoin.pdf",
+     "finds": "Listed on the lecture's resources slide, group Seminal work."
+    },
+    {
+     "group": "Tools",
+     "label": "Ian Coleman's BIP39 tool (use offline)",
+     "url": "https://iancoleman.io/bip39/",
+     "finds": "Turn seed words into keys and addresses; run it offline"
+    },
+    {
+     "group": "Tools",
+     "label": "BTCPay Server (the book's web store)",
+     "url": "https://btcpayserver.org",
+     "finds": "Listed on the lecture's resources slide, group Tools."
+    },
+    {
+     "group": "Tutorial",
+     "label": "Bitcoin Wiki: Deterministic wallet",
+     "url": "https://en.bitcoin.it/wiki/Deterministic_wallet",
+     "finds": "Why one seed can give a whole tree of keys, explained on the wiki"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Stack Exchange",
+     "url": "https://bitcoin.stackexchange.com",
+     "finds": "Search or ask any technical question; answers are voted"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Optech topics",
+     "url": "https://bitcoinops.org/en/topics/",
+     "finds": "Listed on the lecture's resources slide, group Community."
+    },
+    {
+     "group": "Course corpus",
+     "label": "SEN0401 course repository",
+     "url": "https://github.com/altunelyusuf/SEN0401",
+     "finds": "Listed on the lecture's resources slide, group Course corpus."
+    },
+    {
+     "group": "Watch",
+     "label": "BIP-39 mnemonic words (video, Mobilefish.com)",
+     "url": "https://www.youtube.com/watch?v=hRXcY_tIlrw",
+     "finds": "Listed on the lecture's resources slide, group Watch."
+    }
+   ],
+   "takeaway": "Twelve words on paper beat every password you have ever memorised."
+  },
+  {
+   "n": 68,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Thank you. You should now be able to say why one seed replaced bags of keys, what twelve words carry, which path your wallet walks, and what a tested backup is. Questions are welcome.",
+   "takeaway": ""
+  }
+ ],
+ "_note": "lecture_v1_4_0.json (the export of the chapter 5 deck v3.2.0, read from the deck file) with the deck's takeaway as takeaway and, on each story slide, the first concept of the story that the page has as concept; made by lecture_make_v1_4_0.py"
+}
