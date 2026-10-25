@@ -1,0 +1,569 @@
+{
+ "manifest": "chapter_code_ch04_v1_0_0",
+ "chapter": 4,
+ "deck": "SEN0401_Ch04_KeysAndAddresses_3e_v3_4_0.pptx",
+ "deck_version": "3.4.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the chapter library defined in the page; the manifest equals the deck's code boxes",
+ "library": {
+  "module": "sen0401_ch04_lib",
+  "file": "03-materials/ch04/assets/sen0401_ch04_lib-1.0.0-py3-none-any.whl",
+  "sha256": "55d7e2b42707aa1263b526e2aeba4a9515ef63170348d85af53bfc60fe602244",
+  "modules": [
+   "sen0401_ch04_lib_v1_0_0"
+  ],
+  "source": "08-tooling/sen0401_ch04_lib_v1_0_0.py",
+  "source_sha256": "04af96026be51cfa534b6f82f790c20a8e8931f90d84cc3575a85aa5718f15b0",
+  "import": "import sen0401_ch04_lib_v1_0_0 as K",
+  "requires": "Python standard library only (hashlib, math, struct); a pure-Python RIPEMD-160 is carried for runtimes without one"
+ },
+ "setup": {
+  "code": "# setup: the chapter library of the page (K = the chapter 4 library); the page runs this before every example\nimport hashlib\nimport math\nimport sen0401_ch04_lib_v1_0_0 as K",
+  "data": {}
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "A private key is a number below n",
+   "slide": 9,
+   "branch": "Public Key Cryptography",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "k = K.BOOK_K\nok = lambda x: 0 < x < K.N\n[ok(x) for x in (0, 1, k, K.N - 1, K.N)]",
+   "show": [
+    {
+     "expression": "[ok(x) for x in (0, 1, k, K.N - 1, K.N)]",
+     "expected": "[False, True, True, True, False]"
+    },
+    {
+     "expression": "[x.bit_length() for x in (0, 1, k, K.N - 1, K.N)]",
+     "expected": "[0, 1, 253, 256, 256]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "Entropy: bits an attacker must guess",
+   "slide": 10,
+   "branch": "Public Key Cryptography",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "b = K.bits_of\n[b(10, 4), b(26, 8), b(94, 12), b(2, 256)]",
+   "show": [
+    {
+     "expression": "[b(10, 4), b(26, 8), b(94, 12), b(2, 256)]",
+     "expected": "[13.3, 37.6, 78.7, 256.0]"
+    },
+    {
+     "expression": "round(math.log2(K.N))",
+     "expected": "256"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "The curve secp256k1 and its generator",
+   "slide": 11,
+   "branch": "Public Key Cryptography",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "x, y = K.G\nleft, right = y * y % K.P, (x ** 3 + 7) % K.P\nleft == right",
+   "show": [
+    {
+     "expression": "left == right",
+     "expected": "True"
+    },
+    {
+     "expression": "K.P.bit_length()",
+     "expected": "256"
+    },
+    {
+     "expression": "hex(x)[:12]",
+     "expected": "'0x79be667ef9'"
+    },
+    {
+     "expression": "K.P == 2 ** 256 - 2 ** 32 - 977",
+     "expected": "True"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "Doubling and adding: k times G",
+   "slide": 13,
+   "branch": "Public Key Cryptography",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "pts = [K.ec_mul(n) for n in (1, 2, 3, 4)]\ntwice = K.ec_add(K.G, K.G)\ntwice == pts[1]",
+   "show": [
+    {
+     "expression": "twice == pts[1]",
+     "expected": "True"
+    },
+    {
+     "expression": "[hex(p[0])[2:10] for p in pts]",
+     "expected": "['79be667e', 'c6047f94', 'f9308a01', 'e493dbf1']"
+    },
+    {
+     "expression": "(K.BOOK_K.bit_length() - 1, bin(K.BOOK_K).count('1') - 1)",
+     "expected": "(252, 123)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "The point at infinity on a toy curve",
+   "slide": 14,
+   "branch": "Public Key Cryptography",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "pts = K.multiples(10)\npts.index(None) + 1",
+   "show": [
+    {
+     "expression": "pts.index(None) + 1",
+     "expected": "9"
+    },
+    {
+     "expression": "pts[:9]",
+     "expected": "[(1, 5), (2, 10), (5, 9), (12, 1), (12, 16), (5, 8), (2, 7), (1, 12), None]"
+    },
+    {
+     "expression": "K.small_add(pts[7], K.SMALL_PT, 17) is None",
+     "expected": "True"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "One-way: the work to find a key",
+   "slide": 15,
+   "branch": "Public Key Cryptography",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "b = [20, 40, 80, 128, 256]\n[round(math.log10(2 ** (n - 1))) for n in b]",
+   "show": [
+    {
+     "expression": "[round(math.log10(2 ** (n - 1))) for n in b]",
+     "expected": "[6, 12, 24, 38, 77]"
+    },
+    {
+     "expression": "2 ** 19",
+     "expected": "524288"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "A public key has two encodings",
+   "slide": 20,
+   "branch": "Legacy Addresses",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "Kp = K.ec_mul(K.BOOK_K)\nc, u = K.pub_bytes(Kp), K.pub_bytes(Kp, False)\n(len(c), len(u), c[0], u[0])",
+   "show": [
+    {
+     "expression": "(len(c), len(u), c[0], u[0])",
+     "expected": "(33, 65, 3, 4)"
+    },
+    {
+     "expression": "K.decompress(c) == Kp",
+     "expected": "True"
+    },
+    {
+     "expression": "round(1 - 33 / 65, 3)",
+     "expected": "0.492"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "P2PK holds the key, P2PKH only its hash",
+   "slide": 21,
+   "branch": "Legacy Addresses",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "c = K.pub_bytes(K.ec_mul(K.BOOK_K))\npk, pkh = K.p2pk_script(c), K.p2pkh_script(c)\n(len(pk), len(pkh))",
+   "show": [
+    {
+     "expression": "(len(pk), len(pkh))",
+     "expected": "(35, 25)"
+    },
+    {
+     "expression": "pkh[3:23] == K.hash160(c)",
+     "expected": "True"
+    },
+    {
+     "expression": "(pk[-1], pkh[-1])",
+     "expected": "(172, 172)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "HASH160 is SHA256 then RIPEMD-160",
+   "slide": 22,
+   "branch": "Legacy Addresses",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "c = K.pub_bytes(K.ec_mul(K.BOOK_K))\ns = hashlib.sha256(c).digest()\nr = K.ripemd160(s)\n(len(c), len(s), len(r), r == K.hash160(c))",
+   "show": [
+    {
+     "expression": "(len(c), len(s), len(r), r == K.hash160(c))",
+     "expected": "(33, 32, 20, True)"
+    },
+    {
+     "expression": "r.hex()",
+     "expected": "'bbc1e42a39d05a4cc61752d6963b7f69d09bb27b'"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "Base58Check, step by step",
+   "slide": 24,
+   "branch": "Legacy Addresses",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "h = K.hash160(K.pub_bytes(K.ec_mul(K.BOOK_K)))\nbody = b'\\x00' + h\nchk = K.dsha(body)[:4]\naddr = K.b58check(body)\n(len(body + chk), len(addr), addr[0])",
+   "show": [
+    {
+     "expression": "(len(body + chk), len(addr), addr[0])",
+     "expected": "(25, 34, '1')"
+    },
+    {
+     "expression": "chk.hex()",
+     "expected": "'37fefcd0'"
+    },
+    {
+     "expression": "addr",
+     "expected": "'1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZy'"
+    },
+    {
+     "expression": "addr == K.key_to_address(K.BOOK_K)",
+     "expected": "True"
+    },
+    {
+     "expression": "h.hex()[:8]",
+     "expected": "'bbc1e42a'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "The checksum catches every single typo",
+   "slide": 26,
+   "branch": "Legacy Addresses",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "good = K.key_to_address(K.BOOK_K)\ntypos = K.single_typos(good)\n(len(typos), sum(map(K.is_valid_b58check, typos)))",
+   "show": [
+    {
+     "expression": "(len(typos), sum(map(K.is_valid_b58check, typos)))",
+     "expected": "(1938, 0)"
+    },
+    {
+     "expression": "K.is_valid_b58check(good)",
+     "expected": "True"
+    },
+    {
+     "expression": "2 ** 32",
+     "expected": "4294967296"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "P2SH commits to a whole script",
+   "slide": 30,
+   "branch": "Script Hashes and Bech32",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "keys = [K.pub_bytes(K.ec_mul(n)) for n in (1, 2, 3)]\nscript = K.multisig_script(2, keys)\naddr = K.p2sh(script)\n(len(script), addr[0], len(addr))",
+   "show": [
+    {
+     "expression": "(len(script), addr[0], len(addr))",
+     "expected": "(105, '3', 34)"
+    },
+    {
+     "expression": "K.hash160(script).hex()[:12]",
+     "expected": "'15fc0754e73e'"
+    },
+    {
+     "expression": "addr",
+     "expected": "'33hG2q39jRi2NqicRJB4ggY1J8EJm97Szz'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "Collision and preimage: bits of work",
+   "slide": 31,
+   "branch": "Script Hashes and Bech32",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "col, pre = (lambda n: n // 2), (lambda n: n)\n[col(160), pre(160), col(256), pre(256)]",
+   "show": [
+    {
+     "expression": "[col(160), pre(160), col(256), pre(256)]",
+     "expected": "[80, 160, 128, 256]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "A Bech32 address, taken apart",
+   "slide": 32,
+   "branch": "Script Hashes and Bech32",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "addr = K.segwit_address('bc', 0, K.PROG_WPKH)\nhrp, _, rest = addr.rpartition('1')\n[hrp, rest[0], len(rest[1:-6]), rest[-6:]]",
+   "show": [
+    {
+     "expression": "[hrp, rest[0], len(rest[1:-6]), rest[-6:]]",
+     "expected": "['bc', 'q', 32, 'c6aaee']"
+    },
+    {
+     "expression": "addr",
+     "expected": "'bc1q9d3xa5gg45q2j39m9y32xzvygcgay4rgc6aaee'"
+    },
+    {
+     "expression": "len(addr)",
+     "expected": "42"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "Witness version and witness program",
+   "slide": 33,
+   "branch": "Script Hashes and Bech32",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "p = [(0, K.PROG_WPKH), (0, K.PROG_WSH), (1, K.PROG_TR)]\na = [K.segwit_address('bc', v, g) for v, g in p]\nd = [K.segwit_decode('bc', x) for x in a]\n[(v, len(g)) for v, g in d]",
+   "show": [
+    {
+     "expression": "[(v, len(g)) for v, g in d]",
+     "expected": "[(0, 20), (0, 32), (1, 32)]"
+    },
+    {
+     "expression": "[x[:4] for x in a]",
+     "expected": "['bc1q', 'bc1q', 'bc1p']"
+    },
+    {
+     "expression": "[len(x) for x in a]",
+     "expected": "[42, 62, 62]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 16,
+   "id": "ex16",
+   "name": "Bech32 accepts the extra q, Bech32m does not",
+   "slide": 34,
+   "branch": "Script Hashes and Bech32",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "ok = lambda a, c: K.bech_check(a) == c\nold = [ok(a, K.BECH32) for a in K.EXT]\nnew = [ok(a, K.BECH32M) for a in K.EXT]\n(old, new)",
+   "show": [
+    {
+     "expression": "(old, new)",
+     "expected": "([True, True, True, True], [False, False, False, False])"
+    },
+    {
+     "expression": "[len(a) for a in K.EXT]",
+     "expected": "[15, 18, 20, 22]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 17,
+   "id": "ex17",
+   "name": "WIF: a private key dressed for travel",
+   "slide": 37,
+   "branch": "Private Key Formats",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "k = K.BOOK_K\nw, wc = K.wif(k, False), K.wif(k)\n(w[0], len(w), wc[0], len(wc))",
+   "show": [
+    {
+     "expression": "(w[0], len(w), wc[0], len(wc))",
+     "expected": "('5', 51, 'K', 52)"
+    },
+    {
+     "expression": "(len(K.b58check_decode(w)), len(K.b58check_decode(wc)))",
+     "expected": "(33, 34)"
+    },
+    {
+     "expression": "K.b58check_decode(wc)[-1]",
+     "expected": "1"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 18,
+   "id": "ex18",
+   "name": "One private key, two addresses",
+   "slide": 38,
+   "branch": "Private Key Formats",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "k = K.BOOK_K\na1 = K.key_to_address(k, False)\na2 = K.key_to_address(k, True)\n(a1[:6], a2[:6], a1 != a2)",
+   "show": [
+    {
+     "expression": "(a1[:6], a2[:6], a1 != a2)",
+     "expected": "('1424C2', '1J7mdg', True)"
+    },
+    {
+     "expression": "(a1, a2)",
+     "expected": "('1424C2F4bC9JidNjjTUZCbUxv6Sa1Mt62x', '1J7mdg5rbQyUHENYdx39WVWK7fsLpEoXZy')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 19,
+   "id": "ex19",
+   "name": "Vanity search: 58 times harder per letter",
+   "slide": 41,
+   "branch": "Advanced Keys and Addresses",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "a = K.key_to_address\nn = next(i for i in range(1, 900) if a(i)[1] == 'A')\n[n, a(n)[:3]]",
+   "show": [
+    {
+     "expression": "[n, a(n)[:3]]",
+     "expected": "[19, '1Am']"
+    },
+    {
+     "expression": "[58 ** m for m in range(1, 7)]",
+     "expected": "[58, 3364, 195112, 11316496, 656356768, 38068692544]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 20,
+   "id": "ex20",
+   "name": "A paper wallet must give back its address",
+   "slide": 42,
+   "branch": "Advanced Keys and Addresses",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "w, a = K.wif(K.BOOK_K), K.key_to_address(K.BOOK_K)\nraw = K.b58check_decode(w)\nback = int.from_bytes(raw[1:33], 'big')\nK.key_to_address(back) == a",
+   "show": [
+    {
+     "expression": "K.key_to_address(back) == a",
+     "expected": "True"
+    },
+    {
+     "expression": "(len(w), len(a))",
+     "expected": "(52, 34)"
+    },
+    {
+     "expression": "(raw[0], raw[-1])",
+     "expected": "(128, 1)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 21,
+   "id": "ex21",
+   "name": "The eater address is valid but keyless",
+   "slide": 44,
+   "branch": "Advanced Keys and Addresses",
+   "library": "sen0401_ch04_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "e = K.EATER\nmsg, tail = e[1:28], e[28:]\n(msg, tail, K.is_valid_b58check(e))",
+   "show": [
+    {
+     "expression": "(msg, tail, K.is_valid_b58check(e))",
+     "expected": "('BitcoinEaterAddressDontSend', 'f59kuE', True)"
+    },
+    {
+     "expression": "len(K.b58check_decode(e))",
+     "expected": "21"
+    },
+    {
+     "expression": "K.b58check_decode(e)[1:].hex()",
+     "expected": "'759d6677091e973b9e9d99f19c68fbf43e3f05f9'"
+    }
+   ],
+   "result_picture": "table"
+  }
+ ]
+}
