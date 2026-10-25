@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+"""sen0401_lineage_ch01research_cr v1_0_0 - records the ChangeRequest ex:CR3_Ch01Research (Pending) with its ImpactAssessment: the two structural gaps of the chapter 1 research set found by the control of TK_Ch01_VerifyScript_Build (v0.293.0) are repaired as new research files in Iteration 26, admitted by the ScopeChange of that iteration's planning together with ex:CR3_ArcCheck. Nothing is built now; the gaps do not block the chapter 1 page (the Research chapter check passes). One event, one new file."""
+__version__ = "1.0.0"
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import sen0401_lineage_succession_v1_1_0 as M
+import sen0401_lineage_succession3_v1_1_0 as X
+import sen0401_lineage_control_v1_0_0 as C
+lit = C.lit
+src = M.newest(); t = open(src, encoding="utf-8").read(); nxt, cur = M.next_version(src)
+F = ("MEASURED 2026-10-25 by the executor of TK_Ch01_VerifyScript_Build (commit 7ac4a31) and confirmed in the control: the form of the chapter 2 verify script (the shared library sen0401_research_verify_lib_v1_0_0.py) FAILS on the chapter 1 research with two structural findings: ('publication never cited', 'P23', 'RFC 3986') and ('counts', 30, 7), i.e. 7 findings against the library minimum of 8. "
+     "The chapter 1 verify script that exists checks quotations (228), number pairs (63) and examples (42 of 42 executed), and the Research chapter check passes; the two findings are gaps of the research set, not of the script.")
+cr = ('\nex:CR3_Ch01Research a backlog:ChangeRequest ;\n    rdfs:label "Repair of the chapter 1 research set: cite the publication P23 or drop it, and reach the findings minimum, as new research files"@en ;\n'
+      '    backlog:requestsChangeTo ex:Scope3 ; backlog:hasChangeDirection backlog:Direction_Grow ; rdfs:seeAlso ex:CR3_Retro24, ex:CR3_ArcCheck ;\n    backlog:hasChangeRequestRationale %s ;\n    backlog:hasDisposition backlog:Disp_Pending .\n') % lit(F + " The owner's order is to bring each chapter's research set to the course standard; gaps are said openly and are not waived. Pending: it is admitted by the ScopeChange of the planning of Iteration 26, where the chapter 1 page is built; nothing is built now.")
+ia = ('\nex:IA3_Ch01Research a backlog:ImpactAssessment ;\n    rdfs:label "What the chapter 1 research repair costs and what it touches"@en ;\n    backlog:analyzesRequest ex:CR3_Ch01Research ; backlog:identifiesAffectedLineage ex:Lineage3 ;\n    backlog:hasImpactStatement %s .\n') % lit(F + " AFFECTED: the research files of chapter 1 (new versions, the old stay), the chapter 1 verify script (a new version may then adopt the library form), the Research and Stage 4 checks of chapter 1. NOT AFFECTED: the chapter 1 deck and page criteria, which do not depend on the two findings. ESTIMATE (G120): research repair 2.0 h executor plus 1.0 h verification. ORDER: Iteration 26, in parallel with the page of chapter 1; a new story in the chapter 1 line, ranked at planning.")
+print(os.path.basename(M.write_new(src, X.set_status(t + cr + ia, "LS_InProgress"), nxt, cur, "ChangeRequest ex:CR3_Ch01Research (Pending) with its ImpactAssessment: the two structural gaps of the chapter 1 research set, found by the control of the verify script, are planned for repair in Iteration 26.")))
