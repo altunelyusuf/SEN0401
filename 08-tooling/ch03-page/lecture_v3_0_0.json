@@ -1,0 +1,374 @@
+{
+ "chapter": 3,
+ "deck": "SEN0401_Ch03_BitcoinCore_3e_v3_0_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 3: Bitcoin Core",
+   "say": "Chapter 2 followed one payment through the network. Chapter 3 opens the program that checks every rule, Bitcoin Core, and shows how to build it, run it and ask it questions. Every result in this deck was computed by the chapter library from saved data.",
+   "concept": ""
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has seven parts that follow the program from its source code to the toolkits around it. Three true stories and nineteen code examples are spread across them. Every example has a picture of its result.",
+   "concept": "Seven parts, three true stories, nineteen examples"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The six questions are the chapter's own, rewritten so that each has an answer on a slide. We return to them in the summary. A reader who can answer all six has understood the chapter.",
+   "concept": ""
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "The chapter in one picture",
+   "say": "Six steps carry us from the source code to the data of the chain. We read the code and pick a release, build it, run it, ask it questions and read what it says. The last step looks at other programs that speak to a node.",
+   "concept": "Six steps from the source code to the data of the chain"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "From Bitcoin to Bitcoin Core",
+   "say": "Part 1 asks what Bitcoin Core is. It began as the program Satoshi Nakamoto released in 2009, and it checks every rule itself as a full verification node. Changes reach it through numbered Bitcoin Improvement Proposals.",
+   "concept": "Bitcoin Core: The Reference Implementation"
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Version 0.1, set in stone",
+   "say": "In January 2009 Satoshi Nakamoto published version 0.1 of the Bitcoin program. A year and a half later he wrote that its core design was set in stone. That is why Bitcoin Core is called the reference implementation: the software came first, and the rules are what it does.",
+   "concept": "The program came first: the reference implementation defines the rules",
+   "read": {
+    "label": "Satoshi: Bitcoin v0.1 released (list post)",
+    "url": "https://www.metzdowd.com/pipermail/cryptography/2009-January/014994.html"
+   }
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "Inside the program",
+   "say": "Bitcoin Core is one program with several parts. Peers and the connection manager bring in blocks and transactions, the validation engine checks them, and the storage engine keeps headers, blocks and coins. The interface at the right lets your own programs ask questions.",
+   "concept": "One program: it listens, checks, stores and answers"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "A version number that carries a vote",
+   "say": "A block's version field is not a counter. Its top three bits mark the BIP 9 scheme, and every lower bit is a vote for one proposal. Here only bit 1 is set.",
+   "concept": "Think of a ballot with 29 tick boxes, one for each proposal"
+  },
+  {
+   "n": 9,
+   "kind": "section",
+   "title": "Bitcoin Development Environment",
+   "say": "Part 2 turns the source code into programs you can run. A release tag fixes which version you build, and release candidates are tried before a final tag exists. The build produces bitcoind, the node itself.",
+   "concept": "Compiling Bitcoin Core from the Source Code"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Three steps from source to executables",
+   "say": "A build has three decisions. You select a release tag, you configure which features to build, and you build the executables. Each step has a single command, and a clean tag makes the result repeatable.",
+   "concept": "Select, configure, build: three steps, one set of programs"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Release tags sort by number, not by letters",
+   "say": "These are real tags of the Bitcoin repository. Sorted as text, v0.10.0 lands before v0.9.5, which is wrong. A release candidate is a tag with rc in it, so we leave those out first.",
+   "concept": "Think of edition numbers: the tenth edition follows the ninth"
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "What a release folder holds",
+   "say": "A release unpacks into seven programs and three helper parts. The one to know is bitcoind, the node. You steer it from the command line with bitcoin-cli.",
+   "concept": "Think of bitcoind as the engine and bitcoin-cli as the steering wheel"
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "Dozens of builders, one identical binary",
+   "say": "Anyone can ask whether a downloaded binary really matches the source. Since release 22.0 Bitcoin Core builds with Guix, so independent builders get identical files and sign their hashes. For release 31.1 the checksum file carries eleven good signatures.",
+   "concept": "Verify, don't trust: the project applies its own rule to itself",
+   "read": {
+    "label": "Builder attestation, Core 31.1 (hash list)",
+    "url": "https://raw.githubusercontent.com/bitcoin-core/guix.sigs/main/31.1/achow101/all.SHA256SUMS"
+   }
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "A download must match its published hash",
+   "say": "Each release ships a list of hashes. You hash your download and compare. If the two texts match, the file is the one that the builders signed for.",
+   "concept": "Think of the safety seal on a medicine bottle: break it and you can tell"
+  },
+  {
+   "n": 15,
+   "kind": "section",
+   "title": "Running a Bitcoin Core Node",
+   "say": "Part 3 starts the node and sets it up. A configuration file and the command line decide what the node does, and the data directory is where it keeps everything. Pruning, the transaction index and the memory limits trade disk, memory and features.",
+   "concept": "Configuring the Bitcoin Core Node"
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "The command line wins over the file",
+   "say": "A configuration file holds the settings of a node. When the same option is also given on the command line, the command line wins. A script can therefore change one value for one run.",
+   "concept": "Think of a recipe card that you may override with a note on the fridge"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "Inside the data directory",
+   "say": "Everything the node knows lives in its data directory. Blocks and the chain state are the big parts, the log is the node's diary, and the configuration file holds your settings. The cookie file appears while the node runs.",
+   "concept": "The data directory is the whole memory of the node"
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "How the database cache is shared out",
+   "say": "The dbcache option sizes the cache for the unspent outputs. Bitcoin Core first gives two small databases their share. Everything else goes to the cache of coins.",
+   "concept": "Think of a desk: two small drawers and one very large tabletop"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Pruning and the transaction index do not mix",
+   "say": "Pruning keeps only recent blocks. The transaction index must find any block that holds a transaction. The node therefore refuses both at once, and release 31.1 printed exactly that.",
+   "concept": "Think of a library that shreds old books and so cannot catalogue them all"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Two ways to spend less memory",
+   "say": "Two settings reduce what a node asks of its machine. Blocks-only mode stops it from collecting loose transactions, and the mempool limit caps the waiting room. The default limit is 300 megabytes, and blocks-only mode needs only 5.",
+   "concept": "A node can trade features for memory, and keep verifying everything"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "An alert text is cleaned before it runs",
+   "say": "The node can run a script of yours when something is wrong. The message goes into the command, so the node cleans it first. The hostile quotes vanish and the rest stays inside one word.",
+   "concept": "Think of a mail room that removes anything dangerous before a letter reaches you"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "The project that outlives its keyholders",
+   "say": "Bitcoin Core outlived its first author. Satoshi Nakamoto handed the project to Gavin Andresen in 2011, and on 7 April 2014 Andresen passed the lead to Wladimir van der Laan. A reference implementation needs a team and public review, not one keyholder.",
+   "concept": "The reference implementation is an institution, not a person",
+   "read": {
+    "label": "Wladimir van der Laan (Bitcoin Wiki)",
+    "url": "https://en.bitcoin.it/wiki/Wladimir_van_der_Laan"
+   }
+  },
+  {
+   "n": 23,
+   "kind": "section",
+   "title": "Bitcoin Core API",
+   "say": "Part 4 talks to the running node. The command-line client bitcoin-cli sends JSON-RPC calls, and the node checks who is asking before it answers. The cookie is the default way in, and rpcauth is the fixed alternative.",
+   "concept": "Getting Information on Bitcoin Core's Status"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "One JSON-RPC call and its reply",
+   "say": "A call is a small JSON text with a method and parameters. The reply carries a result, an error and the id of the call. The sample reply is the one the book prints for the curl example.",
+   "concept": "Think of an order slip: the same fields every time, and an answer on the same slip"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "The cookie is a fresh password",
+   "say": "At every start bitcoind writes a new random secret to the .cookie file. A client that can read the file can call the node. The secret is 32 bytes, shown as 64 hexadecimal characters.",
+   "concept": "Think of a hotel key card that is recoded for every guest"
+  },
+  {
+   "n": 26,
+   "kind": "content",
+   "title": "rpcauth stores a salted hash, not the password",
+   "say": "The rpcauth line holds a user, a random salt and a keyed hash of the password. Even a leaked configuration file does not reveal the password. A wrong password gives a different hash.",
+   "concept": "Think of a bank that keeps a check value and never your PIN"
+  },
+  {
+   "n": 27,
+   "kind": "content",
+   "title": "Reading getblockchaininfo",
+   "say": "This is the answer of a real node of release 31.1 that had only the first block. It says which chain it is on, how many blocks it has verified and how hard the work is.",
+   "concept": "Think of a car dashboard: it reports, and you do not touch the engine"
+  },
+  {
+   "n": 28,
+   "kind": "section",
+   "title": "Exploring and Decoding Transactions",
+   "say": "Part 5 reads a transaction the way the node reports it. Each transaction has an identifier, a weight and a witness. We decode Alice's payment from chapter 2 and look at each part.",
+   "concept": "Reading a transaction the way the node reports it"
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "Decoding Alice's transaction",
+   "say": "The node's own decoder turns Alice's bytes into readable fields. Every output has a number, a value and a type. Two outputs, 20,000 and 75,000 satoshis, plus the 5,000 fee make her 100,000.",
+   "concept": "Think of an X-ray: the same body, shown layer by layer"
+  },
+  {
+   "n": 30,
+   "kind": "content",
+   "title": "The txid leaves the witness out",
+   "say": "The txid is a hash of the transaction without its witness. A third party can no longer change the txid by re-encoding a signature. That change is called transaction malleability, and segregated witness ended it.",
+   "concept": "Think of a tracking number printed before anyone adds a signature"
+  },
+  {
+   "n": 31,
+   "kind": "content",
+   "title": "Weight units and virtual bytes",
+   "say": "Blocks are filled by weight units. Base bytes count four units each and witness bytes one. Alice's 194 bytes weigh 569 units, which is 143 virtual bytes.",
+   "concept": "Think of postage by volume: compact, light data costs less"
+  },
+  {
+   "n": 32,
+   "kind": "section",
+   "title": "Exploring Blocks",
+   "say": "Part 6 reads blocks. A block has a height, a hash made from its header, a merkle root of its transactions and a time. We rebuild each one ourselves with a few lines of Python.",
+   "concept": "Height, hash, merkle root and time"
+  },
+  {
+   "n": 33,
+   "kind": "content",
+   "title": "Height, depth and confirmations",
+   "say": "A block's height counts the blocks before it, so the first block has height zero. Each block built on top adds a confirmation. The numbers in the picture are an example, not a live chain.",
+   "concept": "A confirmation is one more block on top of yours"
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "A block's name is the hash of its header",
+   "say": "The header has six fields in 80 bytes. Hashing it twice and reversing the bytes gives the block hash, which starts with many zeros. The block's height, 123,456, counts the blocks before it.",
+   "concept": "Think of a fingerprint taken from the page's header line"
+  },
+  {
+   "n": 35,
+   "kind": "content",
+   "title": "Rebuilding the merkle root",
+   "say": "Block 123,456 holds 13 transactions. Hashing neighbours in pairs gives 7, 4, 2 and finally 1 hash. That last hash is the merkle root stored in the header, and one changed transaction would change it.",
+   "concept": "Think of a tournament bracket: pairs play, winners meet, one champion remains"
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "Median time of the last eleven blocks",
+   "say": "Miners write the time into every header, and it can be a little off. Bitcoin Core therefore uses the median of the last eleven times. We recompute the saved median of block 123,456.",
+   "concept": "Think of a median price that one odd sale cannot move"
+  },
+  {
+   "n": 37,
+   "kind": "section",
+   "title": "Alternative Clients, Libraries, and Toolkits",
+   "say": "Part 7 looks beyond Bitcoin Core. Libraries such as python-bitcoinlib call the node from your own programs, and other clients follow the same rules in other languages. We end with how fresh each toolkit is.",
+   "concept": "Using Bitcoin Core's Programmatic Interface"
+  },
+  {
+   "n": 38,
+   "kind": "content",
+   "title": "Using Bitcoin Core's Programmatic Interface",
+   "say": "A library can speak to the node for you. python-bitcoinlib builds the JSON-RPC call, sends it over HTTP and returns the result as a Python value. On the offline node of release 31.1 a call for the block count returned zero.",
+   "concept": "Your code can ask the node anything the command line can"
+  },
+  {
+   "n": 39,
+   "kind": "content",
+   "title": "How fresh are the alternative toolkits",
+   "say": "Libraries for other languages and other clients exist, but they age. This is the number of days between each toolkit's latest release and the day we asked the registries. A library can be useful and still be old.",
+   "concept": "Think of the date on the newest delivery in a shop window"
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "Summary: the six answers",
+   "say": "Each row answers one of the six opening questions in a line. If you can say each answer in your own words, using the everyday pictures of this chapter, you have the chapter.",
+   "concept": "Reference, release, settings, interface, transaction, block"
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "Resources: read, try, watch, ask",
+   "say": "These links are all open and free. Start with the chapter source and the release page, try the RPC reference against your own node, and watch the talk on tracing a running node. The community links are where questions get answered.",
+   "concept": "Build a release, run it offline, and ask it getblockchaininfo",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Mastering Bitcoin, chapter 3 (source text)",
+     "url": "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/develop/ch03_bitcoin-core.adoc",
+     "finds": "The chapter this deck follows."
+    },
+    {
+     "group": "Read",
+     "label": "Bitcoin Core releases",
+     "url": "https://bitcoincore.org/en/releases/",
+     "finds": "Every release, with notes and signatures."
+    },
+    {
+     "group": "Read",
+     "label": "Bitcoin Core RPC reference",
+     "url": "https://developer.bitcoin.org/reference/rpc/",
+     "finds": "Every call with its arguments and results."
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 1: what a BIP is",
+     "url": "https://bips.dev/1/",
+     "finds": "How a change to Bitcoin is proposed and numbered."
+    },
+    {
+     "group": "Standards and papers",
+     "label": "Bitcoin white paper",
+     "url": "https://bitcoin.org/bitcoin.pdf",
+     "finds": "Nakamoto's nine pages of 31 October 2008."
+    },
+    {
+     "group": "Verify and build",
+     "label": "Build guide for Unix",
+     "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/master/doc/build-unix.md",
+     "finds": "Dependencies and commands for bitcoind."
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Core PR Review Club",
+     "url": "https://bitcoincore.reviews/",
+     "finds": "Weekly sessions that read one change together."
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers discuss protocol and Core in the open."
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Stack Exchange",
+     "url": "https://bitcoin.stackexchange.com/",
+     "finds": "Ask a question, read the voted answers."
+    },
+    {
+     "group": "Watch",
+     "label": "Tracing Bitcoin Core v23.0 (talk video)",
+     "url": "https://www.youtube.com/embed/XuRnL393pSk",
+     "finds": "A developer watches a running node with tracepoints."
+    }
+   ]
+  },
+  {
+   "n": 42,
+   "kind": "closing",
+   "title": "Questions?",
+   "say": "That is Bitcoin Core from source to answers. Chapter 4 turns to keys and addresses, which the node's wallet depends on. Bring your questions.",
+   "concept": ""
+  }
+ ]
+}
