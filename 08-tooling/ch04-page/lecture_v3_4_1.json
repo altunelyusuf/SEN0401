@@ -1,0 +1,413 @@
+{
+ "chapter": 4,
+ "deck": "SEN0401_Ch04_KeysAndAddresses_3e_v3_4_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 4: Keys and Addresses",
+   "say": "Chapter 3 showed the software that checks the rules. Chapter 4 opens the smallest secret it protects, a private key, and follows it to the address that people read aloud. Every number in this deck was computed with the chapter's own Python library.",
+   "takeaway": ""
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has five parts that follow one secret from a number to an address. Three true stories and twenty-one code examples are spread across them, and every example has a picture of its result.",
+   "takeaway": "Five parts, three true stories, twenty-one examples"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The six questions are the chapter's own, rewritten so that each has an answer on a slide. We return to them in the summary. A reader who can answer all six has understood the chapter.",
+   "takeaway": ""
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "The chapter in one picture",
+   "say": "One secret travels five steps. Random bits become a private key, the curve turns it into a public key, two hashes shorten it, and an encoding with a checksum makes the address. The parts of this deck follow the same path.",
+   "takeaway": "Random bits, a key, a point, a hash, an address"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "Public Key Cryptography",
+   "say": "Part 1 starts with the secret itself. A private key is only a number, a public key is a point computed from it, and the curve makes that computation a one-way street.",
+   "takeaway": "From one secret number to a point that nobody can run backwards"
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Keys: concepts (1 of 2)",
+   "say": "These rows pair each concept of the part Public Key Cryptography with something you already know. Say the meaning first, then the comparison, in your own words. The code slides that follow run the same ideas.",
+   "takeaway": "Think of each row as a flashcard: the concept, then a picture you know"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "Keys: concepts (2 of 2)",
+   "say": "These rows pair each concept of the part Public Key Cryptography with something you already know. Say the meaning first, then the comparison, in your own words. The code slides that follow run the same ideas.",
+   "takeaway": "Think of each row as a flashcard: the concept, then a picture you know"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "The 1976 paper that split the key in two",
+   "say": "In 1976 Whitfield Diffie and Martin Hellman asked whether two people could talk privately without first sharing a secret. Their answer was a key split in two. Bitcoin's elliptic-curve multiplication is a later form of the same idea.",
+   "read": {
+    "label": "Diffie, Hellman: New Directions (PDF)",
+    "url": "https://www-ee.stanford.edu/~hellman/publications/24.pdf"
+   },
+   "takeaway": "Every address in this chapter stands on one 1976 idea",
+   "concept": "PublicKeyCryptography"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "A private key is a number below n",
+   "say": "A private key is a very large number between 1 and n minus 1. Zero and n itself are not allowed. Every number inside the range is a valid key, which is why choosing one at random is safe.",
+   "takeaway": "Any whole number from 1 to n minus 1 is a key"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Entropy: bits an attacker must guess",
+   "say": "Entropy counts how many bits of guessing a secret withstands. A PIN has 13 bits and a long password 79. Only 256 fair coin flips match a Bitcoin key, so a key must come from a proper random source.",
+   "takeaway": "Only truly random choices reach the 256 bits of a key"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "The curve secp256k1 and its generator",
+   "say": "Bitcoin's curve is y squared equals x cubed plus 7, counted modulo a 256-bit prime. We test that the generator point G satisfies the formula. Every public key starts from this one fixed point.",
+   "takeaway": "The curve is one short formula: y squared = x cubed + 7"
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "Points on a curve: doubling G",
+   "say": "Figure 4-4 shows one doubling on the curve of figure 4-2. Draw the tangent at G, find where it meets the curve again, and mirror that point across the x-axis. The result is 2G, and repeating the step gives 4G and 8G.",
+   "takeaway": "Tangent, meeting point, mirror image: that is one doubling"
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "Doubling and adding: k times G",
+   "say": "Multiplying G by k means adding G to itself k times. Doubling makes this fast: a key of 253 bits needs a few hundred doublings and additions, not 10 to the 76 steps.",
+   "takeaway": "Doubling reaches a 256-bit key in a few hundred steps"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "The point at infinity on a toy curve",
+   "say": "On a toy curve we can list every multiple of a point. The ninth multiple is the point at infinity, the zero of the curve, and then the list starts over. Bitcoin's curve works the same way with a vastly larger cycle.",
+   "takeaway": "Multiples of a point repeat; the cycle closes at infinity"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "One-way: the work to find a key",
+   "say": "Finding k from k times G means trying keys one by one, about half of them on average. A 20-bit key falls after half a million tries. A 256-bit key needs about 10 to the 77, which is out of reach.",
+   "takeaway": "Each extra bit doubles the attacker's work"
+  },
+  {
+   "n": 16,
+   "kind": "section",
+   "title": "Legacy Addresses",
+   "say": "Part 2 turns a public key into the first kind of Bitcoin address. Two hashes shorten the key to twenty bytes, and Base58Check adds a version and a checksum that catches typing mistakes.",
+   "takeaway": "From a public key to the address that people read aloud"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "Legacy: concepts (1 of 3)",
+   "say": "These rows pair each concept of the part Legacy Addresses with something you already know. Say the meaning first, then the comparison, in your own words. The code slides that follow run the same ideas.",
+   "takeaway": "Think of each row as a flashcard: the concept, then a picture you know"
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Legacy: concepts (2 of 3)",
+   "say": "These rows pair each concept of the part Legacy Addresses with something you already know. Say the meaning first, then the comparison, in your own words. The code slides that follow run the same ideas.",
+   "takeaway": "Think of each row as a flashcard: the concept, then a picture you know"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Legacy: concepts (3 of 3)",
+   "say": "These rows pair each concept of the part Legacy Addresses with something you already know. Say the meaning first, then the comparison, in your own words. The code slides that follow run the same ideas.",
+   "takeaway": "Think of each row as a flashcard: the concept, then a picture you know"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "A public key has two encodings",
+   "say": "A public key is a point with two coordinates. The uncompressed form writes both after a 04 byte. The compressed form writes x and one byte for the parity of y, and y is recovered from x.",
+   "takeaway": "A compressed key is 33 bytes; the full one is 65"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "P2PK holds the key, P2PKH only its hash",
+   "say": "The original output script, P2PK, contains the public key itself. P2PKH contains only a 20-byte hash of it. The hash is a commitment: the key is revealed only when the coins are spent.",
+   "takeaway": "P2PKH shows a commitment to the key, not the key"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "HASH160 is SHA256 then RIPEMD-160",
+   "say": "HASH160 first applies SHA256 and then RIPEMD-160. The 33-byte key becomes 32 bytes and then 20 bytes. The result is the number that a legacy address stands for.",
+   "takeaway": "Two hashes in a row: 33 bytes in, 20 bytes out"
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Why 58? Satoshi left the reasons in the file",
+   "say": "The first lines of base58.h are a design memo. It gives four human reasons: look-alike characters, punctuation that breaks selection, line breaks in e-mail, and double-clicking. The alphabet of every legacy address is a usability decision.",
+   "read": {
+    "label": "base58.h in bitcoin/bitcoin (source)",
+    "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/master/src/base58.h"
+   },
+   "takeaway": "Address formats are human-factors engineering, written into the source",
+   "concept": "Base58Check"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "Base58Check, step by step",
+   "say": "A legacy address has three parts: a version byte, the 20-byte key hash and a four-byte checksum. Written in base58 they give a 34-character string. The leading 00 version byte becomes the first character, 1.",
+   "takeaway": "An address is 25 bytes written in 34 characters"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "From public key to address",
+   "say": "Figure 4-7 is the whole road from public key to address. SHA256 and RIPEMD-160 shrink the key to 20 bytes, a version byte and a checksum make 25, and base58 writes them as 34 characters. Each step is a function you have just run.",
+   "takeaway": "Each arrow is a function that you have just run"
+  },
+  {
+   "n": 26,
+   "kind": "content",
+   "title": "The checksum catches every single typo",
+   "say": "We change one character of the address in every possible way: 1,938 variants. A wallet that checks the four-byte checksum rejects every one of them. A random typo passes only about once in 4.3 billion.",
+   "takeaway": "A single typo is caught almost every time"
+  },
+  {
+   "n": 27,
+   "kind": "section",
+   "title": "Script Hashes and Bech32",
+   "say": "Part 3 covers the addresses that came after the first kind. P2SH commits to a whole script, and SegWit's Bech32 and Bech32m add a version, a program and a stronger checksum.",
+   "takeaway": "Addresses that commit to a script, and the second alphabet"
+  },
+  {
+   "n": 28,
+   "kind": "content",
+   "title": "Bech32: concepts (1 of 2)",
+   "say": "These rows pair each concept of the part Script Hashes and Bech32 with something you already know. Say the meaning first, then the comparison, in your own words. The code slides that follow run the same ideas.",
+   "takeaway": "Think of each row as a flashcard: the concept, then a picture you know"
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "Bech32: concepts (2 of 2)",
+   "say": "These rows pair each concept of the part Script Hashes and Bech32 with something you already know. Say the meaning first, then the comparison, in your own words. The code slides that follow run the same ideas.",
+   "takeaway": "Think of each row as a flashcard: the concept, then a picture you know"
+  },
+  {
+   "n": 30,
+   "kind": "content",
+   "title": "P2SH commits to a whole script",
+   "say": "P2SH lets an address stand for any script. We build a two-of-three multisignature script of 105 bytes and hash it with HASH160. The address starts with 3 and reveals the script only when the coins are spent.",
+   "takeaway": "A P2SH address hides the script until spending"
+  },
+  {
+   "n": 31,
+   "kind": "content",
+   "title": "Collision and preimage: bits of work",
+   "say": "Finding any two inputs with one hash takes about 2 to the n over 2 tries; finding an input for a given hash takes 2 to the n. A 160-bit hash gives only 80 bits against collisions, which is why SegWit scripts use SHA256.",
+   "takeaway": "A collision costs only half the bits of a hash"
+  },
+  {
+   "n": 32,
+   "kind": "content",
+   "title": "A Bech32 address, taken apart",
+   "say": "A Bech32 address has four parts. The network name bc, a separator 1, the data and a six-letter checksum. The first data letter is the witness version, and the rest is the witness program.",
+   "takeaway": "Split at the last 1: name, version, program, checksum"
+  },
+  {
+   "n": 33,
+   "kind": "content",
+   "title": "Witness version and witness program",
+   "say": "The decoder returns the witness version and the program. Version 0 holds a 20-byte key hash or a 32-byte script hash. Version 1 holds a 32-byte Taproot key and makes the address start with bc1p.",
+   "takeaway": "Version 0 for older SegWit; version 1 for Taproot"
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "Bech32 accepts the extra q, Bech32m does not",
+   "say": "In Bech32 a q inserted before a final p leaves the checksum valid, so a typo can go unnoticed. The strings from the book all pass the old check and fail the new one. Bech32m changes the constant to close the gap.",
+   "takeaway": "Bech32m changed one constant and closed the gap"
+  },
+  {
+   "n": 35,
+   "kind": "section",
+   "title": "Private Key Formats",
+   "say": "Part 4 is about writing a private key down. The same number can appear as hex or as WIF, and one extra byte tells the wallet whether to use compressed public keys.",
+   "takeaway": "The same private key, written in the forms a wallet can import"
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "Formats: concepts",
+   "say": "These rows pair each concept of the part Private Key Formats with something you already know. Say the meaning first, then the comparison, in your own words. The code slides that follow run the same ideas.",
+   "takeaway": "Think of each row as a flashcard: the concept, then a picture you know"
+  },
+  {
+   "n": 37,
+   "kind": "content",
+   "title": "WIF: a private key dressed for travel",
+   "say": "Wallet import format wraps the private key in Base58Check. The version byte is 80. A trailing 01 byte, added only for compressed keys, makes the string one byte longer and changes its first letter to K or L.",
+   "takeaway": "The final 01 byte says: use compressed public keys"
+  },
+  {
+   "n": 38,
+   "kind": "content",
+   "title": "One private key, two addresses",
+   "say": "One private key gives two public key encodings, and each hashes to a different address. Coins sent to one address are not seen at the other. The compressed flag in the WIF tells a wallet which one to use.",
+   "takeaway": "The flag in WIF decides which address a wallet watches"
+  },
+  {
+   "n": 39,
+   "kind": "section",
+   "title": "Advanced Keys and Addresses",
+   "say": "Part 5 goes beyond a plain random key. A vanity address costs work in proportion to its letters, a paper wallet must be tested, and a valid address can still have no key.",
+   "takeaway": "Chosen prefixes, printed keys and an address with no key"
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "Advanced: concepts",
+   "say": "These rows pair each concept of the part Advanced Keys and Addresses with something you already know. Say the meaning first, then the comparison, in your own words. The code slides that follow run the same ideas.",
+   "takeaway": "Think of each row as a flashcard: the concept, then a picture you know"
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "Vanity search: 58 times harder per letter",
+   "say": "A vanity address is found by trying keys until the text fits. One chosen letter is quick. Each further letter divides the chance by 58, so six letters need about 38 billion tries, and the work cannot be shortcut.",
+   "takeaway": "Every extra letter costs about 58 times more work"
+  },
+  {
+   "n": 42,
+   "kind": "content",
+   "title": "A paper wallet must give back its address",
+   "say": "A paper wallet prints a WIF key and its address. Before any coins are sent, decode the WIF and confirm that the key reproduces the printed address. A smudged character is found while the paper is still empty.",
+   "takeaway": "Test the paper before you put coins on it"
+  },
+  {
+   "n": 43,
+   "kind": "content",
+   "title": "The address that eats coins",
+   "say": "This address was made by spelling a message and then closing it with letters that satisfy the checksum. No private key exists for it. Thousands of senders still paid into it, and not one coin has ever left.",
+   "read": {
+    "label": "The eater address on blockstream.info",
+    "url": "https://blockstream.info/address/1BitcoinEaterAddressDontSendf59kuE"
+   },
+   "takeaway": "An address commits to a key; it does not prove that a key exists",
+   "concept": "P2pkhAddress"
+  },
+  {
+   "n": 44,
+   "kind": "content",
+   "title": "The eater address is valid but keyless",
+   "say": "The address spells a message in base58 letters and then closes with letters that make the checksum right. Wallets accept it without a warning. Nobody holds a key for it, so coins sent there are gone for good.",
+   "takeaway": "A valid checksum is not proof that a key exists"
+  },
+  {
+   "n": 45,
+   "kind": "content",
+   "title": "Summary: the six answers",
+   "say": "Each row answers one of the six opening questions in a line. If you can say each answer in your own words, using the everyday pictures of this chapter, you have the chapter.",
+   "takeaway": "Entropy, a point, a hash, a checksum, a flag, no key"
+  },
+  {
+   "n": 46,
+   "kind": "content",
+   "title": "Resources: read, try, watch, ask",
+   "say": "These links are all open and free. Start with the chapter source, read the three standards or papers, open the eater address on an explorer, and watch the video for the curve behind every public key.",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Mastering Bitcoin, chapter 4 (source text)",
+     "url": "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/develop/ch04_keys.adoc",
+     "finds": "The chapter this deck follows."
+    },
+    {
+     "group": "Read",
+     "label": "Elliptic curve cryptography: a gentle introduction",
+     "url": "https://andrea.corbellini.name/2015/05/17/elliptic-curve-cryptography-a-gentle-introduction/",
+     "finds": "Pictures of the curve, step by step."
+    },
+    {
+     "group": "Read",
+     "label": "Bitcoin Wiki: technical background of addresses",
+     "url": "https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses",
+     "finds": "From key to address, in steps."
+    },
+    {
+     "group": "Standards and papers",
+     "label": "Diffie and Hellman: New Directions (PDF)",
+     "url": "https://www-ee.stanford.edu/~hellman/publications/24.pdf",
+     "finds": "The 1976 paper behind the key pair."
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 173: Bech32 addresses",
+     "url": "https://bips.dev/173/",
+     "finds": "The format of native SegWit addresses."
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 350: Bech32m addresses",
+     "url": "https://bips.dev/350/",
+     "finds": "The fix used from witness version 1."
+    },
+    {
+     "group": "Try",
+     "label": "The eater address on blockstream.info",
+     "url": "https://blockstream.info/address/1BitcoinEaterAddressDontSendf59kuE",
+     "finds": "Open it and watch nothing move."
+    },
+    {
+     "group": "Try",
+     "label": "base58.h in bitcoin/bitcoin (source)",
+     "url": "https://raw.githubusercontent.com/bitcoin/bitcoin/master/src/base58.h",
+     "finds": "Satoshi's four reasons, in the code."
+    },
+    {
+     "group": "Watch",
+     "label": "Elliptic Curves - Computerphile (video)",
+     "url": "https://www.youtube.com/watch?v=NF1pwjL9-DE",
+     "finds": "The curve behind every public key."
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Stack Exchange",
+     "url": "https://bitcoin.stackexchange.com/",
+     "finds": "Ask a question, read the answers."
+    }
+   ],
+   "takeaway": "Open the eater address tonight and watch nothing move"
+  },
+  {
+   "n": 47,
+   "kind": "closing",
+   "title": "Questions?",
+   "say": "That is the whole path from a secret number to an address. Chapter 5 asks what happens when the secret is lost, and how a word list can bring every key back. Bring your questions.",
+   "takeaway": ""
+  }
+ ],
+ "_note": "lecture_v3_4_0.json (the deck export of the chapter 04 deck, untouched) with the deck's takeaway as takeaway and, on each story slide, the first concept of the story that the page has as concept; made by pages_deck_links_make_v1_3_0.py"
+}
