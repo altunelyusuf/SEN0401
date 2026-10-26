@@ -1,0 +1,6 @@
+1696a1697
+> function erdSettle(k){const BW=ERD.mode==='schema'?160:170,M=12,hgt=q=>30+OE_ENT[q].attrs.length*16+10;const o=Object.keys(OE_ENT).filter(q=>q!==k).map(q=>({l:OE_ENT[q].x,t:OE_ENT[q].y,r:OE_ENT[q].x+BW,b:OE_ENT[q].y+hgt(q)}));const h=hgt(k);const free=(x,y)=>x>=0&&y>=0&&o.every(b=>x+BW+M<=b.l||b.r+M<=x||y+h+M<=b.t||b.b+M<=y);const e=OE_ENT[k],x0=e.x,y0=e.y;if(free(x0,y0))return;let best=null,bd=1e18;for(let r=10;r<=6000&&!best;r+=10){for(let a=-r;a<=r;a+=10){[[a,-r],[a,r],[-r,a],[r,a]].forEach(p=>{const x=x0+p[0],y=y0+p[1];if(free(x,y)){const d=Math.hypot(p[0],p[1]);if(d<bd){bd=d;best=[x,y]}}})}}if(best){e.x=best[0];e.y=best[1]}}
+1699c1700
+<  const up=e=>{const d=ERD_LAY.drag;if(!d||e.pointerId!==d.id)return;ERD_LAY.drag=null;try{svg.releasePointerCapture(e.pointerId)}catch(x){}if(!d.moved)return;ERD_LAY.pos[ERD.mode]=ERD_LAY.pos[ERD.mode]||{};Object.keys(OE_ENT).forEach(k=>ERD_LAY.pos[ERD.mode][k]={x:OE_ENT[k].x,y:OE_ENT[k].y});ERD_LAY.justDragged=Date.now();drawOerd()};
+---
+>  const up=e=>{const d=ERD_LAY.drag;if(!d||e.pointerId!==d.id)return;ERD_LAY.drag=null;try{svg.releasePointerCapture(e.pointerId)}catch(x){}if(!d.moved)return;erdSettle(d.k);ERD_LAY.pos[ERD.mode]=ERD_LAY.pos[ERD.mode]||{};Object.keys(OE_ENT).forEach(k=>ERD_LAY.pos[ERD.mode][k]={x:OE_ENT[k].x,y:OE_ENT[k].y});ERD_LAY.justDragged=Date.now();drawOerd()};
