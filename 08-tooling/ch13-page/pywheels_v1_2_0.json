@@ -1,0 +1,12 @@
+{
+ "_version": "1.2.0",
+ "wheels": [
+  {
+   "file": "sen0401_ch13_lib-1.1.0-py3-none-any.whl",
+   "sha256": "7a74931ffdad8160485833a3f4f7de89222a482c09f762989346b1d1f793e3d4"
+  }
+ ],
+ "pyodide_packages": [],
+ "boot_python": "import builtins\nimport hashlib, hmac, struct\n# PBKDF2-HMAC in pure Python, registered only where the runtime lacks it (Pyodide 0.28.2 has no hashlib.pbkdf2_hmac; the library's bip39_seed calls it)\ndef _pbkdf2_hmac(hash_name, password, salt, iterations, dklen=None):\n    password = bytes(password); salt = bytes(salt); base = hmac.new(password, digestmod=hash_name); size = base.digest_size\n    dklen = size if dklen is None else dklen; out = b''; block = 1\n    while len(out) < dklen:\n        c = base.copy(); c.update(salt + struct.pack('>I', block)); u = c.digest(); acc = int.from_bytes(u, 'big')\n        for _ in range(iterations - 1):\n            c = base.copy(); c.update(u); u = c.digest(); acc ^= int.from_bytes(u, 'big')\n        out += acc.to_bytes(size, 'big'); block += 1\n    return out[:dklen]\nif not hasattr(hashlib, 'pbkdf2_hmac'): hashlib.pbkdf2_hmac = _pbkdf2_hmac\n# setup: the chapter library of the page (L = chapter 13 library, R = the recorded run of Bitcoin Core 31.1, seen = search a saved source); the page boots these names\nimport hashlib, math\nimport sen0401_ch13_lib_v1_0_0 as L\nR = L.run()\nseen = L.has\nfor _n in [k for k in list(globals()) if not k.startswith('_') and k != 'builtins']: setattr(builtins, _n, globals()[_n])\n",
+ "_note": "The wheel holds the chapter 13 library and the protocol module (standard library only) and, in the folder ch13-evidence beside them, the 36 saved files the worked examples read, as committed earlier. The boot snippet runs the setup of the deck's chapter-code manifest chapter_code_ch13_v1_0_0.json once (L = the library, R = the recorded run of Bitcoin Core 31.1, seen = the search of a saved source, hashlib, math) and makes those names ready in every program."
+}

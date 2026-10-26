@@ -1,0 +1,480 @@
+{
+ "chapter": 13,
+ "deck": "SEN0401_Ch13_BitcoinSecurity_3e_v2_1_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 13: Bitcoin Security",
+   "say": "This deck explains how Bitcoin coins are kept safe: what a signature protects, where keys are stored, how they are backed up and shared, and what an heir needs. Every number on a result picture was computed, or read from one recorded run of Bitcoin Core 31.1 on a test network.",
+   "takeaway": "How keys are protected, backed up, shared and handed on, and what each safeguard costs"
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has six parts that follow the order of the chapter. Four true stories and twenty-eight code examples are spread across them. The examples are listed in the same order in the chapter code tab of the course page, so every listing here can be run and edited there.",
+   "takeaway": "Six parts, twenty-eight examples, four true stories"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The seven questions are the chapter's own, rewritten so that each has an answer on a slide. We return to them in the summary. A reader who can answer all seven has understood the chapter.",
+   "takeaway": "Each has an answer on a slide; we return to them in the summary"
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, six parts",
+   "say": "The chapter has six parts and 25 key concepts. Each part gets a divider, concept cards with everyday comparisons, code that runs, and some parts a true story. The deck follows the order of the chapter.",
+   "takeaway": "Six parts; every slide today lives on this map"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "The security model",
+   "say": "A node trusts only what it can check. This part shows why a signed payment can be published, how peers talk, where checking starts, and what a download proves.",
+   "takeaway": "A node trusts only what it can check itself, like a cashier who tests every note."
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "The security model: key concepts (1 of 2)",
+   "say": "These cards cover Bitcoin Security, Security Principles, Developing Bitcoin Systems Securely and The Root of Trust. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 13.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "A signed payment hides the key",
+   "say": "A payment can be published because it contains a signature and a public key, not the private key. The recorded bytes of one signed payment show the witness items and their sizes, and no key of the owner. It is example 1 in the chapter code tab of the course page.",
+   "takeaway": "The payment carries a signature and a public key, never the private key"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "The security model: key concepts (2 of 2)",
+   "say": "These cards cover root of trust, decentralization, decentralized consensus and genesis block. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 13.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "Edit the payee or the amount: rejected",
+   "say": "The signature covers the amounts and the receiving scripts. A copy with another payee, or another amount, is no longer what was signed, so the node refuses it. Only the original is allowed. It is example 2 in the chapter code tab of the course page.",
+   "takeaway": "A signature covers payee and amount, so any edit fails the check"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "A replayed payment pays nothing",
+   "say": "Sending the same signed payment again gains nothing. The node already knows it and says so, and the receiver's balance does not change. A signature is not a bearer cheque that can be cashed twice. It is example 3 in the chapter code tab of the course page.",
+   "takeaway": "A node that knows a payment refuses it, so nothing is paid twice"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Encrypted by default since release 27.0",
+   "say": "Since release 27.0 nodes talk over the encrypted transport of BIP 324. Two recorded peers both report version two and the same session identifier. A node without the service falls back to the plain version one. It is example 4 in the chapter code tab of the course page.",
+   "takeaway": "Peers with the service speak version two; others stay on version one"
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "The first block's hash, rebuilt",
+   "say": "The header of the first block has 80 bytes. Hashing it twice gives the hash that Bitcoin Core carries in its source. Software checks every later block against this typed-in starting point. It is example 5 in the chapter code tab of the course page.",
+   "takeaway": "The first block is not fetched; its hash is typed into the software"
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "Assumed valid: a typed-in shortcut",
+   "say": "To start faster, a node may skip checking old signatures for blocks that lead up to a block hash typed into the release. The help text describes it, the source holds the hash, and an option controls it. It is example 6 in the chapter code tab of the course page.",
+   "takeaway": "Old blocks are trusted by a block hash typed into the release"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Does the download match the list?",
+   "say": "The hash of the downloaded file equals its line in the signed list. That proves the file is the listed one. Eleven builders signed the list, but their keys were not imported, so no signature was checked. It is example 7 in the chapter code tab of the course page.",
+   "takeaway": "A matching hash proves the file; a checked signature proves who listed it"
+  },
+  {
+   "n": 15,
+   "kind": "section",
+   "title": "Protecting keys",
+   "say": "Coins are as safe as their keys. We compare a watching wallet with a signing one, see a device that makes a thief wait, and count what a guess costs.",
+   "takeaway": "Keys are kept where thieves cannot reach, like cash in a safe and not in a pocket."
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Protecting keys: key concepts (1 of 2)",
+   "say": "These cards cover User Security Best Practices, best practices and Physical Bitcoin Storage. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 13.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "A watch-only wallet cannot sign",
+   "say": "The online wallet holds only public information. It sees the balance and builds a payment, but it cannot sign, and it refuses to list private descriptors. That is why a thief of this machine gets no coins. It is example 8 in the chapter code tab of the course page.",
+   "takeaway": "A wallet without keys can build payments but never finish them"
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Protecting keys: key concepts (2 of 2)",
+   "say": "These cards cover Hardware Signing Devices, cold storage and paper backup. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 13.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "The payment file travels offline and back",
+   "say": "The online wallet writes an unsigned payment file. The cold node, with no blocks and no connection, signs it and returns a longer file. The online node finishes it and the payment confirms. It is example 9 in the chapter code tab of the course page.",
+   "takeaway": "Only the file travels; the keys never touch the online machine"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Hot or cold?",
+   "say": "A hot wallet keeps its keys on a machine that is online, so malware or a thief of the machine can reach them. Cold storage keeps them on a machine that is never connected, and only signed files travel.",
+   "takeaway": "Hot is handy, cold is safe; many people keep both"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "A PIN that makes the thief wait",
+   "say": "A hardware wallet answers wrong PINs with waits that double: 1, 2, 4 seconds and so on. Fifteen waits add up to hours, and after sixteen failed tries the device wipes itself, so guessing is hopeless. It is example 10 in the chapter code tab of the course page.",
+   "takeaway": "Waiting costs the thief hours long before the device wipes itself"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "The little box that learned to wait",
+   "say": "This is a true story, dated 2024-06-14. A Trezor holds the keys and makes the signatures, and defends itself against a thief with a PIN whose waits double, 1 second after the first wrong try, 2 after the second, 4 after the third, and a wipe after 16 failed attempts.",
+   "read": {
+    "label": "Bitcoin Wiki: Trezor (article)",
+    "url": "https://en.bitcoin.it/wiki/Trezor"
+   },
+   "takeaway": "A device that makes a thief wait",
+   "concept": "TrezorPinWait"
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Four words fall in seconds",
+   "say": "A phrase made of words from a list of 2048 has 2048 to the power of its length in possibilities. At a trillion guesses a second four words last seconds, six words about two years. Choose long, random secrets. It is example 11 in the chapter code tab of the course page.",
+   "takeaway": "A few random words are not a safe secret on their own"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "A locked wallet still shows the balance",
+   "say": "After encryption the wallet still shows the balance and creates addresses, because those need no private key. Sending is refused until the passphrase is entered, and a wrong passphrase is refused too. It is example 12 in the chapter code tab of the course page.",
+   "takeaway": "The balance stays visible; spending needs the passphrase"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Stretching the passphrase buys days",
+   "say": "Bitcoin Core stretches the passphrase by repeating a hash many times, so each guess costs time. We assume a rig and a passphrase of thirty bits of strength, and count the days an attacker needs. It is example 13 in the chapter code tab of the course page.",
+   "takeaway": "More rounds per guess mean more days for an attacker"
+  },
+  {
+   "n": 26,
+   "kind": "section",
+   "title": "Keeping access",
+   "say": "Safe keys are no use if you lose them. We see what a backup restores, how twelve words stand for every key, and where a master key comes from.",
+   "takeaway": "Access survives loss through a backup, like a spare key in a drawer."
+  },
+  {
+   "n": 27,
+   "kind": "content",
+   "title": "Keeping access: key concepts",
+   "say": "These cards cover Ensuring Your Access, backing up, recovery codes and seed. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 13.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 28,
+   "kind": "content",
+   "title": "A stale backup misses the newest coins",
+   "say": "A wallet pre-computes a pool of addresses. A backup taken early knows few of them. Restoring from it finds fewer coins than the wallet holds, while a late backup finds them all. It is example 14 in the chapter code tab of the course page.",
+   "takeaway": "A backup restores only what it knew when it was made"
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "A backup range covers only the pool",
+   "say": "Change the pool size or the payments and rerun. Only payments sent to addresses inside the backup's pool are found after a restore. The rest are on the chain but invisible to the restored wallet. It is example 15 in the chapter code tab of the course page.",
+   "takeaway": "Coins sent beyond the known addresses are not found"
+  },
+  {
+   "n": 30,
+   "kind": "content",
+   "title": "Twelve words, 128 bits and a checksum",
+   "say": "Sixteen bytes of entropy are 128 bits. One bit in 32 is added as a checksum and everything is cut into groups of eleven bits, each choosing one of 2048 words. That gives twelve words. It is example 16 in the chapter code tab of the course page.",
+   "takeaway": "A wrong word set passes the checksum only one time in sixteen"
+  },
+  {
+   "n": 31,
+   "kind": "content",
+   "title": "Seed words are stretched into a seed",
+   "say": "The words are hashed many times, with the passphrase as salt, into a 64-byte seed. We compare it with the official test vector. With no passphrase the same words give a different seed, hence another wallet. It is example 17 in the chapter code tab of the course page.",
+   "takeaway": "The same words with another passphrase give another wallet"
+  },
+  {
+   "n": 32,
+   "kind": "content",
+   "title": "A master key grows from the seed",
+   "say": "A keyed hash of the seed splits into a master private key and a chain code. All the wallet's keys are derived from this pair. We compare with the published test vector of BIP 32. It is example 18 in the chapter code tab of the course page.",
+   "takeaway": "Every key of the wallet descends from these two values"
+  },
+  {
+   "n": 33,
+   "kind": "section",
+   "title": "Sharing control",
+   "say": "One key is one point of failure. Several keys and shared secrets spread loss and theft, and we measure what that costs in bytes and in chances.",
+   "takeaway": "Control is shared among keys or pieces, like a vault that needs two keyholders."
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "Sharing control: key concepts",
+   "say": "These cards cover Diversifying Risk, risk diversification, Multisig and Governance and multisignature addresses. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 13.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 35,
+   "kind": "content",
+   "title": "Two of three keys sign",
+   "say": "A two-of-three wallet needs two signatures. One key alone leaves the payment unfinished. If one key is lost the other two still sign, but with two keys lost the wallet cannot be spent. It is example 19 in the chapter code tab of the course page.",
+   "takeaway": "One key alone cannot sign; any two of the three can"
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "More keys: fewer losses, more thefts",
+   "say": "A scheme that needs fewer keys is easier to use but easier to rob. With a loss chance of 0.1 and a theft chance of 0.05 per key, two of three is the balance; one of three is often robbed. It is example 20 in the chapter code tab of the course page.",
+   "takeaway": "Two of three cuts both risks; one of three trades loss for theft"
+  },
+  {
+   "n": 37,
+   "kind": "content",
+   "title": "A two-of-three payment is larger",
+   "say": "A multisignature spend carries several signatures and the script that lists the keys. The recorded sizes in virtual bytes show the cost. Counting the script parts by hand gives the same number. It is example 21 in the chapter code tab of the course page.",
+   "takeaway": "More signatures mean more bytes, and so a higher fee"
+  },
+  {
+   "n": 38,
+   "kind": "content",
+   "title": "Shamir by hand: shares on a line",
+   "say": "The secret is the height of a line at zero, and each share is its height at another point. Two points fix the line, so two shares rebuild the secret. Try other numbers and rerun; this is example 22 in the chapter code tab of the course page.",
+   "takeaway": "Two points fix the line; its height at zero is the secret"
+  },
+  {
+   "n": 39,
+   "kind": "content",
+   "title": "Shamir with the chapter library",
+   "say": "The library cuts a secret into three shares with a fixed slope so that the run repeats. Any two shares rebuild the secret. A single share rebuilds some number, but not the secret. It is example 23 in the chapter code tab of the course page.",
+   "takeaway": "One share alone gives no information about the secret"
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "One share fits every secret",
+   "say": "In a small field we can list every possibility. For each possible secret exactly one slope fits the single share we hold. So the share alone tells nothing about which secret is the true one. It is example 24 in the chapter code tab of the course page.",
+   "takeaway": "A single share is consistent with every possible secret"
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "Three pieces of a key, any two will do",
+   "say": "This is a true story, dated 1979-11-01. Adi Shamir's two-page paper How to Share a Secret divides data D into n pieces so that D is easily computable from any k pieces and knowledge of any k minus 1 pieces leaves D completely undetermined. The lesson is that split the secret so that loss and theft both need several failures.",
+   "read": {
+    "label": "Shamir: How to Share a Secret (PDF, 1979)",
+    "url": "https://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf"
+   },
+   "takeaway": "Shares of a secret: loss and theft both need several failures",
+   "concept": "ShamirTwoOfThree"
+  },
+  {
+   "n": 42,
+   "kind": "section",
+   "title": "Custody history",
+   "say": "Giving your coins to someone else is trust, not safety. Two true stories show what happens when a shop or a seal replaces your own key.",
+   "takeaway": "Handing coins to someone else is trust, like leaving cash with a stranger."
+  },
+  {
+   "n": 43,
+   "kind": "content",
+   "title": "Custody history: key concepts",
+   "say": "These cards cover hot wallet. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 13.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 44,
+   "kind": "content",
+   "title": "The Mt. Gox figures, recomputed",
+   "say": "Four figures from the story are recomputed here. If 850,000 coins were 7 percent of all coins, the supply was about 12.1 million, and a 36 percent cut turns 40 coins into 25.6. The sources disagree on the rest; this is example 25 in the chapter code tab of the course page.",
+   "takeaway": "Counts differ by source; the arithmetic shows by how much"
+  },
+  {
+   "n": 45,
+   "kind": "content",
+   "title": "The exchange that held the keys of everyone",
+   "say": "This is a true story, dated 2014-02-24. Mt. Gox, based in Shibuya, was launched in 2010 and was handling over 70% of all bitcoin transactions worldwide by early 2014. The lesson is that not your keys, not your coins: custody is trust.",
+   "read": {
+    "label": "Wikipedia: Mt. Gox (article)",
+    "url": "https://en.wikipedia.org/wiki/Mt._Gox"
+   },
+   "takeaway": "The coins of everyone sat in one wallet of the exchange",
+   "concept": "MtGoxLoss"
+  },
+  {
+   "n": 46,
+   "kind": "content",
+   "title": "The Casascius coin in the saved page",
+   "say": "The story's facts are read from the saved wiki page, not from memory. The search finds the date sales stopped, the coin sizes and the regulator's view. A claim you cannot find in a source is only a claim. It is example 26 in the chapter code tab of the course page.",
+   "takeaway": "Each claim of the story can be found in the saved source"
+  },
+  {
+   "n": 47,
+   "kind": "content",
+   "title": "A coin with a private key under a sticker",
+   "say": "This is a true story, dated 2013-11-26. Mike Caldwell first imagined a private key on a piece of paper inside a washer with a tamper-evident hologram on each side, and found it more economical to make a real coin. The lesson is that a tamper seal tells you someone looked, not who.",
+   "read": {
+    "label": "Bitcoin Wiki: Casascius physical bitcoins",
+    "url": "https://en.bitcoin.it/wiki/Casascius_physical_bitcoins"
+   },
+   "takeaway": "A private key hidden under a hologram",
+   "concept": "CasasciusHologram"
+  },
+  {
+   "n": 48,
+   "kind": "section",
+   "title": "Survivability",
+   "say": "Funds should outlive their owner. A timelock lets an heir spend after a wait, and the last slide lists what these experiments did not run.",
+   "takeaway": "Funds should outlive their owner, like a will with a waiting period."
+  },
+  {
+   "n": 49,
+   "kind": "content",
+   "title": "Survivability: key concepts",
+   "say": "These cards cover Survivability and estate planning. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 13.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 50,
+   "kind": "content",
+   "title": "The heir must wait ten blocks",
+   "say": "The policy lets the owner spend at any time and the heir only after ten confirmations. The recorded tests show the heir refused after one and nine confirmations and accepted at ten. It is example 27 in the chapter code tab of the course page.",
+   "takeaway": "Before the wait, the node refuses the heir's payment"
+  },
+  {
+   "n": 51,
+   "kind": "content",
+   "title": "The wait field has sixteen bits",
+   "say": "The relative wait is stored in sixteen bits, so it cannot exceed 65535 blocks, about 455 days. A value of 65536 is cut to zero in those bits, which lets the heir spend at once. Check your own numbers. It is example 28 in the chapter code tab of the course page.",
+   "takeaway": "A wait of 65536 wraps to zero, so the heir can spend at once"
+  },
+  {
+   "n": 52,
+   "kind": "content",
+   "title": "What these runs did not cover",
+   "say": "Bitcoin Core 31.1 ran once on a private test chain. The table lists, from that record, what was not run: real funds, a physical device, a true air gap, an exchange breach and more. Treat those parts of the chapter as read, not tested.",
+   "takeaway": "A safeguard that was not run here is explained, not proven"
+  },
+  {
+   "n": 53,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature, one for each group of parts. A line that feels unproven should send you back to its code slide, because every figure in it was computed or read from the recorded run. The chapter code tab of the course page reruns all 28 examples.",
+   "takeaway": "If a line feels unproven, the code slide of its part carries the receipt"
+  },
+  {
+   "n": 54,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch. A good start is the Stand-up Maths video on secret sharing, then the Optech topic on partially signed transactions beside the chapter. The course page for chapter 13 carries the full text and every source.",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Optech topic: Partially signed transactions",
+     "url": "https://bitcoinops.org/en/topics/psbt/",
+     "finds": "Summary of PSBT and the wallets that use it"
+    },
+    {
+     "group": "Read",
+     "label": "Optech topic: Output script descriptors",
+     "url": "https://bitcoinops.org/en/topics/output-script-descriptors/",
+     "finds": "Summary of descriptors with examples"
+    },
+    {
+     "group": "Read",
+     "label": "Optech topic: Timelocks",
+     "url": "https://bitcoinops.org/en/topics/timelocks/",
+     "finds": "The four timelock types side by side"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 324: v2 P2P Encrypted Transport",
+     "url": "https://bips.dev/324/",
+     "finds": "The encrypted handshake and packet format of peers"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 39: Mnemonic code for deterministic keys",
+     "url": "https://bips.dev/39/",
+     "finds": "Seed words, their checksum and the word list"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "Shamir: How to Share a Secret (PDF, 1979)",
+     "url": "https://web.mit.edu/6.857/OldStuff/Fall03/ref/Shamir-HowToShareASecret.pdf",
+     "finds": "The original two pages that define threshold sharing"
+    },
+    {
+     "group": "Watch",
+     "label": "Stand-up Maths: an open secret with maths (video)",
+     "url": "https://www.youtube.com/embed/K54ildEW9-Q",
+     "finds": "Secret sharing explained with polynomials"
+    },
+    {
+     "group": "Watch",
+     "label": "Unchained: What is bitcoin multisig? (video)",
+     "url": "https://www.youtube.com/embed/pOr6dwb7-dw",
+     "finds": "How several keys protect one wallet"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Optech newsletters (weekly)",
+     "url": "https://bitcoinops.org/en/newsletters/",
+     "finds": "Weekly digest of protocol and wallet development; all issues"
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin (research forum)",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers argue out proposals and research in public threads"
+    },
+    {
+     "group": "Community",
+     "label": "bitcoin-dev (mailing list)",
+     "url": "https://groups.google.com/g/bitcoindev",
+     "finds": "Where BIPs and soft forks are first proposed and debated"
+    }
+   ],
+   "takeaway": "Watch the secret-sharing video, then read the Optech topic beside the chapter"
+  },
+  {
+   "n": 55,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by computations that ran on slides of this deck. The course page for chapter 13 has every word behind them, the stories with their sources, and the question bank to test yourself.",
+   "takeaway": "And where each claim gets its proof"
+  }
+ ],
+ "_note": "lecture_v2_1_0.json (the deck export of the chapter 13 deck, untouched) with the deck's takeaway as takeaway and, on each story slide, the first concept of the story that the page has as concept; made by pages_deck_links_make_v1_3_0.py"
+}
