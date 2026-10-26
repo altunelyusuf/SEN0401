@@ -1,0 +1,437 @@
+{
+ "chapter": 10,
+ "deck": "SEN0401_Ch10_TheBitcoinNetwork_3e_v2_2_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 10: The Bitcoin Network",
+   "say": "This deck explains how the Bitcoin network works: who is on it, how nodes find each other, and how blocks and payments travel. Every number on a result picture was read from one recorded run of Bitcoin Core 31.1 on a test chain, or computed with the chapter's own Python library.",
+   "concept": "How nodes find each other, pass blocks and payments, and what moved since print"
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has three parts that follow the order of the chapter. Five true stories and twenty-two code examples are spread across them. The examples are listed in the same order in the chapter code tab of the course page, so every listing here can be run and edited there.",
+   "concept": "Three parts, twenty-two examples, five true stories"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The seven questions are the chapter's own, rewritten so that each has an answer on a slide. We return to them in the summary. A reader who can answer all seven has understood the chapter.",
+   "concept": "Each has an answer on a slide; we return to them in the summary"
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, three parts",
+   "say": "The chapter has three parts and 56 key concepts. Each part gets a divider, concept cards with everyday comparisons, code that runs, and true stories. The deck follows the order of the chapter.",
+   "concept": "Three parts; every slide today lives on this map"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "Who is on the network",
+   "say": "The Bitcoin network is a crowd of ordinary computers that follow the same rules. This part shows who they are, what a node says when it first meets another, and which services it offers.",
+   "concept": "Like a village market with no manager: every stall only talks to its neighbours."
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Network: key concepts (1 of 2)",
+   "say": "These cards cover 6 key concepts of the part Who is on the network. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 10.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "The handshake: version, then verack",
+   "say": "Two nodes cannot trade blocks until they have greeted each other. The first message is version, naming the software, the protocol and the chain height, and verack confirms it. This greeting was recorded from Bitcoin Core 31.1 on a test chain. It is example 1 in the chapter code tab of the course page.",
+   "concept": "A node speaks first with version; verack accepts it"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "A message is a 24-byte frame",
+   "say": "Every message starts with the same 24 bytes. The magic tells which network it belongs to, the command names the message, the length says how much follows, and the checksum guards the payload. Verack has no payload at all. It is example 2 in the chapter code tab of the course page.",
+   "concept": "Even an empty message has a frame of 24 bytes"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "Network: key concepts (2 of 2)",
+   "say": "These cards cover 5 key concepts of the part Who is on the network. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 10.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Services: what a node offers",
+   "say": "Services travel as bits in the greeting. A full node offers NETWORK, meaning it can serve the whole chain, while a pruned node has deleted old blocks and leaves that bit out. Both are recorded from the same run. It is example 3 in the chapter code tab of the course page.",
+   "concept": "A pruned node drops the NETWORK flag but keeps relaying what it has"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Who is on the network today",
+   "say": "Onion addresses are the largest group of reachable nodes, ahead of IPv4 and I2P. Almost all nodes run Bitcoin Core or its variant Knots. These counts come from one saved snapshot, so treat them as a picture of one day and not as a constant.",
+   "concept": "A census is a snapshot of one day, not a constant"
+  },
+  {
+   "n": 12,
+   "kind": "section",
+   "title": "Peers, blocks and transactions",
+   "say": "Here the node finds its first neighbours, keeps a limited set of links, and learns to pass blocks and payments on. We measure how little a compact block needs and where a payment waits.",
+   "concept": "Like a postal service without a post office: letters pass from hand to hand."
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "Peers and blocks: key concepts (1 of 4)",
+   "say": "These cards cover 6 key concepts of the part Peers, blocks and transactions. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 10.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "DNS seeds hand out addresses",
+   "say": "A new node has no peers, so it asks the DNS seeds that are written into its code. Each seed answered with a different list of reachable nodes. The node then dials them on the default port, 8333, and learns more from there. It is example 4 in the chapter code tab of the course page.",
+   "concept": "Eight seeds gave twenty to thirty IPv4 addresses each, for one default port"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "addr against addrv2",
+   "say": "Nodes gossip addresses to each other. The old addr message has room for IPv4 and IPv6 only, while addrv2 gives each address a network id and a length, so longer onion and I2P addresses fit. A reply is capped at a share of the address book. It is example 5 in the chapter code tab of the course page.",
+   "concept": "addrv2 can carry Tor and I2P addresses; the old addr could not"
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Connection types and their limits",
+   "say": "A node keeps different kinds of links. Full-relay links carry everything, while block-relay-only links carry blocks but no payments and no addresses, which makes them harder to spy on. The limits are constants in the source, read from the saved file. It is example 6 in the chapter code tab of the course page.",
+   "concept": "Block-relay-only links carry no payments and no addresses"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "Eight connections, one liar",
+   "say": "This is a true story, dated 2015-08-12. At the USENIX Security Symposium in Washington, D.C., which began on 12 August 2015, Ethan Heilman, Alison Kendler, Aviv Zohar and Sharon Goldberg presented Eclipse Attacks on Bitcoin's Peer-to-Peer Network. The lesson is that a node is only as honest as the peers it happens to meet.",
+   "concept": "A node is only as honest as the peers it happens to meet",
+   "read": {
+    "label": "Heilman et al.: Eclipse Attacks (paper)",
+    "url": "https://www.usenix.org/conference/usenixsecurity15/technical-sessions/presentation/heilman"
+   }
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Headers first: 80 bytes a block",
+   "say": "A new node asks for headers before blocks. Each header is 80 bytes and a reply holds up to 2000, so in this run two replies carried the whole chain of 2101 headers. The node checks they link up, then downloads the blocks. It is example 7 in the chapter code tab of the course page.",
+   "concept": "Two thousand headers per reply; the whole chain of headers is small"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Peers and blocks: key concepts (2 of 4)",
+   "say": "These cards cover 5 key concepts of the part Peers, blocks and transactions. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 10.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Relay by wtxid and the fee filter",
+   "say": "A node announces a payment by its witness id, not by the plain id. A peer can also say that it wants only payments above a fee rate. In the run, the peer with a filter heard of the dearer payment only. It is example 8 in the chapter code tab of the course page.",
+   "concept": "A fee filter keeps cheap payments away from a peer that does not want them"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "An orphan waits for its parent",
+   "say": "A child payment can arrive before the payment it spends. The node cannot check it yet, so it keeps it aside and asks the sender for the parent. When the parent arrives, both enter the memory pool. It is example 9 in the chapter code tab of the course page.",
+   "concept": "The node asks the sender for the parent instead of dropping the child"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "Every node has its own memory pool",
+   "say": "A memory pool holds payments that are valid but not yet in a block, and each node has its own. In the run one node held six and the other none, yet the set of unspent outputs, which only blocks change, was identical on both. It is example 10 in the chapter code tab of the course page.",
+   "concept": "Pools may differ between nodes, yet the unspent outputs agree"
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Peers and blocks: key concepts (3 of 4)",
+   "say": "These cards cover 5 key concepts of the part Peers, blocks and transactions. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 10.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "Compact blocks: 332 bytes, not 3,062",
+   "say": "A peer already knows most payments of a new block from its memory pool. So the block travels as a header, a short id of 6 bytes per payment, and the few payments the peer cannot have. The saving here is about nine tenths. It is example 11 in the chapter code tab of the course page.",
+   "concept": "The peer rebuilds the block from its own memory pool"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Sending a block as a list of short codes",
+   "say": "This is a true story, dated 2016-04-27. On 27 April 2016 the number 152 was assigned to the BIP Compact Block Relay by Matt Corallo. The lesson is that do not resend what the receiver already knows.",
+   "concept": "Do not resend what the receiver already knows",
+   "read": {
+    "label": "BIP 152: Compact Block Relay (spec)",
+    "url": "https://bips.dev/152/"
+   }
+  },
+  {
+   "n": 26,
+   "kind": "content",
+   "title": "Two ways to announce a compact block",
+   "say": "A peer may announce first and wait to be asked, or push the compact block unasked. Pushing saves one round trip, which matters when blocks race. Announcing first wastes nothing on a peer that already has the block.",
+   "concept": "Pushing saves a round trip; announcing first saves bandwidth"
+  },
+  {
+   "n": 27,
+   "kind": "content",
+   "title": "The block-finding race",
+   "say": "Blocks arrive at random, on average every ten minutes, so while your block is still travelling someone else may find one. The longer the delay, the likelier the rival, which is why fast relay matters most to miners. It is example 12 in the chapter code tab of the course page.",
+   "concept": "A block that travels for a minute has about a one in ten chance of a rival"
+  },
+  {
+   "n": 28,
+   "kind": "content",
+   "title": "Peers and blocks: key concepts (4 of 4)",
+   "say": "These cards cover 5 key concepts of the part Peers, blocks and transactions. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 10.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "A parity part rebuilds a lost part",
+   "say": "Forward error correction sends a little extra so that losses can be repaired without asking again. The simplest form is one parity part: the XOR of all others. XOR the survivors with the parity and the lost part appears. It is example 13 in the chapter code tab of the course page.",
+   "concept": "One extra part, the XOR of the others, repairs any single loss"
+  },
+  {
+   "n": 30,
+   "kind": "section",
+   "title": "Light clients, privacy and transport",
+   "say": "A phone cannot hold the chain, so it asks. This part follows the question: Merkle paths, the Bloom filter that told on wallets, block filters that turn the question around, and the new encrypted transport.",
+   "concept": "Like a tourist with a map: ask the locals, and mind what your question gives away."
+  },
+  {
+   "n": 31,
+   "kind": "content",
+   "title": "Light clients: key concepts (1 of 4)",
+   "say": "These cards cover 6 key concepts of the part Light clients, privacy and transport. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 10.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 32,
+   "kind": "content",
+   "title": "A light client checks a Merkle path",
+   "say": "A light client keeps only headers. To check a payment it asks a full node for the Merkle path from that payment to the root stored in the header. Recomputing the path and getting the same root proves the payment is in the block. It is example 14 in the chapter code tab of the course page.",
+   "concept": "Three hashes link the payment to the root in the header"
+  },
+  {
+   "n": 33,
+   "kind": "content",
+   "title": "Double-spend odds by confirmations",
+   "say": "An attacker tries to build a longer secret chain. Nakamoto computed the chance of ever catching up from z blocks behind. With ten percent of the hash rate it falls quickly; with thirty percent it stays large for longer. It is example 15 in the chapter code tab of the course page.",
+   "concept": "More confirmations make catching up far less likely"
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "Light clients: key concepts (2 of 4)",
+   "say": "These cards cover 6 key concepts of the part Light clients, privacy and transport. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 10.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 35,
+   "kind": "content",
+   "title": "A toy Bloom filter",
+   "say": "A Bloom filter sets a few bits for each item added, and a test looks at the same bits. If one is clear, the item was definitely not added; if all are set, it may have been. The measured wrong-maybe rate follows the formula roughly. It is example 16 in the chapter code tab of the course page.",
+   "concept": "The filter says maybe or definitely not; the maybe can be wrong"
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "Bloom filters are off by default",
+   "say": "Bloom filters told full nodes which addresses a wallet owned, but Bitcoin Core now keeps the service off. A node run with defaults does not set the BLOOM bit and disconnects a peer that sends filterload, while with the option on the filter works. It is example 17 in the chapter code tab of the course page.",
+   "concept": "A node answers filterload only when the operator turned the service on"
+  },
+  {
+   "n": 37,
+   "kind": "content",
+   "title": "The filter that told on the wallet",
+   "say": "This is a true story, dated 2012-10-24. BIP 37 was assigned to Mike Hearn and Matt Corallo on 24 October 2012: a light client would send a Bloom filter of its addresses to a full node and receive only matching transactions. The lesson is that a privacy tool can leak more than it hides.",
+   "concept": "A privacy tool can leak more than it hides",
+   "read": {
+    "label": "Gervais: Bloom filter privacy (paper)",
+    "url": "https://eprint.iacr.org/2014/763"
+   }
+  },
+  {
+   "n": 38,
+   "kind": "content",
+   "title": "Light clients: key concepts (3 of 4)",
+   "say": "These cards cover 6 key concepts of the part Light clients, privacy and transport. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 10.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 39,
+   "kind": "content",
+   "title": "Golomb coding sends differences",
+   "say": "A block filter is a sorted list of hash values. Instead of sending each value, send the first and then only the gaps between neighbours. The gaps are smaller than the numbers, so each needs fewer bits. It is example 18 in the chapter code tab of the course page.",
+   "concept": "Sorted numbers differ by less than they are, so differences take fewer bits"
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "Golomb-Rice coding is lossless",
+   "say": "Golomb-Rice coding writes each gap as a quotient in unary followed by p remainder bits. It is lossless: decoding returns the identical list. Here it needs fewer bits than a fixed width, and for a real filter the saving is larger. It is example 19 in the chapter code tab of the course page.",
+   "concept": "Decoding gives back the exact list, in fewer bits"
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "A block filter rebuilt without Core",
+   "say": "The chapter library rebuilds the basic filter of a block from the block and the scripts it spends, without using Bitcoin Core code. It matched Core's filter and filter header, and it also reproduced all ten test vectors of BIP 158. It is example 20 in the chapter code tab of the course page.",
+   "concept": "Our own code produced the same filter, the same header and ten of ten vectors"
+  },
+  {
+   "n": 42,
+   "kind": "content",
+   "title": "An anonymous post turned the filter around",
+   "say": "This is a true story, dated 2016-05-09. On Monday 9 May 2016 a developer writing as bfd posted to the bitcoin-dev list the message Committed Bloom filters for improved wallet performance and SPV security. The lesson is that reverse the question and the leak disappears.",
+   "concept": "Reverse the question and the leak disappears",
+   "read": {
+    "label": "BIP 157: Client Side Block Filtering (spec)",
+    "url": "https://bips.dev/157/"
+   }
+  },
+  {
+   "n": 43,
+   "kind": "content",
+   "title": "Light clients: key concepts (4 of 4)",
+   "say": "These cards cover 6 key concepts of the part Light clients, privacy and transport. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 10.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 44,
+   "kind": "content",
+   "title": "Transport v1 shows its magic, v2 hides it",
+   "say": "In the old transport the network magic and the word version are plain to see. In version 2 neither appears, and the stream has almost eight bits of entropy per byte, which is what random data looks like. It is encrypted, not authenticated. It is example 21 in the chapter code tab of the course page.",
+   "concept": "Version 2 traffic looks like random bytes"
+  },
+  {
+   "n": 45,
+   "kind": "content",
+   "title": "From a closed proposal to the default",
+   "say": "This is a true story, dated 2019-03-08. Jonas Schnelli proposed encrypting peer connections in BIP 151 on 23 March 2016, a proposal that drew mixed comments and was closed with a replacement named. The lesson is that defaults decide how private a network is.",
+   "concept": "Defaults decide how private a network is",
+   "read": {
+    "label": "BIP 324: v2 P2P Encrypted Transport (spec)",
+    "url": "https://bips.dev/324/"
+   }
+  },
+  {
+   "n": 46,
+   "kind": "content",
+   "title": "Networks a node can reach",
+   "say": "A fresh node reaches the Internet over IPv4 and IPv6. A node configured for Tor reaches the onion network only, so its address is not exposed. The chapter library reads both configurations from the recorded run. It is example 22 in the chapter code tab of the course page.",
+   "concept": "A node set to Tor reaches only the onion network"
+  },
+  {
+   "n": 47,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. A line that feels unproven should send you back to its code slide, because every figure in it was read from the recorded run or computed there. The chapter code tab of the course page reruns all twenty-two examples.",
+   "concept": "If a line feels unproven, the code slide of its part carries the receipt"
+  },
+  {
+   "n": 48,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch, and every link was opened on the date in the subtitle. A good start is the USENIX talk on eclipse attacks, then the Optech topic on compact block relay. The course page for chapter 10 carries the full text.",
+   "concept": "Watch the eclipse talk, then read the Optech topic beside the chapter",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Optech topic: Compact block relay",
+     "url": "https://bitcoinops.org/en/topics/compact-block-relay/",
+     "finds": "Summary of BIP 152 and its later improvements"
+    },
+    {
+     "group": "Read",
+     "label": "Optech topic: Version 2 P2P transport",
+     "url": "https://bitcoinops.org/en/topics/v2-p2p-transport/",
+     "finds": "Summary of encrypted peer traffic and its rollout"
+    },
+    {
+     "group": "Read",
+     "label": "Bitnodes (live node census)",
+     "url": "https://bitnodes.io/",
+     "finds": "Count and map of reachable nodes, by country and client"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 152: Compact Block Relay",
+     "url": "https://bips.dev/152/",
+     "finds": "Short transaction ids and the messages that carry them"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 324: v2 P2P Encrypted Transport",
+     "url": "https://bips.dev/324/",
+     "finds": "The encrypted handshake and packet format of peers"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "Heilman et al.: Eclipse Attacks (paper)",
+     "url": "https://www.usenix.org/conference/usenixsecurity15/technical-sessions/presentation/heilman",
+     "finds": "Talk page with the paper, slides and video"
+    },
+    {
+     "group": "Watch",
+     "label": "USENIX Security '15: Eclipse Attacks (video)",
+     "url": "https://www.youtube.com/embed/b-qGTj2Vvns",
+     "finds": "The conference talk behind the paper"
+    },
+    {
+     "group": "Watch",
+     "label": "Neutrino: Privacy Preserving Light Client (video)",
+     "url": "https://www.youtube.com/embed/7FWKc8lM4Ek",
+     "finds": "SF Bitcoin Developers talk on block filters"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Optech newsletters (weekly)",
+     "url": "https://bitcoinops.org/en/newsletters/",
+     "finds": "Weekly digest of protocol and wallet development; all issues"
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin (research forum)",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers argue out proposals and research in public threads"
+    },
+    {
+     "group": "Community",
+     "label": "bitcoin-dev (mailing list)",
+     "url": "https://groups.google.com/g/bitcoindev",
+     "finds": "Where BIPs and soft forks are first proposed and debated"
+    }
+   ]
+  },
+  {
+   "n": 49,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by a computation that ran on a slide of this deck. The course page for chapter 10 has every word behind them, the stories with their sources, and the question bank to test yourself.",
+   "concept": "And where each claim gets its proof"
+  }
+ ]
+}
