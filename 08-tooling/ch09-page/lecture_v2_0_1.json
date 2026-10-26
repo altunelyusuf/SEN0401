@@ -1,0 +1,480 @@
+{
+ "chapter": 9,
+ "deck": "SEN0401_Ch09_TransactionFees_3e_v2_0_0.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 9: Transaction Fees",
+   "say": "This deck explains transaction fees: who pays them, how they are priced, how a payment is replaced or bumped, and what changed since the book went to print. Every number on a result picture was computed with the chapter's own Python library. Bitcoin Core 31.1 was run once on a test network, and its answers are only read back.",
+   "takeaway": "Who pays a fee, how it is priced, replaced and bumped, and what moved since print"
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has seven parts that follow the order of the chapter. Four true stories and twenty-seven code examples are spread across them. The examples are listed in the same order in the chapter code tab of the course page, so every listing here can be run and edited there.",
+   "takeaway": "Seven parts, twenty-seven examples, four true stories"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The seven questions are the chapter's own, rewritten so that each has an answer on a slide. We return to them in the summary. A reader who can answer all seven has understood the chapter.",
+   "takeaway": "Each has an answer on a slide; we return to them in the summary"
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, seven parts",
+   "say": "The chapter has seven parts and 31 key concepts. Each part gets a divider, concept cards with everyday comparisons, code that runs, and some parts a true story. The deck follows the order of the chapter.",
+   "takeaway": "Seven parts; every slide today lives on this map"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "Who pays the fee",
+   "say": "A transaction has no fee field. The fee is what the inputs hold and the outputs do not claim, so the spender pays it and only the spender can change it. This part shows how to see that, and what goes wrong when change is forgotten.",
+   "takeaway": "The spender pays the fee, like a tip left on the counter."
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Who pays the fee: key concepts (1 of 3)",
+   "say": "These cards cover Who Pays the Transaction Fee?, transaction fees, Adding Fees to Transactions and fees. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 9.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "A fee is a difference, not a field",
+   "say": "A transaction lists its inputs and its outputs, and nothing else. The miner's fee is whatever the inputs hold and the outputs do not claim. We parse the raw bytes ourselves and find 1,900,000,000 satoshis left over, with no field to name them. It is example 1 in the chapter code tab of the course page.",
+   "takeaway": "Nothing in the transaction states the fee: it is inputs minus outputs"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "Who pays the fee: key concepts (2 of 3)",
+   "say": "These cards cover inputs, outputs, change output and payments. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 9.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "Forgetting the change",
+   "say": "If a wallet forgets the change output, the difference becomes a gigantic fee. The node refuses the payment with max-fee-exceeded. Mined with the limit lifted, the miner's reward equals the subsidy plus that fee, which shows where the money went. It is example 2 in the chapter code tab of the course page.",
+   "takeaway": "A safety limit protects the spender from paying nearly everything as fee"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Who pays the fee: key concepts (3 of 3)",
+   "say": "These cards cover transactions, overpaying transaction fees, excessive fees and absurd fees. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 9.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Only the spender can raise the fee",
+   "say": "We cut the first output of a signed payment by 5,000 satoshis. The node rejects the copy because the signature no longer fits. So the fee belongs to the spender; anyone else must pay in a second transaction, which is the idea of child pays for parent. It is example 3 in the chapter code tab of the course page.",
+   "takeaway": "The signature covers the amounts, so nobody else can add to the fee"
+  },
+  {
+   "n": 12,
+   "kind": "section",
+   "title": "Fees and fee rates",
+   "say": "Miners are paid by the space a payment takes, not by its value. This part measures size, weight and virtual size, turns a fee into a rate, and meets the floors that nodes, wallets and dust rules set.",
+   "takeaway": "A fee is a bill, and the rate is its price per unit of space."
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "Fees and fee rates: key concepts",
+   "say": "These cards cover Fees and Fee Rates, fee rates and blocks. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 9.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Size, weight and virtual size",
+   "say": "One payment has 113 bytes without witness data and 222 bytes in all. Its weight is 561 units, because witness bytes count one each and the other bytes four. Its virtual size is 141, the weight over four rounded up. Fees and block space use this unit.",
+   "takeaway": "Fees are charged per virtual byte, which is the weight over four"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "A fee rate and its units",
+   "say": "The rate is the fee over the virtual size: 282 over 141 gives 2 satoshis per byte. Some tools speak in coins per thousand bytes, so 0.0000657 means 6.57 satoshis per byte. Two spellings of ten satoshis per byte give the same fee, and a wrong factor gives an absurd one.",
+   "takeaway": "Mixing the units changes the fee by a factor of a hundred thousand"
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Space in a block is limited",
+   "say": "The consensus limit is four million units of weight per block. Block 840,000 weighs 3,993,281, which is 99.83 percent of it. When blocks are full, payments must bid for room, and the fee rate is the bid. It is example 6 in the chapter code tab of the course page.",
+   "takeaway": "A full block makes fee rates compete"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "The minimum relay fee",
+   "say": "A node relays only payments above its floor, here a tenth of a satoshi per byte. For 141 bytes that is 14.1 satoshis, so 8 and 14 are refused and 15 is accepted. The floor protects nodes from spam, and it is policy, not consensus. It is example 7 in the chapter code tab of the course page.",
+   "takeaway": "A fee below the floor is not relayed, however valid the payment"
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Dust and the wallet's floor",
+   "say": "An output is dust when spending it would cost more than it holds. The limit is three satoshis for each byte of the output plus its spending input, 294 for the common segwit key. The wallet in this run also refuses rates below one satoshi per byte. It is example 8 in the chapter code tab of the course page.",
+   "takeaway": "Wallets keep stricter floors than nodes; dust is a floor on outputs"
+  },
+  {
+   "n": 19,
+   "kind": "section",
+   "title": "Fee estimation",
+   "say": "A wallet must guess a rate that will confirm in time. We see how the estimator learns from blocks, where its answers stop, and how two real blocks show a market that moves by a factor of five hundred.",
+   "takeaway": "Estimating a fee is guessing the fare from past journeys."
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "Fee estimation: key concepts",
+   "say": "These cards cover Estimating Appropriate Fee Rates and Bitcoin Core. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 9.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "An estimate needs history",
+   "say": "A node without history answers with an error: insufficient data. After 120 rounds of test traffic it can estimate, here about 1.2 satoshis per byte at every target. The estimate is a summary of what past blocks confirmed. It is example 9 in the chapter code tab of the course page.",
+   "takeaway": "The estimator answers only from blocks it has seen"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "How far the estimator can see",
+   "say": "Asked for a target of 144 blocks, the node answers with the 60 blocks it can see. The default mode equals the economical mode at every target tried. The conservative mode is more cautious and answers differently at 144, so choose the mode that fits your risk. It is example 10 in the chapter code tab of the course page.",
+   "takeaway": "The estimator cannot see further than its data; the modes differ in caution"
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Two blocks, two fee markets",
+   "say": "The census holds the 599 highest-paying payments of the halving block 840,000 and of block 971,489. The median rate in the first was 1,436.45 satoshis per byte and in the second 3.02. A fee estimate is only as good as the market it was learned in. It is example 11 in the chapter code tab of the course page.",
+   "takeaway": "The market moved from over a thousand satoshis per byte to three"
+  },
+  {
+   "n": 24,
+   "kind": "section",
+   "title": "Replace by fee (RBF)",
+   "say": "A payment that waits too long can be replaced by a copy that pays more. We run the signal, the rules a replacement must meet, the default that changed, and the hazards of replacing.",
+   "takeaway": "Replacing a payment is raising your bid at an auction."
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Replace by fee (RBF): key concepts",
+   "say": "These cards cover Replace By Fee (RBF) Fee Bumping, BIP 125 opt-in replaceability signal, conflicting transactions and fee bumping. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 9.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 26,
+   "kind": "content",
+   "title": "The opt-in replacement signal",
+   "say": "A payment signals that it may be replaced when one of its inputs has a sequence number below 0xfffffffe. In the halving block 485 of 599 payments signalled; in block 971,489 only 273. The signal matters less now that replacement needs no signal. It is example 12 in the chapter code tab of the course page.",
+   "takeaway": "Any input with a sequence below 0xfffffffe signals replaceability"
+  },
+  {
+   "n": 27,
+   "kind": "content",
+   "title": "A replacement must pay enough",
+   "say": "A replacement must pay more than the payment it replaces, and also pay for its own size at the incremental rate. For a payment of 564 satoshis and 141 bytes that is 579. The copies at 514, 564 and 578 are refused, and the one at 579 is accepted.",
+   "takeaway": "Pay the old fee plus the new size at the incremental rate"
+  },
+  {
+   "n": 28,
+   "kind": "content",
+   "title": "Full replacement is the default",
+   "say": "The first payment used the final sequence number, so it never asked to be replaceable. A conflicting payment replaced it anyway. Release 28.0 made full replacement the default and 29.0 removed the option, so starting the node with it off now fails. It is example 14 in the chapter code tab of the course page.",
+   "takeaway": "Bitcoin Core 31.1 replaces without a signal and has no switch to stop it"
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "A node that only listens to replacements",
+   "say": "This is a true story, dated 2022-12-12. On Monday 12 December 2022 Peter Todd posted to the bitcoin-dev list a build of Bitcoin Core 24.0.1 with Antoine Riard's full-rbf peering code. The lesson is that policy is what most nodes choose to relay, and it changes by their choice.",
+   "read": {
+    "label": "Peter Todd: Full-RBF Peering (post)",
+    "url": "https://mirror.b10c.me/lists/bitcoindev/Y5eSFbR61HleY6dw@petertodd.org"
+   },
+   "takeaway": "Peter Todd's build, 12 December 2022",
+   "concept": "FullRbfDefault"
+  },
+  {
+   "n": 30,
+   "kind": "content",
+   "title": "Paying the payee twice",
+   "say": "Three versions of a payment replace each other in turn. Versions 0 and 2 do not conflict, so once version 0 is mined, version 2 can be mined too. The payee asked for 40,000,000 satoshis and received 80,000,000. The sender pays twice.",
+   "takeaway": "Replacing is not undoing: an old version may still be mined"
+  },
+  {
+   "n": 31,
+   "kind": "content",
+   "title": "Policy or consensus?",
+   "say": "Most rules of this chapter are policy: the relay floor, the replacement rules, the version 3 limits and the cluster limits. A payment that breaks them can still be valid in a block that a miner builds. Policy changes with a release; consensus changes only by a fork.",
+   "takeaway": "Policy can change with a release; consensus changes only by a fork"
+  },
+  {
+   "n": 32,
+   "kind": "section",
+   "title": "Child pays for parent (CPFP)",
+   "say": "When the parent cannot be changed, a child can pay for it. We measure the package rate, see why nodes now relay packages, and meet the cluster mempool that replaced the old chain limits.",
+   "takeaway": "A child pays for its parent, like a friend who covers your fare."
+  },
+  {
+   "n": 33,
+   "kind": "content",
+   "title": "Child pays for parent (CPFP): key concepts",
+   "say": "These cards cover Child Pays for Parent (CPFP) Fee Bumping, Package Relay, package fee rate and ancestor fee rate mining. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 9.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "A child lifts its parent",
+   "say": "A parent pays 1 satoshi per byte and would wait a long time. Its child pays 100. Miners treat the pair as one package of 50.77 satoshis per byte, which beats a waiting payment at 20, so the pair is mined first. It is example 16 in the chapter code tab of the course page.",
+   "takeaway": "Miners price a parent and its child as one package"
+  },
+  {
+   "n": 35,
+   "kind": "content",
+   "title": "A weak child does not help",
+   "say": "This time the child pays only 5 satoshis per byte. The pair together pays 3.02, less than the waiting payment A at 20. Miners took A and left the pair out. A child must pay enough to lift the pair above the competition.",
+   "takeaway": "A package is only as good as its combined rate"
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "Package relay",
+   "say": "A parent with 8 satoshis fails the relay floor of 15 on its own, and its child cannot be sent first because the parent is unknown. As a package the pair is judged by its combined rate and accepted. Limited package relay of one parent and one child exists since release 28.0.",
+   "takeaway": "Nodes can judge a pair that a single payment would fail"
+  },
+  {
+   "n": 37,
+   "kind": "content",
+   "title": "Cluster limits",
+   "say": "Release 31.0 groups connected payments into clusters, limited to 64 payments and 101,000 virtual bytes. Of a chain of 65, 64 are accepted and the next is refused as a too-large cluster. The old limit of 25 ancestors is gone, so a chain of 26 is accepted. It is example 19 in the chapter code tab of the course page.",
+   "takeaway": "Limits are set on clusters of connected payments, not on single chains"
+  },
+  {
+   "n": 38,
+   "kind": "content",
+   "title": "Mempool size and expiry",
+   "say": "The mempool holds 300 megabytes by default. A payment that waits too long is dropped after 336 hours, which is 14 days. The book speaks of about a day's worth, which describes neither default. It is example 20 in the chapter code tab of the course page.",
+   "takeaway": "A payment may wait fourteen days, not one"
+  },
+  {
+   "n": 39,
+   "kind": "section",
+   "title": "Pinning and anchors",
+   "say": "A large child can make a parent costly to replace, and a pre-signed payment cannot guess a future fee. This part runs the carve-out, the TRUC limits and the pay-to-anchor output that answer both.",
+   "takeaway": "Pinning is a lorry parked behind your car; an anchor is a spare handle."
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "Pinning and anchors: key concepts",
+   "say": "These cards cover Transaction Pinning and CPFP Carve Out and Anchor Outputs. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 9.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "A big child pins its parent",
+   "say": "A parent that pays 705 satoshis gets a child of 90,012 bytes. To replace the parent, the replacer must pay for the whole family: 450,780 satoshis. With a version 3 child, capped at 1,000 bytes, the same replacement costs 5,145, about 88 times less. It is example 21 in the chapter code tab of the course page.",
+   "takeaway": "Cap the size of the child and pinning becomes cheap to undo"
+  },
+  {
+   "n": 42,
+   "kind": "content",
+   "title": "TRUC limits on a family",
+   "say": "A version 3 parent may have one child of at most 1,000 virtual bytes. A child of 1,350 is refused and one of 141 is accepted. A second child at the same rate is refused, and one at a higher rate evicts its sibling, so a pin cannot last.",
+   "takeaway": "Strict limits make the worst case of pinning small and known"
+  },
+  {
+   "n": 43,
+   "kind": "content",
+   "title": "Pay to anchor",
+   "say": "The parent has a zero-value output with the script 51024e73, which anyone can spend, and it pays no fee. Alone the node refuses it. The child spends the anchor with an empty witness and pays 10,000 satoshis, so the package is accepted. It is example 23 in the chapter code tab of the course page.",
+   "takeaway": "The parent pays nothing; the child brings the fee when it is needed"
+  },
+  {
+   "n": 44,
+   "kind": "content",
+   "title": "The carve-out limit",
+   "say": "The carve-out allowed one extra child beyond the usual limits. The book gives its size as 1,000 virtual bytes, while the source code says 10,000. Release 31.0 removed the rule, because the cluster limits replaced the descendant limits it worked around. It is example 24 in the chapter code tab of the course page.",
+   "takeaway": "Check the numbers of a book against the source code"
+  },
+  {
+   "n": 45,
+   "kind": "content",
+   "title": "A pre-signed payment cannot guess its fee",
+   "say": "This is a true story, dated 2018-11-29. On Thursday 29 November 2018 Matt Corallo wrote that Lightning channels exchange pre-signed transactions that are broadcast much later, so their fee has to be predicted or added afterwards by a child. The lesson is that a limit built for one attack can outlive the problem it solved.",
+   "read": {
+    "label": "Matt Corallo: CPFP carve-out (post)",
+    "url": "https://mirror.b10c.me/lists/bitcoindev/c3f68b73-84c6-7428-4bf6-b47802141392@mattcorallo.com"
+   },
+   "takeaway": "Matt Corallo's proposal, 29 November 2018",
+   "concept": "CarveOut"
+  },
+  {
+   "n": 46,
+   "kind": "section",
+   "title": "Fee sniping and incentives",
+   "say": "A block pays a subsidy and fees, and the mix changes. When fees dominate, a miner may gain by re-mining a block. We compute the odds and see how wallets defend with the lock time.",
+   "takeaway": "Fee sniping is a thief rewriting the last page of the ledger."
+  },
+  {
+   "n": 47,
+   "kind": "content",
+   "title": "Fee sniping and incentives: key concepts",
+   "say": "These cards cover Timelock Defense Against Fee Sniping, fee sniping, timelocks and lock time. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 9.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 48,
+   "kind": "content",
+   "title": "Fees against the subsidy",
+   "say": "In block 840,000 the fees were 3,762,561,499 satoshis of a 4,075,061,499 reward, so the subsidy of 312,500,000 was only the rest. That is 92.33 percent fees. In block 971,489 fees were 0.46 percent of the reward. It is example 25 in the chapter code tab of the course page.",
+   "takeaway": "The claim that the subsidy dwarfs fees fails in the halving block"
+  },
+  {
+   "n": 49,
+   "kind": "content",
+   "title": "Block 840,000: fees were nearly the reward",
+   "say": "This is a true story, dated 2024-04-20. Block 840,000 was found on 20 April 2024 at 00:09 UTC by the pool ViaBTC and held 3,050 transactions. The lesson is that check a book's claim against the block, because the market moves.",
+   "read": {
+    "label": "Block 840,000 on mempool.space (block)",
+    "url": "https://mempool.space/block/0000000000000000000320283a032748cef8227873ff4872689bf23f1cda83a5"
+   },
+   "takeaway": "ViaBTC and block 840,000, 20 April 2024",
+   "concept": "FeesVsSubsidy"
+  },
+  {
+   "n": 50,
+   "kind": "content",
+   "title": "Odds of winning a sniping race",
+   "say": "A miner with a share x of the hash rate wins the race to re-mine a block with probability x over one minus x, squared. That is 1.23 percent at 10 percent of the hash rate and 66.94 percent at 45. At half the hash rate the chance is certain.",
+   "takeaway": "With 45 percent of the hash rate a miner wins two races in three"
+  },
+  {
+   "n": 51,
+   "kind": "content",
+   "title": "What if nobody got a subsidy?",
+   "say": "This is a true story, dated 2016-10-21. On 21 October 2016 Arvind Narayanan announced on the Princeton CITP blog the paper On the Instability of Bitcoin Without the Block Reward, written with Miles Carlsten, Harry Kalodner and Matt Weinberg and presented at ACM CCS the next week.",
+   "read": {
+    "label": "CITP blog: no block reward (post)",
+    "url": "https://blog.citp.princeton.edu/2016/10/21/bitcoin-is-unstable-without-the-block-reward/"
+   },
+   "takeaway": "A Princeton paper, 21 October 2016",
+   "concept": "FeeOnlyFuture"
+  },
+  {
+   "n": 52,
+   "kind": "content",
+   "title": "Wallets lock to the chain tip",
+   "say": "A wallet sets the lock time of a payment to the current height, so that a miner who rewrites the block cannot take it. Of 60 payments in the test, 56 sit at the tip and four are set back. Such a payment is not final in the block of that height.",
+   "takeaway": "A lock time equal to the tip makes a re-mined block useless to the sniper"
+  },
+  {
+   "n": 53,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. A line that feels unproven should send you back to its code slide, because every figure in it was computed there. The chapter code tab of the course page reruns all twenty-seven examples.",
+   "takeaway": "If a line feels unproven, the code slide of its part carries the receipt"
+  },
+  {
+   "n": 54,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch. A good start is the Antonopoulos talk on fees, then the Optech topic on replace by fee next to the chapter. The course page for chapter 9 carries the full text and the sources behind every figure.",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Optech topic: Replace-by-fee",
+     "url": "https://bitcoinops.org/en/topics/replace-by-fee/",
+     "finds": "Plain summary of RBF with links to newsletters and code"
+    },
+    {
+     "group": "Read",
+     "label": "Mastering Bitcoin 3e, ch. 9: Transaction Fees",
+     "url": "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/develop/ch09_fees.adoc",
+     "finds": "The chapter's AsciiDoc source on GitHub, plain text"
+    },
+    {
+     "group": "Read",
+     "label": "mempool.space (block explorer)",
+     "url": "https://mempool.space/",
+     "finds": "Look up any block, transaction, fee rate and mempool"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 125: Opt-in Full Replace-by-Fee Signaling",
+     "url": "https://bips.dev/125/",
+     "finds": "How a transaction signals that it may be replaced"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 431: Topology Restrictions for Pinning",
+     "url": "https://bips.dev/431/",
+     "finds": "The TRUC rules: version 3 transactions and package limits"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "Bitcoin white paper (PDF)",
+     "url": "https://bitcoin.org/bitcoin.pdf",
+     "finds": "Nakamoto's nine pages of October 2008"
+    },
+    {
+     "group": "Watch",
+     "label": "Antonopoulos: Bitcoin Transaction Fees (video)",
+     "url": "https://www.youtube.com/embed/MPQMCVVhExY",
+     "finds": "A talk on how fees are chosen and why they vary"
+    },
+    {
+     "group": "Watch",
+     "label": "MIT 15.S12 Blockchain and Money: lectures",
+     "url": "https://ocw.mit.edu/courses/15-s12-blockchain-and-money-fall-2018/video_galleries/lecture-videos/",
+     "finds": "The 2018 course, every lecture video in one list"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Optech newsletters (weekly)",
+     "url": "https://bitcoinops.org/en/newsletters/",
+     "finds": "Weekly digest of protocol and wallet development; all issues"
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin (research forum)",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers argue out proposals and research in public threads"
+    },
+    {
+     "group": "Community",
+     "label": "bitcoin-dev (mailing list)",
+     "url": "https://groups.google.com/g/bitcoindev",
+     "finds": "Where BIPs and soft forks are first proposed and debated"
+    }
+   ],
+   "takeaway": "Watch the fees talk, then read the Optech topic beside the chapter"
+  },
+  {
+   "n": 55,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by a computation that ran on a slide of this deck. The course page for chapter 9 has every word behind them, the stories with their sources, and the question bank to test yourself.",
+   "takeaway": "And where each claim gets its proof"
+  }
+ ],
+ "_note": "lecture_v2_0_0.json (the deck export of the chapter 09 deck, untouched) with the deck's takeaway as takeaway and, on each story slide, the first concept of the story that the page has as concept; made by pages_deck_links_make_v1_3_0.py"
+}
