@@ -1,0 +1,452 @@
+{
+ "chapter": 12,
+ "deck": "SEN0401_Ch12_MiningAndConsensus_3e_v3_0_2.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 12: Mining and Consensus",
+   "say": "This deck explains how a miner earns a reward, how every node checks and chooses blocks, how proof of work sets the pace, and how the rules of Bitcoin are changed. Every number on a result picture was computed with the chapter's own Python library or read from one recorded run of Bitcoin Core 31.1.",
+   "takeaway": "Where rewards and blocks come from, how nodes agree on one chain, and how the rules change"
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has six parts that follow the order of the chapter. Four true stories and twenty-two code examples are spread across them. The examples are listed in the same order in the chapter code tab of the course page, so every listing here can be run and edited there.",
+   "takeaway": "Six parts, twenty-two examples, four true stories"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The seven questions are the chapter's own, rewritten so that each has an answer on a slide. We return to them in the summary. A reader who can answer all seven has understood the chapter.",
+   "takeaway": "Each has an answer on a slide; we return to them in the summary"
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, six parts",
+   "say": "The chapter has six parts. Together they hold 51 key concepts. Each part gets a divider, concept cards with everyday comparisons, code that runs, and some parts a true story. The deck follows the order of the chapter.",
+   "takeaway": "Six parts; every slide today lives on this map"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "Money and rewards",
+   "say": "A miner is paid in new coins and fees. This part shows how the subsidy halves, why the supply stops just below 21 million coins, and how Core checks that a miner claims no more than the reward.",
+   "takeaway": "The reward is a wage that halves on a fixed calendar, plus tips."
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Money and rewards: key concepts",
+   "say": "These cards cover 6 key concepts of the part Money and rewards. Each pairs a short meaning with something from everyday life. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "Halving every 210,000 blocks",
+   "say": "The reward starts at 50 coins and is cut in half at every multiple of 210,000 blocks. The shift is done in whole satoshis, so after the 33rd halving a single satoshi is left, and after the 34th nothing. The sum of all rewards sets the supply. It is example 1 in the chapter code tab of the course page.",
+   "takeaway": "The reward halves on a fixed calendar until it reaches one satoshi"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "The 21 million limit",
+   "say": "Adding the 33 non-zero rewards in whole satoshis gives a total just below 21 million coins. The book's script divides with a slash, which in Python 3 is a float division. Run as printed it ends at a float and never shows the shortfall. It is example 2 in the chapter code tab of the course page.",
+   "takeaway": "The real total is a little under 21 million coins, and a float hides that"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "Subsidy plus fees is the reward",
+   "say": "Bitcoin Core offered a reward made of the subsidy and the fees of the chosen transactions. A miner claimed one satoshi less and the block was accepted. A test block that claimed one satoshi more was refused with the name bad-cb-amount. It is example 3 in the chapter code tab of the course page.",
+   "takeaway": "A miner may claim less than the reward, never one satoshi more"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Tips twelve times the wage",
+   "say": "This is a true story, dated 2024-04-20. Block 840,000 was mined at 00:09:27 UTC on 20 April 2024 and was the first to pay the new subsidy of 3.125 coins, half of 6.25. The lesson is that the subsidy halves on schedule, but fees can swing wildly.",
+   "read": {
+    "label": "Block 840,000 on mempool.space (block)",
+    "url": "https://mempool.space/block/0000000000000000000320283a032748cef8227873ff4872689bf23f1cda83a5"
+   },
+   "takeaway": "The subsidy halves on schedule, but fees can swing wildly",
+   "concept": "HalvingEvery210000"
+  },
+  {
+   "n": 11,
+   "kind": "section",
+   "title": "Verifying and agreeing",
+   "say": "No one is in charge, so every node checks everything itself. We run the rules for transactions and blocks, and see why the chain with the most work wins, not the longest chain.",
+   "takeaway": "Every node is a customs officer who checks each parcel against the same list."
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "Verifying and agreeing: key concepts",
+   "say": "These cards cover Transaction checklist, Block checklist, Coinbase maturity and Most work, not longest. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "A transaction faces a checklist",
+   "say": "Each node tests every transaction against the same rules. We asked a private node about a spoiled transaction and got a named reason each time. A coinbase output is refused at depth 99 and accepted at depth 100. It is example 4 in the chapter code tab of the course page.",
+   "takeaway": "Every refusal has a name, and a fresh coinbase cannot be spent before 100 blocks"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "A block faces its own checklist",
+   "say": "The block checks go further than the transaction checks. We handed Core blocks that each broke one rule. The reward one satoshi too high, a missing height, a wrong merkle root, a wrong clock or an old version each got its own named reason. It is example 5 in the chapter code tab of the course page.",
+   "takeaway": "Reward, height, merkle root, clock and version each have a rule of their own"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "The best chain has the most work",
+   "say": "Two branches were built, and the first paid Carol. The second branch carried more chain work, so Core switched to it and the payment fell out of the chain. This is why a shop waits for confirmations. It is example 6 in the chapter code tab of the course page.",
+   "takeaway": "A heavier branch replaces a lighter one, even when both have equal length"
+  },
+  {
+   "n": 16,
+   "kind": "section",
+   "title": "Building the block",
+   "say": "Before the lottery starts the miner builds a candidate block. We read the coinbase that Core makes today, take an 80-byte header apart, and see how the extra nonce gives a new search space.",
+   "takeaway": "The miner packs a parcel and writes the label before sealing it."
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "Building the block: key concepts (1 of 2)",
+   "say": "These cards cover Block template, Coinbase fields of Bitcoin Core today, Coinbase data and tags, BIP 34 height push, Witness commitment and The extra nonce space. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "The coinbase of Bitcoin Core today",
+   "say": "The coinbase script starts with the block height as a short pushed number. Bitcoin Core 31.1 also sets the lock time to the height minus one and a sequence below the maximum. The template's weight limit leaves room for the block header. It is example 7 in the chapter code tab of the course page.",
+   "takeaway": "Core sets the lock time and the sequence, which the book does not say"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Building the block: key concepts (2 of 2)",
+   "say": "These cards cover The extra nonce changes the root, Median time past and Two-hour rule. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "The header of a mined block",
+   "say": "The header of a regtest block is eighty bytes with six fields. Its hash, read as a number, is not larger than the target that the bits describe. On regtest the target is huge, so a few zero bits are enough. It is example 8 in the chapter code tab of the course page.",
+   "takeaway": "A valid header hashes to a number that is not above its target"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "A new extra nonce, a new root",
+   "say": "A miner that has used up the nonce changes a counter in the coinbase script. That changes the coinbase id, the merkle root and so the whole header. The header's own nonce can start again from zero. It is example 9 in the chapter code tab of the course page.",
+   "takeaway": "The header's nonce stays, yet the hash is new: a fresh search space"
+  },
+  {
+   "n": 22,
+   "kind": "section",
+   "title": "Proof of work",
+   "say": "Proof of work is a lottery with a target. We play it with a text, read the target from the bits, turn difficulty into days, and follow the retarget rule on a real period of 2024.",
+   "takeaway": "Proof of work is a lottery whose tickets are costly to draw and cheap to check."
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Proof of work: key concepts (1 of 2)",
+   "say": "These cards cover The Hello World nonce, Proof is cheap to check, Hash below target, Compact bits, The wait of a terahash miner and Hash rate from difficulty. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "Proof of work is a nonce lottery",
+   "say": "The book hashes a text with a counter added. The first hash that starts with a zero comes at counter 32. Every further zero digit makes the search about sixteen times longer, while checking the answer always takes a single hash. It is example 10 in the chapter code tab of the course page.",
+   "takeaway": "Each extra zero digit costs about sixteen times more tries"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "The stamp that made email cost",
+   "say": "This is a true story, dated 2002-08-01. Proof of work did not start with Bitcoin: Cynthia Dwork and Moni Naor proposed in 1992 that a user should compute a moderately hard function before using a shared resource, to fight junk mail. The lesson is that a cheap check of an expensive search can price any request.",
+   "read": {
+    "label": "Back: Hashcash (PDF); archived: web.archive.org",
+    "url": "http://www.hashcash.org/papers/hashcash.pdf"
+   },
+   "takeaway": "Proof of work was invented to price email, years before Bitcoin",
+   "concept": "HelloWorldNonce"
+  },
+  {
+   "n": 26,
+   "kind": "content",
+   "title": "Proof of work: key concepts (2 of 2)",
+   "say": "These cards cover The 2015-gap retarget, The factor-of-four clamp, The BIP 94 branch and Regtest never retargets. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 27,
+   "kind": "content",
+   "title": "Target, bits and difficulty",
+   "say": "The header stores the target as four bytes called bits. Block 277,316 has bits 1903a30c, a target of 194 bits. The difficulty is the number of times smaller this target is than the easiest one. A valid hash must start with 62 zero bits.",
+   "takeaway": "A smaller target means a higher difficulty and more zero bits"
+  },
+  {
+   "n": 28,
+   "kind": "content",
+   "title": "The wait of a one-terahash miner",
+   "say": "Difficulty times two to the 32 is the number of hashes to find a block. A miner doing one terahash a second waits about 59 days at that difficulty. The same formula applied to today's difficulty estimates the network hash rate. It is example 12 in the chapter code tab of the course page.",
+   "takeaway": "The book's 8,496 blocks are 8,453 when recomputed"
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "Retargeting on a real epoch",
+   "say": "Every 2,016 blocks Bitcoin scales the target by the real duration over the intended fourteen days. The period before block 840,672 took 1,186,047 seconds, a little short of fourteen days. The rule gives the bits that the chain really has. It is example 13 in the chapter code tab of the course page.",
+   "takeaway": "The rule reproduces the real adjustment from two block times"
+  },
+  {
+   "n": 30,
+   "kind": "content",
+   "title": "The factor-of-four clamp",
+   "say": "A period of 2,016 blocks may be much faster or slower than planned. To protect the network the rule limits the change of the target to a quarter or four times. The ratios stop at those two values. It is example 14 in the chapter code tab of the course page.",
+   "takeaway": "One retarget moves the target by at most a factor of four"
+  },
+  {
+   "n": 31,
+   "kind": "content",
+   "title": "Regtest never retargets",
+   "say": "Each chain has its own constants in the source file. Regtest sets a flag that stops all retargeting, so its bits stay put after 2,016 blocks. Testnet4 enforces BIP 94, a branch of the retarget code that the book's listing does not have. It is example 15 in the chapter code tab of the course page.",
+   "takeaway": "Testnet4 turns the BIP 94 branch on; mainnet does not need it"
+  },
+  {
+   "n": 32,
+   "kind": "section",
+   "title": "Competition and attacks",
+   "say": "Mining is a race. The nonce space runs out, small miners form pools, and a large share of the power buys the odds of an attack. We compute each of these.",
+   "takeaway": "Mining is a race of lottery syndicates, and a big syndicate may cheat."
+  },
+  {
+   "n": 33,
+   "kind": "content",
+   "title": "Competition and attacks: concepts (1 of 3)",
+   "say": "These cards cover The nonce space is tiny, Version rolling, Covert ASICBoost, Pool shares and fees, Stratum protocols and Solo miner variance. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "When the 32-bit nonce runs out",
+   "say": "A 32-bit nonce gives 4.3 billion tries. The network does a thousand billion billion hashes a second, so the space is used up far too often. Miners vary the version field and the coinbase script to get new header contents. It is example 16 in the chapter code tab of the course page.",
+   "takeaway": "A modern network empties the nonce space hundreds of billions of times a second"
+  },
+  {
+   "n": 35,
+   "kind": "content",
+   "title": "Competition and attacks: concepts (2 of 3)",
+   "say": "These cards cover Block withholding, Nakamoto's catch-up odds and The selfish-mining threshold. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "Why a small miner joins a pool",
+   "say": "The network finds 144 blocks a day. A miner with a small share of the power has to wait long for one block. A pool collects power and pays members for easy partial solutions, so the income comes in small regular amounts. It is example 17 in the chapter code tab of the course page.",
+   "takeaway": "A share of one in ten thousand waits more than two months for a block"
+  },
+  {
+   "n": 37,
+   "kind": "content",
+   "title": "Competition and attacks: concepts (3 of 3)",
+   "say": "These cards cover The top pool against the thresholds and The limits of a majority attack. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 38,
+   "kind": "content",
+   "title": "Odds of a hash rate attack",
+   "say": "Nakamoto's formula gives the chance that an attacker with a given share ever catches up from six blocks behind. The share needed for selfish mining falls as more honest miners follow the selfish block. It is example 18 in the chapter code tab of the course page.",
+   "takeaway": "The odds climb steeply with the attacker's share of the power"
+  },
+  {
+   "n": 39,
+   "kind": "section",
+   "title": "Changing the rules",
+   "say": "Rules change by forks. We watch a looser and a stricter node disagree, time a minority chain, follow a BIP 9 vote and read the heights of old soft forks in the source code.",
+   "takeaway": "Changing the rules is repainting the road signs while cars still drive."
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "Changing the rules: key concepts (1 of 2)",
+   "say": "These cards cover 6 key concepts of the part Changing the rules. Each pairs a short meaning with something from everyday life. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "A hard fork splits, a soft fork does not",
+   "say": "A node with the old, looser rule accepted a block that has no height. A node with the new, stricter rule refused it. The loose node went on building, and the two nodes ended with different tips. It is example 19 in the chapter code tab of the course page.",
+   "takeaway": "Looser rules split the chain into two; stricter rules do not"
+  },
+  {
+   "n": 42,
+   "kind": "content",
+   "title": "Hard fork or soft fork?",
+   "say": "A hard fork loosens the rules, so old nodes refuse the new blocks and two histories grow. A soft fork tightens them, so old nodes still accept every new block. A soft fork needs a majority of the miners, but not of the nodes.",
+   "takeaway": "A soft fork needs most of the miners; a hard fork needs everyone"
+  },
+  {
+   "n": 43,
+   "kind": "content",
+   "title": "Changing the rules: key concepts (2 of 2)",
+   "say": "These cards cover BIP 8 lock-in by height, Segwit activation in 2017, Speedy Trial and taproot, Buried deployments and BIP 54 consensus cleanup. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 12.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 44,
+   "kind": "content",
+   "title": "The minority chain is slow",
+   "say": "After a split a branch has the old difficulty but only a share of the hash rate. Blocks arrive more slowly, and the next retarget is far away. In March 2013 the old chain was kept for only six hours for this reason. It is example 20 in the chapter code tab of the course page.",
+   "takeaway": "With a tenth of the power a fortnight of blocks takes 140 days"
+  },
+  {
+   "n": 45,
+   "kind": "content",
+   "title": "The day Bitcoin had two histories",
+   "say": "This is a true story, dated 2013-03-11. On 11 March 2013 at 23:24:19 UTC block 225,430, with 797 transactions, was mined and accepted by nodes of Bitcoin 0.8 but rejected by some older nodes. The lesson is that an accident in software can become a rule of the network.",
+   "read": {
+    "label": "BIP 50: March 2013 Chain Fork Post-Mortem",
+    "url": "https://bips.dev/50/"
+   },
+   "takeaway": "An accident in software became a rule of the network",
+   "concept": "ChainSplitMarch2013"
+  },
+  {
+   "n": 46,
+   "kind": "content",
+   "title": "BIP 9 states and the vote",
+   "say": "A deployment is defined, started, locked in and then active. Core, on a private chain, reported each state at six heights. BIP 9 asks for 95 percent of 2,016 blocks. The Speedy Trial of taproot asked for 90 percent.",
+   "takeaway": "The state moves forward only on signals; taproot needed 90 percent"
+  },
+  {
+   "n": 47,
+   "kind": "content",
+   "title": "A ninety percent vote on a clock",
+   "say": "This is a true story, dated 2021-11-14. Taproot was activated by a variant of BIP 9 called Speedy Trial, which opened on 24 April 2021, timed out on 11 August 2021 and needed 1,815 of 2,016 blocks, 90 percent, instead of 1,916. The lesson is that fail fast or succeed: a short vote keeps a soft fork calm.",
+   "read": {
+    "label": "Core 0.21.1 release notes: Speedy Trial",
+    "url": "https://bitcoincore.org/en/releases/0.21.1/"
+   },
+   "takeaway": "Fail fast or succeed: a short vote keeps a soft fork calm",
+   "concept": "SpeedyTrialTaproot"
+  },
+  {
+   "n": 48,
+   "kind": "content",
+   "title": "Buried deployments",
+   "say": "Once a soft fork is old and settled, Bitcoin Core writes its activation as a plain height in the source file. We read the heights of four soft forks from the saved file. Nobody needs to count signals any more. It is example 22 in the chapter code tab of the course page.",
+   "takeaway": "An old soft fork is no longer voted on; it is a plain height"
+  },
+  {
+   "n": 49,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. A line that feels unproven should send you back to its code slide, because every figure in it was computed there. The chapter code tab of the course page reruns all twenty-two examples.",
+   "takeaway": "If a line feels unproven, the code slide of its part carries the receipt"
+  },
+  {
+   "n": 50,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch, and every link was opened on the date in the subtitle. A good start is the video of 3Blue1Brown on how Bitcoin works, then the Optech topic on soft fork activation next to the chapter.",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Optech topic: Soft fork activation",
+     "url": "https://bitcoinops.org/en/topics/soft-fork-activation/",
+     "finds": "The activation methods tried, with links to the debates"
+    },
+    {
+     "group": "Read",
+     "label": "Optech topic: Selfish mining",
+     "url": "https://bitcoinops.org/en/topics/selfish-mining/",
+     "finds": "Summary of the attack and what is known about it"
+    },
+    {
+     "group": "Read",
+     "label": "mempool.space (block explorer)",
+     "url": "https://mempool.space/",
+     "finds": "Look up any block, transaction, fee rate and mempool"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 9: Version bits with timeout and delay",
+     "url": "https://bips.dev/9/",
+     "finds": "How soft forks are signalled in block versions"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 54: Consensus Cleanup",
+     "url": "https://bips.dev/54/",
+     "finds": "Proposed fixes of long-known consensus weaknesses"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "Eyal and Sirer: Majority is not Enough (paper)",
+     "url": "https://arxiv.org/abs/1311.0243",
+     "finds": "The selfish-mining paper, free to download"
+    },
+    {
+     "group": "Watch",
+     "label": "3Blue1Brown: But how does bitcoin work? (video)",
+     "url": "https://www.youtube.com/embed/bBC-nXj3Ng4",
+     "finds": "Ledger, signatures and proof of work, drawn out"
+    },
+    {
+     "group": "Watch",
+     "label": "Khan Academy: Bitcoin, proof of work (video)",
+     "url": "https://www.youtube.com/embed/9V1bipPkCTU",
+     "finds": "Proof of work in a few minutes"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Optech newsletters (weekly)",
+     "url": "https://bitcoinops.org/en/newsletters/",
+     "finds": "Weekly digest of protocol and wallet development; all issues"
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin (research forum)",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers argue out proposals and research in public threads"
+    },
+    {
+     "group": "Community",
+     "label": "bitcoin-dev (mailing list)",
+     "url": "https://groups.google.com/g/bitcoindev",
+     "finds": "Where BIPs and soft forks are first proposed and debated"
+    }
+   ],
+   "takeaway": "Watch 3Blue1Brown, then read the Optech topic on soft forks beside the chapter"
+  },
+  {
+   "n": 51,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by a computation that ran on a slide of this deck. The course page for chapter 12 has every word behind them, the stories with their sources, and the question bank to test yourself.",
+   "takeaway": "And where each claim gets its proof"
+  }
+ ],
+ "_note": "lecture_v3_0_0.json (the deck export of the chapter 12 deck, untouched) with the deck's takeaway as takeaway and, on each story slide, the first concept of the story that the page has as concept; made by pages_deck_links_make_v1_3_0.py"
+}
