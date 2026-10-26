@@ -1,0 +1,12 @@
+{
+ "_version": "1.1.0",
+ "wheels": [
+  {
+   "file": "sen0401_ch01_lib-1.0.0-py3-none-any.whl",
+   "sha256": "32b4b1ead903129ec12aac0f25d6f48bdfb09ea7d3452ebb34b767a453864615"
+  }
+ ],
+ "pyodide_packages": [],
+ "boot_python": "import builtins\n# shim: this page's Python (Pyodide) has no hashlib.pbkdf2_hmac; define it with hmac only when it is missing (same result as the real function)\nimport hashlib\nif not hasattr(hashlib, 'pbkdf2_hmac'):\n    def _pbkdf2_hmac(hash_name, password, salt, iterations, dklen=None):\n        import hmac, struct\n        prf = hmac.new(bytes(password), digestmod=hash_name); size = prf.digest_size; dklen = dklen or size; dk = b''; i = 1\n        while len(dk) < dklen:\n            h = prf.copy(); h.update(bytes(salt) + struct.pack('>I', i)); u = h.digest(); r = int.from_bytes(u, 'big')\n            for _ in range(iterations - 1):\n                h = prf.copy(); h.update(u); u = h.digest(); r ^= int.from_bytes(u, 'big')\n            dk += r.to_bytes(size, 'big'); i += 1\n        return dk[:dklen]\n    hashlib.pbkdf2_hmac = _pbkdf2_hmac\n# setup: the chapter library of the page (helper functions, the saved block-0 script and the documented prices); the page runs this before every example\nimport hashlib\nfrom decimal import Decimal\nfrom sen0401_ch01_lib_v1_0_0 import *\nfor _n in [k for k in list(globals()) if not k.startswith('_') and k != 'builtins']: setattr(builtins, _n, globals()[_n])\n",
+ "_note": "As pywheels_v1_0_0.json (same wheel, same manifest setup chapter_code_ch01_v1_0_0.json), plus a boot prefix that defines hashlib.pbkdf2_hmac in pure Python when the page's Pyodide lacks it (the page test 9.37.0 found example 11 failing without it)."
+}
