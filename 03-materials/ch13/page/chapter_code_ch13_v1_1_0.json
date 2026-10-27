@@ -1,0 +1,688 @@
+{
+ "manifest": "chapter_code_ch13_v1_1_0",
+ "chapter": 13,
+ "deck": "SEN0401_Ch13_BitcoinSecurity_3e_v2_2_0.pptx",
+ "deck_version": "2.2.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the library defined in the page",
+ "library": {
+  "module": "sen0401_ch13_lib",
+  "file": "03-materials/ch13/assets/sen0401_ch13_lib-1.1.0-py3-none-any.whl",
+  "sha256": "7a74931ffdad8160485833a3f4f7de89222a482c09f762989346b1d1f793e3d4",
+  "modules": [
+   "sen0401_ch13_lib_v1_0_0",
+   "sen0401_ch10_p2p_v1_0_0"
+  ],
+  "import": "import sen0401_ch13_lib_v1_0_0 as L; R = L.run(); seen = L.has"
+ },
+ "setup": {
+  "code": "# setup: the chapter library of the page (L = chapter 13 library, R = the recorded run of Bitcoin Core 31.1, seen = search a saved source); the page boots these names\nimport hashlib, math\nimport sen0401_ch13_lib_v1_0_0 as L\nR = L.run()\nseen = L.has",
+  "data": {}
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "A signed payment shows no private key",
+   "slide": 7,
+   "branch": "The security model",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "s = R['b1_secrecy']\nsize = s['tx_bytes']\nlens = s['witness_item_lengths']\nkey_in = s['private_key_hex_in_tx']\nwif_in = s['wif_in_tx']\n(key_in, wif_in, lens)",
+   "show": [
+    {
+     "expression": "(key_in, wif_in, lens)",
+     "expected": "(False, False, [71, 33])"
+    },
+    {
+     "expression": "size",
+     "expected": "222"
+    },
+    {
+     "expression": "s['sighash_byte']",
+     "expected": "'01'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "Changing the payee or the amount breaks the signature",
+   "slide": 9,
+   "branch": "The security model",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "t = R['b1_tamper']\nnames = ['valid', 'address_replaced', 'amount_changed']\nok = [t[k]['allowed'] for k in names]\nok",
+   "show": [
+    {
+     "expression": "ok",
+     "expected": "[True, False, False]"
+    },
+    {
+     "expression": "t['address_replaced_differs']",
+     "expected": "True"
+    },
+    {
+     "expression": "t['amount_changed_differs']",
+     "expected": "True"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "Sending a payment twice pays nothing",
+   "slide": 10,
+   "branch": "The security model",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "r = R['b1_replay']\nwhy = r['testmempoolaccept']['reject-reason']\ngain = r['balance_r_after'] - r['balance_r']\n(why, gain)",
+   "show": [
+    {
+     "expression": "(why, gain)",
+     "expected": "('txn-already-known', 0.0)"
+    },
+    {
+     "expression": "r['balance_r']",
+     "expected": "1.5"
+    },
+    {
+     "expression": "r['sendrawtransaction']['error'].split('message: ')[1]",
+     "expected": "'Transaction outputs already in utxo set'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "Peers talk encrypted since release 27.0",
+   "slide": 11,
+   "branch": "The security model",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "p, n = R['b2_peers'], R['b2_netinfo']\nv2 = [p['Q'][0]['transport'], p['P'][0]['transport']]\nsame = R['b2_session_ids_match']\nv1 = p['X'][0]['transport']\n(v2, v1)",
+   "show": [
+    {
+     "expression": "(v2, v1)",
+     "expected": "(['v2', 'v2'], 'v1')"
+    },
+    {
+     "expression": "same",
+     "expected": "True"
+    },
+    {
+     "expression": "'P2P_V2' in n['P_localservices']",
+     "expected": "True"
+    },
+    {
+     "expression": "'P2P_V2' in n['X_localservices']",
+     "expected": "False"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "The genesis hash is rebuilt from its header",
+   "slide": 12,
+   "branch": "The security model",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "mr = '4a5e1e4baab89f3a32518a88c31bc87f'\nmr += '618f76673e2cc77ab2127b7afdeda33b'\nle = lambda n: n.to_bytes(4, 'little')\nhdr = le(1) + bytes(32) + bytes.fromhex(mr)[::-1]\nhdr += le(1231006505) + le(0x1d00ffff) + le(2083236893)\nd = lambda b: hashlib.sha256(b).digest()\nh = d(d(hdr))[::-1].hex()\nfound = seen('core_src_kernel_chainparams.cpp', h)\n(len(hdr), h[:20], found)",
+   "show": [
+    {
+     "expression": "(len(hdr), h[:20], found)",
+     "expected": "(80, '000000000019d6689c08', True)"
+    },
+    {
+     "expression": "len(h) - len(h.lstrip('0'))",
+     "expected": "10"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "The assumed-valid shortcut is typed into the source",
+   "slide": 13,
+   "branch": "The security model",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "f = 'bitcoind_help_31.1.txt'\nq = 'potentially skip their script verification'\nsays = seen(f, q)\nc = 'core_src_kernel_chainparams.cpp'\ntyped = seen(c, 'defaultAssumeValid')\nopt = R['b8_help_has']['-assumevalid']\n(says, typed, opt)",
+   "show": [
+    {
+     "expression": "(says, typed, opt)",
+     "expected": "(True, True, True)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "Does the download match the signed list?",
+   "slide": 14,
+   "branch": "The security model",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "r = R['b8_release']\nmatch = r['match']\nsize_mb = round(r['tarball_bytes'] / 1e6, 1)\nlines = r['n_lines_in_list']\nmade = r['n_signatures_made']\nunchecked = r['n_cannot_check_no_public_key']\n(match, made, unchecked)",
+   "show": [
+    {
+     "expression": "(match, made, unchecked)",
+     "expected": "(True, 11, 11)"
+    },
+    {
+     "expression": "size_mb",
+     "expected": "90.3"
+    },
+    {
+     "expression": "lines",
+     "expected": "28"
+    },
+    {
+     "expression": "r['gpg_has_signature_line']",
+     "expected": "False"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "A watch-only wallet cannot sign",
+   "slide": 17,
+   "branch": "Protecting keys",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "h = R['b3_hot']\ncan_sign = h['watch_private_keys_enabled']\ndone = h['hot_sign_complete']\nmsg = h['hot_listdescriptors_private']['error']\nwhy = msg.split('message: ')[1][:40]\n(can_sign, done)",
+   "show": [
+    {
+     "expression": "(can_sign, done)",
+     "expected": "(False, False)"
+    },
+    {
+     "expression": "why",
+     "expected": "\"Can't get private descriptor string for \""
+    },
+    {
+     "expression": "h['balance']",
+     "expected": "3.0"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "The payment file travels to the cold node and back",
+   "slide": 19,
+   "branch": "Protecting keys",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "h, c = R['b3_hot'], R['b3_cold']\noff = (c['blocks'], c['connections'])\nsigned = c['sign_complete']\ngrown = (h['psbt_chars'], c['psbt_chars_signed'])\nb = R['b3_broadcast']\nfin = (b['finalize_complete'], b['confirmations'])\n(signed, off, fin)",
+   "show": [
+    {
+     "expression": "(signed, off, fin)",
+     "expected": "(True, (0, 0), (True, 1))"
+    },
+    {
+     "expression": "grown",
+     "expected": "(528, 596)"
+    },
+    {
+     "expression": "b['dest_received']",
+     "expected": "1.0"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "A hardware wallet doubles its wait after every wrong PIN",
+   "slide": 21,
+   "branch": "Protecting keys",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "tries = 15\nwait = [2 ** k for k in range(tries)]\ntotal = sum(wait)\nhours = round(total / 3600, 1)\nt = 'bitcoinwiki_trezor.txt'\nq = 'wipe itself after 16 failed PIN entry attempts'\nwipes = seen(t, q)\n(total, hours)",
+   "show": [
+    {
+     "expression": "(total, hours)",
+     "expected": "(32767, 9.1)"
+    },
+    {
+     "expression": "wait",
+     "expected": "[1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384]"
+    },
+    {
+     "expression": "wipes",
+     "expected": "True"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "Four words from a list are not a safe secret",
+   "slide": 23,
+   "branch": "Protecting keys",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "words = 4\nchoices = 2048 ** words\nrate = 10 ** 12\nsecs = round(choices / rate, 1)\n(choices, secs)",
+   "show": [
+    {
+     "expression": "(choices, secs)",
+     "expected": "(17592186044416, 17.6)"
+    },
+    {
+     "expression": "[2048 ** w / rate for w in range(1, 7)]",
+     "expected": "[2.048e-09, 4.194304e-06, 0.008589934592, 17.592186044416, 36028.79701896397, 73786976.2948382]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "A locked wallet shows the balance but cannot spend",
+   "slide": 24,
+   "branch": "Protecting keys",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "l = R['b4_locked']\nu = R['b4_unlocked']\nmsg = l['send']['error'].split('message: ')[1]\nmsg = msg.removeprefix('Error: ')\nwrong = R['b4_wrong']['error'].split('message: ')[1]\nwrong = wrong.removeprefix('Error: ')\nleft = u['unlocked_until'] - u['now']\n(l['balance_visible'], msg[:23])",
+   "show": [
+    {
+     "expression": "(l['balance_visible'], msg[:23])",
+     "expected": "(1.0, 'Please enter the wallet')"
+    },
+    {
+     "expression": "wrong",
+     "expected": "'The wallet passphrase entered was incorrect.'"
+    },
+    {
+     "expression": "left",
+     "expected": "3"
+    },
+    {
+     "expression": "R['b4_after_timeout']['unlocked_until']",
+     "expected": "0"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "Key stretching buys days of guessing",
+   "slide": 25,
+   "branch": "Protecting keys",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "c = 'core_src_wallet_crypter.h'\nrounds = int(L.const(c, 'DEFAULT_DERIVE_ITERATIONS'))\nper_guess = rounds / 250000\ndays = 2 ** 30 * per_guess / 86400\n(rounds, round(days, 1))",
+   "show": [
+    {
+     "expression": "(rounds, round(days, 1))",
+     "expected": "(25000, 1242.8)"
+    },
+    {
+     "expression": "per_guess",
+     "expected": "0.1"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "A stale backup misses the newest coins",
+   "slide": 28,
+   "branch": "Keeping access",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "b = R['b5_backup']\nfresh = (b['balance_src'], b['balance_fresh'])\nst = b['balance_stale']\nstale = (st, b['far_address_ismine_stale'])\nfar = b['far_index']\nknown = b['far_address_ismine_fresh']\n(fresh, stale)",
+   "show": [
+    {
+     "expression": "(fresh, stale)",
+     "expected": "((3.0, 3.0), (1.0, False))"
+    },
+    {
+     "expression": "far",
+     "expected": "9"
+    },
+    {
+     "expression": "known",
+     "expected": "True"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "A backup covers only the addresses it knows",
+   "slide": 29,
+   "branch": "Keeping access",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "pool = 3\npaid = [(1, 1), (9, 2)]\nfound = sum(c for i, c in paid if i < pool)\ntotal = sum(c for i, c in paid)\n(found, total)",
+   "show": [
+    {
+     "expression": "(found, total)",
+     "expected": "(1, 3)"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 16,
+   "id": "ex16",
+   "name": "Twelve words carry 128 bits and a checksum",
+   "slide": 30,
+   "branch": "Keeping access",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "ent = 16\nbits = ent * 8\ncs = bits // 32\nwords = (bits + cs) // 11\nluck = 1 / 2 ** cs\n(bits, cs, words, luck)",
+   "show": [
+    {
+     "expression": "(bits, cs, words, luck)",
+     "expected": "(128, 4, 12, 0.0625)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 17,
+   "id": "ex17",
+   "name": "Seed words are stretched into a seed",
+   "slide": 31,
+   "branch": "Keeping access",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "mn = ' '.join(['abandon'] * 11 + ['about'])\nseed = L.bip39_seed(mn, 'TREZOR')\nok = seed.hex().startswith('c55257c360c07c72')\nother = L.bip39_seed(mn).hex()[:16]\n(ok, len(seed), other)",
+   "show": [
+    {
+     "expression": "(ok, len(seed), other)",
+     "expected": "(True, 64, '5eb00bbddcf06908')"
+    },
+    {
+     "expression": "seed.hex()[:16]",
+     "expected": "'c55257c360c07c72'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 18,
+   "id": "ex18",
+   "name": "A master key grows from the seed",
+   "slide": 32,
+   "branch": "Keeping access",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "sd = bytes.fromhex('000102030405060708090a0b0c0d0e0f')\nx, k, c = L.bip32_master(sd)\nok = x.startswith('xprv9s21ZrQH143K3QTDL4LXw2F7HEK3')\n(ok, k[:8], len(c) // 2)",
+   "show": [
+    {
+     "expression": "(ok, k[:8], len(c) // 2)",
+     "expected": "(True, 'e8f32e72', 32)"
+    },
+    {
+     "expression": "x[:12]",
+     "expected": "'xprv9s21ZrQH'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 19,
+   "id": "ex19",
+   "name": "Two of three keys sign",
+   "slide": 35,
+   "branch": "Sharing control",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "s = R['b6_sign']\nm1, m3 = s['m1_alone'], s['m1_m3']\nalone, pair = m1['complete'], m3['complete']\nl = R['b6_loss']\nlost = [l[k] for k in sorted(l) if k.startswith('lose')]\n(alone, pair, lost)",
+   "show": [
+    {
+     "expression": "(alone, pair, lost)",
+     "expected": "(False, True, [True, False])"
+    },
+    {
+     "expression": "s['accept']",
+     "expected": "True"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 20,
+   "id": "ex20",
+   "name": "More keys: fewer losses, more thefts",
+   "slide": 36,
+   "branch": "Sharing control",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "schemes = ((1, 1), (2, 3), (1, 3))\nlose = lambda m, n: round(L.p_lose(0.1, m, n), 4)\nstuck = [lose(m, n) for m, n in schemes]\nrob = lambda m, n: round(L.p_theft(0.05, m, n), 5)\nrobbed = [rob(m, n) for m, n in schemes]\n(stuck, robbed)",
+   "show": [
+    {
+     "expression": "(stuck, robbed)",
+     "expected": "([0.1, 0.028, 0.001], [0.05, 0.00725, 0.14263])"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 21,
+   "id": "ex21",
+   "name": "A two-of-three payment is larger",
+   "slide": 37,
+   "branch": "Sharing control",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "single = R['b6_single_vsize']\nvsize = R['b6_sign']['vsize']\nm, n = 2, 3\ncalc = (82 * 4 + 4 + m * 73 + 4 + 34 * n + 3) // 4\n(vsize, single, calc)",
+   "show": [
+    {
+     "expression": "(vsize, single, calc)",
+     "expected": "(146, 110, 146)"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 22,
+   "id": "ex22",
+   "name": "Shamir by hand: shares on a line",
+   "slide": 38,
+   "branch": "Sharing control",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "p, s, a = 47, 12, 30\ny = [(s + a * x) % p for x in (1, 2, 3)]\nback = (2 * y[0] - y[1]) % p\n(y, back)",
+   "show": [
+    {
+     "expression": "(y, back)",
+     "expected": "([42, 25, 8], 12)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 23,
+   "id": "ex23",
+   "name": "Shamir with the chapter library",
+   "slide": 39,
+   "branch": "Sharing control",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "sh = L.shamir_split(123456789, 2, 3, [987654321])\nback = [L.shamir_recover(x) for x in (sh[:2], sh[1:])]\nalone = L.shamir_recover(sh[:1]) == 123456789\n(back, alone)",
+   "show": [
+    {
+     "expression": "(back, alone)",
+     "expected": "([123456789, 123456789], False)"
+    },
+    {
+     "expression": "sh",
+     "expected": "[(1, 1111111110), (2, 2098765431), (3, 3086419752)]"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 24,
+   "id": "ex24",
+   "name": "One share fits every secret",
+   "slide": 40,
+   "branch": "Sharing control",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "p, y = 11, 5\nfits = {(s, (y - s) % p) for s in range(p)}\n(len(fits), len({s for s, a in fits}), p)",
+   "show": [
+    {
+     "expression": "(len(fits), len({s for s, a in fits}), p)",
+     "expected": "(11, 11, 11)"
+    },
+    {
+     "expression": "sorted(fits)",
+     "expected": "[(0, 5), (1, 4), (2, 3), (3, 2), (4, 1), (5, 0), (6, 10), (7, 9), (8, 8), (9, 7), (10, 6)]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 25,
+   "id": "ex25",
+   "name": "The Mt. Gox figures, recomputed",
+   "slide": 44,
+   "branch": "Custody history",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "share = round(850000 * 100 / 7 / 1e6, 1)\nkept = round(40 * (100 - 36) / 100, 2)\nleft = round(850000 - 199999.99, 2)\n(share, kept, left)",
+   "show": [
+    {
+     "expression": "(share, kept, left)",
+     "expected": "(12.1, 25.6, 650000.01)"
+    },
+    {
+     "expression": "round(40 * 36 / 100, 2)",
+     "expected": "14.4"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 26,
+   "id": "ex26",
+   "name": "The Casascius coin: facts in the saved page",
+   "slide": 46,
+   "branch": "Custody history",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "t = 'bitcoinwiki_casascius.txt'\nsold = seen(t, 'sold until Nov 26, 2013')\nsizes = seen(t, '1000 BTC increments')\nmsb = seen(t, 'qualifies him as a money transmitter')\n(sold, sizes, msb)",
+   "show": [
+    {
+     "expression": "(sold, sizes, msb)",
+     "expected": "(True, True, True)"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 27,
+   "id": "ex27",
+   "name": "The heir must wait ten blocks",
+   "slide": 50,
+   "branch": "Survivability",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "p = R['b7_descriptor']['policy']\nowner = R['b7_owner']['allowed']\nh = R['b7_heir']\nks = ('at_1_conf', 'at_9_conf', 'at_10_conf')\nheir = [h[k]['allowed'] for k in ks]\nwhy = h['at_9_conf']['reject_reason']\n(owner, heir, why)",
+   "show": [
+    {
+     "expression": "(owner, heir, why)",
+     "expected": "(True, [False, False, True], 'non-BIP68-final')"
+    },
+    {
+     "expression": "p",
+     "expected": "'or(owner, and(heir, older 10))'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 28,
+   "id": "ex28",
+   "name": "The wait counter has only sixteen bits",
+   "slide": 51,
+   "branch": "Survivability",
+   "library": "sen0401_ch13_lib",
+   "needs": [
+    "setup"
+   ],
+   "code": "bits = 16\ntop = 2 ** bits - 1\nwrapped = 65536 & top\ntrap = R['b7_older_65536']['allowed']\ndays = round(top * 10 / 1440, 1)\n(top, wrapped, trap, days)",
+   "show": [
+    {
+     "expression": "(top, wrapped, trap, days)",
+     "expected": "(65535, 0, True, 455.1)"
+    }
+   ],
+   "result_picture": "table"
+  }
+ ]
+}
