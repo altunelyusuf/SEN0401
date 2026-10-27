@@ -1,0 +1,419 @@
+{
+ "chapter": 14,
+ "deck": "SEN0401_Ch14_SecondLayerApplications_3e_v2_0_1.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 14: Second-Layer Apps",
+   "say": "This deck explains what is built on top of Bitcoin: the guarantees of the chain, colored coins, payment channels and the Lightning Network. Every number on a result picture was computed with the chapter's own Python library or read from one recorded run on private test chains.",
+   "concept": "What the chain guarantees, how a payment channel is built, and how Lightning routes payments"
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The route has four parts that follow the order of the chapter. Four true stories and nineteen code examples are spread across them. The examples are listed in the same order in the chapter code tab of the course page, so every listing here can be run and edited there.",
+   "concept": "Four parts, nineteen examples, four true stories"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "The seven questions are the chapter's own, rewritten so that each has an answer on a slide. We return to them in the summary. A reader who can answer all seven has understood the chapter.",
+   "concept": "Each has an answer on a slide; we return to them in the summary"
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, four parts",
+   "say": "The chapter has four parts. Together they hold 61 key concepts. Each part gets a divider, concept cards with everyday comparisons, code that runs, and some parts a true story. The deck follows the order of the chapter.",
+   "concept": "Four parts; every slide today lives on this map"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "What the chain guarantees",
+   "say": "Bitcoin offers guarantees that any application can reuse: no double spend, immutability, timestamps and more. This part lists them, then shows how a digital notary and a crowdfund mix them. We test four of them on a private chain.",
+   "concept": "The chain is a toolbox of guarantees; an application is a recipe."
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "What the chain guarantees: concepts (1 of 4)",
+   "say": "These cards cover Second-Layer Applications, Building Blocks (Primitives), Applications from Building Blocks, second layer, primitives and no double spend. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "A double spend and the fee",
+   "say": "No output can be spent twice in the same chain. Core accepted a first spend and refused a second one that paid less. It replaced the first with a second that paid more, and the first then vanished from the waiting pool. It is example 1 in the chapter code tab of the course page.",
+   "concept": "Only a spend that pays more can replace the first one"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "Two pizzas for 10,000 bitcoins",
+   "say": "This is a true story, dated 2010-05-22. On 18 May 2010, by the forum's clock, Laszlo Hanyecz opened the thread Pizza for bitcoins? and offered 10,000 bitcoins for a couple of pizzas delivered to Jacksonville, Florida. The lesson is that the first purchase settled on the chain; small ones now travel off it.",
+   "concept": "The first purchase settled on the chain; small ones now travel off it",
+   "read": {
+    "label": "Bitcointalk thread: Pizza for bitcoins?",
+    "url": "https://bitcointalk.org/index.php?topic=137.0"
+   }
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "What the chain guarantees: concepts (2 of 4)",
+   "say": "These cards cover immutability, neutrality, secure timestamping, authorization, auditability and accounting. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Nonexpiration and accounting",
+   "say": "A transaction signed 150 blocks earlier was still valid, because its input was unspent. A transaction whose outputs exceed its inputs was refused, whatever the signatures said. These are two of the chain's guarantees. It is example 2 in the chapter code tab of the course page.",
+   "concept": "A transaction does not expire, and it can never pay out more than it takes in"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "What the chain guarantees: concepts (3 of 4)",
+   "say": "These cards cover nonexpiration, integrity, transaction atomicity, quorum of control, timelock and replication. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 12,
+   "kind": "content",
+   "title": "Proof of existence",
+   "say": "A transaction can carry the hash of a document in an output that nobody can spend. The script is OP_RETURN and the hash, and the output holds no value. The block that holds the transaction gives the document its date. It is example 3 in the chapter code tab of the course page.",
+   "concept": "A hash in a transaction proves that the document existed at that block's date"
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "What the chain guarantees: concepts (4 of 4)",
+   "say": "These cards cover forgery protection, consistency, recording external state, predictable issuance, proof of existence and Lighthouse. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Lighthouse: a crowdfund",
+   "say": "Two pledges, less the fee, make the goal. One pledge alone is refused, because it pays out more than it takes in. Changing the output breaks the signatures, and a signature over everything stops a pledge that comes too late. It is example 4 in the chapter code tab of the course page.",
+   "concept": "Signatures fix the output, so the money moves only when the goal is reached"
+  },
+  {
+   "n": 15,
+   "kind": "section",
+   "title": "Colored coins and seals",
+   "say": "A coin can be marked so that it stands for another asset. Three ideas make that work: a seal that opens once, a key that commits to a contract, and a receiver who checks the history himself. We run two of them.",
+   "concept": "A colored coin is a banknote stamped with a second meaning."
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Colored coins and seals: concepts (1 of 2)",
+   "say": "These cards cover Colored Coins, Single-Use Seals, Pay to Contract (P2C), Client-Side Validation, RGB and Taproot Assets. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 17,
+   "kind": "content",
+   "title": "Client-side validation",
+   "say": "The history of ACME tokens passes through two transactions. Each one commits to its contract, and a forged contract does not match. Yet nothing in the chain shows that the tokens exist, so the receiver must check the whole history. It is example 5 in the chapter code tab of the course page.",
+   "concept": "The chain holds a commitment, and the receiver checks the history"
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "Colored coins and seals: concepts (2 of 2)",
+   "say": "These cards cover native forwarding and translated forwarding. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Pay to contract",
+   "say": "A public key is tweaked by a contract and looks like any other key. Revealing the key and the contract proves the commitment; a wrong contract fails. The output can be spent only with the tweaked key, never with the plain one. It is example 6 in the chapter code tab of the course page.",
+   "concept": "Only the holder of the contract can reveal the commitment and spend"
+  },
+  {
+   "n": 20,
+   "kind": "section",
+   "title": "Payment channels",
+   "say": "Two people can trade many times and settle once. This part builds a channel step by step: a funding output, refunds, commitments that punish an old state, and a secret that claims a payment. Each step is run on a private chain.",
+   "concept": "A payment channel is a bar tab: many small orders, one bill at closing time."
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "Payment channels: key concepts (1 of 3)",
+   "say": "These cards cover 6 key concepts of the part Payment channels. Each pairs a short meaning with something from everyday life. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "Emma and Fabian's channel",
+   "say": "Emma funds one hour of video, at 1,000 satoshis a second, in a two-of-two script output. Emma alone cannot spend it, and both together can. The witness script begins with a 2 and ends with a 2 and CHECKMULTISIG. It is example 7 in the chapter code tab of the course page.",
+   "concept": "The funding output needs both keys, so neither side can spend alone"
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "The first payment channels",
+   "say": "This is a true story, dated 2013-04-20. The Bitcoin Wiki traces payment channels to the first Bitcoin code, where an unrecorded open transaction could keep being replaced until its lock time, and to a personal email of Satoshi Nakamoto that described it. The lesson is that channels began as a replaced transaction, waiting for its lock time.",
+   "concept": "Channels began as a replaced transaction waiting for its lock time",
+   "read": {
+    "label": "Reply: Anti DoS (list post); archived: web.archive.org",
+    "url": "https://lists.linuxfoundation.org/pipermail/bitcoin-dev/2013-April/002433.html"
+   }
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "Payment channels: key concepts (2 of 3)",
+   "say": "These cards cover payment channel, state channel, funding transaction, commitment transaction, settlement transaction and refund transaction. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "Refunds with falling lock times",
+   "say": "Emma signed six refunds before funding, each with a lower lock time than the one before. At the start all are refused as not yet final. Six blocks before the newest lock time it is still refused, and five blocks before it is accepted. It is example 8 in the chapter code tab of the course page.",
+   "concept": "The newest refund has the lowest lock time, so it can be used first"
+  },
+  {
+   "n": 26,
+   "kind": "content",
+   "title": "Payment channels: key concepts (3 of 3)",
+   "say": "These cards cover Spillman-style payment channel, revocation key, asymmetric commitment and preimage. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 27,
+   "kind": "content",
+   "title": "Balances move, capacity stays",
+   "say": "A channel's capacity is fixed when it is funded. Each payment only shifts value from one side to the other, so the sum of the two balances never changes. A payment larger than the sender's balance cannot be made. It is example 9 in the chapter code tab of the course page.",
+   "concept": "The two balances always add up to the capacity of the channel"
+  },
+  {
+   "n": 28,
+   "kind": "content",
+   "title": "On the chain, or off it?",
+   "say": "A channel puts two transactions on the chain, the funding and the settlement. Everything between them stays off the chain as signed commitments. The chain is the court of last resort, which is why each side keeps its latest commitment.",
+   "concept": "Two transactions on the chain, and any number of updates between them"
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "A commitment that can be punished",
+   "say": "The delayed output has two paths: a revocation key now, or a wait of 1,000 blocks. At 999 confirmations the delayed spend is refused and at 1,000 it is accepted. The revocation path needs both halves of the key. It is example 10 in the chapter code tab of the course page.",
+   "concept": "A cheater waits a thousand blocks, and the victim can act before that"
+  },
+  {
+   "n": 30,
+   "kind": "content",
+   "title": "An HTLC: a secret or the clock",
+   "say": "The receiver claims the output with the secret and a signature. A wrong secret fails the hash check, and the payer's key cannot claim it. The payer's refund is final only at the lock height, nineteen blocks after funding. It is example 11 in the chapter code tab of the course page.",
+   "concept": "A secret claims the payment; after the lock height the payer takes it back"
+  },
+  {
+   "n": 31,
+   "kind": "section",
+   "title": "The Lightning Network",
+   "say": "Lightning links channels into a network. We follow a payment through relays, count the fees and the time locks, read an invoice and a packet, and watch a breach being punished. Every number comes from the recorded run or the specification.",
+   "concept": "Lightning is a chain of couriers who pass a parcel on and each keep a small fee."
+  },
+  {
+   "n": 32,
+   "kind": "content",
+   "title": "The Lightning Network: key concepts (1 of 3)",
+   "say": "These cards cover Routed Payment Channels (Lightning Network), Basic Lightning Network Example, Lightning Network Transport and Pathfinding, Lightning Network Benefits, Lightning Network and route. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 33,
+   "kind": "content",
+   "title": "Five nodes, one payment",
+   "say": "Each hop forwards what the later hops still need. The surcharge over one bitcoin is 200,000 satoshis at Bob, 100,000 at Carol and nothing at Diana. The library works backwards from the last hop and gets the same numbers. It is example 12 in the chapter code tab of the course page.",
+   "concept": "Each relay keeps 100,000 satoshis, and Alice pays 300,000 in all"
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "Satoshis passed from hand to hand",
+   "say": "This is a true story, dated 2019-01-19. On 19 January 2019 the pseudonymous Twitter user hodlonaut began a game-like promotional test of the Lightning Network by sending 100,000 satoshis, 0.001 bitcoin, to a trusted recipient. The lesson is that lightning payments pass hand to hand without touching the chain.",
+   "concept": "Satoshis passed hand to hand without touching the chain",
+   "read": {
+    "label": "Wikipedia: Lightning Network (article)",
+    "url": "https://en.wikipedia.org/wiki/Lightning_Network"
+   }
+  },
+  {
+   "n": 35,
+   "kind": "content",
+   "title": "The Lightning Network: key concepts (2 of 3)",
+   "say": "These cards cover invoice, onion routing, Sphinx, BOLT and pathfinding. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "Each hop has less time",
+   "say": "Every hop's HTLC expires at a block height. Neighbouring hops differ by 80 blocks, so a relay that pays downstream and learns the secret still has time to claim from upstream. The library rebuilds the same heights. It is example 13 in the chapter code tab of the course page.",
+   "concept": "A relay that learns the secret still has time to claim upstream"
+  },
+  {
+   "n": 37,
+   "kind": "content",
+   "title": "A paper that became a network",
+   "say": "This is a true story, dated 2015-02-28. Joseph Poon and Thaddeus Dryja published a Lightning Network white paper in February 2015, and Wikipedia cites a copy of version 0.5 archived on 28 February 2015. The lesson is that a design on paper took years, soft forks and four teams.",
+   "concept": "A design on paper took years, soft forks and four teams",
+   "read": {
+    "label": "Poon and Dryja: Lightning paper (PDF)",
+    "url": "https://lightning.network/lightning-network-paper.pdf"
+   }
+  },
+  {
+   "n": 38,
+   "kind": "content",
+   "title": "The Lightning Network: key concepts (3 of 3)",
+   "say": "These cards cover fee and capacity. Each pairs a short meaning with something from everyday life, so that the idea can be retold in your own words. The full explanation is on the course page, chapter 14.",
+   "concept": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 39,
+   "kind": "content",
+   "title": "A hold invoice keeps a payment waiting",
+   "say": "Eric held back the secret, so the payment stayed pending on all four channels: one HTLC at each end and two at each relay. When Eric cancelled, every balance returned. A later payment of the same kind settled. It is example 14 in the chapter code tab of the course page.",
+   "concept": "A payment can wait in flight, and a cancel returns every balance"
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "The encrypted link of BOLT 8",
+   "say": "Lightning nodes talk over an encrypted link, and the specification prints a test vector with fixed keys. We rerun the handshake and compare the three outputs, the two acts and the transport key. The sizes are 50, 66 and 39 bytes. It is example 15 in the chapter code tab of the course page.",
+   "concept": "The handshake outputs equal the values printed in the specification"
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "The onion has a fixed size",
+   "say": "A Lightning onion packet holds a version byte, a key, 1,300 bytes of hop data and a check value. Its size is 1366 bytes for a route of any length, with at most twenty hops. A relay cannot tell how far it is from the end. It is example 16 in the chapter code tab of the course page.",
+   "concept": "The packet is 1366 bytes whatever the route, so a relay cannot count the hops"
+  },
+  {
+   "n": 42,
+   "kind": "content",
+   "title": "An invoice carries the hash",
+   "say": "A node made an invoice for 100,000,000,000 millisatoshis and the library parsed it; it asks 80 blocks for the last hop. The secret, hashed once, equals the payment hash. The invoice in BOLT 11 is dated 1 June 2017. It is example 17 in the chapter code tab of the course page.",
+   "concept": "The secret, hashed once, is the payment hash in the invoice"
+  },
+  {
+   "n": 43,
+   "kind": "content",
+   "title": "A channel on the chain",
+   "say": "A channel is opened by one funding transaction and closed by one more. The funding output is a two-of-two script, and the close pays two taproot outputs. Six updates happened off the chain in between. It is example 18 in the chapter code tab of the course page.",
+   "concept": "Only two transactions touch the chain, however many updates happen between"
+  },
+  {
+   "n": 44,
+   "kind": "content",
+   "title": "A breach and its punishment",
+   "say": "Irene went back to an old state and published it. Hitesh's node saw the breach and its justice transaction took the whole channel. A separate test showed a parent with no fee lifted into a block by a child that paid for both. It is example 19 in the chapter code tab of the course page.",
+   "concept": "A cheater loses the whole channel, and a child can pay the parent's fee"
+  },
+  {
+   "n": 45,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. A line that feels unproven should send you back to its code slide, because every figure in it was computed there. The chapter code tab of the course page reruns all nineteen examples.",
+   "concept": "If a line feels unproven, the code slide of its part carries the receipt"
+  },
+  {
+   "n": 46,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read or watch, and every link was opened on the date in the subtitle. A good start is the video of CuriousInventor on how Lightning works, then the Optech topic on hash time locked contracts next to the chapter.",
+   "concept": "Watch CuriousInventor, then read the Optech topic on HTLCs beside the chapter",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Optech topic: Hash time locked contracts",
+     "url": "https://bitcoinops.org/en/topics/htlc/",
+     "finds": "How HTLCs route payments, with links to code"
+    },
+    {
+     "group": "Read",
+     "label": "Optech topic: Anchor outputs",
+     "url": "https://bitcoinops.org/en/topics/anchor-outputs/",
+     "finds": "How channels keep the option to raise their fees later"
+    },
+    {
+     "group": "Read",
+     "label": "Optech topic: Watchtowers",
+     "url": "https://bitcoinops.org/en/topics/watchtowers/",
+     "finds": "Services that answer a breach while the owner is offline"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BOLT 3: Transaction and Script Formats (spec)",
+     "url": "https://raw.githubusercontent.com/lightning/bolts/master/03-transactions.md",
+     "finds": "Channel transaction layouts, with test vectors"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "BIP 112: CHECKSEQUENCEVERIFY",
+     "url": "https://bips.dev/112/",
+     "finds": "The relative timelock opcode that channels depend on"
+    },
+    {
+     "group": "Standards and papers",
+     "label": "Poon and Dryja: Lightning paper (PDF)",
+     "url": "https://lightning.network/lightning-network-paper.pdf",
+     "finds": "Draft 0.5.9.2 of 14 January 2016"
+    },
+    {
+     "group": "Watch",
+     "label": "CuriousInventor: Lightning Explained (video)",
+     "url": "https://www.youtube.com/embed/yKdK-7AtAMQ",
+     "finds": "How Lightning works, with animations"
+    },
+    {
+     "group": "Watch",
+     "label": "Poon and Dryja at Coinbase (video)",
+     "url": "https://www.youtube.com/embed/KN7Z5dGWcRY",
+     "finds": "The two authors present the Lightning Network"
+    },
+    {
+     "group": "Community",
+     "label": "mempool.space Lightning (statistics)",
+     "url": "https://mempool.space/lightning",
+     "finds": "Channels, nodes and capacity of the Lightning Network"
+    },
+    {
+     "group": "Community",
+     "label": "Bitcoin Optech newsletters (weekly)",
+     "url": "https://bitcoinops.org/en/newsletters/",
+     "finds": "Weekly digest of protocol and wallet development; all issues"
+    },
+    {
+     "group": "Community",
+     "label": "Delving Bitcoin (research forum)",
+     "url": "https://delvingbitcoin.org/",
+     "finds": "Developers argue out proposals and research in public threads"
+    }
+   ]
+  },
+  {
+   "n": 47,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by a computation that ran on a slide of this deck. The course page for chapter 14 has every word behind them, the stories with their sources, and the question bank to test yourself.",
+   "concept": "And where each claim gets its proof"
+  }
+ ]
+}
