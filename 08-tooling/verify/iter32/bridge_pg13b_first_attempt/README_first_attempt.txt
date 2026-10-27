@@ -1,0 +1,1 @@
+First prepare of the page 9.82.0 control (2026-10-27): its regr kind crashed because the stored-page reference was not given (STORED_PAGE), and its chk_Page kind failed because the control agent deleted its own temporary folder (/tmp/claude-0/ctl82tmp) while the page test was running. Kept as run; the control was repeated in bridge_pg13b.
