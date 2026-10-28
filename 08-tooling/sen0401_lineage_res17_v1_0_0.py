@@ -10,6 +10,14 @@ import sen0401_lineage_template_revision_v1_0_0 as T
 import sen0401_lineage_section_links_v1_0_0 as SL
 import sen0401_lineage_retro24_v1_0_0 as RT
 R = RT.R; lit = G.lit
+import glob, importlib.util, rdflib
+def _pv_newest():   # the framework left backlog_pipeline_verify v1_9_0 (it ships v1_12_0 now): use the newest one, as sen0401_lineage_queue_midterm does
+    fw = X.FW; vk = lambda q: [int(x) for x in re.findall(r"_v(\d+)_(\d+)_(\d+)\.", q)[0]]
+    spec = importlib.util.spec_from_file_location("pv", sorted(glob.glob(fw + "/03-tooling/backlog_pipeline_verify_v*.py"), key=vk)[-1])
+    m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+    m.STAGE_TYPES = m._load_stage_types(sorted(glob.glob(fw + "/01-ontologies/backlog_tbox_v*.ttl"), key=vk)[-1], table="v4")
+    return m
+X._pv = _pv_newest
 CRS = ["ex:CR3_Ch01DeckCheck", "ex:CR3_Ch05DeckCheck", "ex:CR3_DeckCh06Slide51"]; REV = "ex:Revision_Lineage3_Scope27"
 ACTIVE = ["ex:Out3_ScopeR27", "ex:Out3_GoalR27", "ex:Out3_ObjectiveR27", "ex:Out3_BacklogR29"]; NEWB = "ex:Out3_BacklogR30"; R.NEWB = NEWB
 WHEN = "Wednesday 2026-10-28, decided by the lineage's own change route (gaps found are filled through change management in the active lineage; the coordinator ordered the route for the chapter 1 and chapter 5 deck gaps and decided that the chapter 6 chart label finding is a defect fix and not an owner decision; the check is not weakened; nothing is waived)"
