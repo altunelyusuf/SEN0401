@@ -1,0 +1,231 @@
+@prefix backlog: <http://example.org/backlog#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[] a sh:ValidationReport ;
+    sh:conforms false ;
+    sh:result [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#TK_Deck01_Charts_Verify> ;
+            sh:resultMessage "Advisory: this item is Ready but its declared dependencies are not all Done, so it is not actually startable." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint _:n131478c42d67415cb022045e55a3f71fb762 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:HorizonCoherenceAdvisoryShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#TK_Deck01_Charts_Verify> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#ST_Deck06_Labels> ;
+            sh:resultMessage "Advisory: this story was groomed for a design concern, but none of the tasks planned from it performs the kind of work that concern implies. The analysis happened and nothing downstream reflects it — which is the state in which grooming becomes a ceremony rather than a step. Either a task of that type is missing, or the concern did not really apply and the grooming record overstates what was needed." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint _:n131478c42d67415cb022045e55a3f71fb750 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:GroomingToExecutionShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#ST_Deck06_Labels> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#Mission_Midterm> ;
+            sh:resultMessage "Advisory: no goal contributes to this mission, so nothing in the register works toward it and no observation can ever bear on it. A mission with no goals beneath it is a statement of intent the development is not acting on — which may be honest, and is worth seeing." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint [ a sh:SPARQLConstraint ;
+                    sh:message "Advisory: no goal contributes to this mission, so nothing in the register works toward it and no observation can ever bear on it. A mission with no goals beneath it is a statement of intent the development is not acting on — which may be honest, and is worth seeing." ;
+                    sh:prefixes [ sh:declare [ sh:namespace "http://example.org/backlog#"^^xsd:anyURI ;
+                                    sh:prefix "backlog" ] ] ;
+                    sh:select """SELECT $this WHERE {
+            FILTER NOT EXISTS { ?g backlog:contributesToMission $this }
+            FILTER NOT EXISTS { $this backlog:belongsToLineage ?lin . ?lin backlog:lineageArchived true }
+        }""" ] ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:MissionReachShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#Mission_Midterm> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#Obj3_DeckGaps> ;
+            sh:resultMessage "Advisory: every item that can move this objective's metric also pursues it, and no other work does. The objective and the work are the same set, so the measurement cannot fail while the work is done — it counts the backlog and calls the result an outcome. An objective written before the work usually measures something the work AFFECTS rather than something the work IS." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint [ a sh:SPARQLConstraint ;
+                    sh:message "Advisory: every item that can move this objective's metric also pursues it, and no other work does. The objective and the work are the same set, so the measurement cannot fail while the work is done — it counts the backlog and calls the result an outcome. An objective written before the work usually measures something the work AFFECTS rather than something the work IS." ;
+                    sh:prefixes [ sh:declare [ sh:namespace "http://example.org/backlog#"^^xsd:anyURI ;
+                                    sh:prefix "backlog" ] ] ;
+                    sh:select """SELECT $this WHERE {
+            $this backlog:metricMovableBy ?w .
+            FILTER NOT EXISTS { $this backlog:metricMovableBy ?w2 .
+                                FILTER NOT EXISTS { ?w2 backlog:pursuesObjective $this } }
+            FILTER NOT EXISTS { ?other backlog:pursuesObjective $this .
+                                FILTER NOT EXISTS { $this backlog:metricMovableBy ?other } }
+        }""" ] ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:IntentEchoShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#Obj3_DeckGaps> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#G3_DeckGaps> ;
+            sh:resultMessage "Advisory: this goal belongs to a lineage opened by succession and states no origin (hasGoalOrigin): whether it carries the predecessor's out-scoped work, repairs a post-closure finding, or covers something new. Without it the backlog and roadmap cannot be traced to why the successor exists." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint [ a sh:SPARQLConstraint ;
+                    sh:message "Advisory: this goal belongs to a lineage opened by succession and states no origin (hasGoalOrigin): whether it carries the predecessor's out-scoped work, repairs a post-closure finding, or covers something new. Without it the backlog and roadmap cannot be traced to why the successor exists." ;
+                    sh:prefixes [ sh:declare [ sh:namespace "http://example.org/backlog#"^^xsd:anyURI ;
+                                    sh:prefix "backlog" ] ] ;
+                    sh:select """SELECT $this WHERE {
+            $this backlog:belongsToLineage ?l .
+            ?sc backlog:successorLineage ?l .
+            FILTER NOT EXISTS { $this backlog:hasGoalOrigin ?o }
+            FILTER NOT EXISTS { $this backlog:isConformanceGoal true }
+        }""" ] ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:SuccessorGoalOriginAdvisoryShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#G3_DeckGaps> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#ST_Deck01_Charts> ;
+            sh:resultMessage "Advisory: this story was groomed for a design concern, but none of the tasks planned from it performs the kind of work that concern implies. The analysis happened and nothing downstream reflects it — which is the state in which grooming becomes a ceremony rather than a step. Either a task of that type is missing, or the concern did not really apply and the grooming record overstates what was needed." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint _:n131478c42d67415cb022045e55a3f71fb750 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:GroomingToExecutionShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#ST_Deck01_Charts> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#Del3_DeckGaps> ;
+            sh:resultMessage "Advisory: every work item satisfying this deliverable is still open, so the boundary is met by INTENTION rather than by delivery. Found by measurement on this register: ten of ten deliverables read satisfied while only seven were satisfied by Done work — planning three epics moved a coverage figure that should only move when something ships. Coverage counted over claimed satisfaction is the backlog measuring itself again, one level along from where that was last corrected." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint [ a sh:SPARQLConstraint ;
+                    sh:message "Advisory: every work item satisfying this deliverable is still open, so the boundary is met by INTENTION rather than by delivery. Found by measurement on this register: ten of ten deliverables read satisfied while only seven were satisfied by Done work — planning three epics moved a coverage figure that should only move when something ships. Coverage counted over claimed satisfaction is the backlog measuring itself again, one level along from where that was last corrected." ;
+                    sh:prefixes [ sh:declare [ sh:namespace "http://example.org/backlog#"^^xsd:anyURI ;
+                                    sh:prefix "backlog" ] ] ;
+                    sh:select """SELECT $this WHERE {
+            ?w backlog:satisfiesDeliverable $this .
+            FILTER NOT EXISTS { ?w2 backlog:satisfiesDeliverable $this ; backlog:hasState backlog:Done }
+        }""" ] ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:DeliverableIntentionShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#Del3_DeckGaps> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#ST_Deck05_Examples> ;
+            sh:resultMessage "Advisory: this story was groomed for a design concern, but none of the tasks planned from it performs the kind of work that concern implies. The analysis happened and nothing downstream reflects it — which is the state in which grooming becomes a ceremony rather than a step. Either a task of that type is missing, or the concern did not really apply and the grooming record overstates what was needed." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint _:n131478c42d67415cb022045e55a3f71fb750 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:GroomingToExecutionShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#ST_Deck05_Examples> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#Mission_Midterm> ;
+            sh:resultMessage "Advisory: this mission has no goal and no Goal-stage output exists, so its lineage is mid-construction. That is legitimate under the staged ceremony and it is reported, because a lineage abandoned after the Mission stage looks exactly the same as one still being built — the difference is whether the next commit comes." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint [ a sh:SPARQLConstraint ;
+                    sh:message "Advisory: this mission has no goal and no Goal-stage output exists, so its lineage is mid-construction. That is legitimate under the staged ceremony and it is reported, because a lineage abandoned after the Mission stage looks exactly the same as one still being built — the difference is whether the next commit comes." ;
+                    sh:prefixes [ sh:declare [ sh:namespace "http://example.org/backlog#"^^xsd:anyURI ;
+                                    sh:prefix "backlog" ] ] ;
+                    sh:select """SELECT $this WHERE {
+            FILTER NOT EXISTS { ?g backlog:contributesToMission $this }
+            FILTER NOT EXISTS { ?s backlog:supersedesMission $this }
+            FILTER NOT EXISTS { $this backlog:belongsToLineage ?lin . ?lin backlog:lineageArchived true }
+        }""" ] ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:UnfinishedLineageShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#Mission_Midterm> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#ST_Deck01_Charts> ;
+            sh:resultMessage "Advisory: every acceptance criterion on this user-facing story reads as an enumeration of files, fields, tables or endpoints. That describes the change, not the behaviour: could someone who never sees the diff tell from this text whether the item works — what a user does, what they then see, and what happens when it goes wrong?" ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint _:n131478c42d67415cb022045e55a3f71fb101 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:ArtifactEnumerationAdvisoryShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#ST_Deck01_Charts> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#Iter_43> ;
+            sh:resultMessage "Advisory: this iteration declares no capacity, so nothing can check that it was planned to finish what it committed to. Capacity is the only number against which over-commitment is visible before the iteration closes — afterwards it is a recorded miss." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint [ a sh:SPARQLConstraint ;
+                    sh:message "Advisory: this iteration declares no capacity, so nothing can check that it was planned to finish what it committed to. Capacity is the only number against which over-commitment is visible before the iteration closes — afterwards it is a recorded miss." ;
+                    sh:prefixes [ sh:declare [ sh:namespace "http://example.org/backlog#"^^xsd:anyURI ;
+                                    sh:prefix "backlog" ] ] ;
+                    sh:select "SELECT $this WHERE { FILTER NOT EXISTS { $this backlog:hasCapacity ?c } }" ] ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:CapacityDeclaredShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#Iter_43> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#TK_Deck05_Examples_Verify> ;
+            sh:resultMessage "Advisory: this item is Ready but its declared dependencies are not all Done, so it is not actually startable." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint _:n131478c42d67415cb022045e55a3f71fb762 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:HorizonCoherenceAdvisoryShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#TK_Deck05_Examples_Verify> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#ST_Deck06_Labels> ;
+            sh:resultMessage "Advisory: every acceptance criterion on this user-facing story reads as an enumeration of files, fields, tables or endpoints. That describes the change, not the behaviour: could someone who never sees the diff tell from this text whether the item works — what a user does, what they then see, and what happens when it goes wrong?" ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint _:n131478c42d67415cb022045e55a3f71fb101 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:ArtifactEnumerationAdvisoryShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#ST_Deck06_Labels> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#TK_Deck06_Labels_Verify> ;
+            sh:resultMessage "Advisory: this item is Ready but its declared dependencies are not all Done, so it is not actually startable." ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint _:n131478c42d67415cb022045e55a3f71fb762 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:HorizonCoherenceAdvisoryShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#TK_Deck06_Labels_Verify> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#ST_Deck05_Examples> ;
+            sh:resultMessage "Advisory: every acceptance criterion on this user-facing story reads as an enumeration of files, fields, tables or endpoints. That describes the change, not the behaviour: could someone who never sees the diff tell from this text whether the item works — what a user does, what they then see, and what happens when it goes wrong?" ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraint _:n131478c42d67415cb022045e55a3f71fb101 ;
+            sh:sourceConstraintComponent sh:SPARQLConstraintComponent ;
+            sh:sourceShape backlog:ArtifactEnumerationAdvisoryShape ;
+            sh:value <http://example.org/sen0401-slides-lineage#ST_Deck05_Examples> ],
+        [ a sh:ValidationResult ;
+            sh:focusNode <http://example.org/sen0401-slides-lineage#ObsR34_DeckGaps_Baseline> ;
+            sh:resultMessage "Advisory (G137): observedDuringCeremony names the sprint review the observation was taken in, as a link. A literal such as true says nothing a check can follow; name the ceremony or leave the property out." ;
+            sh:resultPath backlog:observedDuringCeremony ;
+            sh:resultSeverity sh:Warning ;
+            sh:sourceConstraintComponent sh:NodeKindConstraintComponent ;
+            sh:sourceShape [ sh:message "Advisory (G137): observedDuringCeremony names the sprint review the observation was taken in, as a link. A literal such as true says nothing a check can follow; name the ceremony or leave the property out." ;
+                    sh:nodeKind sh:IRI ;
+                    sh:path backlog:observedDuringCeremony ;
+                    sh:severity sh:Warning ] ;
+            sh:value true ] .
+
+_:N212574e2301f4e38b7dd9903c34ae3c7 sh:declare [ sh:namespace "http://example.org/backlog#"^^xsd:anyURI ;
+            sh:prefix "backlog" ] .
+
+_:N2d655eda86034941afc8cbcea26678b3 sh:namespace "http://example.org/backlog#"^^xsd:anyURI ;
+    sh:prefix "backlog" .
+
+_:N6e57a74e7a1c47f0ad14ef8a65035880 sh:namespace "http://example.org/backlog#"^^xsd:anyURI ;
+    sh:prefix "backlog" .
+
+_:N84b36f1d568f49efb850bb3b52866bd9 sh:declare _:N2d655eda86034941afc8cbcea26678b3 .
+
+_:N8c0b9c19dc66409c801be3130f62374b sh:declare _:N6e57a74e7a1c47f0ad14ef8a65035880 .
+
+_:n131478c42d67415cb022045e55a3f71fb101 a sh:SPARQLConstraint ;
+    sh:message "Advisory: every acceptance criterion on this user-facing story reads as an enumeration of files, fields, tables or endpoints. That describes the change, not the behaviour: could someone who never sees the diff tell from this text whether the item works — what a user does, what they then see, and what happens when it goes wrong?" ;
+    sh:prefixes _:N212574e2301f4e38b7dd9903c34ae3c7 ;
+    sh:select """SELECT $this WHERE {
+            $this backlog:hasAcceptanceCriterion ?any .
+            FILTER NOT EXISTS {
+                $this backlog:hasAcceptanceCriterion ?ac .
+                ?ac backlog:hasGherkinText ?t .
+                FILTER (!REGEX(?t, "(\\\\.ttl|\\\\.py|\\\\.js|\\\\.ts|\\\\.sql|\\\\bfile|\\\\bfield|\\\\bcolumn|\\\\btable|\\\\bschema|\\\\bendpoint|\\\\bmodule)", "i"))
+            }
+        }""" .
+
+_:n131478c42d67415cb022045e55a3f71fb750 a sh:SPARQLConstraint ;
+    sh:message "Advisory: this story was groomed for a design concern, but none of the tasks planned from it performs the kind of work that concern implies. The analysis happened and nothing downstream reflects it — which is the state in which grooming becomes a ceremony rather than a step. Either a task of that type is missing, or the concern did not really apply and the grooming record overstates what was needed." ;
+    sh:prefixes _:N8c0b9c19dc66409c801be3130f62374b ;
+    sh:select """SELECT $this WHERE {
+            $this backlog:hasApplicableConcern ?c .
+            ?c backlog:coversTaskType ?tt .
+            FILTER EXISTS { ?pe backlog:plansItem $this ; backlog:producesTask ?any }
+            FILTER NOT EXISTS {
+                ?pe2 backlog:plansItem $this ; backlog:producesTask ?task .
+                ?task backlog:hasTaskType ?tt2 .
+                ?c backlog:coversTaskType ?tt2 .
+            }
+        }""" .
+
+_:n131478c42d67415cb022045e55a3f71fb762 a sh:SPARQLConstraint ;
+    sh:message "Advisory: this item is Ready but its declared dependencies are not all Done, so it is not actually startable." ;
+    sh:prefixes _:N84b36f1d568f49efb850bb3b52866bd9 ;
+    sh:select """SELECT $this WHERE {
+            $this backlog:hasState backlog:Ready ; backlog:dependsOn ?d .
+            ?d backlog:hasState ?ds .
+            FILTER (?ds != backlog:Done)
+        }""" .
+
