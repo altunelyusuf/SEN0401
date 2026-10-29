@@ -1,0 +1,46 @@
+- """sen0401_deck_standard_check v1.1.0 (python-pptx 1.0.2) - the deck standard of the SEN0401 lecture decks, D1 to D12, measured.
++ """sen0401_deck_standard_check v1.2.0 (python-pptx 1.0.2, pyshacl) - the deck standard of the SEN0401 lecture decks, D1 to D12, measured.
++ v1.2.0 changes ONLY element D9, by the owner's ruling of 2026-10-29: one dark slide, the LAST (closing) slide, is allowed among light slides; D9 builds deck facts and validates them with pyshacl again
++ 06-quality/sen0401_deck_standard_shapes_v1_0_0.ttl. Every other element, threshold and printed line is as in v1.1.0 (which stays unedited). No retroactive enforcement.
+- Usage:   sen0401_deck_standard_check_v1_1_0.py NN [deck.pptx]      NN = chapter number (05, 06 ...). Without deck.pptx the newest .pptx of 03-materials/chNN is read.
++ Usage:   sen0401_deck_standard_check_v1_2_0.py NN [deck.pptx]      NN = chapter number (05, 06 ...). Without deck.pptx the newest .pptx of 03-materials/chNN is read.
+-   D9 measure   : number of dark and of light slides (PASS when all slides are on one side) and the number of dark/light switches along the slide order.
++   D9 measure   : number of dark and of light slides and the number of dark/light switches along the slide order; PASS when the deck facts conform to the shapes file (every slide light, except that the
+- __version__ = "1.1.0"
++ __version__ = "1.2.0"
++ 
++ SHAPES_REL = os.path.join("06-quality", "sen0401_deck_standard_shapes_v1_0_0.ttl")
++ def d9_shacl(dk):
++     """Deck facts from the slides' schemes, validated against the shapes file with pyshacl. Returns (conforms, shapes version, messages)."""
++     import rdflib, pyshacl
++     path = os.path.join(ROOT, SHAPES_REL)
++     sg = rdflib.Graph(); sg.parse(path, format="turtle")
++     OWL_V = rdflib.URIRef("http://www.w3.org/2002/07/owl#versionInfo")
++     sver = next(iter(sg.objects(rdflib.URIRef("http://example.org/sen0401/deckstd"), OWL_V)), None)
++     DS = rdflib.Namespace("http://example.org/sen0401/deckstd#")
++     g = rdflib.Graph()
++     deck = DS["deck"]
++     g.add((deck, rdflib.RDF.type, DS.Deck)); g.add((deck, DS.slideCount, rdflib.Literal(len(dk))))
++     for k, d in enumerate(dk, 1):
++         s = DS["slide%d" % k]
++         g.add((s, rdflib.RDF.type, DS.Slide)); g.add((deck, DS.hasSlide, s)); g.add((s, DS.inDeck, deck))
++         g.add((s, DS.slidePosition, rdflib.Literal(k))); g.add((s, DS.backgroundScheme, DS.Dark if d == "D" else DS.Light))
++     conforms, rg, _ = pyshacl.validate(g, shacl_graph=sg, inference="none", advanced=True)
++     msgs = sorted({str(m) for m in rg.objects(None, rdflib.URIRef("http://www.w3.org/ns/shacl#resultMessage"))})
++     return bool(conforms), str(sver), msgs
++ 
++ 
+-         print("usage: sen0401_deck_standard_check_v1_1_0.py NN [deck.pptx]"); return 2
++         print("usage: sen0401_deck_standard_check_v1_2_0.py NN [deck.pptx]"); return 2
+-         add("D9", "one background scheme", "PASS" if len(set(dk)) == 1 else "FAIL", "%d dark, %d light slides, %d switches; colours %s" % (dk.count("D"), dk.count("L"), sw, sorted({c for _, c in cols}
++         meas = "%d dark, %d light slides, %d switches; colours %s" % (dk.count("D"), dk.count("L"), sw, sorted({c for _, c in cols}))
++         dark_at = [i for (i, _), d in zip(cols, dk) if d == "D"]
++         try:
++             conforms, sver, msgs = d9_shacl(dk)
++             add("D9", "one background scheme", "PASS" if conforms else "FAIL",
++                 meas + "; dark slide(s): %s; shapes v%s%s" % (dark_at or "none", sver, "" if conforms else "; violations: " + " | ".join(msgs)))
++         except Exception as e:
++             add("D9", "one background scheme", "CANNOT_RUN", "shapes validation failed: %s" % e)
+changed lines 43; outside the D9 block: 9; of them not version/import/documentation: []
+diff
+RESULT PASS
