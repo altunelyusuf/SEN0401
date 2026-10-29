@@ -1,0 +1,76 @@
+@prefix en:   <http://example.org/sen0401/engine#> .
+@prefix pr:   <http://example.org/sen0401/paperrules#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# SEN0401 exam engine rules EN01-EN10 as SHACL, version 1.0.0. They run beside the printed-paper rules R01-R22 (never replacing or loosening them).
+# Every message starts with the rule id. The conventions of the owner (even letters, Bloom majority, versions, light theme) are R01, R03, R06, R07 of the paper rules.
+# EN01 chapter weights   EN02 synthesis minimum   EN03 indirect items   EN04 higher-order majority at the declared reading   EN05 two exams, disjoint items
+# EN06 unique item keys  EN07 quota sum           EN08 terms found in the corpus   EN09 exam pair complete   EN10 kinds known
+
+<http://example.org/sen0401/engine/shapes> a owl:Ontology ; rdfs:label "SEN0401 exam engine rules"@en ; owl:versionInfo "1.0.0" ;
+  sh:declare [ sh:prefix "pr" ; sh:namespace "http://example.org/sen0401/paperrules#"^^xsd:anyURI ] ,
+             [ sh:prefix "en" ; sh:namespace "http://example.org/sen0401/engine#"^^xsd:anyURI ] ,
+             [ sh:prefix "xsd" ; sh:namespace "http://www.w3.org/2001/XMLSchema#"^^xsd:anyURI ] .
+
+en:EnginePaperShape a sh:NodeShape ; sh:targetClass pr:Paper ;
+  sh:property [ sh:path en:higherFrom ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( 3 4 ) ; sh:message "EN04 the paper declares which Bloom level counts as higher-order: 3 (Apply and up) or 4 (Analyze and up)" ] ;
+  sh:property [ sh:path en:synthesisMin ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 0 ; sh:message "EN02 the paper declares its minimum number of synthesis items" ] ;
+  sh:property [ sh:path en:indirectEnabled ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:boolean ; sh:message "EN03 the paper states whether indirect items are enabled" ] ;
+  sh:property [ sh:path en:chapterQuota ; sh:minCount 1 ; sh:message "EN01 the paper declares a quota of items for each chapter of its chapter list" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN01 a chapter of the chapter list has no quota (chapter weights are not declared)" ;
+    sh:select """SELECT $this WHERE { $this pr:chapterList ?c . FILTER NOT EXISTS { $this en:chapterQuota ?q . ?q en:quotaChapter ?c } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN01 the number of items of a chapter (by primary chapter) differs from the quota declared for it" ;
+    sh:select """SELECT $this WHERE { $this en:chapterQuota ?q . ?q en:quotaChapter ?c ; en:quotaItems ?n .
+        OPTIONAL { SELECT $this ?c (COUNT(?i) AS ?have) WHERE { $this pr:hasItem ?i . ?i en:primaryChapter ?c } GROUP BY $this ?c }
+        FILTER(COALESCE(?have, 0) != ?n) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN07 the quotas do not add up to the number of items of the paper" ;
+    sh:select """SELECT $this WHERE { { SELECT $this (SUM(?n) AS ?qs) WHERE { $this en:chapterQuota ?q . ?q en:quotaItems ?n } GROUP BY $this }
+        { SELECT $this (COUNT(?i) AS ?all) WHERE { $this pr:hasItem ?i } GROUP BY $this } FILTER(?qs != ?all) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN02 the paper has fewer synthesis items than the minimum it declares" ;
+    sh:select """SELECT $this WHERE { $this en:synthesisMin ?m . OPTIONAL { SELECT $this (COUNT(?i) AS ?c) WHERE { $this pr:hasItem ?i . ?i pr:synthesis true } GROUP BY $this } FILTER(COALESCE(?c, 0) < ?m) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN04 no more than half of the items are at or above the Bloom level the paper declares as higher-order" ;
+    sh:select """SELECT $this WHERE { $this en:higherFrom ?h . { SELECT $this (COUNT(?i) AS ?all) WHERE { $this pr:hasItem ?i . ?i pr:bloomLevel ?b } GROUP BY $this }
+        OPTIONAL { SELECT $this ?h (COUNT(?j) AS ?hi) WHERE { $this en:higherFrom ?h ; pr:hasItem ?j . ?j pr:bloomLevel ?bb . FILTER(?bb >= ?h) } GROUP BY $this ?h }
+        FILTER(COALESCE(?hi, 0) * 2 <= ?all) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN06 two different items of one paper have the same item key" ;
+    sh:select """SELECT $this WHERE { $this pr:hasItem ?a, ?b . FILTER(?a != ?b) ?a pr:itemKey ?k . ?b pr:itemKey ?k }""" ] .
+
+en:EngineItemShape a sh:NodeShape ; sh:targetClass pr:Item ;
+  sh:property [ sh:path en:primaryChapter ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:message "EN01 every item names exactly one primary chapter (the chapter its quota is counted in)" ] ;
+  sh:property [ sh:path en:kind ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( en:Direct en:Synthesis en:Indirect ) ; sh:message "EN10 every item has one kind: direct, synthesis or indirect" ] ;
+  sh:property [ sh:path en:unfoundTerm ; sh:maxCount 0 ; sh:message "EN08 the item uses a term that is not found in the course corpus (banks, decks and notes, critical points)" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN10 the primary chapter of an item is not one of the chapters the item names" ;
+    sh:select """SELECT $this WHERE { $this en:primaryChapter ?c . FILTER NOT EXISTS { $this pr:chapter ?c } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN10 an item of kind synthesis must carry the synthesis flag, and the flag only belongs to that kind" ;
+    sh:select """SELECT $this WHERE { { $this en:kind en:Synthesis . FILTER NOT EXISTS { $this pr:synthesis true } } UNION { $this pr:synthesis true . FILTER NOT EXISTS { $this en:kind en:Synthesis } } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN03 an indirect item is used on a paper that does not enable indirect items (the owner has not defined the term)" ;
+    sh:select """SELECT $this WHERE { $this en:kind en:Indirect . ?p pr:hasItem $this . FILTER NOT EXISTS { ?p en:indirectEnabled true } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN03 an indirect item does not state the form of its indirection (consequence, exception, reason or another stated form)" ;
+    sh:select """SELECT $this WHERE { $this en:kind en:Indirect . FILTER NOT EXISTS { $this en:indirectForm ?f . FILTER(STRLEN(STR(?f)) > 0) } }""" ] .
+
+en:ExamPairShape a sh:NodeShape ; sh:targetClass en:ExamPair ;
+  sh:property [ sh:path en:midterm ; sh:minCount 1 ; sh:maxCount 1 ; sh:class pr:Paper ; sh:message "EN09 an exam pair has exactly one midterm paper" ] ;
+  sh:property [ sh:path en:makeUp ; sh:minCount 1 ; sh:maxCount 1 ; sh:class pr:Paper ; sh:message "EN09 an exam pair has exactly one make-up paper" ] ;
+  sh:property [ sh:path en:repeatAllowed ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:boolean ; sh:message "EN05 the pair states whether the make-up may repeat midterm items" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN09 the midterm of the pair is not of kind midterm, or the make-up is not of kind make-up" ;
+    sh:select """SELECT $this WHERE { { $this en:midterm ?m . FILTER NOT EXISTS { ?m pr:paperKind pr:Midterm } } UNION { $this en:makeUp ?k . FILTER NOT EXISTS { ?k pr:paperKind pr:MakeUp } } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN05 the make-up repeats an item of the midterm although the pair does not allow repeats" ;
+    sh:select """SELECT $this WHERE { $this en:midterm ?m ; en:makeUp ?k ; en:repeatAllowed false . ?m pr:hasItem ?a . ?k pr:hasItem ?b . ?a pr:itemKey ?x . ?b pr:itemKey ?x }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes> ;
+    sh:message "EN09 the make-up and the midterm of the pair are not linked as companions" ;
+    sh:select """SELECT $this WHERE { $this en:midterm ?m ; en:makeUp ?k . FILTER NOT EXISTS { ?k pr:companion ?m } }""" ] .
