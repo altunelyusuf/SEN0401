@@ -1,0 +1,6 @@
+/* FIXTURE (not part of any delivered page): after every pointer release on the ERD, move another entity, drawn later, over the centre of the entity that is the first end of the first relationship (the one the predecessor test taps) */
+(function(){var host=document.getElementById('oerd');if(!host)return;
+function cover(){try{var r=document.querySelector('#oerd .oe-r');if(!r||typeof erdBoxes!=='function')return;var els=[].slice.call(document.querySelectorAll('#oerd .oe-e'));var keys=els.map(function(e){return e.dataset.ent});var k0=r.dataset.a,i0=keys.indexOf(k0);if(i0<0)return;var B=erdBoxes();var best=null;for(var i=i0+1;i<keys.length;i++){var b=B[keys[i]];if(b&&b.h<B[k0].h&&(!best||b.h<B[best].h))best=keys[i]}
+if(!best){console.log('FIXTURE no later entity with a lower box');return}
+var c={x:B[k0].x+B[k0].w/2,y:B[k0].y+B[k0].h/2};var nx=Math.round(c.x-B[best].w/2),ny=Math.round(c.y-B[best].h/2);OE_ENT[best].x=nx;OE_ENT[best].y=ny;var P=ERD_LAY.pos[ERD.mode]=ERD_LAY.pos[ERD.mode]||{};P[best]=Object.assign({},P[best]||{},{x:nx,y:ny});erdRender();console.log('FIXTURE moved '+best+' over the centre of '+k0)}catch(e){console.log('FIXTURE error '+e)}}
+host.addEventListener('pointerup',function(){setTimeout(cover,60)},false)})();
