@@ -1,0 +1,41 @@
+@prefix am:   <http://example.org/sen0401/answermethods#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# Methods that reduce mistakes in giving answers on the SEN0401 printed paper, version 1.0.0: each method names the mistake it addresses, the reason, its basis and how it is measured.
+# Basis: FACT = arithmetic or exhaustive test; SYNTHETIC = measured on synthetic filled sheets made by a stress model of the author (not human behaviour); PRACTICE = accepted exam-form practice; ASSUME = reasoned, not measured, owner to confirm.
+# Answer modes (the owner's question Q8): GridOnCover = the answers are copied to a sheet; CircleOnItem = the letter is circled on the item and no sheet exists.
+
+<http://example.org/sen0401/answermethods> a owl:Ontology ; rdfs:label "SEN0401 methods against mistakes in giving answers"@en ; owl:versionInfo "1.0.0" .
+
+am:Mistake a owl:Class ; rdfs:label "Mistake in giving an answer"@en .
+am:Method a owl:Class ; rdfs:label "Method against a mistake"@en .
+am:E1 a am:Mistake ; rdfs:label "Answer written in a place that belongs to another answer or to none"@en .
+am:E2 a am:Mistake ; rdfs:label "Right answer in the wrong row (misread row)"@en .
+am:E3 a am:Mistake ; rdfs:label "Skipped item whose row was used, so every later answer sits one row off"@en .
+am:E4 a am:Mistake ; rdfs:label "Changed answer that leaves two marks"@en .
+am:E5 a am:Mistake ; rdfs:label "Digit slip or swapped digits in a code or number"@en .
+am:E6 a am:Mistake ; rdfs:label "Faint or half-filled mark that cannot be read for sure"@en .
+am:E7 a am:Mistake ; rdfs:label "Skewed or shifted scan read at the wrong position"@en .
+am:E8 a am:Mistake ; rdfs:label "Copying error between the item and the sheet"@en .
+am:E9 a am:Mistake ; rdfs:label "Letter and digit confused (B and 8, D and 0)"@en .
+
+am:AM1 a am:Method ; rdfs:label "One row of empty bubbles for every answer"@en ; am:addresses am:E1 ; am:basis "PRACTICE" ; am:appliesIn "GridOnCover" ;
+  am:reason "A fixed place per answer leaves no choice of where to write; each answer kind has its own bubble shape (four letters, seven letters, three numbers, ten digits, digit boxes), so a wrong kind of answer cannot be entered."@en .
+am:AM2 a am:Method ; rdfs:label "Row guard: the item number printed at both ends of the row"@en ; am:addresses am:E2 ; am:basis "PRACTICE" ; am:appliesIn "GridOnCover" ;
+  am:reason "A number on both sides lets the eye follow a row across the sheet; rows are grouped in blocks of five with a rule between blocks, so the eye keeps its place."@en .
+am:AM3 a am:Method ; rdfs:label "Block closure: tick every number left blank; the reader compares the ticks with the blank rows"@en ; am:addresses am:E3 ; am:basis "SYNTHETIC" ; am:appliesIn "GridOnCover" ; am:measuredBy "shift_in_block, shift_run, blank_forgot in the measurement" ;
+  am:reason "A repeated statement of the same fact: the student states which items were skipped, the sheet shows which rows are empty; a shift makes the two disagree, and the blocks between the disagreement and the landing blank are held for a person."@en .
+am:AM4 a am:Method ; rdfs:label "Strike rule: an X through a bubble voids it; two filled bubbles count as no answer"@en ; am:addresses am:E4 ; am:basis "SYNTHETIC" ; am:appliesIn "GridOnCover" ; am:measuredBy "changed_struck and double in the measurement" ;
+  am:reason "Gives a student a printed way to change an answer without erasing, and gives the reader one unambiguous reading: the last unstruck filled bubble."@en .
+am:AM5 a am:Method ; rdfs:label "Check digit (Damm) on the bank code of every fill-in blank"@en ; am:addresses am:E5 ; am:basis "FACT" ; am:appliesIn "GridOnCover and CircleOnItem" ; am:measuredBy "exhaustive test of every single-digit slip and adjacent swap of every code of 2 to 5 digits"@en ;
+  am:reason "The code is the entry number plus one check digit; a slip or an adjacent swap always produces a code that fails the check, so it is detected instead of being read as another valid answer. The check digit is found by the reader or the person keying the paper, not computed by the student."@en .
+am:AM6 a am:Method ; rdfs:label "Three-state reading: filled, faint, empty; a faint or double row is held for a person"@en ; am:addresses am:E6 ; am:basis "SYNTHETIC" ; am:appliesIn "GridOnCover" ; am:measuredBy "faint, light, double in the measurement" ;
+  am:reason "The reader never guesses: a mark that is neither clearly filled nor clearly empty is not turned into an answer; it is held, and a person looks at the original."@en .
+am:AM7 a am:Method ; rdfs:label "Four corner marks so that a skewed or shifted scan is read at the right place"@en ; am:addresses am:E7 ; am:basis "SYNTHETIC" ; am:appliesIn "GridOnCover" ; am:measuredBy "registration failures in the measurement (rotation and shift of the simulated scan)" ;
+  am:reason "Corner marks are black lines (print-safe); the reader fits the scan to the known layout before reading any bubble."@en .
+am:AM8 a am:Method ; rdfs:label "Circle the letter on the item: no copying step and no sheet"@en ; am:addresses am:E8, am:E3, am:E2, am:E1 ; am:basis "ASSUME" ; am:appliesIn "CircleOnItem" ; am:measuredBy "page cost only (pages with and without a sheet); the effect on mistakes is reasoned, not measured"@en ;
+  am:reason "Removes the copy step altogether, so the mistakes of the copy step cannot arise; this is the recommendation of the paper rules (M5). Its price is a harder reading of the marks, because circles on a dense page are less regular than bubbles. The owner decides (Q8)."@en .
+am:AM9 a am:Method ; rdfs:label "Separate symbol sets: letters A to D for choices, digits for codes and numbers"@en ; am:addresses am:E9 ; am:basis "PRACTICE" ; am:appliesIn "GridOnCover and CircleOnItem" ;
+  am:reason "Keeps B, D, O, I away from the digits 8, 0, 1; matches rule R14 of the printed-paper rules (bank entries are numbered with digits)."@en .

@@ -1,0 +1,66 @@
+@prefix as:   <http://example.org/sen0401/answersheet#> .
+@prefix pr:   <http://example.org/sen0401/paperrules#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# SEN0401 answer-sheet rules as SHACL, version 1.0.0. Every message starts with the rule id (S01 ...). They describe a sheet; the printed-paper rules R01 to R22 are checked separately on the paper the sheet belongs to.
+<http://example.org/sen0401/answersheet/shapes> a owl:Ontology ; rdfs:label "SEN0401 answer sheet rules"@en ; owl:versionInfo "1.0.0" ;
+  sh:declare [ sh:prefix "as" ; sh:namespace "http://example.org/sen0401/answersheet#"^^xsd:anyURI ] .
+
+as:SheetShape a sh:NodeShape ; sh:targetClass as:Sheet ;
+  sh:property [ sh:path as:paperKind ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "Midterm" "MakeUp" ) ; sh:message "S09 the sheet names its paper kind" ] ;
+  sh:property [ sh:path as:formCode ; sh:minCount 1 ; sh:maxCount 1 ; sh:pattern "^[0-9]{5}$" ; sh:message "S09 the sheet carries a five-digit form code that pairs it with its paper" ] ;
+  sh:property [ sh:path as:formCodeValid ; sh:minCount 1 ; sh:hasValue true ; sh:message "S05 the form code must end in a valid check digit" ] ;
+  sh:property [ sh:path as:hasUnit ; sh:minCount 1 ; sh:class as:Unit ; sh:message "S01 a sheet has units" ] ;
+  sh:property [ sh:path as:hasBlock ; sh:minCount 1 ; sh:class as:Block ; sh:message "S03 a sheet has blocks" ] ;
+  sh:property [ sh:path as:fontPt ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 10 ; sh:message "S08 text on the sheet must be 10 point or larger" ] ;
+  sh:property [ sh:path as:fillColourUsed ; sh:minCount 1 ; sh:hasValue false ; sh:message "S08 the sheet must be black line art on white (no fill colour or shading)" ] ;
+  sh:property [ sh:path as:rasterImages ; sh:minCount 1 ; sh:hasValue 0 ; sh:message "S08 the sheet holds no raster image" ] ;
+  sh:property [ sh:path as:containsPersonalData ; sh:minCount 1 ; sh:hasValue false ; sh:message "S08 the sheet holds no student personal data" ] ;
+  sh:property [ sh:path as:pageCount ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:message "S08 the page count of the sheet is required" ] ;
+  sh:property [ sh:path as:thresholdFilled ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:message "S10 the reading threshold for a filled bubble is declared" ] ;
+  sh:property [ sh:path as:thresholdFaint ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:message "S10 the reading threshold for a faint mark is declared" ] ;
+  sh:property [ sh:path as:hasRule ; sh:qualifiedValueShape [ sh:property [ sh:path as:ruleKind ; sh:hasValue "StrikeVoids" ] ] ; sh:qualifiedMinCount 1 ; sh:message "S06 the printed rules must state that an X through a bubble voids it" ] ;
+  sh:property [ sh:path as:hasRule ; sh:qualifiedValueShape [ sh:property [ sh:path as:ruleKind ; sh:hasValue "DoubleIsNoAnswer" ] ] ; sh:qualifiedMinCount 1 ; sh:message "S06 the printed rules must state that two filled bubbles in a row count as no answer" ] ;
+  sh:property [ sh:path as:hasRule ; sh:qualifiedValueShape [ sh:property [ sh:path as:ruleKind ; sh:hasValue "DeclareBlank" ] ] ; sh:qualifiedMinCount 1 ; sh:message "S06 the printed rules must state that every blank number is declared in the block closure" ] ;
+  sh:property [ sh:path as:fiducialCount ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:message "S07 the number of corner marks is declared" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/answersheet/shapes> ;
+    sh:message "S07 every page of the sheet needs four corner marks (the reader registers a skewed scan on them)" ;
+    sh:select """SELECT $this WHERE { $this as:pageCount ?p ; as:fiducialCount ?f . FILTER(?f != 4 * ?p) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/answersheet/shapes> ;
+    sh:message "S10 the filled threshold must be higher than the faint threshold" ;
+    sh:select """SELECT $this WHERE { $this as:thresholdFilled ?a ; as:thresholdFaint ?b . FILTER(?a <= ?b) }""" ] .
+
+as:UnitShape a sh:NodeShape ; sh:targetClass as:Unit ;
+  sh:property [ sh:path as:label ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "S02 a unit has its printed number" ] ;
+  sh:property [ sh:path as:kind ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "choice" "match" "order" "bank" "human" ) ; sh:message "S01 a unit has one registered kind" ] ;
+  sh:property [ sh:path as:placeCount ; sh:minCount 1 ; sh:maxCount 1 ; sh:hasValue 1 ; sh:message "S01 one place per answer: a unit has exactly one answer place" ] ;
+  sh:property [ sh:path as:numberAtBothEnds ; sh:minCount 1 ; sh:hasValue true ; sh:message "S02 the number of the unit is printed at both ends of its row (row guard)" ] ;
+  sh:property [ sh:path as:inBlock ; sh:minCount 1 ; sh:maxCount 1 ; sh:class as:Block ; sh:message "S03 every unit belongs to exactly one block" ] ;
+  sh:property [ sh:path as:hasClosureBubble ; sh:minCount 1 ; sh:maxCount 1 ; sh:hasValue true ; sh:message "S03 every unit has a closure bubble in its block (left-blank declaration)" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/answersheet/shapes> ;
+    sh:message "S05 a fill-in code unit must name its check-digit scheme and its code is read as digits only" ;
+    sh:select """SELECT $this WHERE { $this as:kind "bank" . FILTER NOT EXISTS { $this as:checkScheme "Damm" } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/answersheet/shapes> ;
+    sh:message "S01 a bubble row offers at least two and at most ten choices" ;
+    sh:select """SELECT $this WHERE { $this as:kind ?k ; as:choicesPerRow ?n . FILTER(?k != "human" && (?n < 2 || ?n > 10)) }""" ] .
+
+as:BlockShape a sh:NodeShape ; sh:targetClass as:Block ;
+  sh:property [ sh:path as:closureBubbles ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:message "S03 a block declares its number of closure bubbles" ] ;
+  sh:property [ sh:path as:unitCount ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:message "S03 a block declares its number of units" ] ;
+  sh:property [ sh:path as:kind ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "S04 a block has a kind" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/answersheet/shapes> ;
+    sh:message "S03 a block must have one closure bubble for each of its units" ;
+    sh:select """SELECT $this WHERE { $this as:closureBubbles ?c ; as:unitCount ?u . FILTER(?c != ?u) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/answersheet/shapes> ;
+    sh:message "S04 a block holds at most five units (three for code rows, four for written rows) so that a block is checked at a glance" ;
+    sh:select """SELECT $this WHERE { $this as:kind ?k ; as:unitCount ?u . FILTER((?k = "bank" && ?u > 3) || (?k = "human" && ?u > 4) || (?k NOT IN ("bank","human") && ?u > 5)) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/answersheet/shapes> ;
+    sh:message "S04 the units of a block are of one kind (the shape of the answer place tells the student the kind)" ;
+    sh:select """SELECT $this WHERE { $this as:kind ?k . ?u as:inBlock $this ; as:kind ?k2 . FILTER(?k != ?k2) }""" ] .
+
+as:CodeShape a sh:NodeShape ; sh:targetClass as:BankCode ;
+  sh:property [ sh:path as:digits ; sh:minCount 1 ; sh:maxCount 1 ; sh:pattern "^[0-9]{2,6}$" ; sh:message "S05 a bank code is two to six digits (serial digits plus the check digit)" ] ;
+  sh:property [ sh:path as:checkValid ; sh:minCount 1 ; sh:hasValue true ; sh:message "S05 every bank code must carry a valid check digit" ] .
