@@ -14,14 +14,15 @@ prelude = "from sen0401_ch06_tx_lib_v1_0_0 import *\n" + man["setup"]["code"]
 pr = Presentation(sys.argv[1]); bad = 0; n_ex = 0; n_rows = 0
 for i, s in enumerate(pr.slides, 1):
     code = res = None
-    frames = sorted([sh for sh in s.shapes if re.fullmatch(r"code \d+", sh.name)], key=lambda sh: sh.top)
-    rrows = sorted([sh for sh in s.shapes if re.fullmatch(r"result \d+", sh.name) and sh.has_text_frame and "  →  " in sh.text_frame.text], key=lambda sh: sh.top)
-    if not frames: continue
-    N = int(frames[0].name.split()[1]); n_ex += 1
-    lines = ["".join(r.text for r in p.runs) for fr in frames for p in fr.text_frame.paragraphs]
+    for sh in s.shapes:
+        if re.fullmatch(r"code \d+", sh.name): code = sh
+        if re.fullmatch(r"result \d+", sh.name): res = sh
+    if not code: continue
+    N = int(code.name.split()[1]); n_ex += 1
+    lines = [ "".join(r.text for r in p.runs) for p in code.text_frame.paragraphs]
     src = "\n".join(lines)
     ast.parse(src)
-    paras = [sh.text_frame.text for sh in rrows]
+    paras = ["".join(r.text for r in p.runs) for p in res.text_frame.paragraphs][1:]
     ok = True
     exprs = [row.split("  →  ", 1)[0] for row in paras]
     job = json.dumps({"tool": os.path.join(ROOT, "08-tooling"), "prelude": prelude, "src": src, "exprs": exprs})
