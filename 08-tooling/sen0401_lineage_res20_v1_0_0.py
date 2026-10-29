@@ -12,6 +12,14 @@ import sen0401_lineage_succession3_v1_1_0 as X
 import sen0401_lineage_gap_revision_v1_0_0 as G
 import sen0401_lineage_template_revision_v1_0_0 as T
 lit = G.lit
+import glob, importlib.util
+def _pv_newest():
+    fw = X.FW; vk = lambda q: [int(x) for x in re.findall(r"_v(\d+)_(\d+)_(\d+)\.", q)[0]]
+    spec = importlib.util.spec_from_file_location("pv", sorted(glob.glob(fw + "/03-tooling/backlog_pipeline_verify_v*.py"), key=vk)[-1])
+    m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+    m.STAGE_TYPES = m._load_stage_types(sorted(glob.glob(fw + "/01-ontologies/backlog_tbox_v*.ttl"), key=vk)[-1], table="v4")
+    return m
+X._pv = _pv_newest
 REV = "ex:Revision_Lineage3_Backlog7"; OLD = "ex:Out3_BacklogR32"; NEW = "ex:Out3_BacklogR33"; ITER = "ex:Iter_50"
 CR = "ex:CR3_AnswerRepair"; IA = "ex:IA3_AnswerRepair"; SC = "ex:SC3_AnswerRepair"
 SID = "ST_Exam_AnswerMethods_Repair"; BT = "TK_Exam_AnswerMethods_Repair_Build"; VT = "TK_Exam_AnswerMethods_Repair_Verify"; CRIT = "AC3E_Exam_AnswerMethods_Repair"; SESS = "SEN0401-I50-answer-repair"
@@ -106,8 +114,8 @@ def ev_backlog(t, prev):
     L.append('ex:PB3_Iter_50 a backlog:PlanBaseline ; rdfs:label "Plan baseline of iteration 50 when it was planned"@en ; backlog:baselineFor ex:Iter_50 ; backlog:baselinedAt "%s"^^xsd:dateTime ; backlog:isCurrentBaseline true ; backlog:hasBaselineStart "%s"^^xsd:dateTime ; backlog:hasBaselineEnd "2026-11-01T12:00:00"^^xsd:dateTime .\n' % (now, now))
     L.append('ex:PC3_Iter_50 a backlog:SprintPlanningCeremony ; rdfs:label "Planning of iteration 50: the repair of the answer sheet reader"@en ; backlog:ceremonyFor ex:Iter_50 ; backlog:heldAt "%s"^^xsd:dateTime ;\n    backlog:includesPlanningEvent ex:Plan3E_%s ;\n    rdfs:comment %s@en .\n' % (
         now, SID, lit("Held %s by the lineage agent after the control of the answering-methods task: the story %s is committed to this iteration, whose goal is frozen at its start. No executor has started; work begun is recorded at the real start of the session with its brief." % (now, SID))))
-    L.append('%s a backlog:ScopeChange ;\n    rdfs:label "Backlog widened by the repair of the answer sheet reader"@en ;\n    backlog:fulfillsRequest %s ; backlog:changesScope ex:Scope3 ; backlog:decidedBy backlog:Builder ;\n    backlog:admitsItem ex:%s ;\n    backlog:hasScopeChangeRationale %s .\n' % (
-        SC, CR, SID, lit("A repair of delivered work found by the control, registered under the standing rules (" + RULE + "). " + FOUND)))
+    L.append('%s a backlog:ScopeChange ;\n    rdfs:label "Backlog widened by the repair of the answer sheet reader"@en ;\n    backlog:fulfillsRequest %s ; backlog:changesScope ex:Scope3 ; backlog:decidedBy backlog:Owner ;\n    backlog:admitsItem ex:%s ;\n    backlog:hasScopeChangeRationale %s .\n' % (
+        SC, CR, SID, lit("Decided by the owner through his standing rules (repairs are registered through change management in the active lineage and re-rank the open items; nothing is waived); applied by the lineage agent. A repair of delivered work found by the control, registered under " + RULE + ". " + FOUND)))
     t, kk = re.subn(r'(%s a backlog:ChangeRequest ;.*?backlog:hasDisposition )backlog:Disp_Pending' % re.escape(CR), lambda m: m.group(1) + "backlog:Disp_Accepted", t, count=1, flags=re.S); assert kk == 1
     L.append('%s rdfs:comment "Disposition set to Accepted on %s in the version that records the ScopeChange %s and the story it admits; it was Pending before. The owner\'s standing rule is the decision: repairs are registered through change management and re-rank the open items."@en .\n' % (CR, now[:10], SC[3:]))
     t += "\n" + "".join(L)
