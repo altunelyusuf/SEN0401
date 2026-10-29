@@ -1,0 +1,226 @@
+@prefix pr:   <http://example.org/sen0401/paperrules#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+# SEN0401 printed-paper rules as SHACL, version 1.0.0. Every message starts with the rule id (R01 ...). Severity is Violation unless a shape says Warning.
+# Bloom levels are integers: 1 Remember, 2 Understand, 3 Apply, 4 Analyze, 5 Evaluate, 6 Create. "Higher" means 3 and above (Apply and up): a reading to be confirmed by the owner.
+# Constants that rest on a measurement or a working estimate are named in the registry file (type seconds) or in the message of the rule (45 and 90 code columns, 10 percent reading slack).
+
+<http://example.org/sen0401/paperrules/shapes> a owl:Ontology ; rdfs:label "SEN0401 printed paper rules"@en ; owl:versionInfo "1.0.0" ;
+  sh:declare [ sh:prefix "pr" ; sh:namespace "http://example.org/sen0401/paperrules#"^^xsd:anyURI ] ,
+             [ sh:prefix "xsd" ; sh:namespace "http://www.w3.org/2001/XMLSchema#"^^xsd:anyURI ] .
+
+# ------------------------------------------------------------------ the paper
+pr:PaperShape a sh:NodeShape ; sh:targetClass pr:Paper ;
+  sh:property [ sh:path pr:theme ; sh:hasValue "light" ; sh:minCount 1 ; sh:message "R01 the theme must be light" ] ;
+  sh:property [ sh:path pr:background ; sh:hasValue "white" ; sh:minCount 1 ; sh:message "R01 the page background must be white" ] ;
+  sh:property [ sh:path pr:ink ; sh:hasValue "black" ; sh:minCount 1 ; sh:message "R01 the ink must be black (line-based, print-safe)" ] ;
+  sh:property [ sh:path pr:fillColourUsed ; sh:hasValue false ; sh:minCount 1 ; sh:message "R01 no fill colour or shading may be used" ] ;
+  sh:property [ sh:path pr:containsPersonalData ; sh:hasValue false ; sh:minCount 1 ; sh:message "R01 the paper must hold no student personal data" ] ;
+  sh:property [ sh:path pr:studentName ; sh:maxCount 0 ; sh:message "R01 no student name may be recorded" ] ;
+  sh:property [ sh:path pr:studentNumber ; sh:maxCount 0 ; sh:message "R01 no student number may be recorded" ] ;
+  sh:property [ sh:path pr:fontPt ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 10 ; sh:message "R01 body text must be 10 point or larger" ] ;
+  sh:property [ sh:path pr:codeFontPt ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 8 ; sh:message "R01 code text must be 8 point or larger" ] ;
+  sh:property [ sh:path pr:sittingMinutes ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:message "R01 the sitting length in minutes is required" ] ;
+  sh:property [ sh:path pr:chapterList ; sh:minCount 1 ; sh:in ( 1 2 3 4 5 6 7 ) ; sh:message "R02 the chapter list is a parameter of chapters 1 to 7 and may not be empty" ] ;
+  sh:property [ sh:path pr:versionSeq ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:message "R03 a version number is required" ] ;
+  sh:property [ sh:path pr:previousVersionSeq ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 0 ; sh:message "R03 the previous version number is required (0 for a first version)" ] ;
+  sh:property [ sh:path pr:columns ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( 1 2 ) ; sh:message "R17 columns must be 1 or 2" ] ;
+  sh:property [ sh:path pr:codeColumnCapacity ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:message "R10 the code width that prints unwrapped in one column must be declared" ] ;
+  sh:property [ sh:path pr:answerMode ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( pr:CircleOnItem pr:GridOnCover ) ; sh:message "R16 the answer mode must be circle-on-item or a grid on the cover" ] ;
+  sh:property [ sh:path pr:pageCount ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:message "R17 page count must be a positive integer" ] ;
+  sh:property [ sh:path pr:hasItem ; sh:minCount 1 ; sh:class pr:Item ; sh:message "R04 a paper has at least one item" ] ;
+  sh:property [ sh:path pr:paperKind ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( pr:Midterm pr:MakeUp ) ; sh:message "R18 the kind must be midterm or make-up" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R03 the version must be exactly the previous version plus one" ;
+    sh:select """SELECT $this WHERE { $this pr:versionSeq ?v ; pr:previousVersionSeq ?p . FILTER(?v != ?p + 1) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R05 the summed answer time of the items exceeds 90 percent of the sitting (10 percent kept for reading and checking)" ;
+    sh:select """SELECT $this WHERE { { SELECT $this (SUM(?s) AS ?total) WHERE { $this pr:hasItem ?i . ?i pr:itemType ?t . ?t pr:secondsPerItem ?s } GROUP BY $this }
+                  $this pr:sittingMinutes ?m . FILTER(?total > ?m * 60 * 0.9) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R06 no more than half of the items are at Apply or higher; a majority must be higher-order" ;
+    sh:select """SELECT $this WHERE { { SELECT $this (COUNT(?i) AS ?all) (SUM(IF(?b >= 3, 1, 0)) AS ?hi) WHERE { $this pr:hasItem ?i . ?i pr:bloomLevel ?b } GROUP BY $this }
+                  FILTER(?hi * 2 <= ?all) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R07 the answer letters of the choice items are not evenly distributed (counts of A, B, C, D differ by more than one)" ;
+    sh:select """SELECT $this WHERE {
+        $this a pr:Paper .
+        OPTIONAL { SELECT $this (COUNT(?o) AS ?cA) WHERE { $this pr:hasItem ?i . ?i pr:option ?o . ?o pr:isKey true ; pr:letter "A" } GROUP BY $this }
+        OPTIONAL { SELECT $this (COUNT(?o) AS ?cB) WHERE { $this pr:hasItem ?i . ?i pr:option ?o . ?o pr:isKey true ; pr:letter "B" } GROUP BY $this }
+        OPTIONAL { SELECT $this (COUNT(?o) AS ?cC) WHERE { $this pr:hasItem ?i . ?i pr:option ?o . ?o pr:isKey true ; pr:letter "C" } GROUP BY $this }
+        OPTIONAL { SELECT $this (COUNT(?o) AS ?cD) WHERE { $this pr:hasItem ?i . ?i pr:option ?o . ?o pr:isKey true ; pr:letter "D" } GROUP BY $this }
+        BIND(COALESCE(?cA, 0) AS ?a) BIND(COALESCE(?cB, 0) AS ?b) BIND(COALESCE(?cC, 0) AS ?c) BIND(COALESCE(?cD, 0) AS ?d)
+        FILTER(abs(?a - ?b) > 1 || abs(?a - ?c) > 1 || abs(?a - ?d) > 1 || abs(?b - ?c) > 1 || abs(?b - ?d) > 1 || abs(?c - ?d) > 1) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R04 two items of the paper have the same position number" ;
+    sh:select """SELECT $this WHERE { $this pr:hasItem ?a, ?b . FILTER(?a != ?b) ?a pr:position ?p . ?b pr:position ?p }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R10 the declared code width exceeds what one column prints unwrapped (45 characters at 9 point in two columns of A4, 90 in one column)" ;
+    sh:select """SELECT $this WHERE { $this pr:columns ?n ; pr:codeColumnCapacity ?w . FILTER((?n = 2 && ?w > 45) || (?n = 1 && ?w > 90)) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R17 the page count exceeds the page limit the owner set" ;
+    sh:select """SELECT $this WHERE { $this pr:pageCount ?n ; pr:pageLimit ?l . FILTER(?n > ?l) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R18 a make-up paper must have a midterm companion with exactly the same chapter list" ;
+    sh:select """SELECT $this WHERE { $this pr:paperKind pr:MakeUp .
+        { FILTER NOT EXISTS { $this pr:companion ?m . ?m pr:paperKind pr:Midterm } }
+        UNION { $this pr:companion ?m . { $this pr:chapterList ?c . FILTER NOT EXISTS { ?m pr:chapterList ?c } } UNION { ?m pr:chapterList ?c . FILTER NOT EXISTS { $this pr:chapterList ?c } } } }""" ] .
+
+# ------------------------------------------------------------------ every item
+pr:ItemShape a sh:NodeShape ; sh:targetClass pr:Item ;
+  sh:property [ sh:path pr:itemType ; sh:minCount 1 ; sh:maxCount 1 ; sh:class pr:ItemType ; sh:message "R04 every item names exactly one registered item type" ] ;
+  sh:property [ sh:path pr:position ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:message "R04 every item has a position number" ] ;
+  sh:property [ sh:path pr:itemKey ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "R04 every item has an item key (used to find repeats between papers)" ] ;
+  sh:property [ sh:path pr:chapter ; sh:minCount 1 ; sh:datatype xsd:integer ; sh:message "R02 every item names at least one chapter" ] ;
+  sh:property [ sh:path pr:bloomLevel ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( 1 2 3 4 5 6 ) ; sh:message "R06 every item has one Bloom level from 1 to 6" ] ;
+  sh:property [ sh:path pr:source ; sh:minCount 1 ; sh:class pr:CorpusSource ; sh:message "R08 every item links to at least one course source (deck, note, page or book); a link, not text" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R04 the item type is not suited to a printed paper" ;
+    sh:select """SELECT $this WHERE { $this pr:itemType ?t . ?t pr:status pr:NotSuited }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R04 the item type is conditional and the paper does not enable it" ;
+    sh:select """SELECT $this WHERE { $this pr:itemType ?t . ?t pr:status pr:Conditional . ?p pr:hasItem $this . FILTER NOT EXISTS { ?p pr:enables ?t } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R04 the item does not carry the class its type requires" ;
+    sh:select """SELECT $this WHERE { $this pr:itemType ?t . ?t pr:itemClass ?c . FILTER NOT EXISTS { $this a ?c } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R02 the item names a chapter that is not in the chapter list of its paper" ;
+    sh:select """SELECT $this WHERE { ?p pr:hasItem $this ; pr:chapterList ?x . $this pr:chapter ?c . FILTER NOT EXISTS { ?p pr:chapterList ?c } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R09 a synthesis item must span at least two chapters" ;
+    sh:select """SELECT $this WHERE { $this pr:synthesis true . FILTER NOT EXISTS { $this pr:chapter ?c1, ?c2 . FILTER(?c1 != ?c2) } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R06 the Bloom level is higher than the type can honestly reach" ;
+    sh:select """SELECT $this WHERE { $this pr:bloomLevel ?b ; pr:itemType ?t . ?t pr:highestBloom ?h . FILTER(?b > ?h) }""" ] .
+
+pr:CorpusSourceShape a sh:NodeShape ; sh:targetClass pr:CorpusSource ;
+  sh:property [ sh:path pr:file ; sh:minCount 1 ; sh:message "R08 a course source names its file" ] ;
+  sh:property [ sh:path pr:locator ; sh:minCount 1 ; sh:message "R08 a course source names its slide, page or section" ] .
+
+# ------------------------------------------------------------------ choice items
+pr:ChoiceItemShape a sh:NodeShape ; sh:targetClass pr:ChoiceItem ;
+  sh:property [ sh:path pr:stem ; sh:minCount 1 ; sh:maxCount 1 ; sh:minLength 1 ; sh:message "R11 a choice item has a stem" ] ;
+  sh:property [ sh:path pr:option ; sh:minCount 4 ; sh:maxCount 4 ; sh:node pr:OptionShape ; sh:message "R11 a choice item has exactly four options" ] ;
+  sh:property [ sh:path pr:option ; sh:qualifiedValueShape [ sh:property [ sh:path pr:isKey ; sh:hasValue true ] ] ; sh:qualifiedMinCount 1 ; sh:qualifiedMaxCount 1 ; sh:message "R11 exactly one option is the key" ] ;
+  sh:property [ sh:path pr:option ; sh:qualifiedValueShape [ sh:property [ sh:path pr:letter ; sh:hasValue "A" ] ] ; sh:qualifiedMinCount 1 ; sh:qualifiedMaxCount 1 ; sh:message "R11 letter A is used once" ] ;
+  sh:property [ sh:path pr:option ; sh:qualifiedValueShape [ sh:property [ sh:path pr:letter ; sh:hasValue "B" ] ] ; sh:qualifiedMinCount 1 ; sh:qualifiedMaxCount 1 ; sh:message "R11 letter B is used once" ] ;
+  sh:property [ sh:path pr:option ; sh:qualifiedValueShape [ sh:property [ sh:path pr:letter ; sh:hasValue "C" ] ] ; sh:qualifiedMinCount 1 ; sh:qualifiedMaxCount 1 ; sh:message "R11 letter C is used once" ] ;
+  sh:property [ sh:path pr:option ; sh:qualifiedValueShape [ sh:property [ sh:path pr:letter ; sh:hasValue "D" ] ] ; sh:qualifiedMinCount 1 ; sh:qualifiedMaxCount 1 ; sh:message "R11 letter D is used once" ] ;
+  sh:property [ sh:path pr:codeLines ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:maxInclusive 12 ; sh:message "R10 a code listing has at most 12 lines" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R10 a code line is wider than the paper's declared unwrapped capacity" ;
+    sh:select """SELECT $this WHERE { $this pr:codeMaxColumns ?w . ?p pr:hasItem $this ; pr:codeColumnCapacity ?cap . FILTER(?w > ?cap) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R10 an item of the code type has no code listing, or an item with a listing is not of the code type" ;
+    sh:select """SELECT $this WHERE { { $this pr:itemType pr:ChoiceFourCode . FILTER NOT EXISTS { $this pr:codeLines ?n } } UNION { $this pr:itemType pr:ChoiceFour ; pr:codeLines ?n } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R11 two options of one item have the same text" ;
+    sh:select """SELECT $this WHERE { $this pr:option ?a, ?b . FILTER(?a != ?b) ?a pr:text ?t . ?b pr:text ?t }""" ] .
+
+pr:OptionShape a sh:NodeShape ;
+  sh:property [ sh:path pr:letter ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "A" "B" "C" "D" ) ; sh:message "R11 an option letter is one of A, B, C, D" ] ;
+  sh:property [ sh:path pr:isKey ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:boolean ; sh:message "R11 an option states whether it is the key" ] ;
+  sh:property [ sh:path pr:text ; sh:minCount 1 ; sh:maxCount 1 ; sh:minLength 1 ; sh:message "R11 an option has text" ;
+                sh:not [ sh:pattern "^\\s*(all|none) of the above" ; sh:flags "i" ] ] .
+
+# ------------------------------------------------------------------ fill-in with a shared numbered bank
+pr:FillBlankItemShape a sh:NodeShape ; sh:targetClass pr:FillBlankItem ;
+  sh:property [ sh:path pr:bank ; sh:minCount 1 ; sh:maxCount 1 ; sh:class pr:Bank ; sh:message "R12 a blank belongs to exactly one bank" ] ;
+  sh:property [ sh:path pr:blankNo ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:message "R12 a blank has a number" ] ;
+  sh:property [ sh:path pr:answerEntry ; sh:minCount 1 ; sh:maxCount 1 ; sh:class pr:BankEntry ; sh:message "R12 a blank has exactly one answer entry" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R12 the answer entry of a blank is not in the bank of that blank" ;
+    sh:select """SELECT $this WHERE { $this pr:bank ?b ; pr:answerEntry ?e . FILTER NOT EXISTS { ?b pr:entry ?e } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R12 two blanks of one bank have the same answer entry" ;
+    sh:select """SELECT $this WHERE { $this pr:bank ?b ; pr:answerEntry ?e . ?o pr:bank ?b ; pr:answerEntry ?e . FILTER(?o != $this) }""" ] .
+
+pr:BankShape a sh:NodeShape ; sh:targetClass pr:Bank ;
+  sh:property [ sh:path pr:shuffleSeed ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:message "R13 a bank records the seed that randomised its order" ] ;
+  sh:property [ sh:path pr:entry ; sh:minCount 1 ; sh:class pr:BankEntry ; sh:message "R13 a bank has entries" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R13 a bank has fewer than two entries more than blanks (no distractors)" ;
+    sh:select """SELECT $this WHERE { { SELECT $this (COUNT(DISTINCT ?e) AS ?ne) WHERE { $this pr:entry ?e } GROUP BY $this }
+                  { SELECT $this (COUNT(DISTINCT ?i) AS ?nb) WHERE { ?i pr:bank $this } GROUP BY $this } FILTER(?ne < ?nb + 2) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R13 the bank order follows the order of the blanks (not randomised)" ;
+    sh:select """SELECT $this WHERE { { SELECT $this (COUNT(DISTINCT ?i) AS ?nb) WHERE { ?i pr:bank $this } GROUP BY $this } FILTER(?nb >= 3)
+        FILTER NOT EXISTS { ?i1 pr:bank $this ; pr:blankNo ?n1 ; pr:answerEntry ?e1 . ?e1 pr:position ?p1 . ?i2 pr:bank $this ; pr:blankNo ?n2 ; pr:answerEntry ?e2 . ?e2 pr:position ?p2 . FILTER(?n1 < ?n2 && ?p1 > ?p2) } }""" ] .
+
+pr:BankEntryShape a sh:NodeShape ; sh:targetClass pr:BankEntry ;
+  sh:property [ sh:path pr:label ; sh:minCount 1 ; sh:maxCount 1 ; sh:pattern "^[0-9]+$" ; sh:message "R14 bank entries are numbered with digits, so they cannot be mistaken for the choice letters A to D" ] ;
+  sh:property [ sh:path pr:position ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:message "R13 a bank entry has a position" ] ;
+  sh:property [ sh:path pr:text ; sh:minCount 1 ; sh:minLength 1 ; sh:message "R13 a bank entry has text" ] .
+
+# ------------------------------------------------------------------ matching
+pr:MatchingItemShape a sh:NodeShape ; sh:targetClass pr:MatchingItem ;
+  sh:property [ sh:path pr:hasPremise ; sh:minCount 2 ; sh:maxCount 6 ; sh:class pr:Premise ; sh:message "R15 matching has 2 to 6 premises" ] ;
+  sh:property [ sh:path pr:hasResponse ; sh:minCount 3 ; sh:class pr:Response ; sh:message "R15 matching has a list of responses" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R15 matching needs at least two more responses than premises" ;
+    sh:select """SELECT $this WHERE { { SELECT $this (COUNT(DISTINCT ?p) AS ?np) WHERE { $this pr:hasPremise ?p } GROUP BY $this }
+                  { SELECT $this (COUNT(DISTINCT ?r) AS ?nr) WHERE { $this pr:hasResponse ?r } GROUP BY $this } FILTER(?nr < ?np + 2) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R15 two premises share the same key response (each response is used at most once)" ;
+    sh:select """SELECT $this WHERE { $this pr:hasPremise ?a, ?b . FILTER(?a != ?b) ?a pr:matchesTo ?r . ?b pr:matchesTo ?r }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R15 a premise has a key that is not one of the responses of this item" ;
+    sh:select """SELECT $this WHERE { $this pr:hasPremise ?a . ?a pr:matchesTo ?r . FILTER NOT EXISTS { $this pr:hasResponse ?r } }""" ] .
+pr:PremiseShape a sh:NodeShape ; sh:targetClass pr:Premise ;
+  sh:property [ sh:path pr:matchesTo ; sh:minCount 1 ; sh:maxCount 1 ; sh:class pr:Response ; sh:message "R15 a premise has exactly one key response" ] ;
+  sh:property [ sh:path pr:text ; sh:minCount 1 ; sh:message "R15 a premise has text" ] .
+pr:ResponseShape a sh:NodeShape ; sh:targetClass pr:Response ;
+  sh:property [ sh:path pr:letter ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( "A" "B" "C" "D" "E" "F" "G" "H" ) ; sh:message "R15 a response is lettered A to H" ] ;
+  sh:property [ sh:path pr:text ; sh:minCount 1 ; sh:message "R15 a response has text" ] .
+
+# ------------------------------------------------------------------ ordering
+pr:OrderingItemShape a sh:NodeShape ; sh:targetClass pr:OrderingItem ;
+  sh:property [ sh:path pr:step ; sh:minCount 3 ; sh:maxCount 6 ; sh:class pr:Step ; sh:message "R16 ordering has 3 to 6 steps" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R16 two steps have the same correct position" ;
+    sh:select """SELECT $this WHERE { $this pr:step ?a, ?b . FILTER(?a != ?b) ?a pr:correctPosition ?p . ?b pr:correctPosition ?p }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R16 the correct positions are not 1 to n without gaps" ;
+    sh:select """SELECT $this WHERE { { SELECT $this (COUNT(?s) AS ?n) (MAX(?p) AS ?m) WHERE { $this pr:step ?s . ?s pr:correctPosition ?p } GROUP BY $this } FILTER(?n != ?m) }""" ] .
+pr:StepShape a sh:NodeShape ; sh:targetClass pr:Step ;
+  sh:property [ sh:path pr:correctPosition ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ; sh:maxInclusive 6 ; sh:message "R16 a step has one correct position from 1 to 6" ] ;
+  sh:property [ sh:path pr:text ; sh:minCount 1 ; sh:message "R16 a step has text" ] .
+
+# ------------------------------------------------------------------ numeric, trace, short answer
+pr:NumericItemShape a sh:NodeShape ; sh:targetClass pr:NumericItem ;
+  sh:property [ sh:path pr:keyValue ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:message "R19 a numeric item has exactly one key value" ] ;
+  sh:property [ sh:path pr:unit ; sh:minCount 1 ; sh:maxCount 1 ; sh:minLength 1 ; sh:message "R19 a numeric item states the unit the answer is given in" ] ;
+  sh:property [ sh:path pr:tolerance ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ; sh:message "R19 a numeric item states its tolerance (0 for exact)" ] ;
+  sh:property [ sh:path pr:answerBoxes ; sh:minCount 1 ; sh:maxCount 1 ; sh:hasValue 1 ; sh:message "R19 a numeric item has exactly one answer box" ] .
+pr:CodeTraceItemShape a sh:NodeShape ; sh:targetClass pr:CodeTraceItem ;
+  sh:property [ sh:path pr:keyOutput ; sh:minCount 1 ; sh:maxCount 1 ; sh:minLength 1 ; sh:message "R20 a trace item has exactly one key output (marked by exact match)" ] ;
+  sh:property [ sh:path pr:codeLines ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:maxInclusive 12 ; sh:message "R10 a code listing has at most 12 lines" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R10 a code line is wider than the paper's declared unwrapped capacity" ;
+    sh:select """SELECT $this WHERE { $this pr:codeMaxColumns ?w . ?p pr:hasItem $this ; pr:codeColumnCapacity ?cap . FILTER(?w > ?cap) }""" ] .
+pr:ShortAnswerItemShape a sh:NodeShape ; sh:targetClass pr:ShortAnswerItem ;
+  sh:property [ sh:path pr:rubricPoint ; sh:minCount 1 ; sh:maxCount 3 ; sh:message "R21 a short answer is marked by 1 to 3 rubric points" ] ;
+  sh:property [ sh:path pr:answerLines ; sh:minCount 1 ; sh:maxCount 1 ; sh:minInclusive 1 ; sh:maxInclusive 3 ; sh:message "R21 a short answer has 1 to 3 ruled lines" ] .
+
+# ------------------------------------------------------------------ figures (line-based, print-safe)
+pr:FigureShape a sh:NodeShape ; sh:targetClass pr:Figure ;
+  sh:property [ sh:path pr:lineArt ; sh:minCount 1 ; sh:hasValue true ; sh:message "R22 a figure must be line art (black lines, no raster picture)" ] ;
+  sh:property [ sh:path pr:fillColourUsed ; sh:minCount 1 ; sh:hasValue false ; sh:message "R22 a figure may not use fill colour" ] ;
+  sh:property [ sh:path pr:source ; sh:minCount 1 ; sh:class pr:CorpusSource ; sh:message "R22 a figure links to its course source" ] .
+
+
+# Warning-level rules sit in their own shape: the severity of a shape is what is reported.
+pr:PaperWarningShape a sh:NodeShape ; sh:targetClass pr:Paper ; sh:severity sh:Warning ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R07 the same answer letter is the key of four items in a row" ;
+    sh:select """SELECT $this WHERE { $this pr:hasItem ?i1 . ?i1 pr:position ?p ; pr:option ?o1 . ?o1 pr:isKey true ; pr:letter ?l .
+        BIND(?p + 1 AS ?p2) $this pr:hasItem ?i2 . ?i2 pr:position ?p2 ; pr:option ?o2 . ?o2 pr:isKey true ; pr:letter ?l .
+        BIND(?p + 2 AS ?p3) $this pr:hasItem ?i3 . ?i3 pr:position ?p3 ; pr:option ?o3 . ?o3 pr:isKey true ; pr:letter ?l .
+        BIND(?p + 3 AS ?p4) $this pr:hasItem ?i4 . ?i4 pr:position ?p4 ; pr:option ?o4 . ?o4 pr:isKey true ; pr:letter ?l }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/paperrules/shapes> ;
+    sh:message "R18 the make-up paper repeats an item of the midterm (same item key)" ;
+    sh:select """SELECT $this WHERE { $this pr:paperKind pr:MakeUp ; pr:companion ?m ; pr:hasItem ?a . ?m pr:hasItem ?b . ?a pr:itemKey ?k . ?b pr:itemKey ?k }""" ] .
