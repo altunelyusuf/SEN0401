@@ -1,0 +1,67 @@
+@prefix en:   <http://example.org/sen0401/engine#> .
+@prefix pr:   <http://example.org/sen0401/paperrules#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# SEN0401 exam engine rules, version 1.1.0 (new file; the rules EN01-EN10 of version 1.0.0 and the paper rules R01-R22 stay as committed and run beside these).
+# Every message starts with the rule id.
+# EN11 no copy of a page-visible question. The owner's ruling of 2026-10-30: the questions of the interactive pages are open to students before the exam, so they must not be used directly;
+#      they can be seeds. A paper item is REFUSED when its stem or its option set matches a page-visible item (bank item of the newest bank of chapters 1-6, or page quiz item).
+#      Two lines of defence. (a) This file: the EXACT tests are made here in SPARQL, against the page-visible items that are loaded into the data graph as en:PageItem nodes
+#      (normalised stem, normalised option set). (b) The NEAR tests (shared word 2-shingles, equal options) are computed by the similarity module and arrive as en:pageMatch facts that this
+#      file refuses by their presence. The same rule also refuses an item that is not an authored item (a bank item cannot enter a paper) and an item that was never checked.
+# EN12 every authored item names the critical point(s) it tests and its seed item(s); links must resolve to real critical points and real page items; a critical point of a chapter outside
+#      the paper's chapter list is refused.
+# EN13 the grid answer sheet codes a fill-in bank entry with one serial digit and a check digit: a bank has at most 9 entries when the answer mode is the grid.
+
+<http://example.org/sen0401/engine/shapes/v1_1_0> a owl:Ontology ; rdfs:label "SEN0401 exam engine rules 1.1.0"@en ; owl:versionInfo "1.1.0" ;
+  sh:declare [ sh:prefix "pr" ; sh:namespace "http://example.org/sen0401/paperrules#"^^xsd:anyURI ] ,
+             [ sh:prefix "en" ; sh:namespace "http://example.org/sen0401/engine#"^^xsd:anyURI ] ,
+             [ sh:prefix "xsd" ; sh:namespace "http://www.w3.org/2001/XMLSchema#"^^xsd:anyURI ] .
+
+en:NoCopyPaperShape a sh:NodeShape ; sh:targetClass pr:Paper ;
+  sh:property [ sh:path en:pageVisibleItems ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ;
+                sh:message "EN11 the paper does not record how many page-visible items it was checked against (the copy check was not run, or the page-visible set was empty)" ] ;
+  sh:property [ sh:path en:similarityVersion ; sh:minCount 1 ; sh:maxCount 1 ; sh:message "EN11 the paper does not record the version of the similarity method it was checked with" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes/v1_1_0> ;
+    sh:message "EN11 the number of page-visible items the paper records differs from the page-visible items that were loaded for the check" ;
+    sh:select """SELECT $this WHERE { $this en:pageVisibleItems ?n . { SELECT (COUNT(?pg) AS ?have) WHERE { ?pg a en:PageItem } } FILTER(?have != ?n) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes/v1_1_0> ;
+    sh:message "EN11 the page-visible set that was loaded has no item of a chapter of the paper (or of chapters 1 to 6): the check did not cover that chapter" ;
+    sh:select """SELECT $this WHERE { $this en:requiredPageChapter ?c . FILTER NOT EXISTS { ?pg a en:PageItem ; en:pageChapter ?c } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes/v1_1_0> ;
+    sh:message "EN11 the paper does not declare that the page-visible items of every chapter of its chapter list and of chapters 1 to 6 were required for the check" ;
+    sh:select """SELECT $this WHERE { $this a pr:Paper .
+        { $this pr:chapterList ?c } UNION { BIND(1 AS ?c) } UNION { BIND(2 AS ?c) } UNION { BIND(3 AS ?c) } UNION { BIND(4 AS ?c) } UNION { BIND(5 AS ?c) } UNION { BIND(6 AS ?c) }
+        FILTER NOT EXISTS { $this en:requiredPageChapter ?c } }""" ] .
+
+en:NoCopyItemShape a sh:NodeShape ; sh:targetClass pr:Item ;
+  sh:property [ sh:path en:origin ; sh:minCount 1 ; sh:maxCount 1 ; sh:hasValue en:Authored ;
+                sh:message "EN11 the item is not an authored item (a bank item or a page quiz item cannot enter a paper)" ] ;
+  sh:property [ sh:path en:copyChecked ; sh:minCount 1 ; sh:maxCount 1 ; sh:hasValue true ;
+                sh:message "EN11 the item was never checked against the page-visible items" ] ;
+  sh:property [ sh:path en:pageMatch ; sh:maxCount 0 ;
+                sh:message "EN11 the stem or the option set of the item matches a page-visible item by the near test of the similarity method (the item copies a question the students can see)" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes/v1_1_0> ;
+    sh:message "EN11 the normalised stem of the item equals the normalised stem of a page-visible item (exact copy of a question the students can see)" ;
+    sh:select """SELECT $this WHERE { $this en:normStem ?s . ?pg a en:PageItem ; en:normStem ?s . FILTER(STRLEN(?s) > 0) }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes/v1_1_0> ;
+    sh:message "EN11 the normalised option set of the item equals the option set of a page-visible item (exact copy of the options the students can see)" ;
+    sh:select """SELECT $this WHERE { $this en:optionSetKey ?k . ?pg a en:PageItem ; en:optionSetKey ?k }""" ] ;
+  sh:property [ sh:path en:tests ; sh:minCount 1 ; sh:class en:CriticalPoint ;
+                sh:message "EN12 the item names no critical point it tests, or a named critical point is not one of the critical points of the course (link does not resolve)" ] ;
+  sh:property [ sh:path en:seedItem ; sh:class en:PageItem ;
+                sh:message "EN12 a seed link of the item does not resolve to a page-visible item" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes/v1_1_0> ;
+    sh:message "EN12 the item names no seed item and gives no reason why it has none" ;
+    sh:select """SELECT $this WHERE { $this a pr:Item . FILTER NOT EXISTS { $this en:seedItem ?s } FILTER NOT EXISTS { $this en:noSeedReason ?r . FILTER(STRLEN(STR(?r)) > 0) } }""" ] ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes/v1_1_0> ;
+    sh:message "EN12 the item tests a critical point of a chapter that is not in the chapter list of the paper" ;
+    sh:select """SELECT $this WHERE { ?p pr:hasItem $this ; a pr:Paper . $this en:tests ?cp . ?cp a en:CriticalPoint ; en:pointChapter ?c . FILTER NOT EXISTS { ?p pr:chapterList ?c } }""" ] .
+
+en:GridBankShape a sh:NodeShape ; sh:targetClass pr:Bank ;
+  sh:sparql [ a sh:SPARQLConstraint ; sh:prefixes <http://example.org/sen0401/engine/shapes/v1_1_0> ;
+    sh:message "EN13 a fill-in bank has more than 9 entries although the answer mode is the grid (the grid codes an entry with one serial digit and a check digit)" ;
+    sh:select """SELECT $this WHERE { ?i pr:bank $this . ?p pr:hasItem ?i ; pr:answerMode pr:GridOnCover . { SELECT $this (COUNT(?e) AS ?n) WHERE { $this pr:entry ?e } GROUP BY $this } FILTER(?n > 9) }""" ] .
