@@ -1,0 +1,67 @@
+@prefix ds:   <http://example.org/sen0401/deckstd#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# Deck standard, element D9 (background scheme): the owner's ruling recorded as SHACL, not as markdown.
+# Owner's words of 2026-10-29, relayed by the coordinator: "the deck standard gives way: D9 is changed in a new versioned file
+# to allow the single dark closing slide among light slides ... the ruling is recorded in SHACL not markdown, no retroactive enforcement".
+
+<http://example.org/sen0401/deckstd> a owl:Ontology ;
+    rdfs:label "SEN0401 deck standard shapes (D9)"@en ;
+    owl:versionInfo "1.0.0" ;
+    rdfs:comment "Records the owner's ruling of 2026-10-29: every slide is light except that the last slide (the closing slide) may be dark; a dark slide anywhere else, or more than one dark slide, violates D9. No retroactive enforcement: it applies to deck versions made from now on."@en .
+
+# ---- deck-facts vocabulary (every class and property is linked to another one) ----
+ds:Deck a owl:Class ; rdfs:label "Deck"@en ;
+    rdfs:comment "A lecture deck; it has slides (ds:hasSlide) and states how many it has (ds:slideCount)."@en .
+ds:Slide a owl:Class ; rdfs:label "Slide"@en ;
+    rdfs:comment "A slide of a deck; it has a position (ds:slidePosition) and one background scheme (ds:backgroundScheme)."@en .
+ds:BackgroundScheme a owl:Class ; rdfs:label "Background scheme"@en ;
+    rdfs:comment "Dark (relative luminance of the background colour below 0.5) or light; used by slides through ds:backgroundScheme."@en .
+
+ds:hasSlide a owl:ObjectProperty ; rdfs:label "has slide"@en ; rdfs:domain ds:Deck ; rdfs:range ds:Slide ;
+    owl:inverseOf ds:inDeck .
+ds:inDeck a owl:ObjectProperty ; rdfs:label "in deck"@en ; rdfs:domain ds:Slide ; rdfs:range ds:Deck ;
+    rdfs:comment "Lets a slide reach the deck whose slide count decides which slide is the last one."@en .
+ds:backgroundScheme a owl:ObjectProperty ; rdfs:label "background scheme"@en ; rdfs:domain ds:Slide ; rdfs:range ds:BackgroundScheme .
+ds:slidePosition a owl:DatatypeProperty ; rdfs:label "slide position"@en ; rdfs:domain ds:Slide ; rdfs:range xsd:integer ;
+    rdfs:comment "1-based position; the last slide is the one whose position equals ds:slideCount of its deck."@en .
+ds:slideCount a owl:DatatypeProperty ; rdfs:label "number of slides"@en ; rdfs:domain ds:Deck ; rdfs:range xsd:integer ;
+    rdfs:comment "Number of slides of the deck; compared with ds:slidePosition to find the closing slide."@en .
+
+ds:Dark a ds:BackgroundScheme ; rdfs:label "dark"@en .
+ds:Light a ds:BackgroundScheme ; rdfs:label "light"@en .
+
+# ---- D9 ----
+ds:D9_DarkOnlyLastShape a sh:NodeShape ;
+    sh:targetClass ds:Slide ;
+    rdfs:label "D9: a dark slide is only the last slide"@en ;
+    rdfs:comment "Owner's ruling 2026-10-29: every slide is light except that the LAST slide may be dark. A dark slide anywhere else violates."@en ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "D9 (owner's ruling of 2026-10-29: the deck standard gives way to allow the single dark closing slide among light slides): a dark slide is allowed only as the last slide; this dark slide is not the last one."@en ;
+        sh:prefixes <http://example.org/sen0401/deckstd> ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                $this ds:backgroundScheme ds:Dark ; ds:slidePosition ?value ; ds:inDeck ?d .
+                ?d ds:slideCount ?n .
+                FILTER (?value != ?n)
+            }""" ] .
+
+ds:D9_OneDarkSlideShape a sh:NodeShape ;
+    sh:targetClass ds:Deck ;
+    rdfs:label "D9: at most one dark slide"@en ;
+    rdfs:comment "Owner's ruling 2026-10-29: the single dark closing slide; more than one dark slide violates."@en ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "D9 (owner's ruling of 2026-10-29: one dark closing slide among light slides): more than one dark slide in the deck."@en ;
+        sh:prefixes <http://example.org/sen0401/deckstd> ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                { SELECT $this (COUNT(?s) AS ?value) WHERE { $this ds:hasSlide ?s . ?s ds:backgroundScheme ds:Dark } GROUP BY $this }
+                FILTER (?value > 1)
+            }""" ] .
+
+<http://example.org/sen0401/deckstd> sh:declare [ sh:prefix "ds" ; sh:namespace "http://example.org/sen0401/deckstd#"^^xsd:anyURI ] .
