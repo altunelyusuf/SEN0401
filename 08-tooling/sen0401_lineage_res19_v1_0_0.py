@@ -4,7 +4,7 @@ Route (c) of the routing test (G104): the mission statement is amended -> ex:Mis
 the chapter facts are owner statements (CR3_ExamMission, IA3_ExamMission, the origin of Mission_V2), not mission text. The exam chain of the fourth lineage is
 re-admitted in the third lineage by a StageRevision from the Scope stage (G127), the same route as sen0401_lineage_res18; the fourth lineage is set down with an
 as-is assessment and a closure report marked cancelled (G162).
-Usage: change | abandon4 | retract | scope PREV | goal PREV | objective PREV | backlog PREV | fill PREV"""
+Usage: gaps (after the chain) | change | abandon4 | retract | scope PREV | goal PREV | objective PREV | backlog PREV | fill PREV"""
 __version__ = "1.0.0"
 import glob, importlib.util, os, re, shutil, subprocess, sys, tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -318,13 +318,18 @@ def ev_backlog(t, prev):
     return t + out_new(t, "Backlog", NEWB[3:], "Out3_ObjectiveR30"), "third lineage, Backlog stage rebuilt: %d stories admitted (seven for the exam work in the planned Iterations 47 and 48, eight page measurements in the planned Iteration 49) with criteria, tasks, planning events and the ScopeChange; the change request is Accepted." % len(allids)
 
 
+def ev_gaps(t):
+    t += "\nex:CR3_ExamMission rdfs:comment %s@en .\n" % lit("THE VERIFIED GAPS G1 TO G7, which the exam deliverables, goals and criteria cite (carried over from the fourth lineage, where they were measured on 2026-10-29 by the lineage agent; the chapter numbers are the eight chapters then measured): " + fixch(O4.GAPS))
+    return t, "The verified gaps G1 to G7 recorded on the change request ex:CR3_ExamMission, where the exam deliverables, goals and criteria of the third lineage cite them (they were only in the abandoned fourth lineage). A comment on a change request; no stage content."
+
+
 def ev_fill(t, prev): return G.fill_re(t, NEWB, prev), "closedAtCommit of the rebuilt Backlog output %s set to the commit that closed it (%s); the revision is complete and no work is begun." % (NEWB, prev)
 
 
 def main():
     ev = sys.argv[1]; src = M.newest(); t = open(src, encoding="utf-8").read(); nxt, cur = M.next_version(src)
     fn = {"change": lambda: ev_change(t), "abandon4": lambda: ev_abandon4(t), "retract": lambda: ev_retract(t), "scope": lambda: ev_scope(t, sys.argv[2]), "goal": lambda: ev_goal(t, sys.argv[2]),
-          "objective": lambda: ev_objective(t, sys.argv[2]), "backlog": lambda: ev_backlog(t, sys.argv[2]), "fill": lambda: ev_fill(t, sys.argv[2])}
+          "objective": lambda: ev_objective(t, sys.argv[2]), "backlog": lambda: ev_backlog(t, sys.argv[2]), "fill": lambda: ev_fill(t, sys.argv[2]), "gaps": lambda: ev_gaps(t)}
     nt, comment = fn[ev](); print(os.path.basename(M.write_new(src, nt, nxt, cur, comment)))
 
 
