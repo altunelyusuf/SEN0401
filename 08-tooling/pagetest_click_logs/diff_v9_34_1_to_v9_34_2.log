@@ -1,0 +1,13 @@
+7c7,8
+< __version__ = "9.34.1"
+---
+> __version__ = "9.34.2"
+> # 9.34.2 (SEN0401, over 9.34.1; owner's decision of 2026-10-29, change request ex:CR3_PageClick): the one change is the tap after the pointer drag of an ERD entity. It no longer clicks the centre of the first end of the first relationship, which an entity drawn later may cover ("intercepts pointer events"); it clicks, with the mouse, a point of the DRAGGED entity's own box at which that entity is the topmost element (found by elementFromPoint over a grid of points of the box). An entity with no such point is reported as a [FAIL] line, not a skip. Every other feature text, count and threshold is 9.34.1's.
+1259c1260,1263
+<     pg.locator("#oerd .oe-e").nth(_ti).click(); pg.wait_for_timeout(300); ch = pg.evaluate("()=>({card:document.getElementById('oerdinfo').textContent.includes('Relationships'),sel:document.querySelectorAll('#oerd .oe-r.sel').length,tot:document.querySelectorAll('#oerd .oe-r').length,dim:document.querySelectorAll('#oerd .oe-r.dim').length})")
+---
+>     _tp = pg.evaluate("""i=>{const e=document.querySelectorAll('#oerd .oe-e')[i];if(!e)return null;const b=e.querySelector('rect').getBoundingClientRect();const fr=[.5,.25,.75,.1,.9,.35,.65,.05,.95,.2,.8,.4,.6,.15,.85,.3,.7];for(const fy of fr)for(const fx of fr){const x=b.left+b.width*fx,y=b.top+b.height*fy;if(x<0||y<0||x>=innerWidth||y>=innerHeight)continue;const t=document.elementFromPoint(x,y);if(t&&e.contains(t))return [x,y]}return null}""", _ti)
+>     if _tp is None: feat("the dragged entity has a point of its own box at which it is the topmost element (the tap lands on it)", False, "no uncovered point")
+>     else: pg.mouse.click(_tp[0], _tp[1])
+>     pg.wait_for_timeout(300); ch = pg.evaluate("()=>({card:document.getElementById('oerdinfo').textContent.includes('Relationships'),sel:document.querySelectorAll('#oerd .oe-r.sel').length,tot:document.querySelectorAll('#oerd .oe-r').length,dim:document.querySelectorAll('#oerd .oe-r.dim').length})")
+diff exit 1
