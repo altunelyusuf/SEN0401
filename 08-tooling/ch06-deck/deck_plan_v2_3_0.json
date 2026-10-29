@@ -1,0 +1,5427 @@
+{
+ "meta": {
+  "title": "Chapter 6: Transactions",
+  "sub": "SEN0401, third-edition urgent deck: code corrected, concepts drawn, stories told",
+  "version": "2.3.0",
+  "python": "3.14.6",
+  "total": 71,
+  "redesign": "2026-10-22, remedy of the owner's 17:27 message: content, analogies, code with explanation beside it and the result as a picture, dividers with meanings, deck standard D1-D12",
+  "notes": "short reader's prose: 2-4 sentences, at most 60 words",
+  "analogies": [
+   {
+    "concept": "The idea of a transaction",
+    "analogy": "a signed letter that asks every ledger to change",
+    "slide": 5
+   },
+   {
+    "concept": "Serialization formats",
+    "analogy": "packing a letter flat for the post",
+    "slide": 5
+   },
+   {
+    "concept": "What a transaction is",
+    "analogy": "A transaction is a signed letter asking every ledger to update itself.",
+    "slide": 5
+   },
+   {
+    "concept": "Transaction",
+    "analogy": "a signed letter asking every bank branch to update its ledger.",
+    "slide": 7
+   },
+   {
+    "concept": "The ownership record of a full node",
+    "analogy": "a land register that every town keeps an identical copy of.",
+    "slide": 7
+   },
+   {
+    "concept": "The parts of a transaction",
+    "analogy": "a cheque with boxes for payer, payee, amount and signature.",
+    "slide": 7
+   },
+   {
+    "concept": "Serialized transaction",
+    "analogy": "a letter flattened into one long strip of tape.",
+    "slide": 7
+   },
+   {
+    "concept": "A Serialized Bitcoin Transaction",
+    "analogy": "a letter flattened into one long strip of tape.",
+    "slide": 7
+   },
+   {
+    "concept": "Extended serialization format",
+    "analogy": "the same letter with a signed slip tucked in at the end.",
+    "slide": 9
+   },
+   {
+    "concept": "Legacy serialization",
+    "analogy": "the plain letter, before the extra slip was invented.",
+    "slide": 9
+   },
+   {
+    "concept": "Partially signed bitcoin transaction",
+    "analogy": "a form passed round the office until every signer has signed.",
+    "slide": 9
+   },
+   {
+    "concept": "PSBT",
+    "analogy": "a form passed round the office until every signer has signed.",
+    "slide": 9
+   },
+   {
+    "concept": "Byte map",
+    "analogy": "a floor plan showing which room each byte lives in.",
+    "slide": 9
+   },
+   {
+    "concept": "The version field",
+    "analogy": "the edition number printed on a form",
+    "slide": 12
+   },
+   {
+    "concept": "The marker and the flag",
+    "analogy": "a fragile label on a parcel",
+    "slide": 12
+   },
+   {
+    "concept": "Version, marker and flag",
+    "analogy": "Version, marker and flag are the edition number and labels on the envelope.",
+    "slide": 12
+   },
+   {
+    "concept": "Version 1",
+    "analogy": "edition 1 of a form, still valid in every office.",
+    "slide": 14
+   },
+   {
+    "concept": "Version 2 and BIP68",
+    "analogy": "edition 2, which adds a waiting-period box to the form.",
+    "slide": 14
+   },
+   {
+    "concept": "The version 3 proposal",
+    "analogy": "a draft edition that offices may choose to accept.",
+    "slide": 14
+   },
+   {
+    "concept": "Presigned transactions",
+    "analogy": "a post-dated cheque kept in a drawer.",
+    "slide": 16
+   },
+   {
+    "concept": "Marker byte",
+    "analogy": "a sticker on a parcel saying special contents inside.",
+    "slide": 16
+   },
+   {
+    "concept": "Extended Marker and Flag",
+    "analogy": "a sticker on a parcel saying special contents inside.",
+    "slide": 16
+   },
+   {
+    "concept": "Flag byte",
+    "analogy": "a second sticker that names the kind of extras.",
+    "slide": 16
+   },
+   {
+    "concept": "The input list",
+    "analogy": "a receipt listing the notes you hand over",
+    "slide": 17
+   },
+   {
+    "concept": "The outpoint",
+    "analogy": "a street address with building and flat",
+    "slide": 17
+   },
+   {
+    "concept": "Internal and display byte order",
+    "analogy": "a book you can read from the front or the back",
+    "slide": 17
+   },
+   {
+    "concept": "The input script",
+    "analogy": "a keyhole that legacy inputs fill with the key",
+    "slide": 17
+   },
+   {
+    "concept": "Inputs",
+    "analogy": "Inputs are the banknotes you hand over, each named by its address.",
+    "slide": 17
+   },
+   {
+    "concept": "Input count",
+    "analogy": "counting how many cheques are stapled to a payment.",
+    "slide": 19
+   },
+   {
+    "concept": "Length of Transaction Input List",
+    "analogy": "counting how many cheques are stapled to a payment.",
+    "slide": 19
+   },
+   {
+    "concept": "CompactSize unsigned integer",
+    "analogy": "a ticket machine: small numbers get short tickets.",
+    "slide": 19
+   },
+   {
+    "concept": "Other variable-length integers",
+    "analogy": "three kinds of ticket sold under one name.",
+    "slide": 19
+   },
+   {
+    "concept": "Outpoint",
+    "analogy": "a street address: building number plus flat number.",
+    "slide": 19
+   },
+   {
+    "concept": "The previous transaction's identifier",
+    "analogy": "the building number in that address.",
+    "slide": 21
+   },
+   {
+    "concept": "Output index",
+    "analogy": "the flat number inside the building, counted from zero.",
+    "slide": 21
+   },
+   {
+    "concept": "The rule against double spending",
+    "analogy": "a banknote that can be handed over only once.",
+    "slide": 21
+   },
+   {
+    "concept": "Conflicting transactions",
+    "analogy": "two cheques written against the same banknote.",
+    "slide": 21
+   },
+   {
+    "concept": "The UTXO database",
+    "analogy": "a drawer holding only the banknotes nobody has spent.",
+    "slide": 23
+   },
+   {
+    "concept": "Utreexo",
+    "analogy": "a drawer holding only the banknotes nobody has spent.",
+    "slide": 23
+   },
+   {
+    "concept": "Digest",
+    "analogy": "a fingerprint taken from a whole document.",
+    "slide": 23
+   },
+   {
+    "concept": "Internal byte order",
+    "analogy": "reading a phone number from its last digit.",
+    "slide": 23
+   },
+   {
+    "concept": "Display byte order",
+    "analogy": "reading the phone number the usual way round.",
+    "slide": 23
+   },
+   {
+    "concept": "Input script",
+    "analogy": "the key you hand over at the door.",
+    "slide": 27
+   },
+   {
+    "concept": "Script length prefix",
+    "analogy": "a label on a box saying how many items it holds.",
+    "slide": 27
+   },
+   {
+    "concept": "Original sequence-based replacement",
+    "analogy": "an order slip you can reissue until the kitchen closes",
+    "slide": 28
+   },
+   {
+    "concept": "Opt-in replace-by-fee",
+    "analogy": "outbidding someone at an auction",
+    "slide": 28
+   },
+   {
+    "concept": "Sequence as a relative timelock",
+    "analogy": "a gift card that activates a week after purchase",
+    "slide": 28
+   },
+   {
+    "concept": "The sequence field",
+    "analogy": "The sequence field is a booth ticket whose meaning changed three times.",
+    "slide": 28
+   },
+   {
+    "concept": "Sequence number",
+    "analogy": "a counter on a ticket that the booth can reissue.",
+    "slide": 30
+   },
+   {
+    "concept": "Setup and refund transactions",
+    "analogy": "a locked deposit box that needs two keys.",
+    "slide": 30
+   },
+   {
+    "concept": "setup transaction",
+    "analogy": "a locked deposit box that needs two keys.",
+    "slide": 30
+   },
+   {
+    "concept": "Payment channel",
+    "analogy": "a bar tab: many orders, one bill at the end.",
+    "slide": 30
+   },
+   {
+    "concept": "high-frequency transactions",
+    "analogy": "a bar tab: many orders, one bill at the end.",
+    "slide": 30
+   },
+   {
+    "concept": "The replacement bandwidth attack",
+    "analogy": "refiling the same form again and again to clog the office.",
+    "slide": 30
+   },
+   {
+    "concept": "Original sequence-based transaction replacement",
+    "analogy": "refiling the same form again and again to clog the office.",
+    "slide": 30
+   },
+   {
+    "concept": "Opt-in replace-by-fee",
+    "analogy": "a form that says I may be replaced by a better-paid one.",
+    "slide": 32
+   },
+   {
+    "concept": "The BIP125 signal",
+    "analogy": "a tick box marked amendable on the form.",
+    "slide": 32
+   },
+   {
+    "concept": "Opt-in transaction replacement signaling",
+    "analogy": "a tick box marked amendable on the form.",
+    "slide": 32
+   },
+   {
+    "concept": "BIP68 relative timelock",
+    "analogy": "a coupon valid only some days after purchase.",
+    "slide": 32
+   },
+   {
+    "concept": "Sequence as a consensus-enforced relative timelock",
+    "analogy": "a coupon valid only some days after purchase.",
+    "slide": 32
+   },
+   {
+    "concept": "The type flag",
+    "analogy": "a switch choosing between counting turns and counting minutes.",
+    "slide": 32
+   },
+   {
+    "concept": "The disable flag",
+    "analogy": "an off switch that makes the coupon valid at once.",
+    "slide": 34
+   },
+   {
+    "concept": "The 16-bit mask",
+    "analogy": "a counter with room for only 65,535 ticks.",
+    "slide": 34
+   },
+   {
+    "concept": "The output list",
+    "analogy": "the change a till hands back",
+    "slide": 35
+   },
+   {
+    "concept": "Uneconomical outputs and dust",
+    "analogy": "a bank that refuses to count single cents",
+    "slide": 35
+   },
+   {
+    "concept": "The output script",
+    "analogy": "the lock fitted to a new deposit box",
+    "slide": 35
+   },
+   {
+    "concept": "Outputs",
+    "analogy": "Outputs are the lines of a till receipt: an amount and who may collect it.",
+    "slide": 35
+   },
+   {
+    "concept": "Output count",
+    "analogy": "how many envelopes of money leave the till.",
+    "slide": 37
+   },
+   {
+    "concept": "Amount",
+    "analogy": "the sum on a cheque, written in the smallest coins.",
+    "slide": 37
+   },
+   {
+    "concept": "Satoshi",
+    "analogy": "a cent that is a hundred-millionth of the whole note.",
+    "slide": 37
+   },
+   {
+    "concept": "The consensus range of an amount",
+    "analogy": "a cheque form that cannot print negative or absurd sums.",
+    "slide": 37
+   },
+   {
+    "concept": "Uneconomical output",
+    "analogy": "a coin so small the postage costs more than the coin.",
+    "slide": 39
+   },
+   {
+    "concept": "Uneconomical outputs and disallowed dust",
+    "analogy": "a coin so small the postage costs more than the coin.",
+    "slide": 39
+   },
+   {
+    "concept": "Dust limit",
+    "analogy": "the smallest coin the post office agrees to carry.",
+    "slide": 39
+   },
+   {
+    "concept": "Data-carrier output",
+    "analogy": "a note stuck on a parcel, carrying no money.",
+    "slide": 39
+   },
+   {
+    "concept": "Output script",
+    "analogy": "a lock fitted to the coin: whoever opens it may spend.",
+    "slide": 39
+   },
+   {
+    "concept": "Script size limits",
+    "analogy": "a cap on how long the lock's instructions may be.",
+    "slide": 42
+   },
+   {
+    "concept": "Anyone-can-spend scripts",
+    "analogy": "a safe left unlocked in the street.",
+    "slide": 42
+   },
+   {
+    "concept": "Standard transaction outputs",
+    "analogy": "the few lock models the post office accepts.",
+    "slide": 42
+   },
+   {
+    "concept": "The idea of a witness",
+    "analogy": "the ID card you show at the counter",
+    "slide": 44
+   },
+   {
+    "concept": "The malleability problems",
+    "analogy": "re-spelling a name so the filing clerk loses the receipt",
+    "slide": 44
+   },
+   {
+    "concept": "Segregated witness",
+    "analogy": "keeping the passport photo off the ticket number",
+    "slide": 44
+   },
+   {
+    "concept": "Witness structure serialization",
+    "analogy": "annex pages bound behind the main letter",
+    "slide": 44
+   },
+   {
+    "concept": "Witnesses",
+    "analogy": "A witness is the ID you show at the counter, kept off the receipt.",
+    "slide": 44
+   },
+   {
+    "concept": "Witness",
+    "analogy": "the answer to the riddle printed on the lock.",
+    "slide": 46
+   },
+   {
+    "concept": "Public key and signature as witness",
+    "analogy": "a signature only the account holder can produce.",
+    "slide": 46
+   },
+   {
+    "concept": "Contract protocols",
+    "analogy": "agreements signed in advance so nobody can walk away.",
+    "slide": 46
+   },
+   {
+    "concept": "trustless protocol",
+    "analogy": "agreements signed in advance so nobody can walk away.",
+    "slide": 46
+   },
+   {
+    "concept": "Circular dependency",
+    "analogy": "needing the key to get the key.",
+    "slide": 46
+   },
+   {
+    "concept": "Circular Dependencies",
+    "analogy": "needing the key to get the key.",
+    "slide": 46
+   },
+   {
+    "concept": "Third-party transaction malleability",
+    "analogy": "a stranger rewording your cheque without changing the sum.",
+    "slide": 48
+   },
+   {
+    "concept": "Alternative push encodings",
+    "analogy": "four ways to write the same number in words.",
+    "slide": 48
+   },
+   {
+    "concept": "Second-party transaction malleability",
+    "analogy": "your partner re-signing a document with another pen.",
+    "slide": 48
+   },
+   {
+    "concept": "Wanted malleability",
+    "analogy": "a form with a box for changes allowed by me.",
+    "slide": 48
+   },
+   {
+    "concept": "Segregated witness",
+    "analogy": "moving the signatures to a separate page the receipt ignores.",
+    "slide": 51
+   },
+   {
+    "concept": "Hard fork",
+    "analogy": "a new road standard that old cars cannot drive on.",
+    "slide": 51
+   },
+   {
+    "concept": "Soft fork",
+    "analogy": "a stricter road rule that old cars can still obey.",
+    "slide": 51
+   },
+   {
+    "concept": "Witness program",
+    "analogy": "a lock label saying which kind of key fits.",
+    "slide": 51
+   },
+   {
+    "concept": "Witness structure",
+    "analogy": "an annex page stapled to the transaction.",
+    "slide": 52
+   },
+   {
+    "concept": "Witness Structure Serialization",
+    "analogy": "an annex page stapled to the transaction.",
+    "slide": 52
+   },
+   {
+    "concept": "Witness stack",
+    "analogy": "a pile of papers handed in for one input.",
+    "slide": 52
+   },
+   {
+    "concept": "Witness item",
+    "analogy": "one sheet in the pile, with its length stamped on.",
+    "slide": 52
+   },
+   {
+    "concept": "A legacy input's witness",
+    "analogy": "an empty annex: nothing stapled to old-style inputs.",
+    "slide": 52
+   },
+   {
+    "concept": "Lock time",
+    "analogy": "a post-dated cheque",
+    "slide": 54
+   },
+   {
+    "concept": "Coinbase transactions",
+    "analogy": "the mint's wage slip for the miner",
+    "slide": 54
+   },
+   {
+    "concept": "Lock time and the coinbase",
+    "analogy": "A lock time is a post-dated cheque; a coinbase is the mint's wage slip.",
+    "slide": 54
+   },
+   {
+    "concept": "The lock time field",
+    "analogy": "a do-not-open-before date on an envelope.",
+    "slide": 56
+   },
+   {
+    "concept": "Lock time as a block height",
+    "analogy": "do not open before a numbered page of the logbook.",
+    "slide": 56
+   },
+   {
+    "concept": "Lock time as an epoch time",
+    "analogy": "do not open before this calendar date.",
+    "slide": 56
+   },
+   {
+    "concept": "Median time past",
+    "analogy": "asking the middle voter, not the loudest.",
+    "slide": 56
+   },
+   {
+    "concept": "Coinbase transaction",
+    "analogy": "the bonus the mint pays whoever closes the page.",
+    "slide": 58
+   },
+   {
+    "concept": "generation transaction",
+    "analogy": "the bonus the mint pays whoever closes the page.",
+    "slide": 58
+   },
+   {
+    "concept": "The null outpoint",
+    "analogy": "a ticket with no previous holder: printed new.",
+    "slide": 58
+   },
+   {
+    "concept": "The coinbase field",
+    "analogy": "a free text box on the bonus slip.",
+    "slide": 58
+   },
+   {
+    "concept": "Block subsidy",
+    "analogy": "a bonus that halves every four years of work.",
+    "slide": 58
+   },
+   {
+    "concept": "Block reward",
+    "analogy": "the bonus plus the tips from customers.",
+    "slide": 60
+   },
+   {
+    "concept": "Maturity rule",
+    "analogy": "wages you cannot spend until the pay clears.",
+    "slide": 60
+   },
+   {
+    "concept": "Weight and vbytes",
+    "analogy": "postage that charges less for the small print",
+    "slide": 62
+   },
+   {
+    "concept": "Foundations",
+    "analogy": "the foundations under a house",
+    "slide": 62
+   },
+   {
+    "concept": "Weight and foundations",
+    "analogy": "Weight is a transaction's postage; foundations are the post office's rules.",
+    "slide": 62
+   },
+   {
+    "concept": "Weight",
+    "analogy": "postage priced by volume, with signatures at a discount.",
+    "slide": 64
+   },
+   {
+    "concept": "Vbytes",
+    "analogy": "the parcel size after the discount is applied.",
+    "slide": 64
+   },
+   {
+    "concept": "The block weight limit",
+    "analogy": "a lorry that carries four million weight units.",
+    "slide": 64
+   },
+   {
+    "concept": "Weight factors",
+    "analogy": "a price list: four for plain bytes, one for annex bytes.",
+    "slide": 64
+   },
+   {
+    "concept": "Hash function",
+    "analogy": "a meat grinder: any input, a result of fixed size.",
+    "slide": 66
+   },
+   {
+    "concept": "Double SHA-256",
+    "analogy": "running the grinder twice for safety.",
+    "slide": 66
+   },
+   {
+    "concept": "Transaction identifier",
+    "analogy": "a parcel's tracking number from its plain contents.",
+    "slide": 66
+   },
+   {
+    "concept": "Witness transaction identifier",
+    "analogy": "a tracking number that counts the annex too.",
+    "slide": 66
+   },
+   {
+    "concept": "Relay policy",
+    "analogy": "the house rules of one post office.",
+    "slide": 68
+   },
+   {
+    "concept": "Consensus rule",
+    "analogy": "the law every post office must obey identically.",
+    "slide": 68
+   }
+  ],
+  "coverage": {
+   "measure": "concepts of the research ontology whose label is on a slide",
+   "percent": 93.0
+  }
+ },
+ "slides": [
+  {
+   "kind": "title",
+   "title": "Chapter 6: Transactions",
+   "sub": "One real transaction, 194 bytes, read field by field, with every number recomputed",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/mbc3_0601.png",
+     "x": 6.9,
+     "y": 0.35,
+     "w": 2.6,
+     "h": 1.75
+    },
+    {
+     "t": "foot",
+     "x": 0.6,
+     "y": 4.1,
+     "w": 8.8,
+     "h": 0.4,
+     "fs": 10,
+     "body": "Figure: a byte map of a transaction, Antonopoulos and Harding, Mastering Bitcoin 3e, CC BY-SA 4.0. Python 3.14.6, no Bitcoin Core node."
+    }
+   ],
+   "notes": "Today we read one real transaction, Alice's payment to Bob, byte by byte, and recompute every number on the slides. Point at the byte map on the right: each strip is a field we will meet. Ask the room what a transaction must contain besides an amount. A common first guess is a balance, and there is none.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Today's route",
+   "sub": "Eight parts; every number is a slide you can jump to",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 6.3,
+     "h": 3.5,
+     "cols": 3,
+     "fs": 11.5,
+     "subfs": 10.5,
+     "accent": [],
+     "items": [
+      {
+       "label": "1. Questions and the chapter map",
+       "sub": "(slides 3-4)"
+      },
+      {
+       "label": "2. What a transaction is",
+       "sub": "(slides 5-10)"
+      },
+      {
+       "label": "3. Version, marker and flag",
+       "sub": "(slides 11-14)"
+      },
+      {
+       "label": "4. Inputs",
+       "sub": "(slides 15-23)"
+      },
+      {
+       "label": "5. The sequence field",
+       "sub": "(slides 24-29)"
+      },
+      {
+       "label": "6. Outputs",
+       "sub": "(slides 30-37)"
+      },
+      {
+       "label": "7. Witnesses",
+       "sub": "(slides 38-46)"
+      },
+      {
+       "label": "8. Lock time and the coinbase",
+       "sub": "(slides 47-53)"
+      },
+      {
+       "label": "9. Weight and foundations",
+       "sub": "(slides 54-62)"
+      }
+     ]
+    },
+    {
+     "t": "stat",
+     "x": 7.05,
+     "y": 1.4,
+     "w": 2.45,
+     "h": 3.5,
+     "vert": true,
+     "items": [
+      {
+       "n": "62",
+       "label": "slides, numbered bottom-right"
+      },
+      {
+       "n": "4",
+       "label": "true stories, each told by 5N1K"
+      },
+      {
+       "n": "18",
+       "label": "code examples with a picture of each result"
+      }
+     ]
+    }
+   ],
+   "notes": "The nine parts follow the order of the bytes of a transaction. Point at the three counters on the right: slides, true stories and runnable examples. Every example has a twin in the Chapter code tab of the course page, so students can rerun it at home. Ask them to keep one question in mind for each part.",
+   "bg": "light",
+   "take": "Eight parts, one real transaction, and a summary you can check"
+  },
+  {
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "sub": "Its own competency questions; we return to each",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 3.5,
+     "fs": 12.0,
+     "items": [
+      "What does a Bitcoin transaction ask full nodes to do?",
+      "How is a transaction serialized in the extended and the legacy format?",
+      "What do the version, marker and flag tell a node?",
+      "Which three meanings has the sequence field carried?",
+      "Why did witnesses in the input script make the identifier malleable?",
+      "How are weight and vbytes computed, and does 569 reproduce from the bytes?",
+      "Who creates new bitcoins, and when can they be spent?"
+     ]
+    }
+   ],
+   "notes": "Read the seven questions aloud and promise to return to them in the summary. Ask who can already answer the first one. Most students say a transaction moves coins; the better answer is that it asks every node to update its record of unspent outputs.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "One chapter, eight branches",
+   "sub": "The concept map the whole deck hangs on",
+   "items": [
+    {
+     "t": "boxes",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "h": 3.4,
+     "cols": 4,
+     "fs": 12.5,
+     "subfs": 10.5,
+     "accent": [
+      2
+     ],
+     "items": [
+      {
+       "label": "What a transaction is",
+       "sub": "10 concepts"
+      },
+      {
+       "label": "Version, marker and flag",
+       "sub": "8 concepts"
+      },
+      {
+       "label": "Inputs",
+       "sub": "18 concepts"
+      },
+      {
+       "label": "The sequence field",
+       "sub": "13 concepts"
+      },
+      {
+       "label": "Outputs",
+       "sub": "14 concepts"
+      },
+      {
+       "label": "Witnesses",
+       "sub": "20 concepts"
+      },
+      {
+       "label": "Lock time and the coinbase",
+       "sub": "12 concepts"
+      },
+      {
+       "label": "Weight and foundations",
+       "sub": "12 concepts"
+      }
+     ]
+    }
+   ],
+   "notes": "This map is the skeleton of the lecture: eight branches and 107 concepts. Point at Witnesses, the busiest branch, and ask which branch the group expects to be hardest. Remind them that every concept has a card with a short meaning and an everyday comparison.",
+   "bg": "light",
+   "take": "Eight branches; every slide today lives on this map"
+  },
+  {
+   "kind": "section",
+   "title": "What a transaction is",
+   "sub": "A transaction is a signed letter asking every ledger to update itself.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Idea of a transaction",
+       "meaning": "What a transaction is and what each node does with it.",
+       "analogy": "Think of a signed letter that asks every ledger to change.",
+       "hM": 0.43,
+       "hA": 0.43
+      },
+      {
+       "pill": "Serialization formats",
+       "meaning": "The ways a transaction is written out as bytes.",
+       "analogy": "Think of packing a letter flat for the post.",
+       "hM": 0.43,
+       "hA": 0.235
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      1.0,
+      0.9,
+      1.9,
+      1.9,
+      1.9,
+      1.0
+     ],
+     "cells": [
+      {
+       "t": "Version",
+       "hot": true
+      },
+      {
+       "t": "Marker Flag",
+       "hot": true
+      },
+      {
+       "t": "Inputs",
+       "hot": true
+      },
+      {
+       "t": "Outputs",
+       "hot": true
+      },
+      {
+       "t": "Witnesses",
+       "hot": true
+      },
+      {
+       "t": "Lock time",
+       "hot": true
+      }
+     ]
+    }
+   ],
+   "notes": "This part opens one real transaction and reads it as 194 bytes. Point at the two tiles: the idea of a transaction and the ways it is written as bytes. Ask what could go wrong if every node wrote a transaction differently. A story about the first transaction ever closes the part.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Alice's transaction, drawn to scale",
+   "sub": "Each box is a field; its width is its size in bytes",
+   "items": [
+    {
+     "t": "picture",
+     "native": true
+    }
+   ],
+   "notes": "Draw this on the board if you can: two strips, one long and one short. The long one is what travels on the network, 194 bytes; the short one leaves out marker, flag and witness and has 125 bytes. Ask which strip the txid is computed from. The short one; students expect the long one.",
+   "bg": "light",
+   "take": "Seven fields in one fixed order: 194 bytes extended, 125 bytes legacy"
+  },
+  {
+   "kind": "content",
+   "title": "What a transaction is: concepts (1 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.284,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Transaction",
+       "meaning": "A request to thousands of databases.",
+       "analogy": "Think of a signed letter asking every bank branch to update its ledger.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "The ownership record of a full node",
+       "meaning": "Every node keeps the same register.",
+       "analogy": "Think of a land register that every town keeps an identical copy of.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "The parts of a transaction",
+       "meaning": "Five top-level fields, plus two for segwit.",
+       "analogy": "Think of a cheque with boxes for payer, payee, amount and signature.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Serialized transaction",
+       "meaning": "The 194 bytes Bitcoin Core returned.",
+       "analogy": "Think of a letter flattened into one long strip of tape.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.209,
+       "alias": "Also called: A Serialized Bitcoin Transaction"
+      }
+     ]
+    }
+   ],
+   "notes": "Four ideas open the chapter: the transaction, the record every node keeps, its parts and its serialized form. Read each card twice, once for the meaning and once for the comparison. Ask students to retell the letter-and-ledger comparison. A common mistake is to think a transaction carries a balance; it only asks nodes to change their record.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "194 bytes, every one named",
+   "sub": "Alice's transaction, parsed from its hexadecimal text",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "tx = parse_tx(ALICE)",
+         ""
+        ],
+        [
+         "from collections import defaultdict",
+         ""
+        ]
+       ],
+       "note": "The library names every field of the transaction and where it sits.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "g = defaultdict(int)",
+         ""
+        ],
+        [
+         "for s, p, n in tx['spans']: g[s.split()[0]] += n",
+         ""
+        ]
+       ],
+       "note": "Walk the fields in byte order and add up their lengths, one total per group.",
+       "y": 2.321,
+       "h": 0.521,
+       "ny": 2.872,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "sum(g.values())",
+         "194"
+        ]
+       ],
+       "note": "The groups add back to the whole transaction: no byte is left over.",
+       "y": 3.372,
+       "h": 0.521,
+       "ny": 3.923,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx come from the chapter setup",
+     "capy": 4.203
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: bytes per field group (all 194)",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "chart",
+     "ctype": "bar",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "h": 2.27,
+     "labels": [
+      "version",
+      "marker",
+      "flag",
+      "input",
+      "output",
+      "witness",
+      "lock"
+     ],
+     "series": [
+      {
+       "name": "bytes",
+       "data": [
+        4.0,
+        1.0,
+        1.0,
+        42.0,
+        75.0,
+        67.0,
+        4.0
+       ]
+      }
+     ],
+     "dataLabels": true,
+     "dlFs": 9,
+     "dlPos": "outEnd"
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.31,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "Outputs and the witness take the most bytes; version and lock time take four each.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "The library parses Alice's transaction into named fields and adds up their lengths. Point at the loop in lines 4 and 5 and at the two tallest bars, output and witness. Ask whether any byte is left unexplained: the seven groups add back to exactly 194. A common slip is to forget that marker and flag are fields too.",
+   "bg": "light",
+   "take": "Every byte belongs to a named field, and the fields come in a fixed order"
+  },
+  {
+   "kind": "content",
+   "title": "What a transaction is: concepts (2 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.284,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Extended serialization format",
+       "meaning": "Marker 00, flag 01, witness at the end.",
+       "analogy": "Think of the same letter with a signed slip tucked in at the end.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Legacy serialization",
+       "meaning": "No marker, no flag, no witness.",
+       "analogy": "Think of the plain letter, before the extra slip was invented.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Partially signed bitcoin transaction",
+       "meaning": "A template passed between programs.",
+       "analogy": "Think of a form passed round the office until every signer has signed.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.209,
+       "alias": "Also called: PSBT"
+      },
+      {
+       "label": "Byte map",
+       "meaning": "Every field at its offset.",
+       "analogy": "Think of a floor plan showing which room each byte lives in.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Extended and legacy serialization are the same payment written two ways, and a partially signed transaction is a form passed between programs. Point at the byte map card and ask what a floor plan has to do with bytes. Students often mix up the format with the transaction: one transaction has two serializations.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Two serializations, two identifiers",
+   "sub": "Extended with the witness, legacy without it",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "ext = serialize(tx, witness=True)",
+         ""
+        ],
+        [
+         "leg = serialize(tx, witness=False)",
+         ""
+        ]
+       ],
+       "note": "The same payment is written twice: once with the witness, once without.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "ids = [wtxid(ALICE)[:16], txid(ALICE)[:16]]",
+         ""
+        ]
+       ],
+       "note": "The legacy form is shorter, and each form has its own hash.",
+       "y": 2.501,
+       "h": 0.341,
+       "ny": 2.872,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "sizes = [len(ext), len(leg)]",
+         ""
+        ],
+        [
+         "sizes",
+         "[194, 125]"
+        ]
+       ],
+       "note": "Sizes in bytes: the extended form carries marker, flag and witness.",
+       "y": 3.192,
+       "h": 0.702,
+       "ny": 3.924,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.204
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: the two forms of one payment",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      0.85,
+      0.55,
+      1.85
+     ],
+     "rows": [
+      [
+       "Form",
+       "Bytes",
+       "Hash (16 hex digits)"
+      ],
+      [
+       "Extended",
+       "194",
+       "f7cdbc7cf8b910d3"
+      ],
+      [
+       "Legacy",
+       "125",
+       "466200308696215b"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.14,
+     "w": 3.25,
+     "h": 0.86,
+     "body": "The 69 extra bytes are marker, flag and witness. The txid hashes the legacy form; the wtxid hashes the extended one.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "The same payment is serialized twice, with and without the witness. Point at the two sizes, 194 and 125, and at the two hashes. Ask which hash an explorer shows. It is the txid, the hash over the legacy bytes; mixing up txid and wtxid is the usual mistake.",
+   "bg": "light",
+   "take": "The txid hashes the legacy bytes only; the wtxid hashes everything"
+  },
+  {
+   "kind": "content",
+   "title": "Ten bitcoins to Hal Finney, block 170",
+   "sub": "The first transaction ever to spend an output",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/photo_hal_finney_1972.jpg",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.6,
+     "h": 2.55,
+     "cap": "Hal Finney, 1972 - Daily News-Post, public domain"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.5,
+     "w": 9.0,
+     "who": "Satoshi Nakamoto (sender) and Hal Finney, cryptographer and the second person to run the software",
+     "where": "block 170 of the blockchain; Finney's computer in California, running bitcoin since the day before",
+     "when": "2009-01-12",
+     "link": "https://mempool.space/tx/f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16",
+     "linkText": "Satoshi to Finney, block 170 (tx)"
+    }
+   ],
+   "notes": "Tell it as a story: Finney's two words, then Satoshi's 10 BTC in block 170. Point at the photograph and at the source link on the slide. Ask which fields of this chapter students can already name in that transaction. A common mistake is to say the format changed later; only marker, flag and witness were added.",
+   "bg": "light"
+  },
+  {
+   "kind": "section",
+   "title": "Version, marker and flag",
+   "sub": "Version, marker and flag are the edition number and labels on the envelope.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "The version field",
+       "meaning": "Four bytes that say which rule edition applies.",
+       "analogy": "Think of the edition number printed on a form.",
+       "hM": 0.43,
+       "hA": 0.235
+      },
+      {
+       "pill": "Marker and flag",
+       "meaning": "Two bytes that announce the witness format.",
+       "analogy": "Think of a fragile label on a parcel.",
+       "hM": 0.235,
+       "hA": 0.235
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      1.0,
+      0.9,
+      1.9,
+      1.9,
+      1.9,
+      1.0
+     ],
+     "cells": [
+      {
+       "t": "Version",
+       "hot": true
+      },
+      {
+       "t": "Marker Flag",
+       "hot": true
+      },
+      {
+       "t": "Inputs",
+       "hot": false
+      },
+      {
+       "t": "Outputs",
+       "hot": false
+      },
+      {
+       "t": "Witnesses",
+       "hot": false
+      },
+      {
+       "t": "Lock time",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "The first six bytes are not about money; they tell a node which rules apply and whether a witness follows. Ask why a format needs an edition number at all. The answer is that old and new software must read the same bytes without confusion.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Six bytes that set the rules",
+   "sub": "What an old and a new parser do with the same bytes",
+   "items": [
+    {
+     "t": "picture",
+     "native": true
+    }
+   ],
+   "notes": "Point at the six cells one at a time: four for the version, one marker, one flag. Ask the room what an old parser does with the zero. It reads an empty input list and stops, which is exactly why the marker is a zero. A common mistake is to read the version as a big-endian number.",
+   "bg": "light",
+   "take": "A zero where an input count should be tells old and new software apart"
+  },
+  {
+   "kind": "content",
+   "title": "Version, marker and flag (1 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.465,
+     "cols": 3,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Version 1",
+       "meaning": "01000000 in the first four bytes.",
+       "analogy": "Think of edition 1 of a form, still valid in every office.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "Version 2 and BIP68",
+       "meaning": "The version that turns sequence into a timelock.",
+       "analogy": "Think of edition 2, which adds a waiting-period box to the form.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "The version 3 proposal",
+       "meaning": "A policy, not a consensus change.",
+       "analogy": "Think of a draft edition that offices may choose to accept.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Versions 1 and 2 and the version 3 proposal differ in what a node does with them. Ask which version a relative timelock needs. Version 2, through BIP68; version 3 is relay policy and not a consensus change, which is a frequent confusion.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "The first six bytes",
+   "sub": "Version, marker and flag in Alice's transaction",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "raw = bytes.fromhex(ALICE)",
+         ""
+        ]
+       ],
+       "note": "Raw bytes let us address single bytes of the transaction.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "version = int.from_bytes(raw[0:4], 'little')",
+         ""
+        ]
+       ],
+       "note": "The version takes four bytes, least significant byte first.",
+       "y": 2.141,
+       "h": 0.341,
+       "ny": 2.512,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "marker, flag = raw[4], raw[5]",
+         ""
+        ],
+        [
+         "head = raw[:6].hex()",
+         ""
+        ],
+        [
+         "head",
+         "'010000000001'"
+        ]
+       ],
+       "note": "Marker zero and flag one announce that a witness follows.",
+       "y": 2.832,
+       "h": 0.882,
+       "ny": 3.744,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.024
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.24,
+     "body": "Result: the first six bytes, read",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.74,
+     "w": 3.25,
+     "colW": [
+      1.1,
+      1.0,
+      1.15
+     ],
+     "rows": [
+      [
+       "Bytes",
+       "Field",
+       "Value"
+      ],
+      [
+       "01000000",
+       "version",
+       "1"
+      ],
+      [
+       "00",
+       "marker",
+       "0"
+      ],
+      [
+       "01",
+       "flag",
+       "1"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.24,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "A zero where a count is expected tells a node that the extended format, with a witness, follows.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "Six bytes decide how everything after them is read. Point at the little-endian version in line 2 and ask why the number 1 is written 01000000. The zero marker then tells a node that a witness follows; a legacy parser would read that zero as an empty input list.",
+   "bg": "light",
+   "take": "A zero marker where an input count would be tells old and new nodes apart"
+  },
+  {
+   "kind": "content",
+   "title": "Version, marker and flag (2 of 2)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.843,
+     "cols": 3,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Presigned transactions",
+       "meaning": "Signed now, broadcast years later.",
+       "analogy": "Think of a post-dated cheque kept in a drawer.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Marker byte",
+       "meaning": "A zero where a count cannot be zero.",
+       "analogy": "Think of a sticker on a parcel saying special contents inside.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0.379,
+       "alias": "Also called: Extended Marker and Flag"
+      },
+      {
+       "label": "Flag byte",
+       "meaning": "One, with other values reserved.",
+       "analogy": "Think of a second sticker that names the kind of extras.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "A presigned transaction waits in a drawer like a post-dated cheque, while marker and flag are stickers on the parcel. Ask why the marker is zero. A transaction cannot have zero inputs, so a zero there cannot be mistaken for data.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "section",
+   "title": "Inputs",
+   "sub": "Inputs are the banknotes you hand over, each named by its address.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11,
+     "pfs": 11,
+     "items": [
+      {
+       "pill": "The input list",
+       "meaning": "The list of coins this transaction spends.",
+       "analogy": "Think of a receipt listing the notes you hand over.",
+       "hM": 0.413,
+       "hA": 0.599
+      },
+      {
+       "pill": "The outpoint",
+       "meaning": "The address of one coin: a transaction and an output number.",
+       "analogy": "Think of a street address with building and flat.",
+       "hM": 0.599,
+       "hA": 0.599
+      },
+      {
+       "pill": "Byte order",
+       "meaning": "The same 32 bytes can be read in two directions.",
+       "analogy": "Think of a book you can read from the front or the back.",
+       "hM": 0.599,
+       "hA": 0.599
+      },
+      {
+       "pill": "The input script",
+       "meaning": "The slot where legacy inputs put their proof.",
+       "analogy": "Think of a keyhole that legacy inputs fill with the key.",
+       "hM": 0.413,
+       "hA": 0.599
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      1.0,
+      0.9,
+      1.9,
+      1.9,
+      1.9,
+      1.0
+     ],
+     "cells": [
+      {
+       "t": "Version",
+       "hot": false
+      },
+      {
+       "t": "Marker Flag",
+       "hot": false
+      },
+      {
+       "t": "Inputs",
+       "hot": true
+      },
+      {
+       "t": "Outputs",
+       "hot": false
+      },
+      {
+       "t": "Witnesses",
+       "hot": false
+      },
+      {
+       "t": "Lock time",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "Inputs name coins and never state an amount. Point at the four tiles: the list, the outpoint, byte order and the input script. Ask how a node can know the value of a coin it is not shown. It looks the coin up in its own database.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "An input is an address, not an amount",
+   "sub": "How an input names a coin, and how a count is written in few bytes",
+   "items": [
+    {
+     "t": "picture",
+     "native": true
+    }
+   ],
+   "notes": "An input is only an address: the txid of an earlier transaction and an output number. Trace the arrow from Alice's input to output 1 of the earlier transaction. Ask where the amount is stored; in the earlier output, never in the input. Then point at the four sizes of CompactSize on the right.",
+   "bg": "light",
+   "take": "An input names a coin by transaction and output number; it states no amount"
+  },
+  {
+   "kind": "content",
+   "title": "Inputs: concepts (1 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.284,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Input count",
+       "meaning": "At least one, in practice a few thousand.",
+       "analogy": "Think of counting how many cheques are stapled to a payment.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.209,
+       "alias": "Also called: Length of Transaction Input List"
+      },
+      {
+       "label": "CompactSize unsigned integer",
+       "meaning": "1, 3, 5 or 9 bytes, by value.",
+       "analogy": "Think of a ticket machine: small numbers get short tickets.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Other variable-length integers",
+       "meaning": "Three encodings, one name that is safe.",
+       "analogy": "Think of three kinds of ticket sold under one name.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Outpoint",
+       "meaning": "36 bytes: a txid and an index.",
+       "analogy": "Think of a street address: building number plus flat number.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "These cards give the input count, the variable-length integer, the outpoint and their relatives. Point at the ticket-machine comparison and ask why small counts get short tickets. The usual mistake is to assume every count takes four bytes.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "CompactSize: counting in few bytes",
+   "sub": "The bytes a count takes grow with the count",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "values = [1, 252, 253, 65535, 65536, 2**32]",
+         ""
+        ]
+       ],
+       "note": "Six counts, chosen at the edges where the encoding changes length.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "sizes = [len(cs_encode(n)) for n in values]",
+         ""
+        ]
+       ],
+       "note": "Encode each count as a transaction does, and measure the bytes it takes.",
+       "y": 2.141,
+       "h": 0.341,
+       "ny": 2.512,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "prefix = [cs_encode(n)[:1].hex() for n in values]",
+         ""
+        ],
+        [
+         "sizes",
+         "[1, 1, 3, 3, 5, 9]"
+        ]
+       ],
+       "note": "The first byte of each encoding: fd, fe or ff announce a longer number.",
+       "y": 3.012,
+       "h": 0.702,
+       "ny": 3.744,
+       "nh": 0.41
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.204
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.24,
+     "body": "Result: bytes taken by each count",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "chart",
+     "ctype": "bar",
+     "x": 6.25,
+     "y": 1.74,
+     "w": 3.25,
+     "h": 2.47,
+     "labels": [
+      "1",
+      "252",
+      "253",
+      "65535",
+      "65536",
+      "2**32"
+     ],
+     "series": [
+      {
+       "name": "bytes",
+       "data": [
+        1.0,
+        1.0,
+        3.0,
+        3.0,
+        5.0,
+        9.0
+       ]
+      }
+     ],
+     "dataLabels": true,
+     "dlFs": 9,
+     "dlPos": "outEnd"
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.31,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "First bytes written: 01 fc fd fd fe ff. The values fd, fe and ff announce longer numbers.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A count takes one byte up to 252, then three, five or nine. Point at the six test values, chosen at the edges, and at the first bytes fd, fe and ff. Ask what 253 costs. Three bytes; students often expect two.",
+   "bg": "light",
+   "take": "Small counts cost one byte; the first byte warns when a longer number follows"
+  },
+  {
+   "kind": "content",
+   "title": "Inputs: concepts (2 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "The previous transaction's identifier",
+       "meaning": "The first 32 bytes of an outpoint.",
+       "analogy": "Think of the building number in that address.",
+       "hA": 0.695,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "Output index",
+       "meaning": "Four bytes counting from zero.",
+       "analogy": "Think of the flat number inside the building, counted from zero.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "The rule against double spending",
+       "meaning": "An output is spent at most once.",
+       "analogy": "Think of a banknote that can be handed over only once.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Conflicting transactions",
+       "meaning": "Same outpoint, two spenders.",
+       "analogy": "Think of two cheques written against the same banknote.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "An outpoint is a transaction identifier plus an output index, and double spending and conflicting transactions follow from it. Ask what two cheques written against one banknote would do to the bank. Remind students that the index counts from zero.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "The outpoint, read both ways round",
+   "sub": "Which coin an input spends",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "i0 = tx['inputs'][0]",
+         ""
+        ],
+        [
+         "stored = i0['txid_internal']",
+         ""
+        ]
+       ],
+       "note": "An input names a coin: the txid of an earlier transaction and an output number.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "shown = internal_to_display(stored)",
+         ""
+        ],
+        [
+         "back = display_to_internal(shown)",
+         ""
+        ]
+       ],
+       "note": "Explorers print the same 32 bytes in reverse order, and reversing twice restores them.",
+       "y": 2.501,
+       "h": 0.521,
+       "ny": 3.052,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "check = back == stored and shown == txid(PREV)",
+         ""
+        ],
+        [
+         "check",
+         "True"
+        ]
+       ],
+       "note": "The printed form equals the earlier transaction's txid; the index says which output.",
+       "y": 3.552,
+       "h": 0.702,
+       "ny": 4.284,
+       "nh": 0.41
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.744
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: one outpoint, read both ways",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.65,
+      1.6
+     ],
+     "rows": [
+      [
+       "Form",
+       "First 16 hex digits"
+      ],
+      [
+       "Stored in the input",
+       "eb3ae38f27191aa5"
+      ],
+      [
+       "Printed by explorers",
+       "4ac5418026798669"
+      ],
+      [
+       "Reversing back restores it",
+       "yes"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.44,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "Input 0 spends output 1 of the earlier transaction. The stored and printed forms are mirror images.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "An input names a coin by an earlier txid and an output number. Point at lines 3 and 4, where the bytes are reversed and restored. Ask why reversing twice is safe. The common mistake is to look up the stored form on an explorer instead of the printed form.",
+   "bg": "light",
+   "take": "An input states no amount; it names a coin by transaction and output number"
+  },
+  {
+   "kind": "content",
+   "title": "Inputs: concepts (3 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.284,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "The UTXO database",
+       "meaning": "Remove what is spent, add what is created.",
+       "analogy": "Think of a drawer holding only the banknotes nobody has spent.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.209,
+       "alias": "Also called: Utreexo"
+      },
+      {
+       "label": "Digest",
+       "meaning": "32 bytes that identify a transaction.",
+       "analogy": "Think of a fingerprint taken from a whole document.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Internal byte order",
+       "meaning": "The order inside the bytes.",
+       "analogy": "Think of reading a phone number from its last digit.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Display byte order",
+       "meaning": "The order on the screen.",
+       "analogy": "Think of reading the phone number the usual way round.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "The UTXO database holds only unspent coins, and the byte-order cards explain the two directions an identifier is read. Ask which direction explorers print. A digest stored in one order and shown in the other is a classic source of bugs.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Spending changes the drawer",
+   "sub": "A node keeps only unspent outputs",
+   "items": [
+    {
+     "t": "picture",
+     "native": true
+    }
+   ],
+   "notes": "This is the drawer comparison drawn as boxes. One coin goes in, two come out, and what is missing is the fee. Ask how many coins the drawer holds before and after. A common mistake is to look for the fee in the transaction; it is only a difference of two sums.",
+   "bg": "light",
+   "take": "One coin out, two coins in: the set always holds exactly the unspent coins"
+  },
+  {
+   "kind": "content",
+   "title": "A spend updates the UTXO set",
+   "sub": "Remove what is spent, add what is created",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "prev = PREV_REC['vout'][1]",
+         ""
+        ],
+        [
+         "utxo = {(txid(PREV), 1): prev['value']}",
+         ""
+        ],
+        [
+         "before = sorted(utxo.values())",
+         ""
+        ]
+       ],
+       "note": "Before the payment the set holds the one coin Alice spends.",
+       "y": 1.45,
+       "h": 0.702,
+       "ny": 2.182,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "for i in tx['inputs']: del utxo[(i['txid'], i['vout'])]",
+         ""
+        ],
+        [
+         "t, outs = txid(ALICE), tx['outputs']",
+         ""
+        ],
+        [
+         "utxo |= {(t, n): o['value'] for n, o in enumerate(outs)}",
+         ""
+        ]
+       ],
+       "note": "Each input removes the coin it names; each output adds a new coin.",
+       "y": 2.502,
+       "h": 0.702,
+       "ny": 3.234,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "fee = sum(before) - sum(utxo.values())",
+         ""
+        ],
+        [
+         "fee",
+         "5000"
+        ]
+       ],
+       "note": "What is left over is the fee; no field of the transaction states it.",
+       "y": 3.554,
+       "h": 0.702,
+       "ny": 4.286,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.566
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.24,
+     "body": "Result: the set of unspent outputs",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.74,
+     "w": 3.25,
+     "colW": [
+      1.0,
+      0.6,
+      1.65
+     ],
+     "rows": [
+      [
+       "Step",
+       "Coins",
+       "Satoshis"
+      ],
+      [
+       "Before",
+       "1",
+       "100,000"
+      ],
+      [
+       "After",
+       "2",
+       "20,000 + 75,000"
+      ],
+      [
+       "Left over: fee",
+       "-",
+       "5,000"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.24,
+     "w": 3.25,
+     "h": 0.46,
+     "body": "The fee of 5,000 satoshis is no field; it is 100,000 minus 95,000.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A full node keeps only unspent outputs. Walk the three groups: the drawer before, the removal and creation in the middle, the leftover at the end. Ask where the fee is written. Nowhere: it is the difference, 5,000, and students expect a fee field.",
+   "bg": "light",
+   "take": "Nodes keep only unspent outputs; the fee is whatever is left over"
+  },
+  {
+   "kind": "content",
+   "title": "10,000 bitcoins for two pizzas",
+   "sub": "The most famous purchase ever made with bitcoin",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/photo_papa_johns_jacksonville.jpg",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.6,
+     "h": 2.55,
+     "cap": "Papa John's plaque - Sanjev Rajaram, CC0"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.5,
+     "w": 9.0,
+     "who": "Laszlo Hanyecz, programmer in Jacksonville, Florida; the pizzas ordered by forum user jercos",
+     "where": "a Papa John's on Atlantic Avenue, Jacksonville - the shop now carries a plaque",
+     "when": "2010-05-22",
+     "link": "https://bitcointalk.org/index.php?topic=137.0",
+     "linkText": "Pizza for bitcoins? (bitcointalk thread)"
+    }
+   ],
+   "notes": "Hanyecz offered 10,000 BTC for two pizzas and four days later the deal was done. Point at the plaque photograph and at the count of 131 inputs. Ask why a one-output payment needs so many inputs. A wallet full of 50 BTC rewards must list every coin it spends.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Inputs: concepts (4 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Input script",
+       "meaning": "107 bytes for a legacy spend, 0 for segwit.",
+       "analogy": "Think of the key you hand over at the door.",
+       "hA": 0.475,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "Script length prefix",
+       "meaning": "0x6b says 107 bytes follow.",
+       "analogy": "Think of a label on a box saying how many items it holds.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "The input script is the keyhole a legacy input fills with a key: 107 bytes here, and none for segwit. Ask where the key went in Alice's transaction. It moved to the witness, which comes later in this deck.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "section",
+   "title": "The sequence field",
+   "sub": "The sequence field is a booth ticket whose meaning changed three times.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Sequence replacement",
+       "meaning": "The first use of the field: replace an unfinished transaction.",
+       "analogy": "Think of an order slip you can reissue until the kitchen closes.",
+       "hM": 0.625,
+       "hA": 0.625
+      },
+      {
+       "pill": "Opt-in replace-by-fee",
+       "meaning": "A later transaction that pays more replaces an earlier one.",
+       "analogy": "Think of outbidding someone at an auction.",
+       "hM": 0.43,
+       "hA": 0.43
+      },
+      {
+       "pill": "Relative timelock",
+       "meaning": "A coin that cannot be spent until some time after it arrived.",
+       "analogy": "Think of a gift card that activates a week after purchase.",
+       "hM": 0.625,
+       "hA": 0.43
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      1.0,
+      0.9,
+      1.9,
+      1.9,
+      1.9,
+      1.0
+     ],
+     "cells": [
+      {
+       "t": "Version",
+       "hot": false
+      },
+      {
+       "t": "Marker Flag",
+       "hot": false
+      },
+      {
+       "t": "Inputs: sequence",
+       "hot": true
+      },
+      {
+       "t": "Outputs",
+       "hot": false
+      },
+      {
+       "t": "Witnesses",
+       "hot": false
+      },
+      {
+       "t": "Lock time",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "One four-byte field has carried three meanings. Ask students to guess how many different things four bytes can say. We decode it against two proposals, BIP125 and BIP68, and see why bit 31 matters.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "The 32 bits of the sequence field",
+   "sub": "Where the flags and the value live",
+   "items": [
+    {
+     "t": "picture",
+     "native": true
+    }
+   ],
+   "notes": "Show the 32 bits as one bar and point at three places: bit 31, bit 22 and the low 16 bits. Ask which meaning came first. Replacement, then the opt-in signal, then the relative timelock; the same four bytes were reused each time. Students forget that bit 31 switches the timelock off.",
+   "bg": "light",
+   "take": "Bit 31 switches the relative timelock off; bit 22 picks its unit"
+  },
+  {
+   "kind": "content",
+   "title": "The sequence field: concepts (1 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.454,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Sequence number",
+       "meaning": "The last four bytes of an input.",
+       "analogy": "Think of a counter on a ticket that the booth can reissue.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Setup and refund transactions",
+       "meaning": "A deposit that needs both signatures.",
+       "analogy": "Think of a locked deposit box that needs two keys.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.209,
+       "alias": "Also called: setup transaction"
+      },
+      {
+       "label": "Payment channel",
+       "meaning": "Many versions, one broadcast.",
+       "analogy": "Think of a bar tab: many orders, one bill at the end.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.209,
+       "alias": "Also called: high-frequency transactions"
+      },
+      {
+       "label": "The replacement bandwidth attack",
+       "meaning": "20 KB in, 10 GB out, every minute.",
+       "analogy": "Think of refiling the same form again and again to clog the office.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.379,
+       "alias": "Also called: Original sequence-based transaction replacement"
+      }
+     ]
+    }
+   ],
+   "notes": "Four cards: the sequence number, setup and refund transactions, payment channels and the replacement bandwidth attack. Ask why replacing a transaction again and again is a danger. Twenty kilobytes in can cost ten gigabytes out every minute, which is the attack the card names.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Four sequence values, three meanings",
+   "sub": "Final, replaceable, and a relative timelock",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "seqs = (0xffffffff, 0xfffffffe, 0xfffffffd, 30)",
+         ""
+        ]
+       ],
+       "note": "Four typical values: final, almost final, replaceable, and thirty blocks.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "ds = [sequence_decode(s) for s in seqs]",
+         ""
+        ]
+       ],
+       "note": "The decoder applies BIP68 and BIP125, which reused the same field.",
+       "y": 2.321,
+       "h": 0.341,
+       "ny": 2.692,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "keys = ('hex', 'rbf_signal', 'relative_timelock')",
+         ""
+        ],
+        [
+         "rows = [tuple(d[k] for k in keys) for d in ds]",
+         ""
+        ],
+        [
+         "rows[3]",
+         "('0x0000001e', True, ('blocks', 30))"
+        ]
+       ],
+       "note": "Each row shows the replace signal and the relative timelock.",
+       "y": 3.012,
+       "h": 0.882,
+       "ny": 3.924,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.204
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.24,
+     "body": "Result: four values decoded",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.74,
+     "w": 3.25,
+     "colW": [
+      1.2,
+      1.0,
+      1.05
+     ],
+     "rows": [
+      [
+       "Sequence",
+       "Replaceable",
+       "Timelock"
+      ],
+      [
+       "0xffffffff",
+       "no",
+       "none"
+      ],
+      [
+       "0xfffffffe",
+       "no",
+       "none"
+      ],
+      [
+       "0xfffffffd",
+       "yes",
+       "none"
+      ],
+      [
+       "0x0000001e",
+       "yes",
+       "30 blocks"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.54,
+     "w": 3.25,
+     "h": 0.86,
+     "body": "The first two are final or almost final; the third signals replacement; only the last carries a timelock.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "One field, three meanings: final, replaceable, timelocked. Point at the third column of the result and ask why only the last value carries a timelock. Bit 31 is set in the first three, which switches the timelock off.",
+   "bg": "light",
+   "take": "Bit 31 of the sequence field is the security bit of this chapter"
+  },
+  {
+   "kind": "content",
+   "title": "The sequence field: concepts (2 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.454,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Opt-in replace-by-fee",
+       "meaning": "A higher fee rate replaces a lower one.",
+       "analogy": "Think of a form that says I may be replaced by a better-paid one.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "The BIP125 signal",
+       "meaning": "Below 0xfffffffe means replaceable.",
+       "analogy": "Think of a tick box marked amendable on the form.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.379,
+       "alias": "Also called: Opt-in transaction replacement signaling"
+      },
+      {
+       "label": "BIP68 relative timelock",
+       "meaning": "30 blocks: confirm 29 blocks after the output.",
+       "analogy": "Think of a coupon valid only some days after purchase.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.379,
+       "alias": "Also called: Sequence as a consensus-enforced relative timelock"
+      },
+      {
+       "label": "The type flag",
+       "meaning": "Bit 22 chooses blocks or 512-second units.",
+       "analogy": "Think of a switch choosing between counting turns and counting minutes.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Opt-in replace-by-fee, its BIP125 signal, the BIP68 timelock and the type flag. Point at the threshold 0xfffffffe and ask which values signal replaceability. Everything below it does, and a common slip is to count 0xfffffffe itself.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "BIP68: an hour as a sequence number",
+   "sub": "How the 32 bits of the field are divided",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "s = sequence_for(seconds=3600)",
+         ""
+        ],
+        [
+         "rt = sequence_decode(s)['relative_timelock']",
+         ""
+        ]
+       ],
+       "note": "One hour is counted in units of 512 seconds, with the type flag set.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "first = earliest_block(774958, 30)",
+         ""
+        ]
+       ],
+       "note": "Thirty blocks after a coin confirmed at 774,958 is the earliest spend.",
+       "y": 2.321,
+       "h": 0.341,
+       "ny": 2.692,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "dis = hex(SEQUENCE_LOCKTIME_DISABLE_FLAG)",
+         ""
+        ],
+        [
+         "typ = hex(SEQUENCE_LOCKTIME_TYPE_FLAG)",
+         ""
+        ],
+        [
+         "msk = hex(SEQUENCE_LOCKTIME_MASK)",
+         ""
+        ],
+        [
+         "first",
+         "774988"
+        ]
+       ],
+       "note": "Three masks split the 32 bits into two flags and a 16-bit value.",
+       "y": 3.192,
+       "h": 1.063,
+       "ny": 4.285,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.565
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: sequence values and BIP68 masks",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      0.95,
+      2.3
+     ],
+     "rows": [
+      [
+       "Quantity",
+       "Result"
+      ],
+      [
+       "One hour",
+       "0x400008 = 4,096 s"
+      ],
+      [
+       "Earliest block",
+       "774,988"
+      ],
+      [
+       "Masks",
+       "0x80000000, 0x400000, 0xffff"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.44,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "An hour rounds up to eight units of 512 seconds, which is 4,096 seconds.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "To demand an hour, the type flag is set and the value counts units of 512 seconds. Ask why 3,600 seconds becomes 4,096. It rounds up to eight units. Point at the three masks and remind students that the unit is not a second.",
+   "bg": "light",
+   "take": "Disable flag, type flag and a 16-bit value share one field"
+  },
+  {
+   "kind": "content",
+   "title": "The sequence field: concepts (3 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "The disable flag",
+       "meaning": "Bit 31 switches the timelock off.",
+       "analogy": "Think of an off switch that makes the coupon valid at once.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "The 16-bit mask",
+       "meaning": "65,535 blocks or units, about a year.",
+       "analogy": "Think of a counter with room for only 65,535 ticks.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "The disable flag and the 16-bit mask finish the sequence field. Ask what bit 31 does when it is set. It switches the timelock off, which is why a sequence of 0xffffffff means no lock at all.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "section",
+   "title": "Outputs",
+   "sub": "Outputs are the lines of a till receipt: an amount and who may collect it.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "The output list",
+       "meaning": "The list of new coins the transaction creates.",
+       "analogy": "Think of the change a till hands back.",
+       "hM": 0.43,
+       "hA": 0.43
+      },
+      {
+       "pill": "Dust policy",
+       "meaning": "Rules that keep tiny coins from clogging everyone's database.",
+       "analogy": "Think of a bank that refuses to count single cents.",
+       "hM": 0.625,
+       "hA": 0.43
+      },
+      {
+       "pill": "The output script",
+       "meaning": "The lock that decides who may spend the new coin.",
+       "analogy": "Think of the lock fitted to a new deposit box.",
+       "hM": 0.43,
+       "hA": 0.43
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      1.0,
+      0.9,
+      1.9,
+      1.9,
+      1.9,
+      1.0
+     ],
+     "cells": [
+      {
+       "t": "Version",
+       "hot": false
+      },
+      {
+       "t": "Marker Flag",
+       "hot": false
+      },
+      {
+       "t": "Inputs",
+       "hot": false
+      },
+      {
+       "t": "Outputs",
+       "hot": true
+      },
+      {
+       "t": "Witnesses",
+       "hot": false
+      },
+      {
+       "t": "Lock time",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "Outputs are amounts plus locks. The part ends with the block that created 184 billion bitcoins and with the policy that keeps tiny outputs out of everyone's database. Ask what a till receipt and an output have in common.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Where the 100,000 satoshis went",
+   "sub": "An output is an amount and a lock",
+   "items": [
+    {
+     "t": "picture",
+     "native": true
+    }
+   ],
+   "notes": "The bar is the 100,000 satoshis of the spent coin: 20,000 to Bob, 75,000 back as change and 5,000 left over for the miner. Below it, one output opened up: eight bytes of amount, a length and a lock. Ask who decides the fee. The sender, by leaving it out of the outputs.",
+   "bg": "light",
+   "take": "An output is an amount plus a lock; what no output claims is the fee"
+  },
+  {
+   "kind": "content",
+   "title": "Outputs: concepts (1 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Output count",
+       "meaning": "Two outputs: a payment and change.",
+       "analogy": "Think of how many envelopes of money leave the till.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Amount",
+       "meaning": "8 bytes, little-endian, in satoshis.",
+       "analogy": "Think of the sum on a cheque, written in the smallest coins.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Satoshi",
+       "meaning": "100 million to a bitcoin.",
+       "analogy": "Think of a cent that is a hundred-millionth of the whole note.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "The consensus range of an amount",
+       "meaning": "From 0 to 2.1 quadrillion.",
+       "analogy": "Think of a cheque form that cannot print negative or absurd sums.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Output count, amount, satoshi and the consensus range. Ask how many satoshis make a bitcoin. A hundred million; the amount field is eight bytes, little-endian, which the next slides decode.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Amounts, change and the fee",
+   "sub": "An output is an amount and a condition",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "paid = [o['value'] for o in tx['outputs']]",
+         ""
+        ]
+       ],
+       "note": "Each output states an amount, in satoshis, the smallest unit.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "funds = PREV_REC['vout'][1]['value']",
+         ""
+        ]
+       ],
+       "note": "The input states no amount; it is read from the coin that is spent.",
+       "y": 2.141,
+       "h": 0.341,
+       "ny": 2.512,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "fee = funds - sum(paid)",
+         ""
+        ],
+        [
+         "parts = paid + [fee]",
+         ""
+        ],
+        [
+         "fee",
+         "5000"
+        ]
+       ],
+       "note": "The fee is only a difference between inputs and outputs.",
+       "y": 2.832,
+       "h": 0.882,
+       "ny": 3.744,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.024
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: satoshis in each output, and the fee",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "chart",
+     "ctype": "bar",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "h": 2.27,
+     "labels": [
+      "output 0",
+      "output 1",
+      "fee"
+     ],
+     "series": [
+      {
+       "name": "satoshis",
+       "data": [
+        20000.0,
+        75000.0,
+        5000.0
+       ]
+      }
+     ],
+     "dataLabels": true,
+     "dlFs": 9,
+     "dlPos": "outEnd"
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.31,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "The spent coin held 100,000 satoshis; the outputs take 95,000 and the remaining 5,000 is the fee.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "Outputs state amounts and the input states none. Point at line 3 and at the three bars: 20,000, 75,000 and the fee of 5,000. Ask where a miner finds the fee. It is the difference between inputs and outputs, which is why a forgotten change output burns money.",
+   "bg": "light",
+   "take": "No field holds a balance or a fee; both are differences"
+  },
+  {
+   "kind": "content",
+   "title": "Outputs: concepts (2 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.454,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Uneconomical output",
+       "meaning": "Worth less than the fee to spend it.",
+       "analogy": "Think of a coin so small the postage costs more than the coin.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.379,
+       "alias": "Also called: Uneconomical outputs and disallowed dust"
+      },
+      {
+       "label": "Dust limit",
+       "meaning": "546 satoshis, from 182 bytes at 3,000 sat/kvB.",
+       "analogy": "Think of the smallest coin the post office agrees to carry.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Data-carrier output",
+       "meaning": "OP_RETURN: unspendable, so not dust.",
+       "analogy": "Think of a note stuck on a parcel, carrying no money.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Output script",
+       "meaning": "34 bytes to Bob, 22 bytes of change.",
+       "analogy": "Think of a lock fitted to the coin: whoever opens it may spend.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Dust, the dust limit, data-carrier outputs and the output script. Ask why a node would refuse to relay a tiny output. It costs more to spend than it is worth; students often think dust is invalid, but it is only a relay policy.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "The 2010 overflow, in five lines",
+   "sub": "How two huge outputs added up to a negative number",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "out = 9223372036854277039",
+         ""
+        ]
+       ],
+       "note": "Each of the two outputs of block 74,638 held this many satoshis.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "wrapped = (2 * out) & 0xffffffffffffffff",
+         ""
+        ],
+        [
+         "total = wrapped - 2**64 if wrapped >= 2**63 else wrapped",
+         ""
+        ]
+       ],
+       "note": "Added as 64-bit signed integers, two such amounts wrap to a negative number.",
+       "y": 2.141,
+       "h": 0.521,
+       "ny": 2.692,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "naive_ok = total <= MAX_MONEY",
+         ""
+        ],
+        [
+         "fixed_ok = money_range(out)",
+         ""
+        ],
+        [
+         "(naive_ok, fixed_ok)",
+         "(True, False)"
+        ]
+       ],
+       "note": "A check on the total passed; a check on each output refuses the block.",
+       "y": 3.192,
+       "h": 0.882,
+       "ny": 4.104,
+       "nh": 0.41
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.564
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: the arithmetic of block 74,638",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.75,
+      1.5
+     ],
+     "rows": [
+      [
+       "Check",
+       "Result"
+      ],
+      [
+       "Two outputs added",
+       "-997,538"
+      ],
+      [
+       "Old test: total in range",
+       "True: accepted"
+      ],
+      [
+       "New test: each in range",
+       "False: refused"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.44,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "A negative total is below the limit, so only the per-output check catches it.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "In August 2010 two outputs of about 92 billion bitcoins each added up to a negative number in 64-bit arithmetic. Point at line 3, the wrap-around, and at the two checks in the result. Ask which check would have caught it. Only the per-output check; the total looked fine.",
+   "bg": "light",
+   "take": "Check each amount and the total: one check on the total was not enough"
+  },
+  {
+   "kind": "content",
+   "title": "The block that created 184 billion bitcoins",
+   "sub": "A bug that created money out of thin air",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/photo_satoshi_bust_budapest.jpg",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.6,
+     "h": 2.55,
+     "cap": "Satoshi bust, Budapest - Fekist, CC BY-SA 4.0"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.5,
+     "w": 9.0,
+     "who": "an unknown attacker; Jeff Garzik, who reported the strange block on the forum; Satoshi Nakamoto, who patched the software the same day",
+     "where": "block 74,638 - and the bitcointalk forum thread Strange block 74638, where the fix was coordinated within hours",
+     "when": "2010-08-15",
+     "link": "https://en.bitcoin.it/wiki/Value_overflow_incident",
+     "linkText": "Value overflow incident (Bitcoin Wiki)"
+    }
+   ],
+   "notes": "A block on 15 August 2010 held 184 billion bitcoins because two amounts wrapped to a negative total. Point at the three people: the unknown attacker, Garzik who reported it and Satoshi who patched it. Ask which check was missing. A range check on each output.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Outputs: concepts (3 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.49,
+     "cols": 3,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Script size limits",
+       "meaning": "Zero at minimum, 10,000 bytes to spend.",
+       "analogy": "Think of a cap on how long the lock's instructions may be.",
+       "hA": 0.67,
+       "hB": 0.625,
+       "hC": 0
+      },
+      {
+       "label": "Anyone-can-spend scripts",
+       "meaning": "An empty script that OP_TRUE satisfies.",
+       "analogy": "Think of a safe left unlocked in the street.",
+       "hA": 0.89,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Standard transaction outputs",
+       "meaning": "A few templates relay policy allows.",
+       "analogy": "Think of the few lock models the post office accepts.",
+       "hA": 0.89,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Script size limits, anyone-can-spend scripts and standard outputs. Ask why a safe left unlocked in the street is a useful comparison. An empty script that OP_TRUE satisfies can be spent by anyone, and the standard templates are what most nodes relay.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Dust limits by output type",
+   "sub": "The smallest output a node will relay",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "P2PKH = '76a914' + '00' * 20 + '88ac'",
+         ""
+        ],
+        [
+         "P2WPKH = '0014' + '00' * 20",
+         ""
+        ],
+        [
+         "P2TR, RET = '5120' + '00' * 32, '6a04deadbeef'",
+         ""
+        ]
+       ],
+       "note": "Four output scripts: three that can be spent and one data carrier.",
+       "y": 1.45,
+       "h": 0.702,
+       "ny": 2.182,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "scripts = (P2PKH, P2WPKH, P2TR, RET)",
+         ""
+        ],
+        [
+         "limits = [dust_threshold(s) for s in scripts]",
+         ""
+        ],
+        [
+         "limits",
+         "[546, 294, 330, 0]"
+        ]
+       ],
+       "note": "The limit is the cost of creating plus spending an output, at the relay fee.",
+       "y": 2.502,
+       "h": 0.882,
+       "ny": 3.414,
+       "nh": 0.41
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 3.874
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: dust limit in satoshis, at 3,000 sat/kvB",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "chart",
+     "ctype": "bar",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "h": 2.27,
+     "labels": [
+      "P2PKH",
+      "P2WPKH",
+      "P2TR",
+      "RET"
+     ],
+     "series": [
+      {
+       "name": "satoshis",
+       "data": [
+        546.0,
+        294.0,
+        330.0,
+        0.0
+       ]
+      }
+     ],
+     "dataLabels": true,
+     "dlFs": 9,
+     "dlPos": "outEnd"
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.31,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "An output below its limit is not relayed. OP_RETURN outputs cannot be spent, so their limit is zero.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "Dust is an output that costs more to spend than it is worth. Point at the four limits: 546, 294, 330 and 0. Ask why segwit outputs have lower limits. They are cheaper to spend, and OP_RETURN has limit zero because it can never be spent.",
+   "bg": "light",
+   "take": "Dust is a policy about who pays for the UTXO set: everyone, for ever"
+  },
+  {
+   "kind": "section",
+   "title": "Witnesses",
+   "sub": "A witness is the ID you show at the counter, kept off the receipt.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11,
+     "pfs": 11,
+     "items": [
+      {
+       "pill": "Idea of a witness",
+       "meaning": "Evidence that the spender may spend, kept apart.",
+       "analogy": "Think of the ID card you show at the counter.",
+       "hM": 0.599,
+       "hA": 0.413
+      },
+      {
+       "pill": "Malleability",
+       "meaning": "Changing a transaction's identifier without changing what it pays.",
+       "analogy": "Think of re-spelling a name so the filing clerk loses the receipt.",
+       "hM": 0.599,
+       "hA": 0.599
+      },
+      {
+       "pill": "Segwit",
+       "meaning": "The upgrade that moved the proof out of the identifier.",
+       "analogy": "Think of keeping the passport photo off the ticket number.",
+       "hM": 0.599,
+       "hA": 0.599
+      },
+      {
+       "pill": "Witness layout",
+       "meaning": "How the separate proofs are written after the main fields.",
+       "analogy": "Think of annex pages bound behind the main letter.",
+       "hM": 0.599,
+       "hA": 0.599
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      1.0,
+      0.9,
+      1.9,
+      1.9,
+      1.9,
+      1.0
+     ],
+     "cells": [
+      {
+       "t": "Version",
+       "hot": false
+      },
+      {
+       "t": "Marker Flag",
+       "hot": false
+      },
+      {
+       "t": "Inputs",
+       "hot": false
+      },
+      {
+       "t": "Outputs",
+       "hot": false
+      },
+      {
+       "t": "Witnesses",
+       "hot": true
+      },
+      {
+       "t": "Lock time",
+       "hot": false
+      }
+     ]
+    }
+   ],
+   "notes": "A witness is the proof that the spender may spend. Ask what happens if the proof is part of the name of the transaction. This part shows how proofs inside the input script made identifiers malleable and how segregated witness repaired it.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "What each identifier covers",
+   "sub": "Why moving the signature out changed everything",
+   "items": [
+    {
+     "t": "picture",
+     "native": true
+    }
+   ],
+   "notes": "Compare the two rows. Before segwit the signature sat inside the input script, so the txid covered it and a stranger could change it. After segwit the signature moved to the witness, outside the txid. Ask which brackets differ: the txid bracket shrinks, the wtxid bracket covers everything.",
+   "bg": "light",
+   "take": "The txid ignores the witness; the wtxid covers every byte"
+  },
+  {
+   "kind": "content",
+   "title": "Witnesses: concepts (1 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.284,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Witness",
+       "meaning": "The value 2 solves 2 OP_ADD 4 OP_EQUAL.",
+       "analogy": "Think of the answer to the riddle printed on the lock.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Public key and signature as witness",
+       "meaning": "A problem only the key holder can solve.",
+       "analogy": "Think of a signature only the account holder can produce.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Contract protocols",
+       "meaning": "Transactions signed out of order.",
+       "analogy": "Think of agreements signed in advance so nobody can walk away.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.209,
+       "alias": "Also called: trustless protocol"
+      },
+      {
+       "label": "Circular dependency",
+       "meaning": "The refund needs the deposit's txid first.",
+       "analogy": "Think of needing the key to get the key.",
+       "hA": 0.475,
+       "hB": 0.235,
+       "hC": 0.209,
+       "alias": "Also called: Circular Dependencies"
+      }
+     ]
+    }
+   ],
+   "notes": "Witness, public key and signature as witness, contract protocols and the circular dependency. Ask what the answer to the riddle printed on the lock has to do with a witness. The witness is the answer that makes the script succeed.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "One spend, four identifiers",
+   "sub": "Push encodings and third-party malleability",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "enc = push_encodings(2)",
+         ""
+        ]
+       ],
+       "note": "One small number can be pushed on the script stack in four different ways.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "swap = lambda s: with_input_script(FIRST, s)",
+         ""
+        ],
+        [
+         "ids = {k: txid(swap(s))[:8] for k, s in enc.items()}",
+         ""
+        ]
+       ],
+       "note": "Swap each encoding into the first-ever spend; the payment itself is unchanged.",
+       "y": 2.321,
+       "h": 0.521,
+       "ny": 2.872,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "distinct = len(set(ids.values()))",
+         ""
+        ],
+        [
+         "distinct",
+         "4"
+        ]
+       ],
+       "note": "Four different byte strings give four different legacy identifiers.",
+       "y": 3.372,
+       "h": 0.702,
+       "ny": 4.104,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.384
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: four pushes of the number 2",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.15,
+      0.9,
+      1.2
+     ],
+     "rows": [
+      [
+       "Encoding",
+       "Script",
+       "New txid"
+      ],
+      [
+       "OP_2",
+       "52",
+       "0423a53a"
+      ],
+      [
+       "OP_PUSH1 0x02",
+       "0102",
+       "b3485f99"
+      ],
+      [
+       "OP_PUSH2 0x0002",
+       "020200",
+       "18da36d1"
+      ],
+      [
+       "OP_PUSHDATA1 0x0102",
+       "4c0102",
+       "4d986cd8"
+      ]
+     ],
+     "fs": 9,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.74,
+     "w": 3.25,
+     "h": 0.46,
+     "body": "4 encodings give 4 different identifiers for one payment.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A small number can be pushed on the script stack in four ways, giving four txids for one payment. Point at the loop that swaps each encoding in. Ask who could do this to your transaction: any relaying node. The payment itself is unchanged.",
+   "bg": "light",
+   "take": "A stranger could change the txid without changing the payment"
+  },
+  {
+   "kind": "content",
+   "title": "Witnesses: concepts (2 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.295,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Third-party transaction malleability",
+       "meaning": "A stranger changes the txid, not the payment.",
+       "analogy": "Think of a stranger rewording your cheque without changing the sum.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Alternative push encodings",
+       "meaning": "Four byte strings for the number 2.",
+       "analogy": "Think of four ways to write the same number in words.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Second-party transaction malleability",
+       "meaning": "A counterparty re-signs and changes the txid.",
+       "analogy": "Think of your partner re-signing a document with another pen.",
+       "hA": 0.695,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Wanted malleability",
+       "meaning": "Mutation the sender allows.",
+       "analogy": "Think of a form with a box for changes allowed by me.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Third-party and second-party malleability, push encodings and wanted malleability. Ask who can change a txid without changing the payment. A stranger can, by re-encoding a push; students often assume only the signer can.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Segwit: change the witness, keep the txid",
+   "sub": "What the two identifiers cover",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "mutated = with_witness_item(ALICE, '00' * 65)",
+         ""
+        ]
+       ],
+       "note": "Replace the signature in the witness by 65 zero bytes.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "same_txid = txid(mutated) == txid(ALICE)",
+         ""
+        ],
+        [
+         "same_wtxid = wtxid(mutated) == wtxid(ALICE)",
+         ""
+        ]
+       ],
+       "note": "The txid ignores the witness and stays; the wtxid covers it and changes.",
+       "y": 2.141,
+       "h": 0.521,
+       "ny": 2.692,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "a, b = txid(ALICE)[:12], wtxid(ALICE)[:12]",
+         ""
+        ],
+        [
+         "c = wtxid(mutated)[:12]",
+         ""
+        ],
+        [
+         "(same_txid, same_wtxid)",
+         "(True, False)"
+        ]
+       ],
+       "note": "Twelve hex digits of each identifier, for the table beside the listing.",
+       "y": 3.192,
+       "h": 0.882,
+       "ny": 4.104,
+       "nh": 0.41
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.564
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: 12 hex digits of each identifier",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      0.85,
+      1.2,
+      1.2
+     ],
+     "rows": [
+      [
+       "Identifier",
+       "Before",
+       "After"
+      ],
+      [
+       "txid",
+       "466200308696",
+       "466200308696"
+      ],
+      [
+       "wtxid",
+       "f7cdbc7cf8b9",
+       "06f7a607a82e"
+      ]
+     ],
+     "fs": 9,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.14,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "Only the wtxid notices the new witness; the txid, and everything built on it, stays valid.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "Change the witness and the txid stays, while the wtxid moves. Point at the two Booleans, True and False. Ask which identifier chains of unconfirmed payments should be built on. The txid, which is why segwit made them safe.",
+   "bg": "light",
+   "take": "What a hash covers decides what can safely be built on it"
+  },
+  {
+   "kind": "content",
+   "title": "Mt. Gox blames malleability",
+   "sub": "An exchange blames the protocol, and researchers check",
+   "items": [
+    {
+     "t": "img",
+     "path": "../../03-materials/ch06/assets/photo_mtgox_logo.png",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 2.6,
+     "h": 2.55,
+     "cap": "Mt. Gox logo - author unknown, public domain"
+    },
+    {
+     "t": "factrow",
+     "x": 0.5,
+     "y": 4.5,
+     "w": 9.0,
+     "who": "Mt. Gox, then the largest bitcoin exchange, and its CEO Mark Karpeles; Christian Decker and Roger Wattenhofer of ETH Zurich, who measured the claim",
+     "where": "Shibuya, Tokyo - and the whole Bitcoin network, whose relayed transactions the researchers recorded",
+     "when": "2014-02-10",
+     "link": "https://arxiv.org/abs/1403.6676",
+     "linkText": "Transaction Malleability and MtGox (paper)"
+    }
+   ],
+   "notes": "Mt. Gox halted withdrawals and blamed malleability; two ETH Zurich researchers checked a year of network traffic. Point at the paper link on the slide. Ask whether malleability can explain missing coins. It changes the txid, not the amount, and only 1,811 BTC were affected before the press release.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Witnesses: concepts (3 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Segregated witness",
+       "meaning": "The witness stays out of the txid.",
+       "analogy": "Think of moving the signatures to a separate page the receipt ignores.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Hard fork",
+       "meaning": "A change old nodes would reject.",
+       "analogy": "Think of a new road standard that old cars cannot drive on.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Soft fork",
+       "meaning": "New nodes reject more, accept no more.",
+       "analogy": "Think of a stricter road rule that old cars can still obey.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Witness program",
+       "meaning": "A version number and 2 to 40 bytes.",
+       "analogy": "Think of a lock label saying which kind of key fits.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Segregated witness, hard fork, soft fork and witness programs. Ask which of the two forks old nodes survive. A soft fork only tightens the rules, so old nodes keep following the chain.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Witnesses: concepts (4 of 4)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.284,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Witness structure",
+       "meaning": "The new field for what the input script held.",
+       "analogy": "Think of an annex page stapled to the transaction.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.209,
+       "alias": "Also called: Witness Structure Serialization"
+      },
+      {
+       "label": "Witness stack",
+       "meaning": "One stack per input, counted by the inputs.",
+       "analogy": "Think of a pile of papers handed in for one input.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Witness item",
+       "meaning": "A 65-byte signature, length-prefixed.",
+       "analogy": "Think of one sheet in the pile, with its length stamped on.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "A legacy input's witness",
+       "meaning": "A stack of zero items.",
+       "analogy": "Think of an empty annex: nothing stapled to old-style inputs.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Witness structure, stack, item and the empty witness of a legacy input. Ask how many stacks a transaction carries. One per input, counted by the input count; a legacy input has a stack of zero items.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Hard fork or soft fork?",
+   "sub": "Why segregated witness could be activated without splitting the network",
+   "items": [
+    {
+     "t": "compare",
+     "x": 0.5,
+     "y": 1.45,
+     "w": 9.0,
+     "h": 3.4,
+     "fs": 12.5,
+     "left": {
+      "head": "A hard fork loosens the rules",
+      "rows": [
+       "Blocks that old nodes reject become valid.",
+       "Every node must upgrade, or the chain splits.",
+       "Like a new road standard that old cars cannot use."
+      ]
+     },
+     "right": {
+      "head": "A soft fork tightens the rules",
+      "rows": [
+       "New nodes reject more; they accept nothing new.",
+       "Old nodes still follow the chain and accept its blocks.",
+       "Like a stricter speed limit that old cars can still obey."
+      ]
+     }
+    }
+   ],
+   "notes": "Segregated witness was a soft fork, which is why it could be activated without splitting the network. Ask students to place it on the road comparison. Old nodes saw the new outputs as anyone-can-spend scripts and accepted the blocks.",
+   "bg": "light",
+   "take": "A soft fork can only restrict; old nodes keep accepting the blocks"
+  },
+  {
+   "kind": "section",
+   "title": "Lock time and the coinbase",
+   "sub": "A lock time is a post-dated cheque; a coinbase is the mint's wage slip.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Lock time",
+       "meaning": "A rule that a transaction may not enter a block before a time.",
+       "analogy": "Think of a post-dated cheque.",
+       "hM": 0.43,
+       "hA": 0.235
+      },
+      {
+       "pill": "Coinbase transactions",
+       "meaning": "The first transaction of every block, which creates new coins.",
+       "analogy": "Think of the mint's wage slip for the miner.",
+       "hM": 0.43,
+       "hA": 0.235
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      1.0,
+      0.9,
+      1.9,
+      1.9,
+      1.9,
+      1.0
+     ],
+     "cells": [
+      {
+       "t": "Version",
+       "hot": false
+      },
+      {
+       "t": "Marker Flag",
+       "hot": false
+      },
+      {
+       "t": "Inputs",
+       "hot": false
+      },
+      {
+       "t": "Outputs",
+       "hot": false
+      },
+      {
+       "t": "Witnesses",
+       "hot": false
+      },
+      {
+       "t": "Lock time",
+       "hot": true
+      }
+     ]
+    }
+   ],
+   "notes": "Two special cases: a transaction that may not be mined before a time, and one that creates new coins. Ask where new bitcoin comes from. The clock and the money supply both follow from simple rules.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "Two clocks and a waiting room",
+   "sub": "How lock time is read, and when a coinbase coin can move",
+   "items": [
+    {
+     "t": "picture",
+     "native": true
+    }
+   ],
+   "notes": "Two small pictures. The number line shows how one field is read as a height below 500 million and as a time above it. The timeline shows the 100-block wait of a coinbase coin. Ask what happens at block 108 and at block 109 for a coin made in block 9.",
+   "bg": "light",
+   "take": "One field, two readings, and a hundred blocks of waiting for new coins"
+  },
+  {
+   "kind": "content",
+   "title": "Lock time and the coinbase (1 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "The lock time field",
+       "meaning": "Zero: eligible for any block.",
+       "analogy": "Think of a do-not-open-before date on an envelope.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Lock time as a block height",
+       "meaning": "123,456 means block 123,456 or later.",
+       "analogy": "Think of do not open before a numbered page of the logbook.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Lock time as an epoch time",
+       "meaning": "500,000,000 or more is a timestamp.",
+       "analogy": "Think of do not open before this calendar date.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Median time past",
+       "meaning": "The middle of eleven block times.",
+       "analogy": "Think of asking the middle voter, not the loudest.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Lock time kinds and the median time past. Ask what 123,456 means in the lock time field. A block height, because anything below 500 million is a height and larger values are timestamps.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "Lock time and the median time past",
+   "sub": "Which clock a lock time is read against",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "ks = (15, 21, 5, 27, 24, 0, 26, 18, 12, 23, 25)",
+         ""
+        ],
+        [
+         "times = [1675556500 + 100 * k for k in ks]",
+         ""
+        ]
+       ],
+       "note": "Eleven block times, out of order, as they are on the real chain.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "mtp = median_time_past(times)",
+         ""
+        ],
+        [
+         "offsets = [t - 1675556500 for t in times]",
+         ""
+        ],
+        [
+         "mtp_offset = mtp - 1675556500",
+         ""
+        ]
+       ],
+       "note": "The median time past is the middle of the eleven, not the newest.",
+       "y": 2.321,
+       "h": 0.702,
+       "ny": 3.053,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "lt = (0, 123456, 1675556500)",
+         ""
+        ],
+        [
+         "kinds = [locktime_decode(n)[0] for n in lt]",
+         ""
+        ],
+        [
+         "mtp_offset",
+         "2100"
+        ]
+       ],
+       "note": "A lock time below 500 million is a height; a larger one is a time.",
+       "y": 3.373,
+       "h": 0.882,
+       "ny": 4.285,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.565
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: block times, seconds after 1675556500",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "chart",
+     "ctype": "bar",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "h": 2.07,
+     "labels": [
+      "b1",
+      "b2",
+      "b3",
+      "b4",
+      "b5",
+      "b6",
+      "b7",
+      "b8",
+      "b9",
+      "b10",
+      "b11"
+     ],
+     "series": [
+      {
+       "name": "seconds after the first",
+       "data": [
+        1500.0,
+        2100.0,
+        500.0,
+        2700.0,
+        2400.0,
+        0.0,
+        2600.0,
+        1800.0,
+        1200.0,
+        2300.0,
+        2500.0
+       ]
+      }
+     ],
+     "dataLabels": true,
+     "dlFs": 9,
+     "dlPos": "outEnd"
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.11,
+     "w": 3.25,
+     "h": 0.86,
+     "body": "The median of the eleven is 2,100 s, 600 s below the highest. Lock time kinds: any block, block height, epoch time.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "Block timestamps are not monotonic, so a lock time is compared with the median of the last eleven. Point at the bar that is zero and at the median, 2,100. Ask why not use the newest block time. A miner could bend it; the median is the middle voter.",
+   "bg": "light",
+   "take": "Lock time says not before; nothing in a transaction says not after"
+  },
+  {
+   "kind": "content",
+   "title": "Lock time and the coinbase (2 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.284,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Coinbase transaction",
+       "meaning": "First in the block, made by the miner.",
+       "analogy": "Think of the bonus the mint pays whoever closes the page.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0.209,
+       "alias": "Also called: generation transaction"
+      },
+      {
+       "label": "The null outpoint",
+       "meaning": "32 zero bytes and index 0xffffffff.",
+       "analogy": "Think of a ticket with no previous holder: printed new.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "The coinbase field",
+       "meaning": "2 to 100 bytes, beginning with the height.",
+       "analogy": "Think of a free text box on the bonus slip.",
+       "hA": 0.475,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "Block subsidy",
+       "meaning": "50 BTC, halved every 210,000 blocks.",
+       "analogy": "Think of a bonus that halves every four years of work.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Coinbase transaction, the null outpoint, the coinbase field and the block subsidy. Ask what makes an input a coinbase input. A null outpoint of 32 zero bytes and index 0xffffffff; the subsidy starts at 50 and halves every 210,000 blocks.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "The subsidy, halving by halving",
+   "sub": "New bitcoin created by each block",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "n = 210000",
+         ""
+        ],
+        [
+         "subs = [block_subsidy(n * h) / COIN for h in range(9)]",
+         ""
+        ]
+       ],
+       "note": "The subsidy halves at every multiple of 210,000 blocks.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "last = last_subsidy_height()",
+         ""
+        ]
+       ],
+       "note": "After the block found here the subsidy is zero for good.",
+       "y": 2.321,
+       "h": 0.341,
+       "ny": 2.692,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "total = total_subsidy() / COIN",
+         ""
+        ],
+        [
+         "last",
+         "6929999"
+        ]
+       ],
+       "note": "Everything ever issued stays just below 21 million bitcoin.",
+       "y": 3.012,
+       "h": 0.702,
+       "ny": 3.744,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.024
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: subsidy in bitcoin, by halving number",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "chart",
+     "ctype": "bar",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "h": 2.27,
+     "labels": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8"
+     ],
+     "series": [
+      {
+       "name": "bitcoin per block",
+       "data": [
+        50.0,
+        25.0,
+        12.5,
+        6.25,
+        3.125,
+        1.5625,
+        0.78125,
+        0.390625,
+        0.1953125
+       ]
+      }
+     ],
+     "dataLabels": true,
+     "dlFs": 9,
+     "dlPos": "outEnd"
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.31,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "The last subsidy is paid at block 6,929,999; the total ever issued is 20,999,999.9769 bitcoin.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "The subsidy starts at 50 bitcoin and halves every 210,000 blocks by a right shift. Point at the stair-step chart and at block 6,929,999, where it reaches zero. Ask whether the total is exactly 21 million. It stays just below it.",
+   "bg": "light",
+   "take": "The coinbase is the only transaction that creates bitcoin"
+  },
+  {
+   "kind": "content",
+   "title": "Lock time and the coinbase (3 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Block reward",
+       "meaning": "Fees plus subsidy, as a ceiling.",
+       "analogy": "Think of the bonus plus the tips from customers.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Maturity rule",
+       "meaning": "100 confirmations before spending.",
+       "analogy": "Think of wages you cannot spend until the pay clears.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Block reward and the maturity rule. Ask why coinbase coins wait 100 blocks. A reorganization could erase the block, so wages are held until the pay clears. The reward is fees plus subsidy, as a ceiling.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "The coinbase and its maturity",
+   "sub": "A null input, and 100 blocks of waiting",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "null = {'txid': '00' * 32, 'vout': 0xffffffff}",
+         ""
+        ],
+        [
+         "cb = {'inputs': [null]}",
+         ""
+        ]
+       ],
+       "note": "A coinbase input points at nothing: a null txid and the largest output index.",
+       "y": 1.45,
+       "h": 0.521,
+       "ny": 2.001,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "flags = (is_coinbase(cb), is_coinbase(tx))",
+         ""
+        ]
+       ],
+       "note": "Alice's transaction is an ordinary one, not a coinbase.",
+       "y": 2.501,
+       "h": 0.341,
+       "ny": 2.872,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "hs = (100, 108, 109, 170)",
+         ""
+        ],
+        [
+         "ages = [(h, h - 9, coinbase_mature(9, h)) for h in hs]",
+         ""
+        ],
+        [
+         "flags",
+         "(True, False)"
+        ]
+       ],
+       "note": "A coin created at block 9 may be spent only 100 blocks later.",
+       "y": 3.192,
+       "h": 0.882,
+       "ny": 4.104,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.384
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.24,
+     "body": "Result: a coin created at block 9",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.74,
+     "w": 3.25,
+     "colW": [
+      1.3,
+      0.8,
+      1.15
+     ],
+     "rows": [
+      [
+       "Spend at block",
+       "Age",
+       "Spendable?"
+      ],
+      [
+       "100",
+       "91",
+       "no"
+      ],
+      [
+       "108",
+       "99",
+       "no"
+      ],
+      [
+       "109",
+       "100",
+       "yes"
+      ],
+      [
+       "170",
+       "161",
+       "yes"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.54,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "is_coinbase is True for the null input and False for Alice's transaction.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A coinbase has one null input, and its coins are locked for 100 blocks. Point at the table: block 108 is too early and block 109 is allowed. Ask why the wait exists. A reorganization could erase the block together with coins that were already spent.",
+   "bg": "light",
+   "take": "Newly created coins cannot be spent until 100 blocks have passed"
+  },
+  {
+   "kind": "section",
+   "title": "Weight and foundations",
+   "sub": "Weight is a transaction's postage; foundations are the post office's rules.",
+   "items": [
+    {
+     "t": "groups",
+     "x": 0.85,
+     "y": 2.3,
+     "w": 8.6,
+     "fs": 11.5,
+     "pfs": 12,
+     "items": [
+      {
+       "pill": "Weight and vbytes",
+       "meaning": "The measure that decides how much block space a transaction uses.",
+       "analogy": "Think of postage that charges less for the small print.",
+       "hM": 0.43,
+       "hA": 0.43
+      },
+      {
+       "pill": "Foundations",
+       "meaning": "The hashes, identifiers and rule sets the chapter rests on.",
+       "analogy": "Think of the foundations under a house.",
+       "hM": 0.43,
+       "hA": 0.235
+      }
+     ]
+    },
+    {
+     "t": "striptable",
+     "x": 0.85,
+     "y": 4.32,
+     "w": 8.6,
+     "h": 0.4,
+     "fs": 10,
+     "colW": [
+      1.0,
+      0.9,
+      1.9,
+      1.9,
+      1.9,
+      1.0
+     ],
+     "cells": [
+      {
+       "t": "Version",
+       "hot": true
+      },
+      {
+       "t": "Marker Flag",
+       "hot": true
+      },
+      {
+       "t": "Inputs",
+       "hot": true
+      },
+      {
+       "t": "Outputs",
+       "hot": true
+      },
+      {
+       "t": "Witnesses",
+       "hot": true
+      },
+      {
+       "t": "Lock time",
+       "hot": true
+      }
+     ]
+    }
+   ],
+   "notes": "The last part closes with what a block is filled by, and with the hashes and rule sets everything rests on. Ask how a block decides which transactions to take. We recompute the weight 569 from the bytes.",
+   "bg": "light"
+  },
+  {
+   "kind": "content",
+   "title": "From 194 bytes to 569 weight",
+   "sub": "Every byte weighs four, except marker, flag and witness",
+   "items": [
+    {
+     "t": "picture",
+     "native": true
+    }
+   ],
+   "notes": "Same scale in all three bars. The 194 bytes become 569 weight units because every byte except marker, flag and witness counts four times. Dividing by four and rounding up gives 143 virtual bytes. Ask which bar a block limit is measured in: weight, four million per block.",
+   "bg": "light",
+   "take": "A block is filled by weight, four million units, and witness bytes cost a quarter"
+  },
+  {
+   "kind": "content",
+   "title": "Weight and foundations (1 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.27,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Weight",
+       "meaning": "3 times the legacy size plus the full size.",
+       "analogy": "Think of postage priced by volume, with signatures at a discount.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Vbytes",
+       "meaning": "Weight divided by four, rounded up.",
+       "analogy": "Think of the parcel size after the discount is applied.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "The block weight limit",
+       "meaning": "4 million weight a block.",
+       "analogy": "Think of a lorry that carries four million weight units.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Weight factors",
+       "meaning": "4 for most fields, 1 for marker, flag and witness.",
+       "analogy": "Think of a price list: four for plain bytes, one for annex bytes.",
+       "hA": 0.67,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Weight, vbytes, the block weight limit and the weight factors. Ask why witness bytes cost less. They get a discount; every other byte weighs four, and a block holds four million weight.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "569: weight by field",
+   "sub": "Where the weight of Alice's transaction comes from",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "fw = field_weights(ALICE)",
+         ""
+        ],
+        [
+         "from collections import defaultdict",
+         ""
+        ],
+        [
+         "W = defaultdict(int)",
+         ""
+        ]
+       ],
+       "note": "Every field weighs its bytes times four, except marker, flag and witness.",
+       "y": 1.45,
+       "h": 0.702,
+       "ny": 2.182,
+       "nh": 0.41
+      },
+      {
+       "rows": [
+        [
+         "for nm, n, f, w in fw: W[nm.split()[0]] += w",
+         ""
+        ]
+       ],
+       "note": "Add the weights up per group of fields.",
+       "y": 2.682,
+       "h": 0.341,
+       "ny": 3.053,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "total = sum(W.values())",
+         ""
+        ],
+        [
+         "vb = vbytes(ALICE)",
+         ""
+        ],
+        [
+         "(total, vb)",
+         "(569, 143)"
+        ]
+       ],
+       "note": "The weights add up to the book's 569; virtual bytes are a quarter, rounded up.",
+       "y": 3.373,
+       "h": 0.882,
+       "ny": 4.285,
+       "nh": 0.41
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.745
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: weight units per field group (total 569)",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "chart",
+     "ctype": "bar",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "h": 2.27,
+     "labels": [
+      "version",
+      "marker",
+      "flag",
+      "input",
+      "output",
+      "witness",
+      "lock"
+     ],
+     "series": [
+      {
+       "name": "weight units",
+       "data": [
+        16.0,
+        1.0,
+        1.0,
+        168.0,
+        300.0,
+        67.0,
+        16.0
+       ]
+      }
+     ],
+     "dataLabels": true,
+     "dlFs": 9,
+     "dlPos": "outEnd"
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 4.31,
+     "w": 3.25,
+     "h": 0.66,
+     "body": "Total weight 569; divided by four and rounded up that is 143 virtual bytes.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "Each field weighs its bytes times four, except marker, flag and witness. Point at the total 569 and at the 143 virtual bytes. Ask how many bytes the transaction really has: 194. Students confuse bytes, weight and virtual bytes.",
+   "bg": "light",
+   "take": "Weight is what a block is filled by, and witness bytes cost a quarter"
+  },
+  {
+   "kind": "content",
+   "title": "Weight and foundations (2 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Hash function",
+       "meaning": "Any input, a fixed 32-byte digest.",
+       "analogy": "Think of a meat grinder: any input, a result of fixed size.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Double SHA-256",
+       "meaning": "SHA-256 of SHA-256.",
+       "analogy": "Think of running the grinder twice for safety.",
+       "hA": 0.475,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "Transaction identifier",
+       "meaning": "Double SHA-256 of the legacy bytes, reversed.",
+       "analogy": "Think of a parcel's tracking number from its plain contents.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      },
+      {
+       "label": "Witness transaction identifier",
+       "meaning": "The hash of everything, witness included.",
+       "analogy": "Think of a tracking number that counts the annex too.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Hash function, double SHA-256 and the two identifiers. Ask what a meat grinder has to do with hashing. Any input gives an output of fixed size. The txid hashes the legacy bytes and the wtxid hashes everything.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "How a txid is made",
+   "sub": "Double SHA-256 of the legacy bytes, reversed",
+   "items": [
+    {
+     "t": "codeblocks",
+     "x": 0.5,
+     "w": 5.55,
+     "fs": 10,
+     "nfs": 10.5,
+     "groups": [
+      {
+       "rows": [
+        [
+         "leg = serialize(tx, witness=False)",
+         ""
+        ]
+       ],
+       "note": "Start from the legacy bytes: the witness is not part of the txid.",
+       "y": 1.45,
+       "h": 0.341,
+       "ny": 1.821,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "h2 = sha256(sha256(leg))",
+         ""
+        ]
+       ],
+       "note": "Hash the bytes twice with SHA-256, the second hash of the first.",
+       "y": 2.141,
+       "h": 0.341,
+       "ny": 2.512,
+       "nh": 0.23
+      },
+      {
+       "rows": [
+        [
+         "shown = h2[::-1].hex()",
+         ""
+        ],
+        [
+         "same = shown == txid(ALICE)",
+         ""
+        ],
+        [
+         "same",
+         "True"
+        ]
+       ],
+       "note": "Reverse the digest for display: the result is the library's txid.",
+       "y": 2.832,
+       "h": 0.882,
+       "ny": 3.744,
+       "nh": 0.23
+      }
+     ],
+     "cap": "run under Python 3.14.6 - ALICE, PREV, FIRST and tx as set up on slide 7",
+     "capy": 4.024
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 1.45,
+     "w": 3.25,
+     "h": 0.44,
+     "body": "Result: from the legacy bytes to the txid",
+     "fs": 11,
+     "font": "B",
+     "bold": true,
+     "color": "mute"
+    },
+    {
+     "t": "table",
+     "x": 6.25,
+     "y": 1.94,
+     "w": 3.25,
+     "colW": [
+      1.65,
+      1.6
+     ],
+     "rows": [
+      [
+       "Step",
+       "Result"
+      ],
+      [
+       "Legacy bytes",
+       "125"
+      ],
+      [
+       "Double SHA-256, reversed",
+       "466200308696215b"
+      ],
+      [
+       "Equals the library's txid",
+       "yes"
+      ]
+     ],
+     "fs": 9.5,
+     "rowH": 0.3
+    },
+    {
+     "t": "text",
+     "x": 6.25,
+     "y": 3.44,
+     "w": 3.25,
+     "h": 0.46,
+     "body": "The reversed digest equals the library's txid.",
+     "fs": 11.5,
+     "font": "B",
+     "italic": true,
+     "color": "ink"
+    }
+   ],
+   "notes": "A txid is not a field; it is computed. Point at the double SHA-256 and at the reversal in line 3. Ask why the digest is reversed. Display order is the opposite of internal order, and anyone can recompute a txid from the legacy bytes.",
+   "bg": "light",
+   "take": "Identifiers are computed, never stored: anyone can recompute them"
+  },
+  {
+   "kind": "content",
+   "title": "Weight and foundations (3 of 3)",
+   "sub": "Each card: the meaning in a few words, then something you already know",
+   "items": [
+    {
+     "t": "concepts",
+     "x": 0.5,
+     "y": 1.4,
+     "w": 9.0,
+     "ch": 1.2,
+     "cols": 2,
+     "fs": 11.5,
+     "items": [
+      {
+       "label": "Relay policy",
+       "meaning": "What a node chooses to relay and keep.",
+       "analogy": "Think of the house rules of one post office.",
+       "hA": 0.475,
+       "hB": 0.235,
+       "hC": 0
+      },
+      {
+       "label": "Consensus rule",
+       "meaning": "What every node must enforce identically.",
+       "analogy": "Think of the law every post office must obey identically.",
+       "hA": 0.475,
+       "hB": 0.43,
+       "hC": 0
+      }
+     ]
+    }
+   ],
+   "notes": "Relay policy and consensus rules finish the cards. Ask what happens to a transaction that breaks only a policy rule. A node may refuse to relay it, but a block that contains it is still valid. Consensus rules are the law every node must enforce.",
+   "bg": "light",
+   "take": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "sub": "One line per part, each provable from its slides",
+   "items": [
+    {
+     "t": "numlist",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.3,
+     "fs": 12.5,
+     "items": [
+      "A transaction asks strangers to update their ledgers: inputs point, witnesses prove, outputs assign.",
+      "The sequence field has meant three things, and the lock time is read against the median of eleven blocks.",
+      "An output is an amount and a condition; the fee is a difference, and dust is a policy about everyone's database.",
+      "Witnesses in the input script made identifiers malleable; segregated witness moved them out, as a soft fork.",
+      "The coinbase creates coins under a schedule that ends at block 6,929,999, and weight is what a block is filled by."
+     ]
+    }
+   ],
+   "notes": "These five lines are the deck in miniature. Ask students to pick the line they trust least and go back to its code slide, because every figure in it was computed there. Do not read the lines out; ask for the proof.",
+   "bg": "light",
+   "take": "If a line feels unproven, the code slide of its part carries the receipt"
+  },
+  {
+   "kind": "content",
+   "title": "Where to go from here",
+   "sub": "Checked 2026-10-22; every entry is a live link in this file",
+   "items": [
+    {
+     "t": "links",
+     "x": 0.5,
+     "y": 1.5,
+     "w": 9.0,
+     "h": 3.45,
+     "fs": 10,
+     "groups": [
+      {
+       "head": "Read",
+       "rows": [
+        [
+         "Mastering Bitcoin, ch. 6: Transactions",
+         "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/develop/ch06_transactions.adoc",
+         "Chapter text as AsciiDoc source, plain text, free to read"
+        ],
+        [
+         "Transaction Malleability and MtGox (paper)",
+         "https://arxiv.org/abs/1403.6676",
+         "Decker and Wattenhofer's measurements, free to download"
+        ]
+       ]
+      },
+      {
+       "head": "Standards",
+       "rows": [
+        [
+         "BIP 141: Segregated Witness (spec)",
+         "https://bips.dev/141/",
+         "Weight, witness data and the new transaction format"
+        ],
+        [
+         "BIP 68: Relative lock-time (spec)",
+         "https://bips.dev/68/",
+         "Locking an input by sequence numbers"
+        ],
+        [
+         "BIP 125: Opt-in Replace-by-Fee (spec)",
+         "https://bips.dev/125/",
+         "How a transaction signals that it may be replaced"
+        ]
+       ]
+      },
+      {
+       "head": "Tools",
+       "rows": [
+        [
+         "Alice's transaction on mempool.space (tx)",
+         "https://mempool.space/tx/466200308696215bbc949d5141a49a4138ecdfdfaa2a8029c1f9bcecd1f96177",
+         "Block 775,072: the payment this chapter builds"
+        ],
+        [
+         "Bitcoin Wiki: Transaction (guide)",
+         "https://en.bitcoin.it/wiki/Transaction",
+         "Fields of a transaction, explained on the wiki"
+        ]
+       ]
+      },
+      {
+       "head": "Community",
+       "rows": [
+        [
+         "Pizza for bitcoins? (bitcointalk thread)",
+         "https://bitcointalk.org/index.php?topic=137.0",
+         "Laszlo Hanyecz's offer of 10,000 bitcoins, May 2010"
+        ],
+        [
+         "Strange block 74638 (bitcointalk thread)",
+         "https://bitcointalk.org/index.php?topic=822.0",
+         "The forum thread where the overflow was found live"
+        ]
+       ]
+      },
+      {
+       "head": "Watch",
+       "rows": [
+        [
+         "Bitcoin transaction (tutorial video)",
+         "https://www.youtube.com/embed/PrcJD4rznyA",
+         "Mobilefish.com walks through inputs, outputs and signatures"
+        ]
+       ]
+      }
+     ]
+    }
+   ],
+   "notes": "Everything here is free to read and the links were opened on the date in the subtitle. Point at the Watch group for video and the Community group for the forum threads. Suggest taking any confirmed transaction from an explorer and running the chapter code on it.",
+   "bg": "light",
+   "take": "Parse any transaction yourself and match the explorer's identifier and weight"
+  },
+  {
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "sub": "And where each claim gets its proof",
+   "items": [
+    {
+     "t": "bullets",
+     "x": 0.6,
+     "y": 3.05,
+     "w": 8.8,
+     "h": 1.65,
+     "fs": 16,
+     "dark": true,
+     "items": [
+      "What a transaction asks of full nodes",
+      "What sequence and lock time permit",
+      "Why identifiers were malleable, and the fix",
+      "How 569 is computed; who creates bitcoin"
+     ]
+    }
+   ],
+   "notes": "Four claims, each carried by a computation that ran on a slide. Ask each student to state one claim and to name the slide that proves it. The course page for chapter 6 has every word behind them and the question bank.",
+   "bg": "dark"
+  }
+ ]
+}

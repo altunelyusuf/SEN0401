@@ -46,32 +46,37 @@ def step1(prs, ex):
         idx = 0; rng = []
         for c in cnt:
             a = e["start"][idx]; idx += c; b = (e["start"][idx] if idx < len(e["start"]) else len(e["code"])) - 1; rng.append((a + 1, b + 1))
-        # layout: the largest type size at which code, result and explanation fit the left column
+        # layout: the largest type size at which the code frames, the result and the explanation fit the left column
         longest = max(len(l) for l in e["code"]); assert longest <= 56, (N, longest)
         rows = [(w["expression"], w["expected"]) for w in e["show"]]
-        done = False
-        for fs, rfs, efs_list in ((11, 10.5, (12, 11.5, 11, 10.5)), (10.5, 10, (12, 11.5, 11, 10.5)), (10, 10, (11, 10.5, 10)), (10, 9.5, (10, 9.5)), (9.5, 9, (9.5,))):
-            pitch = fs * 1.25 / 0.72; ch = round(len(e["code"]) * pitch + 16, 1); y0 = 133
-            rp = rfs * 1.25 / 0.72; per = int(535 * 0.72 / (rfs * 0.6))
-            nl = sum(max(1, -(-(len(a) + 3 + len(b)) // per)) for a, b in rows)
-            rh = round(nl * rp + 14 + 12, 1); ry = round(y0 + ch + 7, 1); ey = round(ry + rh + 7, 1); eh = 498 - ey
-            if len(e["code"]) and max(len(l) for l in e["code"]) * fs * 0.6 / 0.72 > 530: continue
+        G = len(rng); done = False
+        for fs, rfs, efs_list in ((11, 10.5, (12, 11.5, 11, 10.5)), (10.5, 10, (12, 11.5, 11, 10.5)), (10, 10, (11, 10.5, 10)), (10, 9.5, (10, 9.5)), (9.5, 9, (9.5, 9.0)), (9, 9, (9.0,))):
+            if longest * fs * 0.6 / 0.72 > 530: continue
+            pitch = fs * 1.25 / 0.72
+            fh = [round((b_ - a_ + 1) * pitch + 8, 1) for a_, b_ in rng]; y0 = 128; ch = sum(fh) + 3 * (G - 1)
+            rp = rfs * 1.25 / 0.72; per = int(530 * 0.72 / (rfs * 0.62))
+            rl = [max(1, -(-(len(a_) + 5 + len(b_)) // per)) for a_, b_ in rows]
+            rh = round(sum(rl) * rp + 16 + 8, 1); ry = round(y0 + ch + 5, 1); ey = round(ry + rh + 4, 1); eh = 502 - ey
             for efs in efs_list:
-                need = sum(est_lines("Lines 10-10  " + t, efs, 565, 0.47) for t in expl) * efs * 1.2 / 0.72 + 3 * 4 / 0.72
+                el = [est_lines("Lines 10-10  " + t, efs, 565, 0.52) for t in expl]
+                need = sum(l * efs * 1.2 / 0.72 + 8 for l in el)
                 if need <= eh: done = True; break
             if done: break
         assert done, ("explanation too tall", N)
-        code = box(s, "code %d" % N, 40, y0, 565, ch, fill=CODEBG, line=CODEBG, adj=0.04)
-        text(s, "code %d" % N, 0, 0, 0, 0, code_paras(e["code"], fs), anchor="m", wrap=False, inset=12, shape=code)
-        res = box(s, "result %d" % N, 40, ry, 565, rh, fill=WHITE, line=TEAL, adj=0.06, lw=1.25)
-        paras = [{"runs": [("RESULT  ", 8.5, TEAL, True), ("Python 3.14.6 · the chapter setup defines ALICE, PREV, FIRST and tx", 8.5, MUTE, False, True)], "space": 2}]
-        for a, b in rows: paras.append({"runs": [(a, rfs, MUTE, False, False, "Courier New"), ("  →  ", rfs, ORANGE, True, False, "Courier New"), (b, rfs, INK, True, False, "Courier New")]})
-        text(s, "result %d" % N, 0, 0, 0, 0, paras, anchor="m", wrap=True, inset=10, shape=res)
-        ep = []
-        for (a, b), t in zip(rng, expl):
-            lab = ("Line %d" % a) if a == b else ("Lines %d-%d" % (a, b))
-            ep.append({"runs": [(lab + "  ", efs, ORANGE, True), (t, efs, INK)], "space": 3})
-        text(s, "explanation %d" % N, 40, ey, 565, eh, ep)
+        y = y0
+        for (a_, b_), h_ in zip(rng, fh):
+            fr = box(s, "code %d" % N, 40, y, 565, h_, fill=CODEBG, line=CODEBG, adj=0.05)
+            text(s, "code %d" % N, 0, 0, 0, 0, code_paras(e["code"][a_ - 1:b_], fs), anchor="m", wrap=False, inset=12, shape=fr); y += h_ + 3
+        box(s, "result %d" % N, 40, ry, 565, rh, fill=WHITE, line=TEAL, adj=0.06, lw=1.25)
+        text(s, "result %d" % N, 50, ry + 3, 545, 12, [[("RESULT  ", 8.5, TEAL, True), ("Python 3.14.6 · the chapter setup defines ALICE, PREV, FIRST and tx", 8.5, MUTE, False, True)]])
+        yy = ry + 15
+        for (a_, b_), l_ in zip(rows, rl):
+            hh = l_ * rp + 1
+            text(s, "result %d" % N, 50, yy, 545, hh, [[(a_, rfs, MUTE, False, False, "Courier New"), ("  →  ", rfs, ORANGE, True, False, "Courier New"), (b_, rfs, INK, True, False, "Courier New")]]); yy += hh
+        yy = ey
+        for (a_, b_), t, l_ in zip(rng, expl, el):
+            lab = ("Line %d" % a_) if a_ == b_ else ("Lines %d-%d" % (a_, b_)); hh = l_ * efs * 1.2 / 0.72 + 8
+            text(s, "explanation %d" % N, 40, yy, 565, hh, [[(lab + "  ", efs, ORANGE, True), (t, efs, INK)]]); yy += hh
         e["layout"] = {"code": (y0, ch), "result": (ry, rh), "expl": (ey, eh), "ranges": rng}
     return prs
 
@@ -83,7 +88,10 @@ def main():
     step1(prs, ex)
     if "--step2" in sys.argv:
         import deck_enhance_v2_3_0 as E
-        E.step2(prs, ex)
+        N, oldpos = E.step2(prs, ex)
+        for e in ex: e["slide"] = oldpos[e["slide"]]
+        global MAN_NEW
+        MAN_NEW = os.path.join(ROOT, "03-materials/ch06/page/chapter_code_ch06_v1_3_0.json")
     prs.core_properties.version = "2.3.0"
     prs.save(DST)
     new = {"manifest": "chapter_code_ch06_v1_2_0", "chapter": 6, "deck": os.path.basename(DST), "deck_version": "2.3.0", "python_of_expected_values": man["python_of_expected_values"],
