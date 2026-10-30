@@ -52,7 +52,8 @@ def ev_backlog(t, prev):
     n = t.count("backlog:admittedByOutput %s ;" % OLD); assert n >= 40, n
     t = t.replace("backlog:admittedByOutput %s ;" % OLD, "backlog:admittedByOutput %s ;" % NEWB)
     L = []; note = "Admitted " + WHEN + " (" + ", ".join(CRS) + "). One criterion per unit (G133). Done stories and tasks stay Done and are not edited (G125)."
-    for aid, (label, g_, tl, ver) in crit_rep().items():
+    crits = {k: ((v[0], v[1], 'ex:TS_ChapterCheck, ex:TS_DeckMatch', v[2]) if len(v) == 3 else v) for k, v in crit_rep().items()}
+    for aid, (label, g_, tl, ver) in crits.items():
         k = aid[4:]
         L.append(RT.ac_block(aid, label, g_, tl, ver, k).replace("ex:TC9_", "ex:TC9R_"))
         L.append(RT.case_blocks(k, aid).replace("Spec3I_Retro24", "Spec3I_Ch06Teach").replace("ex:Data3S_TC9_", "ex:Data3S_TC9R_").replace("ex:TC9_", "ex:TC9R_")
