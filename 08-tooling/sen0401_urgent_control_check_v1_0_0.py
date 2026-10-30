@@ -22,10 +22,10 @@ def logcheck(p, minfeat):
     t = open(p, errors="replace").read(); tb = "Traceback" in t; fail = len(re.findall(r"\[FAIL\]", t)); ps = len(re.findall(r"\[PASS\]", t)); w = re.findall(r"widgets: (\d+) tested, (\d+) passed; failing: (\[[^\]]*\])", t)
     print("%s: traceback %s, [PASS] %d, [FAIL] %d, widgets %s" % (p.split("/")[-1], tb, ps, fail, w[-1] if w else None))
     pan = "panels" in p; ok = (not tb) and fail == 0 and (pan or (bool(w) and w[-1][0] == w[-1][1] and w[-1][2] == "[]")) and ps >= int(minfeat); print("RESULT:", "PASS" if ok else "FAIL"); return 0 if ok else 1
-def samelines():
-    d = REPO + "/08-tooling/"; a = d + "verify/iter54/ctl/ctl_nocopy_engine_check_v1_1_1_rerun.log"; b = d + "exam/sen0401_exam_engine_check_log_v1_1_1.txt"
-    f = lambda p: [re.sub(r"\s+", " ", l)[:60] for l in open(p, errors="replace").read().splitlines() if re.match(r"(PASS|FAIL)|SUMMARY", l)]
+def samelines(which="nocopy"):
+    d = REPO + "/08-tooling/"; a = d + "verify/iter54/ctl/ctl_%s_rerun.log" % ("nocopy_engine_check_v1_1_1" if which == "nocopy" else "items_midterm_check_v1_0_0"); b = d + ("exam/sen0401_exam_engine_check_log_v1_1_1.txt" if which == "nocopy" else "exam/sen0401_exam_items_midterm_check_log_v1_0_0.txt")
+    f = lambda p: [re.sub(r"\s+", " ", l)[:60] for l in open(p, errors="replace").read().splitlines() if re.match(r"\s*(PASS|FAIL|NOT_MEASURED)|SUMMARY|RESULT", l)]
     x, y = f(a), f(b); print("control's re-run of the executor's check v1.1.1: %d result lines, %d PASS, %d FAIL; committed log: %d lines; equal (first 60 characters of each): %s" % (len(x), sum(l.startswith("PASS") for l in x), sum(l.startswith("FAIL") for l in x), len(y), x == y))
-    ok = x == y and x and not any(l.startswith("FAIL") for l in x) and x[-1].startswith("SUMMARY 16 of 16"); print("RESULT:", "PASS" if ok else "FAIL"); return 0 if ok else 1
+    ok = x == y and x and not any(l.startswith("FAIL") for l in x) and (x[-1].startswith("SUMMARY 16 of 16") if which == "nocopy" else x[-1].startswith("RESULT PASS")); print("RESULT:", "PASS" if ok else "FAIL"); return 0 if ok else 1
 if __name__ == "__main__":
     sys.exit({"nochange": nochange, "logcheck": logcheck, "samelines": samelines}[sys.argv[1]](*sys.argv[2:]))
