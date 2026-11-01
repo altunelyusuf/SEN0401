@@ -57,7 +57,7 @@ def ev_backlog(t, prev):
     t = t.replace("backlog:admittedByOutput %s ;" % OLD, "backlog:admittedByOutput %s ;" % NEWB)
     # rewrite the not-started items (G133); states are checked
     for x in (SID, "TK_Repair_Exam_Paper_Build", "TK_Repair_Exam_Paper_Verify", "AC3E_Repair_PaperFormCode"):
-        i, j = T.blk(t, x); assert "backlog:Ready" in t[i:j] or x.startswith("AC3E"), x
+        i, j = T.blk(t, x); assert ("backlog:Ready" in t[i:j] or "backlog:Proposed" in t[i:j]) or x.startswith("AC3E"), x
     def f_story(b):
         b = sub_attr(b, "rdfs:label", TITLE); b = sub_attr(b, "backlog:hasTitle", TITLE)
         b = sub_attr(b, "backlog:wantsCapability", TITLE)
