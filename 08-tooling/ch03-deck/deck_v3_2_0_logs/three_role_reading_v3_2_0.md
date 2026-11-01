@@ -1,0 +1,7 @@
+# Three-role reading of deck v3.2.0 (a reading by the executor from the rendered slides, notes and logs; not a gate)
+
+| Role | Question asked | Reading | Open point |
+|---|---|---|---|
+| Teaching academician | Can I teach each concept from the slides and notes alone? | Yes: 115 page nodes, 0 level-3 concepts without a slide, 106 with a slide visual (the 9 others are level 1/2 branch nodes carried by dividers). Each of 19 new slides has what, why, how and an everyday comparison; notes are 42 to 54 words and carry what to say, point at, ask, and the common mistake. | The concept match is by label text on the slide; it does not prove the explanation is good. |
+| Expert reviewer | Are numbers and code right and unchanged? | Code: 38 boxes, 64 lines, identical to v3.1.0; 19 results identical; v3.1.0 SHA-256 unchanged. New numbers come from the chapter library (194 bytes = 125 + 69, weight 569, vsize 143). deck_check: 0 mismatches. | Two new charts are drawn with shapes, because the chart-provenance check accepts only recorded chart objects. D5 is NOT_MEASURED. |
+| Undergraduate student | Can I follow, read it, and find more? | Text is 9 pt or larger everywhere (smallest 9.0 pt on stamps and credits), results 10 pt on one line, no prompts, no untaught lambda, slides numbered, resources slide with 13 links. | Slide 24 text gap went from 0.44 in to 0.24 in; the result card now sits 0.06 in under the code card. |
