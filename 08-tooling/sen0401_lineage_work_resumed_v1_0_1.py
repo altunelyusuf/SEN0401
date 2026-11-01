@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import sen0401_lineage_succession_v1_1_0 as M
 import sen0401_lineage_succession3_v1_1_0 as X
 import sen0401_lineage_template_revision_v1_0_0 as T
-GATE = "/home/claude/Ontologies/backlog-roadmap-framework/03-tooling/backlog_execution_ready_v1_2_0.py"
+GATE = "/home/claude/Ontologies/backlog-roadmap-framework/03-tooling/backlog_execution_ready_v1_6_0.py"
 
 
 def lit(s):
