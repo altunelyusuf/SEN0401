@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""sen0401_lineage_cancel_templates v1_0_0 - closes ST_Code_Template and ST_Template_Panels with their four tasks (all Proposed, nothing started) as CANCELLED, at the owner's order of 2026-11-01 12:26 to concentrate on the Friday fixes and not rebuild what exists (ex:CR3_MidtermSimplify): the page template 9.52.9, the page builder 4.19.0 and the panel test v1_0_0 exist from Friday and the chapter 6 page v9.89.0 passed the page tests 9.34.3, 9.35.3 and 9.38.0 on them. Usage: no arguments."""
+__version__ = "1.0.0"
+import os, re, sys, time
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import sen0401_lineage_succession_v1_1_0 as M
+import sen0401_lineage_succession3_v1_1_0 as X
+import sen0401_lineage_template_revision_v1_0_0 as T
+import sen0401_lineage_control_v1_0_0 as C
+lit = C.lit
+src = M.newest(); t = open(src, encoding="utf-8").read(); nxt, cur = M.next_version(src); L = []; now = M.now()
+ITEMS = ("TK_Template_Panels_Verify", "TK_Template_Panels_Build", "TK_Code_Template_Verify", "TK_Code_Template_Build", "ST_Template_Panels", "ST_Code_Template")
+FROM = {}
+for tk in ITEMS:
+    i, j = T.blk(t, tk); m = re.search(r"backlog:hasState backlog:(Proposed|Suspended|InProgress)\b", t[i:j]); assert m, tk; FROM[tk] = m.group(1)
+FITGAP = ("AS-IS FIT-GAP AND IMPACT ANALYSIS of ex:ST_Code_Template (page template 9.52.6) and ex:ST_Template_Panels (page template 9.52.7), both with Proposed tasks, read from the register v%s. ACCOMPLISHED by existing files (read in the repository, 2026-11-01): the page template 9.52.9 exists (08-tooling/course_page_template_v9_52_9.html; 9.52.6 and 9.52.7 exist too), with full screen and a reader-set size for every diagram panel, the slide examples first in the Playground and no prompt in the card; the page builder 4.19.0 and the panel test v1_0_0 exist; the chapter 6 page v9.89.0 built on them passed the page tests 9.34.3, 9.35.3 and 9.38.0 and the panel test (commits b92453e, 0929f04, a3cbe63). FAILED: nothing is known to fail in these templates. IN PROGRESS: nothing. DUE: nothing of these two stories is due; chapters 1 to 5 reuse template 9.52.9 and builder 4.19.0 (the page tasks name them). IMPACT of the cancellation: no file changes; the criteria of the two stories are NOT claimed as met and not waived (the templates were made under the urgent chapter 6 work and not controlled through these stories); the page tasks of chapters 1 to 6 lost their dependency on ex:TK_Template_Panels_Build in v0.753.0 and name the template 9.52.9; the re-rank follows. If a chapter finds that 9.52.9 does not fit it, the executor stops and reports, and a new story is raised then." % M.newest().split("_v")[-1].replace(".ttl", "").replace("_", "."))
+L.append('\nex:IA3_TemplatesCancel a backlog:ImpactAssessment ;\n    rdfs:label "As-is fit-gap and impact of cancelling the two page template stories"@en ;\n    backlog:analyzesRequest ex:CR3_MidtermSimplify ; backlog:identifiesAffectedLineage ex:Lineage3 ;\n    backlog:hasImpactStatement %s .\n' % lit(FITGAP))
+L.append('\nex:ClosureRep3_Templates a backlog:ClosureReport ;\n    rdfs:label "Closure report of the two page template stories: CANCELLED (satisfied by the Friday files)"@en ; backlog:belongsToLineage ex:Lineage3 ;\n    backlog:reportGeneratedAt "%s"^^xsd:dateTime ; rdfs:seeAlso ex:ST_Code_Template, ex:ST_Template_Panels, ex:IA3_TemplatesCancel ;\n    backlog:hasClosureSummary %s .\n' % (now, lit("Status CANCELLED, not Done. The two stories planned to build the page templates 9.52.6 and 9.52.7; the template 9.52.9, the builder 4.19.0 and the panel test were made on Friday and the chapter 6 page passed the page tests on them. Nothing was built, nothing was waived, no criterion is claimed as met. See ex:IA3_TemplatesCancel.")))
+for tk in ITEMS:
+    i, j = T.blk(t, tk); b = t[i:j]; frm = FROM[tk]
+    why = "Cancelled %s UTC (v%s): at the owner's order of 2026-11-01 12:26 to concentrate on the Friday fixes and not rebuild what exists; the page template 9.52.9, the builder 4.19.0 and the panel test exist (see ex:IA3_TemplatesCancel and ex:ClosureRep3_Templates, status CANCELLED). Criteria not edited, not waived, not claimed." % (now, nxt)
+    nb = b.replace("backlog:hasState backlog:" + frm, "backlog:hasState backlog:Cancelled", 1)
+    nb = re.sub(r'backlog:hasRationale "(?:[^"\\]|\\.)*"', lambda _: "backlog:hasRationale " + lit(why), nb, count=1) if "backlog:hasRationale" in nb else nb.replace("backlog:hasState backlog:Cancelled", "backlog:hasState backlog:Cancelled ; backlog:hasRationale " + lit(why), 1)
+    t = t[:i] + nb + t[j:]; time.sleep(1.1); at = M.now(); L.append(C.transition("CxTP_" + tk, tk, "T_Withdraw" + frm, at, why, tk + " cancelled"))
+print(os.path.basename(M.write_new(src, X.set_status(t + "\n" + "".join(L), "LS_InProgress"), nxt, cur, "ST_Code_Template and ST_Template_Panels and their tasks cancelled (the Friday template 9.52.9, builder 4.19.0 and panel test already exist) with an as-is fit-gap and impact analysis and a closure report marked CANCELLED")))
