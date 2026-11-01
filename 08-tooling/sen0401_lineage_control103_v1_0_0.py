@@ -114,6 +114,19 @@ def honesty(pre):
    label={"nochange": "the executor's commit adds new files only (net)", "own": "the control's own check: v1_1_0 equals v1_0_0 on three decks with prompts, accepts Chapter 1 v3_3_0 and Chapter 5 v3_7_0, refuses a stale caption the control made, and the executor's fixtures end with every stale fixture refused"},
    elem=[("(1) every file is new and no committed file is edited", ["nochange"]), ("(2)(3)(4) the successor equals the old check on decks with prompts, accepts the captions of the prompt-free decks and refuses a stale caption", ["own"])])
 CASES["honesty"] = honesty("Ev103kd")
+def chk6(pre):
+    return dict(crit="AC9_Chapter_Check6", tk="TK_Chapter_Check6_Build", vt="TK_Chapter_Check6_Verify", brief="iter57", bp="08-tooling/briefs/iter57/BRIEF_TK_Chapter_Check6_Build.md", pre=pre, ei="EI" + pre, n="00", partial=None,
+   kinds=lambda c: [("nochange", CCC, "nochange " + c), ("own", TL + "sen0401_chapter_check_control_v1_0_0.py", "run")],
+   label={"nochange": "the executor's commit adds new files only (net)", "own": "the control's own check: v1_5_0 equals its blob, the only code change is the fixtures call, Deck/Ch01 passes with v1_6_0 and fails with v1_5_0, Deck/Ch04 gives the same lines with both"},
+   elem=[("(1)(2) a new file that differs from v1_5_0 only in the fixtures call", ["nochange", "own"]), ("(3)(4) Deck/Ch01 passes, a deck with prompts gives identical lines", ["own"])])
+def d01(pre):
+    d = deckcode(pre, "1", "Ch01", "SEN0401_Ch01_Introduction_3e_v3_2_0.pptx", "SEN0401_Ch01_Introduction_3e_v3_3_0.pptx", "deck01", "TK_Ch01_DeckCode_Build", "AC9_Ch01_DeckCode", None)
+    d["partial"] = None; d["bp"] = "08-tooling/briefs/iter56/BRIEF_SEN0401-I52-deck01.md"; k0 = d["kinds"]
+    d["kinds"] = lambda c: [x if x[0] != "proof" else ("proof", TL + "ch01-deck/deck_code_proof_v3_3_0.py", "run") for x in k0(c)] + [("chk", TL + "sen0401_lineage_chapter_check_v1_6_0.py", "Deck/Ch01")]
+    d["label"] = dict(d["label"], chk="the chapter check v1_6_0 (successor checks of the code gate) Deck/Ch01 on the newest deck: exit 0")
+    d["elem"] = d["elem"] + [("(4) the successor checks run on the new deck", ["chk"])]
+    return d
+CASES["chk6"] = chk6("Ev103ke"); CASES["deck01code"] = d01("Ev103kf")
 def setup(case):
     global CS, LOG, WORK, kinds, LABEL, ELEM
     CS = CASES[case]; LOG = os.path.join(REPO, TL, "verify/iter56/bridge_" + case); WORK = "/tmp/sen0401_ctl102_" + case; kinds = CS["kinds"]; LABEL = CS["label"]; ELEM = CS["elem"]
@@ -173,6 +186,6 @@ def record(case, sess, c):
         i, j = T.blk(t, TK); b = t[i:j]; m = re.search(r'backlog:hasState backlog:InProgress ; backlog:startedAt "([^"]*)"\^\^xsd:dateTime', b); assert m
         t = t[:i] + b.replace(m.group(0), 'backlog:hasState backlog:Suspended ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:lastAuditedAt "%s"^^xsd:dateTime ; backlog:hasRationale %s' % (m.group(1), now, lit(why)), 1) + t[j:]
         L.append(C.transition("Susp55T_" + TK, TK, "T_Suspend", now, why, TK + " suspended")); L.append('ex:%s backlog:hasEvidence %s .\n' % (TK, evs))
-    RN = lambda x: re.sub(r"(Ev|EI|Brief|Harness|Done|Begin|Ready|Susp)55", lambda m: m.group(1) + "102" + {"deck05code": "ka", "paper2": "kb", "reader2": "kc", "deck05teach": "ta", "gate": "tb", "dchk": "tc", "honesty": "td"}[case], x)
+    RN = lambda x: re.sub(r"(Ev|EI|Brief|Harness|Done|Begin|Ready|Susp)55", lambda m: m.group(1) + "102" + {"deck05code": "ka", "paper2": "kb", "reader2": "kc", "deck05teach": "ta", "gate": "tb", "dchk": "tc", "honesty": "td", "chk6": "te", "deck01code": "tf"}[case], x)
     print(os.path.basename(M.write_new(src, X.set_status(t + "\n" + RN("".join(L)), "LS_InProgress"), nxt, cur, "Control of the midterm-scope work (%s, %s): %s." % (TK, sess, ("MET, Build Done, Verify open" if CS.get("partial") else "MET, Build and Verify Done") if not bad else "NOT MET: " + "; ".join(bad))))); print(bad)
 if __name__ == "__main__": {"prepare": prepare, "record": record}[sys.argv[1]](*sys.argv[2:])
