@@ -108,6 +108,12 @@ def dchk(pre):
    label={"nochange": "the executor's commits add new files only (net)", "fx": "the deck checks fixtures v1_0_1 re-run by the control (27 of 27)", "own": "the control's own counts of prompts, lambda lines and label shapes on the old decks of chapters 1 to 6 equal the successor checks' counts (Ch04 lambda: 3 lines; the control's first count of 4 counted occurrences, two on one line)", "impact": "the impact proof re-run by the control: 0 comparisons not equal on decks with prompts"},
    elem=[("(1) old checks unchanged", ["nochange"]), ("(2) successors give the expected answers on fixtures", ["fx"]), ("(3) successor counts equal the control's counts on the old decks", ["own"]), ("(4) on decks with prompts the old and the new checks agree", ["impact"])])
 CASES["deck05teach"] = teach5("Ev103ka"); CASES["gate"] = gate("Ev103kb"); CASES["dchk"] = dchk("Ev103kc")
+def honesty(pre):
+    return dict(crit="AC9_Code_Honesty", tk="TK_Code_Honesty_Build", vt="TK_Code_Honesty_Verify", brief="iter57", bp="08-tooling/briefs/iter57/BRIEF_TK_Code_Honesty_Build.md", pre=pre, ei="EI" + pre, n="00", partial=None,
+   kinds=lambda c: [("nochange", CCC, "nochange " + c), ("own", TL + "sen0401_deck_honesty_control_check_v1_0_0.py", "run")],
+   label={"nochange": "the executor's commit adds new files only (net)", "own": "the control's own check: v1_1_0 equals v1_0_0 on three decks with prompts, accepts Chapter 1 v3_3_0 and Chapter 5 v3_7_0, refuses a stale caption the control made, and the executor's fixtures end with every stale fixture refused"},
+   elem=[("(1) every file is new and no committed file is edited", ["nochange"]), ("(2)(3)(4) the successor equals the old check on decks with prompts, accepts the captions of the prompt-free decks and refuses a stale caption", ["own"])])
+CASES["honesty"] = honesty("Ev103kd")
 def setup(case):
     global CS, LOG, WORK, kinds, LABEL, ELEM
     CS = CASES[case]; LOG = os.path.join(REPO, TL, "verify/iter56/bridge_" + case); WORK = "/tmp/sen0401_ctl102_" + case; kinds = CS["kinds"]; LABEL = CS["label"]; ELEM = CS["elem"]
@@ -167,6 +173,6 @@ def record(case, sess, c):
         i, j = T.blk(t, TK); b = t[i:j]; m = re.search(r'backlog:hasState backlog:InProgress ; backlog:startedAt "([^"]*)"\^\^xsd:dateTime', b); assert m
         t = t[:i] + b.replace(m.group(0), 'backlog:hasState backlog:Suspended ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:lastAuditedAt "%s"^^xsd:dateTime ; backlog:hasRationale %s' % (m.group(1), now, lit(why)), 1) + t[j:]
         L.append(C.transition("Susp55T_" + TK, TK, "T_Suspend", now, why, TK + " suspended")); L.append('ex:%s backlog:hasEvidence %s .\n' % (TK, evs))
-    RN = lambda x: re.sub(r"(Ev|EI|Brief|Harness|Done|Begin|Ready|Susp)55", lambda m: m.group(1) + "102" + {"deck05code": "ka", "paper2": "kb", "reader2": "kc", "deck05teach": "ta", "gate": "tb", "dchk": "tc"}[case], x)
+    RN = lambda x: re.sub(r"(Ev|EI|Brief|Harness|Done|Begin|Ready|Susp)55", lambda m: m.group(1) + "102" + {"deck05code": "ka", "paper2": "kb", "reader2": "kc", "deck05teach": "ta", "gate": "tb", "dchk": "tc", "honesty": "td"}[case], x)
     print(os.path.basename(M.write_new(src, X.set_status(t + "\n" + RN("".join(L)), "LS_InProgress"), nxt, cur, "Control of the midterm-scope work (%s, %s): %s." % (TK, sess, ("MET, Build Done, Verify open" if CS.get("partial") else "MET, Build and Verify Done") if not bad else "NOT MET: " + "; ".join(bad))))); print(bad)
 if __name__ == "__main__": {"prepare": prepare, "record": record}[sys.argv[1]](*sys.argv[2:])
