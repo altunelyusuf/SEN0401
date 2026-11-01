@@ -127,6 +127,19 @@ def d01(pre):
     d["elem"] = d["elem"] + [("(4) the successor checks run on the new deck", ["chk"])]
     return d
 CASES["chk6"] = chk6("Ev103ke"); CASES["deck01code"] = d01("Ev103kf")
+def items3(pre):
+    EX = TL + "exam/"
+    return dict(crit="AC9_Exam_Items3", tk="TK_Exam_Items3_Build", vt="TK_Exam_Items3_Verify", brief="iter57", bp="08-tooling/briefs/iter57/BRIEF_TK_Exam_Items3_Build.md", pre=pre, ei="EI" + pre, n="00", partial=None,
+   kinds=lambda c: [("nochange", CCC, "nochange " + c), ("own", EX + "sen0401_exam_items3_control_check_v1_0_0.py", "run")],
+   label={"nochange": "the executor's commits add new files only (net)", "own": "the control's own check: 21 items, four numeric answers recomputed (3900, 65000, 3364, 192), abbreviations expanded and tips present except the two items with the rule inside the question, audit of 23 rows, structure 4 x 25 plus 10 bonus, v1.1.0 equals its blob, the executor's check re-run"},
+   elem=[("(1) every file is new and no committed file is edited", ["nochange"]), ("(2)(3)(4)(5)(6) audit, tips and abbreviations, structure and checks", ["own"])])
+def cover(pre):
+    EX = TL + "exam/"
+    return dict(crit="AC9_Exam_Cover", tk="TK_Exam_Cover_Build", vt="TK_Exam_Cover_Verify", brief="iter57", bp="08-tooling/briefs/iter57/BRIEF_TK_Exam_Cover_Build.md", pre=pre, ei="EI" + pre, n="00", partial=None,
+   kinds=lambda c: [("nochange", CCC, "nochange " + c), ("own", EX + "sen0401_exam_cover_control_check_v1_0_0.py", "run")],
+   label={"nochange": "the executor's commit adds new files only (net)", "own": "the control's own check: both demo covers are one page on the control's LibreOffice export, required fields present, no other-course code, a missing template path fails with an error, the template is not tracked (Word is not available: what Word shifts is not measured)"},
+   elem=[("(1) every file is new", ["nochange"]), ("(2)(3)(4) one page, the fields, abbreviations spelled out", ["own"])])
+CASES["items3"] = items3("Ev103kg"); CASES["cover"] = cover("Ev103kh")
 def setup(case):
     global CS, LOG, WORK, kinds, LABEL, ELEM
     CS = CASES[case]; LOG = os.path.join(REPO, TL, "verify/iter56/bridge_" + case); WORK = "/tmp/sen0401_ctl102_" + case; kinds = CS["kinds"]; LABEL = CS["label"]; ELEM = CS["elem"]
@@ -186,6 +199,6 @@ def record(case, sess, c):
         i, j = T.blk(t, TK); b = t[i:j]; m = re.search(r'backlog:hasState backlog:InProgress ; backlog:startedAt "([^"]*)"\^\^xsd:dateTime', b); assert m
         t = t[:i] + b.replace(m.group(0), 'backlog:hasState backlog:Suspended ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:lastAuditedAt "%s"^^xsd:dateTime ; backlog:hasRationale %s' % (m.group(1), now, lit(why)), 1) + t[j:]
         L.append(C.transition("Susp55T_" + TK, TK, "T_Suspend", now, why, TK + " suspended")); L.append('ex:%s backlog:hasEvidence %s .\n' % (TK, evs))
-    RN = lambda x: re.sub(r"(Ev|EI|Brief|Harness|Done|Begin|Ready|Susp)55", lambda m: m.group(1) + "102" + {"deck05code": "ka", "paper2": "kb", "reader2": "kc", "deck05teach": "ta", "gate": "tb", "dchk": "tc", "honesty": "td", "chk6": "te", "deck01code": "tf"}[case], x)
+    RN = lambda x: re.sub(r"(Ev|EI|Brief|Harness|Done|Begin|Ready|Susp)55", lambda m: m.group(1) + "102" + {"deck05code": "ka", "paper2": "kb", "reader2": "kc", "deck05teach": "ta", "gate": "tb", "dchk": "tc", "honesty": "td", "chk6": "te", "deck01code": "tf", "items3": "tg", "cover": "th"}[case], x)
     print(os.path.basename(M.write_new(src, X.set_status(t + "\n" + RN("".join(L)), "LS_InProgress"), nxt, cur, "Control of the midterm-scope work (%s, %s): %s." % (TK, sess, ("MET, Build Done, Verify open" if CS.get("partial") else "MET, Build and Verify Done") if not bad else "NOT MET: " + "; ".join(bad))))); print(bad)
 if __name__ == "__main__": {"prepare": prepare, "record": record}[sys.argv[1]](*sys.argv[2:])
