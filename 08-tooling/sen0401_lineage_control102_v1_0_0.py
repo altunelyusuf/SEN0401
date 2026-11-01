@@ -69,8 +69,18 @@ def deckcode(pre, nn, name, old, new, brief, tk, crit, extra):
           "own": "the control's own check on the old and the new deck: slide count, old deck equals its committed blob, 0 prompt lines, code boxes named code N and equal in number, every old code line in order, every old result row on its slide, other text, notes and hyperlinks unchanged, layout check clean, notes check PASS (lambdas reported as INFO)",
           "proof": "the executor's proof script re-run by the control (its RESULT line)"},
    elem=[("(1)(6) the old deck is byte-identical and no committed file is edited", ["nochange"]), ("(2)(3)(5) the code lines in order without prompts, the result rows under their code boxes, everything else unchanged", ["own", "proof"])])
-CASES = {"deck05code": deckcode("Ev102ka", "5", "Ch05", "SEN0401_Ch05_WalletRecovery_3e_v3_4_0.pptx", "SEN0401_Ch05_WalletRecovery_3e_v3_5_0.pptx", "deck05", "TK_Ch05_DeckCode_Build", "AC9_Ch05_DeckCode",
+CASES = {"paper2": None, "deck05code": deckcode("Ev102ka", "5", "Ch05", "SEN0401_Ch05_WalletRecovery_3e_v3_4_0.pptx", "SEN0401_Ch05_WalletRecovery_3e_v3_5_0.pptx", "deck05", "TK_Ch05_DeckCode_Build", "AC9_Ch05_DeckCode",
    "RESULT: elements (1), (2), (3), (5) and (6) MET; element (4) NOT RUN: the successor checks of the code gate are not in the repository yet (the executor logged CANNOT_RUN), the arc check v1_3_0 and the hyperlink count are in the executor's logs and the hyperlink count was re-checked by the control; the criterion is NOT satisfied until the Verify task has run element (4) after the code gate landed. The Build task is Done for the file it delivered; the Verify task and the story stay open. Disclosed risk: the Teach build continues from this deck; if the successor checks fail on it, the deck is repaired as a new version and the Teach build is redone.")}
+
+def paper2(pre):
+    EX = TL + "exam/"
+    return dict(crit="AC3E_Repair_PaperFormCode", tk="TK_Repair_Exam_Paper_Build", vt="TK_Repair_Exam_Paper_Verify", brief="iter55b", bp="08-tooling/briefs/iter55b/BRIEF_TK_Repair_Exam_Paper_Build.md", pre=pre, ei="EI" + pre, n="00", partial=None,
+   kinds=lambda c: [("nochange", CCC, "nochange " + c), ("own", EX + "sen0401_exam_paper_v2_control_check_v1_0_0.py", "run"), ("rerun", EX + "sen0401_exam_papers_control_check_v2_0_0.py", EX + "papers_midterm_v2 --no-rebuild")],
+   label={"nochange": "the executor's commits leave every earlier committed file with the same content at the last commit (net)",
+          "own": "the control's own check: paper and key .docx exported again by LibreOffice here (3 and 1 pages), sheets 1 page, form codes distinct and printed, the key against the items by my own reading of the .docx and my own runs (choice letters, numbers, code traces with a real cs_encode, ordering, matching, fill-in bank) for both forms, the only changed item is the cs_encode item",
+          "rerun": "the executor's control script v2.0.0 re-run by the control on the delivered files (31 PASS lines, no FAIL; the rebuild element J is run by the control's own earlier run)"},
+   elem=[("(1) every file is new and no committed file is edited", ["nochange"]), ("(2)(3)(4)(5)(7)(8) pages, Word files, forms with distinct codes, one item changed, code boxes, key against the items", ["own", "rerun"]), ("(6) the sheet PDF read by the reader of record (v1.1.0; v1.2.0 not yet committed) on synthetic sheets: 0 silent wrong", ["rerun"])])
+CASES["paper2"] = paper2("Ev102kb")
 def setup(case):
     global CS, LOG, WORK, kinds, LABEL, ELEM
     CS = CASES[case]; LOG = os.path.join(REPO, TL, "verify/iter56/bridge_" + case); WORK = "/tmp/sen0401_ctl102_" + case; kinds = CS["kinds"]; LABEL = CS["label"]; ELEM = CS["elem"]
@@ -130,6 +140,6 @@ def record(case, sess, c):
         i, j = T.blk(t, TK); b = t[i:j]; m = re.search(r'backlog:hasState backlog:InProgress ; backlog:startedAt "([^"]*)"\^\^xsd:dateTime', b); assert m
         t = t[:i] + b.replace(m.group(0), 'backlog:hasState backlog:Suspended ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:lastAuditedAt "%s"^^xsd:dateTime ; backlog:hasRationale %s' % (m.group(1), now, lit(why)), 1) + t[j:]
         L.append(C.transition("Susp55T_" + TK, TK, "T_Suspend", now, why, TK + " suspended")); L.append('ex:%s backlog:hasEvidence %s .\n' % (TK, evs))
-    RN = lambda x: re.sub(r"(Ev|EI|Brief|Harness|Done|Begin|Ready|Susp)55", lambda m: m.group(1) + "102" + "ka", x)
+    RN = lambda x: re.sub(r"(Ev|EI|Brief|Harness|Done|Begin|Ready|Susp)55", lambda m: m.group(1) + "102" + {"deck05code": "ka", "paper2": "kb"}[case], x)
     print(os.path.basename(M.write_new(src, X.set_status(t + "\n" + RN("".join(L)), "LS_InProgress"), nxt, cur, "Control of the urgent chapter 6 work (%s, %s): %s." % (TK, sess, ("MET, Build Done, Verify open" if CS.get("partial") else "MET, Build and Verify Done") if not bad else "NOT MET: " + "; ".join(bad))))); print(bad)
 if __name__ == "__main__": {"prepare": prepare, "record": record}[sys.argv[1]](*sys.argv[2:])
