@@ -122,7 +122,7 @@ def chk6(pre):
 def d01(pre):
     d = deckcode(pre, "1", "Ch01", "SEN0401_Ch01_Introduction_3e_v3_2_0.pptx", "SEN0401_Ch01_Introduction_3e_v3_3_0.pptx", "deck01", "TK_Ch01_DeckCode_Build", "AC9_Ch01_DeckCode", None)
     d["partial"] = None; d["bp"] = "08-tooling/briefs/iter56/BRIEF_SEN0401-I52-deck01.md"; k0 = d["kinds"]
-    d["kinds"] = lambda c: [x if x[0] != "proof" else ("proof", TL + "ch01-deck/deck_code_proof_v3_3_0.py", "run") for x in k0(c)] + [("chk", TL + "sen0401_lineage_chapter_check_v1_6_0.py", "Deck/Ch01")]
+    d["kinds"] = lambda c: [x if x[0] != "proof" else ("proof", TL + "ch01-deck/deck_code_proof_v3_3_0.py", "03-materials/ch01/SEN0401_Ch01_Introduction_3e_v3_2_0.pptx 03-materials/ch01/SEN0401_Ch01_Introduction_3e_v3_3_0.pptx") for x in k0(c)] + [("chk", TL + "sen0401_lineage_chapter_check_v1_6_0.py", "Deck/Ch01")]
     d["label"] = dict(d["label"], chk="the chapter check v1_6_0 (successor checks of the code gate) Deck/Ch01 on the newest deck: exit 0")
     d["elem"] = d["elem"] + [("(4) the successor checks run on the new deck", ["chk"])]
     return d
