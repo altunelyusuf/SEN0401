@@ -81,6 +81,15 @@ def paper2(pre):
           "rerun": "the executor's control script v2.0.0 re-run by the control on the delivered files (31 PASS lines, no FAIL; the rebuild element J is run by the control's own earlier run)"},
    elem=[("(1) every file is new and no committed file is edited", ["nochange"]), ("(2)(3)(4)(5)(7)(8) pages, Word files, forms with distinct codes, one item changed, code boxes, key against the items", ["own", "rerun"]), ("(6) the sheet PDF read by the reader of record (v1.1.0; v1.2.0 not yet committed) on synthetic sheets: 0 silent wrong", ["rerun"])])
 CASES["paper2"] = paper2("Ev102kb")
+
+def reader2(pre):
+    EX = TL + "exam/"
+    return dict(crit="AC3E_Repair_ReaderGap", tk="TK_Repair_Exam_Reader_Build", vt="TK_Repair_Exam_Reader_Verify", brief="iter55", bp="08-tooling/briefs/iter55/BRIEF_TK_Repair_Exam_Reader_Build.md", pre=pre, ei="EI" + pre, n="00", partial=None,
+   kinds=lambda c: [("nochange", CCC, "nochange " + c), ("own", EX + "sen0401_exam_reader_v12_control_check_v1_0_0.py", "run")],
+   label={"nochange": "the executor's commit adds only new files and edits no earlier committed file (net)",
+          "own": "the control's own check on seed blocks the executor did not name: the earlier reader, measurement and gap-control files equal their blobs before the commit; the gap control v1.1.0 with reader 1.2.0 on seeds 95000-95059 and 96000-96059 over the three layouts (0 BAD rows, 0 registration failures, held share at most 25 percent); the reader's own measurement on the default layout, 100 sheets, seeds 17000.., against v1.1.0 (no silent wrong, no missed, no unflagged empty; ok rows at least 99 percent)"},
+   elem=[("(1) every file is new and no committed file is edited", ["nochange"]), ("(2)(3)(4) the reader alone gives 0 missed, 0 silent wrong and 0 empty-not-flagged on every layout, held share at most 25 percent, every sheet registers, the default-layout measurement not worse (on blocks the control chose)", ["own"])])
+CASES["reader2"] = reader2("Ev102kc")
 def setup(case):
     global CS, LOG, WORK, kinds, LABEL, ELEM
     CS = CASES[case]; LOG = os.path.join(REPO, TL, "verify/iter56/bridge_" + case); WORK = "/tmp/sen0401_ctl102_" + case; kinds = CS["kinds"]; LABEL = CS["label"]; ELEM = CS["elem"]
@@ -140,6 +149,6 @@ def record(case, sess, c):
         i, j = T.blk(t, TK); b = t[i:j]; m = re.search(r'backlog:hasState backlog:InProgress ; backlog:startedAt "([^"]*)"\^\^xsd:dateTime', b); assert m
         t = t[:i] + b.replace(m.group(0), 'backlog:hasState backlog:Suspended ; backlog:startedAt "%s"^^xsd:dateTime ; backlog:lastAuditedAt "%s"^^xsd:dateTime ; backlog:hasRationale %s' % (m.group(1), now, lit(why)), 1) + t[j:]
         L.append(C.transition("Susp55T_" + TK, TK, "T_Suspend", now, why, TK + " suspended")); L.append('ex:%s backlog:hasEvidence %s .\n' % (TK, evs))
-    RN = lambda x: re.sub(r"(Ev|EI|Brief|Harness|Done|Begin|Ready|Susp)55", lambda m: m.group(1) + "102" + {"deck05code": "ka", "paper2": "kb"}[case], x)
+    RN = lambda x: re.sub(r"(Ev|EI|Brief|Harness|Done|Begin|Ready|Susp)55", lambda m: m.group(1) + "102" + {"deck05code": "ka", "paper2": "kb", "reader2": "kc"}[case], x)
     print(os.path.basename(M.write_new(src, X.set_status(t + "\n" + RN("".join(L)), "LS_InProgress"), nxt, cur, "Control of the urgent chapter 6 work (%s, %s): %s." % (TK, sess, ("MET, Build Done, Verify open" if CS.get("partial") else "MET, Build and Verify Done") if not bad else "NOT MET: " + "; ".join(bad))))); print(bad)
 if __name__ == "__main__": {"prepare": prepare, "record": record}[sys.argv[1]](*sys.argv[2:])
