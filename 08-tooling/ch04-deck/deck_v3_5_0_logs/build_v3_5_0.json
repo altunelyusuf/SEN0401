@@ -1,0 +1,218 @@
+{
+ "old_sha256": "982026d7970d48c1de7471687fcc80cfb9bd6424afe74b6c729e10f242622700",
+ "code_lines": [
+  "k = K.BOOK_K",
+  "ok = lambda x: 0 < x < K.N",
+  "[ok(x) for x in (0, 1, k, K.N - 1, K.N)]",
+  "b = K.bits_of",
+  "[b(10, 4), b(26, 8), b(94, 12), b(2, 256)]",
+  "x, y = K.G",
+  "left, right = y * y % K.P, (x ** 3 + 7) % K.P",
+  "left == right",
+  "pts = [K.ec_mul(n) for n in (1, 2, 3, 4)]",
+  "twice = K.ec_add(K.G, K.G)",
+  "twice == pts[1]",
+  "pts = K.multiples(10)",
+  "pts.index(None) + 1",
+  "b = [20, 40, 80, 128, 256]",
+  "[round(math.log10(2 ** (n - 1))) for n in b]",
+  "Kp = K.ec_mul(K.BOOK_K)",
+  "c, u = K.pub_bytes(Kp), K.pub_bytes(Kp, False)",
+  "(len(c), len(u), c[0], u[0])",
+  "c = K.pub_bytes(K.ec_mul(K.BOOK_K))",
+  "pk, pkh = K.p2pk_script(c), K.p2pkh_script(c)",
+  "(len(pk), len(pkh))",
+  "c = K.pub_bytes(K.ec_mul(K.BOOK_K))",
+  "s = hashlib.sha256(c).digest()",
+  "r = K.ripemd160(s)",
+  "(len(c), len(s), len(r), r == K.hash160(c))",
+  "h = K.hash160(K.pub_bytes(K.ec_mul(K.BOOK_K)))",
+  "body = b'\\x00' + h",
+  "chk = K.dsha(body)[:4]",
+  "addr = K.b58check(body)",
+  "(len(body + chk), len(addr), addr[0])",
+  "good = K.key_to_address(K.BOOK_K)",
+  "typos = K.single_typos(good)",
+  "(len(typos), sum(map(K.is_valid_b58check, typos)))",
+  "keys = [K.pub_bytes(K.ec_mul(n)) for n in (1, 2, 3)]",
+  "script = K.multisig_script(2, keys)",
+  "addr = K.p2sh(script)",
+  "(len(script), addr[0], len(addr))",
+  "col, pre = (lambda n: n // 2), (lambda n: n)",
+  "[col(160), pre(160), col(256), pre(256)]",
+  "addr = K.segwit_address('bc', 0, K.PROG_WPKH)",
+  "hrp, _, rest = addr.rpartition('1')",
+  "[hrp, rest[0], len(rest[1:-6]), rest[-6:]]",
+  "p = [(0, K.PROG_WPKH), (0, K.PROG_WSH), (1, K.PROG_TR)]",
+  "a = [K.segwit_address('bc', v, g) for v, g in p]",
+  "d = [K.segwit_decode('bc', x) for x in a]",
+  "[(v, len(g)) for v, g in d]",
+  "ok = lambda a, c: K.bech_check(a) == c",
+  "old = [ok(a, K.BECH32) for a in K.EXT]",
+  "new = [ok(a, K.BECH32M) for a in K.EXT]",
+  "(old, new)",
+  "k = K.BOOK_K",
+  "w, wc = K.wif(k, False), K.wif(k)",
+  "(w[0], len(w), wc[0], len(wc))",
+  "k = K.BOOK_K",
+  "a1 = K.key_to_address(k, False)",
+  "a2 = K.key_to_address(k, True)",
+  "(a1[:6], a2[:6], a1 != a2)",
+  "a = K.key_to_address",
+  "n = next(i for i in range(1, 900) if a(i)[1] == 'A')",
+  "[n, a(n)[:3]]",
+  "w, a = K.wif(K.BOOK_K), K.key_to_address(K.BOOK_K)",
+  "raw = K.b58check_decode(w)",
+  "back = int.from_bytes(raw[1:33], 'big')",
+  "K.key_to_address(back) == a",
+  "e = K.EATER",
+  "msg, tail = e[1:28], e[28:]",
+  "(msg, tail, K.is_valid_b58check(e))"
+ ],
+ "results": [
+  [
+   9,
+   "[ok(x) for x in (0, 1, k, K.N - 1, K.N)]",
+   "[False, True, True, True, False]"
+  ],
+  [
+   10,
+   "[b(10, 4), b(26, 8), b(94, 12), b(2, 256)]",
+   "[13.3, 37.6, 78.7, 256.0]"
+  ],
+  [
+   11,
+   "left == right",
+   "True"
+  ],
+  [
+   13,
+   "twice == pts[1]",
+   "True"
+  ],
+  [
+   14,
+   "pts.index(None) + 1",
+   "9"
+  ],
+  [
+   15,
+   "[round(math.log10(2 ** (n - 1))) for n in b]",
+   "[6, 12, 24, 38, 77]"
+  ],
+  [
+   20,
+   "(len(c), len(u), c[0], u[0])",
+   "(33, 65, 3, 4)"
+  ],
+  [
+   21,
+   "(len(pk), len(pkh))",
+   "(35, 25)"
+  ],
+  [
+   22,
+   "(len(c), len(s), len(r), r == K.hash160(c))",
+   "(33, 32, 20, True)"
+  ],
+  [
+   24,
+   "(len(body + chk), len(addr), addr[0])",
+   "(25, 34, '1')"
+  ],
+  [
+   26,
+   "(len(typos), sum(map(K.is_valid_b58check, typos)))",
+   "(1938, 0)"
+  ],
+  [
+   30,
+   "(len(script), addr[0], len(addr))",
+   "(105, '3', 34)"
+  ],
+  [
+   31,
+   "[col(160), pre(160), col(256), pre(256)]",
+   "[80, 160, 128, 256]"
+  ],
+  [
+   32,
+   "[hrp, rest[0], len(rest[1:-6]), rest[-6:]]",
+   "['bc', 'q', 32, 'c6aaee']"
+  ],
+  [
+   33,
+   "[(v, len(g)) for v, g in d]",
+   "[(0, 20), (0, 32), (1, 32)]"
+  ],
+  [
+   34,
+   "(old, new)",
+   "([True, True, True, True], [False, False, False, False])"
+  ],
+  [
+   37,
+   "(w[0], len(w), wc[0], len(wc))",
+   "('5', 51, 'K', 52)"
+  ],
+  [
+   38,
+   "(a1[:6], a2[:6], a1 != a2)",
+   "('1424C2', '1J7mdg', True)"
+  ],
+  [
+   41,
+   "[n, a(n)[:3]]",
+   "[19, '1Am']"
+  ],
+  [
+   42,
+   "K.key_to_address(back) == a",
+   "True"
+  ],
+  [
+   44,
+   "(msg, tail, K.is_valid_b58check(e))",
+   "('BitcoinEaterAddressDontSend', 'f59kuE', True)"
+  ]
+ ],
+ "slides": [
+  9,
+  10,
+  11,
+  13,
+  14,
+  15,
+  20,
+  21,
+  22,
+  24,
+  26,
+  30,
+  31,
+  32,
+  33,
+  34,
+  37,
+  38,
+  41,
+  42,
+  44
+ ],
+ "slides_size": [
+  1,
+  8,
+  12,
+  23,
+  25,
+  43
+ ],
+ "charts_size": [
+  "ppt/charts/chart1.xml",
+  "ppt/charts/chart2.xml",
+  "ppt/charts/chart3.xml",
+  "ppt/charts/chart4.xml",
+  "ppt/charts/chart5.xml"
+ ],
+ "new_sha256": "0689082b4b05602495aebf7c59a56e3db77832dde711182e09ba7deabe6a3e91"
+}
