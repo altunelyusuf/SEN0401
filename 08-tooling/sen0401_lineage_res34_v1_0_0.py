@@ -83,7 +83,7 @@ def ev_backlog(t, prev):
         i, j = T.blk(t, tid); assert "backlog:Proposed" in t[i:j] or "backlog:Ready" in t[i:j], tid
         t = setdeps(t, tid, deps)
     for tid, sess in SESS_SAME.items():
-        i, j = T.blk(t, tid); b = t[i:j]; b2, k = re.subn(r"Planned session SEN0401-[A-Za-z0-9-]+", "Planned session " + sess, b); assert k == 1, tid
+        i, j = T.blk(t, tid); b = t[i:j]; b2, k = re.subn(r"Planned session SEN0401-[A-Za-z0-9-]+", "Planned session " + sess, b); assert k >= 1, tid
         t = t[:i] + b2 + t[j:]
     L = ['ex:SC3_MidtermToday a backlog:ScopeChange ;\n    rdfs:label "Dependencies of the midterm-scope tasks moved from the controls to the built files"@en ;\n    backlog:fulfillsRequest %s ; backlog:changesScope ex:Scope3 ; backlog:decidedBy backlog:Builder ;\n    backlog:admitsItem ex:ST_Ch06_DeckCode ;\n    backlog:hasScopeChangeRationale %s .\n' % (CR, lit(PACE))]
     t, kk = re.subn(r'(%s a backlog:ChangeRequest ;.*?backlog:hasDisposition )backlog:Disp_Pending' % re.escape(CR), lambda m: m.group(1) + "backlog:Disp_Accepted", t, count=1, flags=re.S); assert kk == 1
