@@ -1,7 +1,7 @@
-# Executor briefs of the exam work (change request CR3_ExamMission; generated from sen0401_slides_lineage_v0_849_0.ttl)
+# Executor briefs of the exam work (change request CR3_ExamMission; generated from sen0401_slides_lineage_v0_861_0.ttl)
 
 The Verify and Regress tasks have no executor: the builder session controls them and runs the evidence bridge after the executors report.
 
 | Start order (by ranking) | Task | Executor session | Can start | Ordering key (BP-D10: RICE score x dependency factor) |
 |---|---|---|---|---|
-| 1 | TK_Exam_Papers4_Build | SEN0401-I59-papers4 | no, after TK_Exam_Items4_Build | 0.6 |
+| 1 | TK_Exam_Papers4_Build | SEN0401-I59-papers4 | yes | 1.2 |

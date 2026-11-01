@@ -1,6 +1,6 @@
 # Brief for the executor session SEN0401-I59-papers4
 
-Generated from the register sen0401_slides_lineage_v0_849_0.ttl. Task TK_Exam_Papers4_Build (state in the register: Ready).
+Generated from the register sen0401_slides_lineage_v0_861_0.ttl. Task TK_Exam_Papers4_Build (state in the register: Ready).
 Executor session name: **SEN0401-I59-papers4**. The register's note on 'work begun' for this task names this session.
 
 ## Why this work exists (the owner's words)
@@ -22,13 +22,10 @@ The owner's words of 2026-10-29, relayed by the coordinator and recorded in the 
 - Every claim about the repository is measured by you and printed; a gap is named plainly. Nothing is invented: every term in an item must appear in the course corpus, a slide, a speaker note, a page or the book (02-textbook).
 - Synthetic stand-ins only: no real student name, number, paper or score.
 
-## Do not start until
-Task(s) TK_Exam_Items4_Build are Done in the register (the builder session controls them and tells the coordinator).
-
 ## The task
 **Build: The midterm papers, key and answer sheet v4 from items v1.3.0, forms A and B**
 
-M REUSE: use the existing tools and files named in the task and never edit a committed file. ONE EXECUTOR SESSION: SEN0401-I59-papers4. Planned session SEN0401-I59-papers4; estimated start S (S = the start of the iteration, planned and not yet held), about 2.0 hours (an estimate, G120: nobody has witnessed a start; the real start is recorded at work begun).
+Make the NEW papers, key and answer sheet v4 from items v1.3.0 (the output of TK_Exam_Items4_Build, committed) as new files in `08-tooling/exam/papers_midterm_v4/`: forms A and B as in papers v3 (mixed order, different codes), the cover page, the structure 25/25/25/25 + 10 with one unit per sub-question, the Word paper and key, the PDF answer sheet. Start from the builder and library of papers v3 (copy to v4 names; v3 stays unchanged). The answer sheet and the reader of record stay unchanged while the block types stay unchanged; if the new items need a change, STOP and report. Never shorten an item to fit the pages; report the page count of the paper (6 pages were measured for v3) and why. Run the papers control, the sheet checks as new copies, and the reader measure on 40 synthetic sheets per form: 0 silent wrong and 0 missed. Report every result verbatim. REUSE: use the existing tools and files named in the task and never edit a committed file. ONE EXECUTOR SESSION: SEN0401-I59-papers4. Planned session SEN0401-I59-papers4; estimated start S (S = the start of the iteration, planned and not yet held), about 2.0 hours (an estimate, G120: nobody has witnessed a start; the real start is recorded at work begun). THE FULL BRIEF TEXT (correction, 2026-11-01: the first note of this task holds one character because of a fault in the route script; this note is the task as written): Make the NEW papers, key and answer sheet v4 from items v1.3.0 (the output of TK_Exam_Items4_Build, committed) as new files in `08-tooling/exam/papers_midterm_v4/`: forms A and B as in papers v3 (mixed order, different codes), the cover page, the structure 25/25/25/25 + 10 with one unit per sub-question, the Word paper and key, the PDF answer sheet. Start from the builder and library of papers v3 (copy to v4 names; v3 stays unchanged). The answer sheet and the reader of record stay unchanged while the block types stay unchanged; if the new items need a change, STOP and report. Never shorten an item to fit the pages; report the page count of the paper (6 pages were measured for v3) and why. Run the papers control, the sheet checks as new copies, and the reader measure on 40 synthetic sheets per form: 0 silent wrong and 0 missed. Report every result verbatim.
 
 ## Impediments and facts linked to this task in the register (register nodes, backlog:impedes)
 - none
