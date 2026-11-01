@@ -1,0 +1,188 @@
+{
+ "old_sha256": "6173d221bc9716dc7c2e908179395d9c4f88ebfc637c98413ff3bdc6b5185633",
+ "code_lines": [
+  "v = 0x20000002",
+  "top = v >> 29",
+  "bits = [b for b in range(29) if v >> b & 1]",
+  "(hex(v), top, bits)",
+  "final = [t for t in T.TAGS if 'rc' not in t]",
+  "text = sorted(final)",
+  "num = sorted(final, key=T.version_key)",
+  "(text[0], num[0])",
+  "bins = T.LAYOUT['bin']",
+  "libs = T.LAYOUT['libexec']",
+  "(len(bins), len(libs), 'bitcoind' in bins)",
+  "listed = T.SUMS['bitcoin-31.1-x86_64-linux-gnu.tar.gz']",
+  "computed = T.RECOMPUTED",
+  "(listed == computed, listed[:12])",
+  "conf = T.parse_conf(T.CONF_TEXT)",
+  "cli = {'dbcache': '2048'}",
+  "used = {**conf, **cli}",
+  "used",
+  "total = 1024",
+  "parts = T.cache_split(total)",
+  "(parts, sum(parts))",
+  "a, b = {'prune': 550}, {'txindex': 1}",
+  "c = {'prune': 550, 'txindex': 1}",
+  "[T.check_options(o)[0] for o in (a, b, c)]",
+  "msg = \"x'; reboot; '\"",
+  "cmd = 'notify.sh \"Alert: %s\"'",
+  "(T.clean(msg), len(msg) - len(T.clean(msg)))",
+  "body = T.rpc_body('getblockchaininfo')",
+  "reply = json.loads(T.REPLY)",
+  "r = reply['result']",
+  "(json.loads(body)['method'], r['blocks'], reply['error'])",
+  "cookie = '__cookie__:' + T.COOKIE",
+  "token = base64.b64encode(cookie.encode()).decode()",
+  "raw = bytes.fromhex(T.COOKIE)",
+  "(len(T.COOKIE), len(raw), token[:12])",
+  "salt = T.SALT",
+  "line = T.rpcauth('alice', 'correct horse', salt)",
+  "[len(x) for x in line.replace('$', ':').split(':')]",
+  "i = json.loads(T.GETBLOCKCHAININFO)",
+  "(i['chain'], i['blocks'], i['initialblockdownload'])",
+  "tx = json.loads(T.ALICE_DECODED)",
+  "sat = lambda v: round(v * 10**8)",
+  "outs = [(o['n'], sat(o['value'])) for o in tx['vout']]",
+  "outs",
+  "raw = bytes.fromhex(T.ALICE_HEX)",
+  "txid, wtxid = T.txid(raw), T.wtxid(raw)",
+  "(txid[:16], wtxid[:16])",
+  "raw = bytes.fromhex(T.ALICE_HEX)",
+  "base, wit = T.split_witness(raw)",
+  "weight = 4 * len(base) + len(wit)",
+  "(weight, -(-weight // 4))",
+  "b = T.BLOCK_123456",
+  "h = T.header(b)",
+  "name = T.hash256(h)[::-1].hex()",
+  "(len(h), name == b['id'], name[:24])",
+  "ids = T.TXIDS_123456",
+  "root, sizes = T.merkle(ids)",
+  "(root[:16], sizes)",
+  "t = T.BLOCK_TIMES",
+  "window = [t[h] for h in range(123446, 123457)]",
+  "median = sorted(window)[5]",
+  "(median, median == T.BLOCK_123456['mediantime'])",
+  "days = T.age_days(T.QUERIED)",
+  "(days['python-bitcoinlib'], days['bitcoinjs-lib'])"
+ ],
+ "results": [
+  [
+   8,
+   "(hex(v), top, bits)",
+   "('0x20000002', 1, [1])"
+  ],
+  [
+   11,
+   "(text[0], num[0])",
+   "('v0.10.0', 'v0.9.5')"
+  ],
+  [
+   12,
+   "(len(bins), len(libs), 'bitcoind' in bins)",
+   "(7, 3, True)"
+  ],
+  [
+   14,
+   "(listed == computed, listed[:12])",
+   "(True, 'b80d9c3e04da')"
+  ],
+  [
+   16,
+   "used",
+   "{'dbcache': '2048', 'txindex': '1'}"
+  ],
+  [
+   18,
+   "(parts, sum(parts))",
+   "((2, 8, 1014), 1024)"
+  ],
+  [
+   19,
+   "[T.check_options(o)[0] for o in (a, b, c)]",
+   "['ok', 'ok', 'refused']"
+  ],
+  [
+   21,
+   "(T.clean(msg), len(msg) - len(T.clean(msg)))",
+   "('x; reboot; ', 2)"
+  ],
+  [
+   24,
+   "(json.loads(body)['method'], r['blocks'], reply['error'])",
+   "('getblockchaininfo', 799278, None)"
+  ],
+  [
+   25,
+   "(len(T.COOKIE), len(raw), token[:12])",
+   "(64, 32, 'X19jb29raWVf')"
+  ],
+  [
+   26,
+   "[len(x) for x in line.replace('$', ':').split(':')]",
+   "[5, 32, 64]"
+  ],
+  [
+   27,
+   "(i['chain'], i['blocks'], i['initialblockdownload'])",
+   "('main', 0, True)"
+  ],
+  [
+   29,
+   "outs",
+   "[(0, 20000), (1, 75000)]"
+  ],
+  [
+   30,
+   "(txid[:16], wtxid[:16])",
+   "('466200308696215b', 'f7cdbc7cf8b910d3')"
+  ],
+  [
+   31,
+   "(weight, -(-weight // 4))",
+   "(569, 143)"
+  ],
+  [
+   34,
+   "(len(h), name == b['id'], name[:24])",
+   "(80, True, '0000000000002917ed80650c')"
+  ],
+  [
+   35,
+   "(root[:16], sizes)",
+   "('0e60651a9934e8f0', [13, 7, 4, 2, 1])"
+  ],
+  [
+   36,
+   "(median, median == T.BLOCK_123456['mediantime'])",
+   "(1305197900, True)"
+  ],
+  [
+   39,
+   "(days['python-bitcoinlib'], days['bitcoinjs-lib'])",
+   "(1217, 25)"
+  ]
+ ],
+ "slides": [
+  8,
+  11,
+  12,
+  14,
+  16,
+  18,
+  19,
+  21,
+  24,
+  25,
+  26,
+  27,
+  29,
+  30,
+  31,
+  34,
+  35,
+  36,
+  39
+ ],
+ "new_sha256": "ae78fd9fb650fc54388ecc3c1aab1a3999c60349db061efff2aefdb5c3ae7007"
+}
