@@ -159,7 +159,19 @@ def _border(p, space=2, indent_pt=None):
     ppr = p._p.get_or_add_pPr(); b = OxmlElement('w:pBdr')
     for side in ('top', 'left', 'bottom', 'right'):
         e = OxmlElement('w:' + side); e.set(qn('w:val'), 'single'); e.set(qn('w:sz'), '4'); e.set(qn('w:space'), str(space)); e.set(qn('w:color'), '000000'); b.append(e)
-    ppr.append(b)
+    _insert_ppr(ppr, b)
+
+
+PPR_AFTER_BDR = ('w:shd', 'w:tabs', 'w:suppressAutoHyphens', 'w:kinsoku', 'w:wordWrap', 'w:overflowPunct', 'w:topLinePunct', 'w:autoSpaceDE', 'w:autoSpaceDN', 'w:bidi', 'w:adjustRightInd',
+                 'w:snapToGrid', 'w:spacing', 'w:ind', 'w:contextualSpacing', 'w:mirrorIndents', 'w:suppressOverlap', 'w:jc', 'w:textDirection', 'w:textAlignment', 'w:textboxTightWrap',
+                 'w:outlineLvl', 'w:divId', 'w:cnfStyle', 'w:rPr', 'w:sectPr', 'w:pPrChange')
+
+
+def _insert_ppr(ppr, el, after=PPR_AFTER_BDR):
+    """Insert a pPr child before the first existing child that the schema orders after it (Word is strict about the order)."""
+    for ch in ppr:
+        if ch.tag in [qn(t) for t in after]: ch.addprevious(el); return
+    ppr.append(el)
 
 
 def _setup_doc(doc, title_cols):
@@ -170,6 +182,8 @@ def _setup_doc(doc, title_cols):
     for tag in ('w:autoHyphenation',):
         e = settings.find(qn(tag))
         if e is not None: settings.remove(e)
+    for cs in settings.iter(qn('w:compatSetting')):
+        if cs.get(qn('w:name')) == 'compatibilityMode': cs.set(qn('w:val'), '15')          # Word 2013 and later layout; no compatibility-mode banner
     s = doc.sections[0]
     s.page_width, s.page_height = Mm(A4W), Mm(A4H)
     s.left_margin = s.right_margin = Mm(SIDE); s.top_margin = Mm(TOP); s.bottom_margin = Mm(BOTTOM); s.footer_distance = Mm(FOOTER_DIST); s.header_distance = Mm(4)
@@ -253,6 +267,8 @@ def write_docx(paper, path, breaks=(), per_item_break=False):
         _font(p.add_run(' (it must equal the form code printed on your answer sheet). Chapters %s. %d minutes. Mark every answer on the separate answer sheet (bubble grid); '
                         'ONE answer per row unless the item says otherwise.' % (', '.join(map(str, paper['chapters'])), P['sitting'])), FONT, TXT)
         s2 = doc.add_section(WD_SECTION.CONTINUOUS)
+        sp = doc.paragraphs[-1]                       # the paragraph that carries the section break: one point high, so that it costs no line in Word either
+        _fmt(sp, 1.0); mrk = OxmlElement('w:rPr'); sz = OxmlElement('w:sz'); sz.set(qn('w:val'), '2'); mrk.append(sz); _insert_ppr(sp._p.get_or_add_pPr(), mrk, after=('w:sectPr', 'w:pPrChange'))
     else:
         s2 = sec
     _cols(s2, 2)
