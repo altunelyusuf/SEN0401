@@ -1,0 +1,586 @@
+{
+ "chapter": 6,
+ "deck": "SEN0401_Ch06_Transactions_3e_v2_4_2.pptx",
+ "slides": [
+  {
+   "n": 1,
+   "kind": "title",
+   "title": "Chapter 6: Transactions",
+   "say": "Today we read one real transaction, Alice's payment to Bob, byte by byte, and recompute every number on the slides. Point at the byte map on the right: each strip is a field we will meet. Ask the room what a transaction must contain besides an amount. A common first guess is a balance, and there is none.",
+   "takeaway": "One real transaction, 194 bytes, read field by field, with every number recomputed"
+  },
+  {
+   "n": 2,
+   "kind": "content",
+   "title": "Today's route",
+   "say": "The nine parts follow the order of the bytes of a transaction. Point at the three counters on the right: slides, true stories and runnable examples. Every example has a twin in the Chapter code tab of the course page, so students can rerun it at home. Ask them to keep one question in mind for each part.",
+   "takeaway": "Eight parts, one real transaction, and a summary you can check"
+  },
+  {
+   "n": 3,
+   "kind": "content",
+   "title": "The questions this chapter answers",
+   "say": "Read the seven questions aloud and promise to return to them in the summary. Ask who can already answer the first one. Most students say a transaction moves coins; the better answer is that it asks every node to update its record of unspent outputs.",
+   "takeaway": "Its own competency questions; we return to each"
+  },
+  {
+   "n": 4,
+   "kind": "content",
+   "title": "One chapter, eight branches",
+   "say": "This map is the skeleton of the lecture: eight branches and 107 concepts. Point at Witnesses, the busiest branch, and ask which branch the group expects to be hardest. Remind them that every concept has a card with a short meaning and an everyday comparison.",
+   "takeaway": "Eight branches; every slide today lives on this map"
+  },
+  {
+   "n": 5,
+   "kind": "section",
+   "title": "What a transaction is",
+   "say": "This part opens one real transaction and reads it as 194 bytes. Point at the two tiles: the idea of a transaction and the ways it is written as bytes. Ask what could go wrong if every node wrote a transaction differently. A story about the first transaction ever closes the part.",
+   "takeaway": "A transaction is a signed letter asking every ledger to update itself."
+  },
+  {
+   "n": 6,
+   "kind": "content",
+   "title": "Alice's transaction, drawn to scale",
+   "say": "Draw this on the board if you can: two strips, one long and one short. The long one is what travels on the network, 194 bytes; the short one leaves out marker, flag and witness and has 125 bytes. Ask which strip the txid is computed from. The short one; students expect the long one.",
+   "takeaway": "Seven fields in one fixed order: 194 bytes extended, 125 bytes legacy"
+  },
+  {
+   "n": 7,
+   "kind": "content",
+   "title": "What a transaction is: concepts (1 of 2)",
+   "say": "Four ideas open the chapter: the transaction, the record every node keeps, its parts and its serialized form. Read each card twice, once for the meaning and once for the comparison. Ask students to retell the letter-and-ledger comparison. A common mistake is to think a transaction carries a balance; it only asks nodes to change their record.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 8,
+   "kind": "content",
+   "title": "194 bytes, every one named",
+   "say": "The library parses Alice's transaction into named fields and adds up their lengths. Point at the loop in lines 4 and 5 and at the two tallest bars, output and witness. Ask whether any byte is left unexplained: the seven groups add back to exactly 194. A common slip is to forget that marker and flag are fields too.",
+   "takeaway": "Every byte belongs to a named field, and the fields come in a fixed order"
+  },
+  {
+   "n": 9,
+   "kind": "content",
+   "title": "What a transaction is: concepts (2 of 2)",
+   "say": "Extended and legacy serialization are the same payment written two ways, and a partially signed transaction is a form passed between programs. Point at the byte map card and ask what a floor plan has to do with bytes. Students often mix up the format with the transaction: one transaction has two serializations.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 10,
+   "kind": "content",
+   "title": "Two serializations, two identifiers",
+   "say": "The same payment is serialized twice, with and without the witness. Point at the two sizes, 194 and 125, and at the two hashes. Ask which hash an explorer shows. It is the txid, the hash over the legacy bytes; mixing up txid and wtxid is the usual mistake.",
+   "takeaway": "The txid hashes the legacy bytes only; the wtxid hashes everything"
+  },
+  {
+   "n": 11,
+   "kind": "content",
+   "title": "Ten bitcoins to Hal Finney, block 170",
+   "say": "Tell it as a story: Finney's two words, then Satoshi's 10 BTC in block 170. Point at the photograph and at the source link on the slide. Ask which fields of this chapter students can already name in that transaction. A common mistake is to say the format changed later; only marker, flag and witness were added.",
+   "read": {
+    "label": "Satoshi to Finney, block 170 (tx)",
+    "url": "https://mempool.space/tx/f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16"
+   },
+   "takeaway": "The first transaction ever to spend an output",
+   "concept": "Outpoint"
+  },
+  {
+   "n": 12,
+   "kind": "section",
+   "title": "Version, marker and flag",
+   "say": "The first six bytes are not about money; they tell a node which rules apply and whether a witness follows. Ask why a format needs an edition number at all. The answer is that old and new software must read the same bytes without confusion.",
+   "takeaway": "Version, marker and flag are the edition number and labels on the envelope."
+  },
+  {
+   "n": 13,
+   "kind": "content",
+   "title": "Six bytes that set the rules",
+   "say": "Point at the six cells one at a time: four for the version, one marker, one flag. Ask the room what an old parser does with the zero. It reads an empty input list and stops, which is exactly why the marker is a zero. A common mistake is to read the version as a big-endian number.",
+   "takeaway": "A zero where an input count should be tells old and new software apart"
+  },
+  {
+   "n": 14,
+   "kind": "content",
+   "title": "Version, marker and flag (1 of 2)",
+   "say": "Versions 1 and 2 and the version 3 proposal differ in what a node does with them. Ask which version a relative timelock needs. Version 2, through BIP68; version 3 is relay policy and not a consensus change, which is a frequent confusion.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 15,
+   "kind": "content",
+   "title": "The first six bytes",
+   "say": "Six bytes decide how everything after them is read. Point at the little-endian version in line 2 and ask why the number 1 is written 01000000. The zero marker then tells a node that a witness follows; a legacy parser would read that zero as an empty input list.",
+   "takeaway": "A zero marker where an input count would be tells old and new nodes apart"
+  },
+  {
+   "n": 16,
+   "kind": "content",
+   "title": "Version, marker and flag (2 of 2)",
+   "say": "A presigned transaction waits in a drawer like a post-dated cheque, while marker and flag are stickers on the parcel. Ask why the marker is zero. A transaction cannot have zero inputs, so a zero there cannot be mistaken for data.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 17,
+   "kind": "section",
+   "title": "Inputs",
+   "say": "Inputs name coins and never state an amount. Point at the four tiles: the list, the outpoint, byte order and the input script. Ask how a node can know the value of a coin it is not shown. It looks the coin up in its own database.",
+   "takeaway": "Inputs are the banknotes you hand over, each named by its address."
+  },
+  {
+   "n": 18,
+   "kind": "content",
+   "title": "An input is an address, not an amount",
+   "say": "An input is only an address: the txid of an earlier transaction and an output number. Trace the arrow from Alice's input to output 1 of the earlier transaction. Ask where the amount is stored; in the earlier output, never in the input. Then point at the four sizes of CompactSize on the right.",
+   "takeaway": "An input names a coin by transaction and output number; it states no amount"
+  },
+  {
+   "n": 19,
+   "kind": "content",
+   "title": "Inputs: concepts (1 of 4)",
+   "say": "These cards give the input count, the variable-length integer, the outpoint and their relatives. Point at the ticket-machine comparison and ask why small counts get short tickets. The usual mistake is to assume every count takes four bytes.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 20,
+   "kind": "content",
+   "title": "CompactSize: counting in few bytes",
+   "say": "A count takes one byte up to 252, then three, five or nine. Point at the six test values, chosen at the edges, and at the first bytes fd, fe and ff. Ask what 253 costs. Three bytes; students often expect two.",
+   "takeaway": "Small counts cost one byte; the first byte warns when a longer number follows"
+  },
+  {
+   "n": 21,
+   "kind": "content",
+   "title": "Inputs: concepts (2 of 4)",
+   "say": "An outpoint is a transaction identifier plus an output index, and double spending and conflicting transactions follow from it. Ask what two cheques written against one banknote would do to the bank. Remind students that the index counts from zero.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 22,
+   "kind": "content",
+   "title": "The outpoint, read both ways round",
+   "say": "An input names a coin by an earlier txid and an output number. Point at lines 3 and 4, where the bytes are reversed and restored. Ask why reversing twice is safe. The common mistake is to look up the stored form on an explorer instead of the printed form.",
+   "takeaway": "An input states no amount; it names a coin by transaction and output number"
+  },
+  {
+   "n": 23,
+   "kind": "content",
+   "title": "Inputs: concepts (3 of 4)",
+   "say": "The UTXO database holds only unspent coins, and the byte-order cards explain the two directions an identifier is read. Ask which direction explorers print. A digest stored in one order and shown in the other is a classic source of bugs.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 24,
+   "kind": "content",
+   "title": "Spending changes the drawer",
+   "say": "This is the drawer comparison drawn as boxes. One coin goes in, two come out, and what is missing is the fee. Ask how many coins the drawer holds before and after. A common mistake is to look for the fee in the transaction; it is only a difference of two sums.",
+   "takeaway": "One coin out, two coins in: the set always holds exactly the unspent coins"
+  },
+  {
+   "n": 25,
+   "kind": "content",
+   "title": "A spend updates the UTXO set",
+   "say": "A full node keeps only unspent outputs. Walk the three groups: the drawer before, the removal and creation in the middle, the leftover at the end. Ask where the fee is written. Nowhere: it is the difference, 5,000, and students expect a fee field.",
+   "takeaway": "Nodes keep only unspent outputs; the fee is whatever is left over"
+  },
+  {
+   "n": 26,
+   "kind": "content",
+   "title": "10,000 bitcoins for two pizzas",
+   "say": "Hanyecz offered 10,000 BTC for two pizzas and four days later the deal was done. Point at the plaque photograph and at the count of 131 inputs. Ask why a one-output payment needs so many inputs. A wallet full of 50 BTC rewards must list every coin it spends.",
+   "read": {
+    "label": "Pizza for bitcoins? (bitcointalk thread)",
+    "url": "https://bitcointalk.org/index.php?topic=137.0"
+   },
+   "takeaway": "The most famous purchase ever made with bitcoin",
+   "concept": "InputCount"
+  },
+  {
+   "n": 27,
+   "kind": "content",
+   "title": "Inputs: concepts (4 of 4)",
+   "say": "The input script is the keyhole a legacy input fills with a key: 107 bytes here, and none for segwit. Ask where the key went in Alice's transaction. It moved to the witness, which comes later in this deck.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 28,
+   "kind": "section",
+   "title": "The sequence field",
+   "say": "One four-byte field has carried three meanings. Ask students to guess how many different things four bytes can say. We decode it against two proposals, BIP125 and BIP68, and see why bit 31 matters.",
+   "takeaway": "The sequence field is a booth ticket whose meaning changed three times."
+  },
+  {
+   "n": 29,
+   "kind": "content",
+   "title": "The 32 bits of the sequence field",
+   "say": "Show the 32 bits as one bar and point at three places: bit 31, bit 22 and the low 16 bits. Ask which meaning came first. Replacement, then the opt-in signal, then the relative timelock; the same four bytes were reused each time. Students forget that bit 31 switches the timelock off.",
+   "takeaway": "Bit 31 switches the relative timelock off; bit 22 picks its unit"
+  },
+  {
+   "n": 30,
+   "kind": "content",
+   "title": "The sequence field: concepts (1 of 3)",
+   "say": "Four cards: the sequence number, setup and refund transactions, payment channels and the replacement bandwidth attack. Ask why replacing a transaction again and again is a danger. Twenty kilobytes in can cost ten gigabytes out every minute, which is the attack the card names.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 31,
+   "kind": "content",
+   "title": "Four sequence values, three meanings",
+   "say": "One field, three meanings: final, replaceable, timelocked. Point at the third column of the result and ask why only the last value carries a timelock. Bit 31 is set in the first three, which switches the timelock off.",
+   "takeaway": "Bit 31 of the sequence field is the security bit of this chapter"
+  },
+  {
+   "n": 32,
+   "kind": "content",
+   "title": "The sequence field: concepts (2 of 3)",
+   "say": "Opt-in replace-by-fee, its BIP125 signal, the BIP68 timelock and the type flag. Point at the threshold 0xfffffffe and ask which values signal replaceability. Everything below it does, and a common slip is to count 0xfffffffe itself.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 33,
+   "kind": "content",
+   "title": "BIP68: an hour as a sequence number",
+   "say": "To demand an hour, the type flag is set and the value counts units of 512 seconds. Ask why 3,600 seconds becomes 4,096. It rounds up to eight units. Point at the three masks and remind students that the unit is not a second.",
+   "takeaway": "Disable flag, type flag and a 16-bit value share one field"
+  },
+  {
+   "n": 34,
+   "kind": "content",
+   "title": "The sequence field: concepts (3 of 3)",
+   "say": "The disable flag and the 16-bit mask finish the sequence field. Ask what bit 31 does when it is set. It switches the timelock off, which is why a sequence of 0xffffffff means no lock at all.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 35,
+   "kind": "section",
+   "title": "Outputs",
+   "say": "Outputs are amounts plus locks. The part ends with the block that created 184 billion bitcoins and with the policy that keeps tiny outputs out of everyone's database. Ask what a till receipt and an output have in common.",
+   "takeaway": "Outputs are the lines of a till receipt: an amount and who may collect it."
+  },
+  {
+   "n": 36,
+   "kind": "content",
+   "title": "Where the 100,000 satoshis went",
+   "say": "The bar is the 100,000 satoshis of the spent coin: 20,000 to Bob, 75,000 back as change and 5,000 left over for the miner. Below it, one output opened up: eight bytes of amount, a length and a lock. Ask who decides the fee. The sender, by leaving it out of the outputs.",
+   "takeaway": "An output is an amount plus a lock; what no output claims is the fee"
+  },
+  {
+   "n": 37,
+   "kind": "content",
+   "title": "Outputs: concepts (1 of 3)",
+   "say": "Output count, amount, satoshi and the consensus range. Ask how many satoshis make a bitcoin. A hundred million; the amount field is eight bytes, little-endian, which the next slides decode.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 38,
+   "kind": "content",
+   "title": "Amounts, change and the fee",
+   "say": "Outputs state amounts and the input states none. Point at line 3 and at the three bars: 20,000, 75,000 and the fee of 5,000. Ask where a miner finds the fee. It is the difference between inputs and outputs, which is why a forgotten change output burns money.",
+   "takeaway": "No field holds a balance or a fee; both are differences"
+  },
+  {
+   "n": 39,
+   "kind": "content",
+   "title": "Outputs: concepts (2 of 3)",
+   "say": "Dust, the dust limit, data-carrier outputs and the output script. Ask why a node would refuse to relay a tiny output. It costs more to spend than it is worth; students often think dust is invalid, but it is only a relay policy.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 40,
+   "kind": "content",
+   "title": "The 2010 overflow, in five lines",
+   "say": "In August 2010 two outputs of about 92 billion bitcoins each added up to a negative number in 64-bit arithmetic. Point at line 3, the wrap-around, and at the two checks in the result. Ask which check would have caught it. Only the per-output check; the total looked fine.",
+   "takeaway": "Check each amount and the total: one check on the total was not enough"
+  },
+  {
+   "n": 41,
+   "kind": "content",
+   "title": "The block that created 184 billion bitcoins",
+   "say": "A block on 15 August 2010 held 184 billion bitcoins because two amounts wrapped to a negative total. Point at the three people: the unknown attacker, Garzik who reported it and Satoshi who patched it. Ask which check was missing. A range check on each output.",
+   "read": {
+    "label": "Value overflow incident (Bitcoin Wiki)",
+    "url": "https://en.bitcoin.it/wiki/Value_overflow_incident"
+   },
+   "takeaway": "A bug that created money out of thin air",
+   "concept": "AmountField"
+  },
+  {
+   "n": 42,
+   "kind": "content",
+   "title": "Outputs: concepts (3 of 3)",
+   "say": "Script size limits, anyone-can-spend scripts and standard outputs. Ask why a safe left unlocked in the street is a useful comparison. An empty script that OP_TRUE satisfies can be spent by anyone, and the standard templates are what most nodes relay.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 43,
+   "kind": "content",
+   "title": "Dust limits by output type",
+   "say": "Dust is an output that costs more to spend than it is worth. Point at the four limits: 546, 294, 330 and 0. Ask why segwit outputs have lower limits. They are cheaper to spend, and OP_RETURN has limit zero because it can never be spent.",
+   "takeaway": "Dust is a policy about who pays for the UTXO set: everyone, for ever"
+  },
+  {
+   "n": 44,
+   "kind": "section",
+   "title": "Witnesses",
+   "say": "A witness is the proof that the spender may spend. Ask what happens if the proof is part of the name of the transaction. This part shows how proofs inside the input script made identifiers malleable and how segregated witness repaired it.",
+   "takeaway": "A witness is the ID you show at the counter, kept off the receipt."
+  },
+  {
+   "n": 45,
+   "kind": "content",
+   "title": "What each identifier covers",
+   "say": "Compare the two rows. Before segwit the signature sat inside the input script, so the txid covered it and a stranger could change it. After segwit the signature moved to the witness, outside the txid. Ask which brackets differ: the txid bracket shrinks, the wtxid bracket covers everything.",
+   "takeaway": "The txid ignores the witness; the wtxid covers every byte"
+  },
+  {
+   "n": 46,
+   "kind": "content",
+   "title": "Witnesses: concepts (1 of 4)",
+   "say": "Witness, public key and signature as witness, contract protocols and the circular dependency. Ask what the answer to the riddle printed on the lock has to do with a witness. The witness is the answer that makes the script succeed.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 47,
+   "kind": "content",
+   "title": "One spend, four identifiers",
+   "say": "A small number can be pushed on the script stack in four ways, giving four txids for one payment. Point at the loop that swaps each encoding in. Ask who could do this to your transaction: any relaying node. The payment itself is unchanged.",
+   "takeaway": "A stranger could change the txid without changing the payment"
+  },
+  {
+   "n": 48,
+   "kind": "content",
+   "title": "Witnesses: concepts (2 of 4)",
+   "say": "Third-party and second-party malleability, push encodings and wanted malleability. Ask who can change a txid without changing the payment. A stranger can, by re-encoding a push; students often assume only the signer can.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 49,
+   "kind": "content",
+   "title": "Segwit: change the witness, keep the txid",
+   "say": "Change the witness and the txid stays, while the wtxid moves. Point at the two Booleans, True and False. Ask which identifier chains of unconfirmed payments should be built on. The txid, which is why segwit made them safe.",
+   "takeaway": "What a hash covers decides what can safely be built on it"
+  },
+  {
+   "n": 50,
+   "kind": "content",
+   "title": "Mt. Gox blames malleability",
+   "say": "Mt. Gox halted withdrawals and blamed malleability; two ETH Zurich researchers checked a year of network traffic. Point at the paper link on the slide. Ask whether malleability can explain missing coins. It changes the txid, not the amount, and only 1,811 BTC were affected before the press release.",
+   "read": {
+    "label": "Transaction Malleability and MtGox (paper)",
+    "url": "https://arxiv.org/abs/1403.6676"
+   },
+   "takeaway": "An exchange blames the protocol, and researchers check",
+   "concept": "ThirdPartyMalleability"
+  },
+  {
+   "n": 51,
+   "kind": "content",
+   "title": "Witnesses: concepts (3 of 4)",
+   "say": "Segregated witness, hard fork, soft fork and witness programs. Ask which of the two forks old nodes survive. A soft fork only tightens the rules, so old nodes keep following the chain.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 52,
+   "kind": "content",
+   "title": "Witnesses: concepts (4 of 4)",
+   "say": "Witness structure, stack, item and the empty witness of a legacy input. Ask how many stacks a transaction carries. One per input, counted by the input count; a legacy input has a stack of zero items.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 53,
+   "kind": "content",
+   "title": "Hard fork or soft fork?",
+   "say": "Segregated witness was a soft fork, which is why it could be activated without splitting the network. Ask students to place it on the road comparison. Old nodes saw the new outputs as anyone-can-spend scripts and accepted the blocks.",
+   "takeaway": "A soft fork can only restrict; old nodes keep accepting the blocks"
+  },
+  {
+   "n": 54,
+   "kind": "section",
+   "title": "Lock time and the coinbase",
+   "say": "Two special cases: a transaction that may not be mined before a time, and one that creates new coins. Ask where new bitcoin comes from. The clock and the money supply both follow from simple rules.",
+   "takeaway": "A lock time is a post-dated cheque; a coinbase is the mint's wage slip."
+  },
+  {
+   "n": 55,
+   "kind": "content",
+   "title": "Two clocks and a waiting room",
+   "say": "Two small pictures. The number line shows how one field is read as a height below 500 million and as a time above it. The timeline shows the 100-block wait of a coinbase coin. Ask what happens at block 108 and at block 109 for a coin made in block 9.",
+   "takeaway": "One field, two readings, and a hundred blocks of waiting for new coins"
+  },
+  {
+   "n": 56,
+   "kind": "content",
+   "title": "Lock time and the coinbase (1 of 3)",
+   "say": "Lock time kinds and the median time past. Ask what 123,456 means in the lock time field. A block height, because anything below 500 million is a height and larger values are timestamps.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 57,
+   "kind": "content",
+   "title": "Lock time and the median time past",
+   "say": "Block timestamps are not monotonic, so a lock time is compared with the median of the last eleven. Point at the bar that is zero and at the median, 2,100. Ask why not use the newest block time. A miner could bend it; the median is the middle voter.",
+   "takeaway": "Lock time says not before; nothing in a transaction says not after"
+  },
+  {
+   "n": 58,
+   "kind": "content",
+   "title": "Lock time and the coinbase (2 of 3)",
+   "say": "Coinbase transaction, the null outpoint, the coinbase field and the block subsidy. Ask what makes an input a coinbase input. A null outpoint of 32 zero bytes and index 0xffffffff; the subsidy starts at 50 and halves every 210,000 blocks.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 59,
+   "kind": "content",
+   "title": "The subsidy, halving by halving",
+   "say": "The subsidy starts at 50 bitcoin and halves every 210,000 blocks by a right shift. Point at the stair-step chart and at block 6,929,999, where it reaches zero. Ask whether the total is exactly 21 million. It stays just below it.",
+   "takeaway": "The coinbase is the only transaction that creates bitcoin"
+  },
+  {
+   "n": 60,
+   "kind": "content",
+   "title": "Lock time and the coinbase (3 of 3)",
+   "say": "Block reward and the maturity rule. Ask why coinbase coins wait 100 blocks. A reorganization could erase the block, so wages are held until the pay clears. The reward is fees plus subsidy, as a ceiling.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 61,
+   "kind": "content",
+   "title": "The coinbase and its maturity",
+   "say": "A coinbase has one null input, and its coins are locked for 100 blocks. Point at the table: block 108 is too early and block 109 is allowed. Ask why the wait exists. A reorganization could erase the block together with coins that were already spent.",
+   "takeaway": "Newly created coins cannot be spent until 100 blocks have passed"
+  },
+  {
+   "n": 62,
+   "kind": "section",
+   "title": "Weight and foundations",
+   "say": "The last part closes with what a block is filled by, and with the hashes and rule sets everything rests on. Ask how a block decides which transactions to take. We recompute the weight 569 from the bytes.",
+   "takeaway": "Weight is a transaction's postage; foundations are the post office's rules."
+  },
+  {
+   "n": 63,
+   "kind": "content",
+   "title": "From 194 bytes to 569 weight",
+   "say": "Same scale in all three bars. The 194 bytes become 569 weight units because every byte except marker, flag and witness counts four times. Dividing by four and rounding up gives 143 virtual bytes. Ask which bar a block limit is measured in: weight, four million per block.",
+   "takeaway": "A block is filled by weight, four million units, and witness bytes cost a quarter"
+  },
+  {
+   "n": 64,
+   "kind": "content",
+   "title": "Weight and foundations (1 of 3)",
+   "say": "Weight, vbytes, the block weight limit and the weight factors. Ask why witness bytes cost less. They get a discount; every other byte weighs four, and a block holds four million weight.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 65,
+   "kind": "content",
+   "title": "569: weight by field",
+   "say": "Each field weighs its bytes times four, except marker, flag and witness. Point at the total 569 and at the 143 virtual bytes. Ask how many bytes the transaction really has: 194. Students confuse bytes, weight and virtual bytes.",
+   "takeaway": "Weight is what a block is filled by, and witness bytes cost a quarter"
+  },
+  {
+   "n": 66,
+   "kind": "content",
+   "title": "Weight and foundations (2 of 3)",
+   "say": "Hash function, double SHA-256 and the two identifiers. Ask what a meat grinder has to do with hashing. Any input gives an output of fixed size. The txid hashes the legacy bytes and the wtxid hashes everything.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 67,
+   "kind": "content",
+   "title": "How a txid is made",
+   "say": "A txid is not a field; it is computed. Point at the double SHA-256 and at the reversal in line 3. Ask why the digest is reversed. Display order is the opposite of internal order, and anyone can recompute a txid from the legacy bytes.",
+   "takeaway": "Identifiers are computed, never stored: anyone can recompute them"
+  },
+  {
+   "n": 68,
+   "kind": "content",
+   "title": "Weight and foundations (3 of 3)",
+   "say": "Relay policy and consensus rules finish the cards. Ask what happens to a transaction that breaks only a policy rule. A node may refuse to relay it, but a block that contains it is still valid. Consensus rules are the law every node must enforce.",
+   "takeaway": "Say each idea twice: once as the meaning, once as the everyday comparison"
+  },
+  {
+   "n": 69,
+   "kind": "content",
+   "title": "The chapter in five lines",
+   "say": "These five lines are the deck in miniature. Ask students to pick the line they trust least and go back to its code slide, because every figure in it was computed there. Do not read the lines out; ask for the proof.",
+   "takeaway": "If a line feels unproven, the code slide of its part carries the receipt"
+  },
+  {
+   "n": 70,
+   "kind": "content",
+   "title": "Where to go from here",
+   "say": "Everything here is free to read and the links were opened on the date in the subtitle. Point at the Watch group for video and the Community group for the forum threads. Suggest taking any confirmed transaction from an explorer and running the chapter code on it.",
+   "links": [
+    {
+     "group": "Read",
+     "label": "Mastering Bitcoin, ch. 6: Transactions",
+     "url": "https://raw.githubusercontent.com/bitcoinbook/bitcoinbook/develop/ch06_transactions.adoc",
+     "finds": "Chapter text as AsciiDoc source, plain text, free to read"
+    },
+    {
+     "group": "Read",
+     "label": "Transaction Malleability and MtGox (paper)",
+     "url": "https://arxiv.org/abs/1403.6676",
+     "finds": "Decker and Wattenhofer's measurements, free to download"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 141: Segregated Witness (spec)",
+     "url": "https://bips.dev/141/",
+     "finds": "Weight, witness data and the new transaction format"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 68: Relative lock-time (spec)",
+     "url": "https://bips.dev/68/",
+     "finds": "Locking an input by sequence numbers"
+    },
+    {
+     "group": "Standards",
+     "label": "BIP 125: Opt-in Replace-by-Fee (spec)",
+     "url": "https://bips.dev/125/",
+     "finds": "How a transaction signals that it may be replaced"
+    },
+    {
+     "group": "Tools",
+     "label": "Alice's transaction on mempool.space (tx)",
+     "url": "https://mempool.space/tx/466200308696215bbc949d5141a49a4138ecdfdfaa2a8029c1f9bcecd1f96177",
+     "finds": "Block 775,072: the payment this chapter builds"
+    },
+    {
+     "group": "Tools",
+     "label": "Bitcoin Wiki: Transaction (guide)",
+     "url": "https://en.bitcoin.it/wiki/Transaction",
+     "finds": "Fields of a transaction, explained on the wiki"
+    },
+    {
+     "group": "Community",
+     "label": "Pizza for bitcoins? (bitcointalk thread)",
+     "url": "https://bitcointalk.org/index.php?topic=137.0",
+     "finds": "Laszlo Hanyecz's offer of 10,000 bitcoins, May 2010"
+    },
+    {
+     "group": "Community",
+     "label": "Strange block 74638 (bitcointalk thread)",
+     "url": "https://bitcointalk.org/index.php?topic=822.0",
+     "finds": "The forum thread where the overflow was found live"
+    },
+    {
+     "group": "Watch",
+     "label": "Bitcoin transaction (tutorial video)",
+     "url": "https://www.youtube.com/embed/PrcJD4rznyA",
+     "finds": "Mobilefish.com walks through inputs, outputs and signatures"
+    }
+   ],
+   "takeaway": "Parse any transaction yourself and match the explorer's identifier and weight"
+  },
+  {
+   "n": 71,
+   "kind": "closing",
+   "title": "What you should now be able to say",
+   "say": "Four claims, each carried by a computation that ran on a slide. Ask each student to state one claim and to name the slide that proves it. The course page for chapter 6 has every word behind them and the question bank.",
+   "takeaway": "And where each claim gets its proof"
+  }
+ ],
+ "_note": "lecture_v1_5_0.json (the deck export of the chapter 6 deck v2_4_2, untouched) with the deck's takeaway as takeaway and, on each story slide, the first concept of the story that the page has as concept; made by lecture_make_v1_5_1.py"
+}
