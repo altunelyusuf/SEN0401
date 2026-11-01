@@ -1,4 +1,4 @@
-cd /home/claude/sen0401; Q=08-tooling/verify/iter58c/quiet; S=$Q/schedule.txt; R=08-tooling/sen0401_lineage_page_test_run_v1_2_0.py
+cd /home/claude/sen0401; Q=08-tooling/verify/iter58c/quiet; S=$Q/schedule4.txt; R=08-tooling/sen0401_lineage_page_test_run_v1_2_0.py
 guard() { f=$(df --output=avail -k / | tail -1); if [ "$f" -lt 900000 ]; then echo "STOP disk $f KB free" >> $S; exit 1; fi; }
 t() { # label chapter pagever testver
   guard; echo "start $1 $(date -u +%FT%TZ) load $(cat /proc/loadavg)" >> $S
