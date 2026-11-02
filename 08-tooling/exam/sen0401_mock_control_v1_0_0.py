@@ -119,8 +119,9 @@ def cmd_bank(path, gen):
     # numeric recompute
     if gen:
         tmp = tempfile.mkdtemp(); shutil.copy(gen, tmp)
+        for extra in glob.glob(os.path.join(os.path.dirname(os.path.abspath(gen)), 'mock_content_ch%d_*.py' % ch)): shutil.copy(extra, tmp)
         r = subprocess.run([sys.executable, '-I', os.path.join(tmp, os.path.basename(gen)), '--out', os.path.join(tmp, 'out_gen.json')], capture_output=True, text=True, cwd=tmp)
-        outs = glob.glob(tmp + '/*.json') + glob.glob(os.path.dirname(os.path.abspath(gen)) + '/mock_numeric_ch%d_v1_0_0.json' % ch)
+        outs = sorted(glob.glob(tmp + '/*.json')) + glob.glob(os.path.dirname(os.path.abspath(gen)) + '/mock_numeric_ch%d_v1_0_0.json' % ch)
         log.append('generator exit %d; outputs %s' % (r.returncode, [os.path.basename(x) for x in outs]))
         if r.returncode != 0: fails.append('generator failed')
         else:
