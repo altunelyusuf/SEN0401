@@ -53,12 +53,17 @@ def cmd_bank(path, gen):
     cnt = {}
     for it in items: cnt[it['type']] = cnt.get(it['type'], 0) + 1
     want = dict(choice=10, numeric=4, matching=3, ordering=2, fill=4)
-    if cnt != want: fails.append('counts %s' % cnt)
+    FAM = bool(d.get('family'))
+    if FAM:
+        if set(cnt) != {'numeric'} or cnt['numeric'] < 6: fails.append('family counts %s' % cnt)
+    elif cnt != want: fails.append('counts %s' % cnt)
     ch_items = [i for i in items if i['type'] == 'choice']
-    if sorted(i['points'] for i in ch_items) != [3] * 4 + [4] * 6: fails.append('choice points')
-    if sum(1 for i in items if i['type'] == 'numeric' and i.get('can_be_4')) != 1: fails.append('can_be_4 count')
+    if not FAM and sorted(i['points'] for i in ch_items) != [3] * 4 + [4] * 6: fails.append('choice points')
+    if sum(1 for i in items if i['type'] == 'numeric' and i.get('can_be_4')) != 1 and not (FAM and False): fails.append('can_be_4 count')
+    if FAM and any(not i.get('why_question') for i in items): fails.append('why_question missing')
+    if FAM and len({i['why_question'] for i in items}) != 1: fails.append('why_question not identical')
     pos = [i['answer'] for i in ch_items]; sp = [pos.count(k) for k in range(5)]
-    if max(sp) - min(sp) > 1: fails.append('answer spread %s' % sp)
+    if not FAM and max(sp) - min(sp) > 1: fails.append('answer spread %s' % sp)
     W = lambda s: len(str(s).split())
     letters = re.compile(r'\b(option|answer|choice|response)\s+[A-E]\b|\b[A-E]\.\s', re.I)
     for it in items:
@@ -86,11 +91,12 @@ def cmd_bank(path, gen):
         if it['type'] == 'fill':
             if len(it['bank']) != 5 or len(it['blanks']) != 2 or it['blanks'][0]['answer'] == it['blanks'][1]['answer']: fails.append('%s fill' % i)
         if it['type'] == 'numeric':
-            if len(it['instances']) != 8: fails.append('%s instances' % i)
+            if len(it['instances']) < 8: fails.append('%s instances' % i)
             kv = [x['key_value'] for x in it['instances']]
-            if len(set(kv)) != 8 or any((not isinstance(v, int)) or v < 0 or v > 99999 for v in kv): fails.append('%s key values' % i)
+            if len(set(kv)) != len(kv) and not FAM or any((not isinstance(v, int)) or v < 0 or v > 99999 for v in kv): fails.append('%s key values' % i)
             stems = [x['stem'] for x in it['instances']]
-            if len(set(stems)) != 8: fails.append('%s stems' % i)
+            if len(set(stems)) != len(stems): fails.append('%s stems' % i)
+            if FAM and len(set(kv)) < 8: fails.append('%s distinct keys %d of %d' % (i, len(set(kv)), len(kv)))
             for x in it['instances']:
                 cw = [c['value'] for c in x['common_wrong']]
                 if len(cw) != 3 or len(set(cw + [x['key_value']])) != 4: fails.append('%s wrong values' % i)
@@ -140,6 +146,16 @@ def cmd_bank(path, gen):
             same = sum(1 for k in b if a.get(k) == b[k])
             log.append('numeric recompute: %d of %d templates equal the generator output' % (same, len(b)))
             if same != len(b): fails.append('numeric recompute differs')
+    avoid = [a for a in sys.argv if a.startswith('--avoid=')]
+    if avoid:
+        nums = [x for x in avoid[0][8:].split(',') if x]
+        hit = 0
+        for it in items:
+            for x in it.get('instances', []):
+                tx = set(re.findall(r'\d[\d,]*', x['stem'].replace(',', '')))
+                if all(n in tx for n in nums): hit += 1; fails.append('%s instance holds the avoided numbers' % it['id'])
+                if str(x['key_value']) in nums[-1:] and all(n in tx for n in nums[:2]): fails.append('avoid key')
+        log.append('avoid-combination %s: %d instances hold all of those numbers together' % ('(given)', hit))
     # independent arithmetic spot: key_value distinct from common_wrong done above
     print('\n'.join(log)); print('FINDINGS %d: %s' % (len(fails), '; '.join(fails[:20]))); print('RESULT %s' % ('PASS' if not fails else 'FAIL')); return 0 if not fails else 1
 if __name__ == '__main__':
