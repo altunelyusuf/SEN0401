@@ -41,7 +41,7 @@ def item_strings(it):
     if t == 'ordering': sm = it['steps']
     if t == 'fill': sm = it['bank'] + [b['sentence'] for b in it['blanks']]
     return main, sm
-GENERIC = re.compile(r'You are asked to fill each blank with the bank entry that makes the sentence true\.|One response is not used\.|one response is not used\.', re.I)
+GENERIC = re.compile(r'You are asked to fill each blank with the (?:bank entry|entry of the bank) that makes the sentence true\.|One response is not used\.|one response is not used\.', re.I)
 def contain(s, G):
     g = grams(GENERIC.sub(' ', s))
     return (len(g & G) / len(g)) if g else 0.0
@@ -119,9 +119,10 @@ def cmd_bank(path, gen):
     # numeric recompute
     if gen:
         tmp = tempfile.mkdtemp(); shutil.copy(gen, tmp)
-        for extra in glob.glob(os.path.join(os.path.dirname(os.path.abspath(gen)), 'mock_content_ch%d_*.py' % ch)): shutil.copy(extra, tmp)
+        D0 = os.path.dirname(os.path.abspath(gen))
+        for extra in glob.glob(os.path.join(D0, 'mock_content_ch%d_*.py' % ch)) + glob.glob(os.path.join(D0, 'mock_items_ch%d_*' % ch)): shutil.copy(extra, tmp)
         r = subprocess.run([sys.executable, '-I', os.path.join(tmp, os.path.basename(gen)), '--out', os.path.join(tmp, 'out_gen.json')], capture_output=True, text=True, cwd=tmp)
-        outs = sorted(glob.glob(tmp + '/*.json')) + glob.glob(os.path.dirname(os.path.abspath(gen)) + '/mock_numeric_ch%d_v1_0_0.json' % ch)
+        outs = [x for x in sorted(glob.glob(tmp + '/*.json')) if os.path.basename(x) == 'out_gen.json'] + [x for x in sorted(glob.glob(tmp + '/*.json')) if 'mock_bank' in x] + glob.glob(os.path.dirname(os.path.abspath(gen)) + '/mock_numeric_ch%d_v1_0_0.json' % ch)
         log.append('generator exit %d; outputs %s' % (r.returncode, [os.path.basename(x) for x in outs]))
         if r.returncode != 0: fails.append('generator failed')
         else:
