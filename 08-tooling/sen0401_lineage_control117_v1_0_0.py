@@ -270,7 +270,7 @@ def rm(pre):
 CASES["examremove"] = rm("Ev116ka")
 def fw(pre):
     return dict(crit="AC9_Exam_Move_Followup", tk="TK_Exam_Move_Followup_Build", vt="TK_Exam_Move_Followup_Verify", brief="iter66", bp="08-tooling/briefs/iter66/BRIEF_TK_Exam_Move_Followup_Build.md", pre=pre, ei="EI" + pre, n="00", partial=None,
-   kinds=lambda c: [("own", TL + "exam/sen0401_exam_move_control_check_v1_2_0.py", "remove 664b0b3 cc8d986"), ("scan", TL + "exam/sen0401_exam_move_control_check_v1_2_0.py", "leakscan")],
+   kinds=lambda c: [("own", TL + "exam/sen0401_exam_move_control_check_v1_2_1.py", "remove 664b0b3 cc8d986"), ("scan", TL + "exam/sen0401_exam_move_control_check_v1_2_1.py", "leakscan")],
    label={"own": "the control's own check of the removal commit 664b0b3: it only deletes (42 of 42), every deleted file has an equal-hash copy in CME (own walk), the tracked count fell by exactly 42, the .gitignore is unchanged, the commit is in the remote history, no key, paper, Word file or items file of the removed kinds is tracked",
           "scan": "the control's own search: 522 strings of 40 to 200 characters taken from the private items and key files in CME are searched with git grep in the tracked files of 08-tooling/exam, verify and briefs; the allow-list holds course-fact files (critical points, analysis, fixtures, seed report, structure, owner topics, topic maps, engine logs, the first items report); the result of this line is read as printed"},
    elem=[("(1)-(5) the decisions were printed, the copies are equal, one removal commit, no history rewrite", ["own"]), ("(4) no answer-bearing file of the decided kinds remains tracked (search by answer strings)", ["scan"])])
