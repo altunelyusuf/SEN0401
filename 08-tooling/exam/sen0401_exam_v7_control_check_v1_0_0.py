@@ -2,6 +2,7 @@
 """Control of the exam v7 tool parts (new file v1.0.0): read | score | sheet. Holds no question and no answer.
 read : blobs of the 4 public files equal commit e1d8a0a; fixtures re-run (RESULT PASS, 195 rows); one expectation flipped in a copy gives RESULT FAIL; baseline files in CME exist.
 score: blobs equal commit 6600898; check re-run on a new seed (21 PASS); my own tests with the module: perfect 100, blank 0, all-wrong 0, two-answer place costs only that place, no negative total.
+items: blobs of commits b749332 and 439e51f unchanged; CME items v1.6.1 and structure v1.3.1 hashes b58b19fe / 973bfd92; only row_points differ from v1.6.0 and the total is 100 with rows equal inside each unit; 21 items, one Tip of at most 12 words each, stems at most 60 words; scoring check on the shape of the new structure; leak scan v1_2_3.
 sheet: blobs equal commit fb158e9; proof sheet PDF is 1 page; check re-run on two new seed bases (RESULT/FAIL lines read)."""
 import hashlib, json, os, random, subprocess, sys, shutil, copy
 sys.dont_write_bytecode = True
@@ -48,6 +49,24 @@ elif case == "score":
     ok("S5 blank sheet 0", N.score({}, k2)["total"] == 0)
     wr = {m["label"]: "zzz" for m in mk}; ok("S6 all-wrong sheet 0, never negative", N.score(wr, k2)["total"] == 0)
     rng = random.Random(7); lo = min(N.score(N.blind_marks(k2, rng), k2)["total"] for _ in range(300)); ok("S7 300 blind sheets, lowest total %s, none negative" % lo, lo >= 0)
+elif case == "items":
+    ok("I0 files", blobs("b749332") >= 5 and blobs("439e51f") == 3)
+    P = C + "private/"; h = lambda f: hashlib.sha256(open(P + f, "rb").read()).hexdigest()
+    ok("I1 hashes", h("sen0401_exam_items_midterm_v1_6_1.json").startswith("b58b19fe") and h("sen0401_exam_structure_v1_3_1.json").startswith("973bfd92"))
+    a = json.load(open(P + "sen0401_exam_items_midterm_v1_6_0.json"))["items"]; b = json.load(open(P + "sen0401_exam_items_midterm_v1_6_1.json"))["items"]
+    d = sorted({k for x, y in zip(a, b) for k in set(x) | set(y) if x.get(k) != y.get(k)}); ok("I2 items differ only in row_points and the change note: %s" % d, set(d) <= {"row_points", "v1_6_1_changes"} and len(a) == len(b) == 21)
+    s = json.load(open(P + "sen0401_exam_structure_v1_3_1.json")); sub = [x for q in s["questions"] if isinstance(q, dict) for x in q.get("sub", [])]
+    ok("I3 total 100, closed rows equal inside each unit", sum(x["points"] for x in sub) == 100 and all(len(set(x["row_points"])) == 1 and sum(x["row_points"]) == x["points"] for x in sub if x.get("row_points")))
+    import re
+    tipbad = []
+    for it in b:
+        tp = it.get("tip"); tp = " ".join(tp) if isinstance(tp, list) else tp
+        if not tp or not tp.startswith("Tip:") or len(tp[4:].split()) > 12 or len(re.sub(r"\s+", " ", it.get("q", "")).split()) > 60: tipbad.append(it["key"])
+    ok("I4 tips and stems", not tipbad, str(tipbad))
+    sh = "/tmp/rd_ctl/shape_ctl.json"; run([sys.executable, "-B", E + "sen0401_exam_structure_to_shape_v1_0_0.py", P + "sen0401_exam_structure_v1_3_1.json", P + "sen0401_exam_items_midterm_v1_6_1.json", sh])
+    r = run([sys.executable, "-B", E + "sen0401_exam_scoring_check_v2_0_0.py", E + "sen0401_exam_scoring_rule_v2_0_0.json", "--shape", sh, "--blind", "20000", "--seed", "94000"])
+    ok("I5 scoring check on the new shape", "21 of 21 checks PASS" in r.stdout and "157063/10000" in r.stdout)
+    r = run([sys.executable, "-B", E + "sen0401_exam_move_control_check_v1_2_3.py", "leakscan"]); ok("I6 leak scan v1_2_3", "RESULT PASS" in r.stdout, r.stdout.strip().splitlines()[-1] if r.stdout else "")
 else:
     ok("H0 files", blobs("fb158e9") >= 5)
     pdf = C + "sheet_v7/sen0401_exam_midterm_v7_proof_sheet_v7_0_0.pdf"
