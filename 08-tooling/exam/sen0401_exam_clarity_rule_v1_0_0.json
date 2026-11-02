@@ -1,0 +1,109 @@
+{
+ "version": "1.0.0",
+ "note": "Clarity rule for the SEN0401 exam items and paper (owner order 2026-11-02, 21:24 Istanbul). Data only: no question and no answer. The limits 60 words (stem) and 12 words (tip) are the numbers of the readability rules R1 and R3 and are not changed here. The solution field named below is the key entry of an item in the items file: solution = {steps: [{text, number}], why_right: text, why_wrong: {option letter, or row/step/blank number: one clause}}.",
+ "sentence_split": "(?<=[.!?])\\s+(?=[A-Z0-9\"(])",
+ "points_marker": "\\s*\\(\\s*\\d+\\s*points?\\s*\\)\\s*$",
+ "tip_prefix": "^Tip:\\s+",
+ "rules": {
+  "C1": {
+   "label": "undefined references",
+   "text": "A stem (and a fill-in sentence or a matching premise) may not contain a phrase that needs outside context unless the same text explains it at once (a bracket, ', which is/means', 'means', 'that is', or a dash, directly after the phrase). The phrase patterns are case-insensitive except the names list, which is case-sensitive. The Tip line printed directly under the stem is part of the question block (lineage ruling relayed 2026-11-02): a phrase is also explained when the tip names the same phrase and defines it at once (is, are, means, a colon, a bracket or a dash). A phrase explained nowhere in the stem or the tip is refused.",
+   "phrase_patterns": [
+    "\\b(?:the )?story (?:above|before|so far)\\b",
+    "\\bin the story\\b",
+    "\\bthe story\\b",
+    "\\bthe history\\b",
+    "\\bin the history\\b",
+    "\\bthe above\\b",
+    "\\bas above\\b",
+    "\\bsee above\\b",
+    "\\babove\\b",
+    "\\bas before\\b",
+    "\\bas earlier\\b",
+    "\\bas previously\\b",
+    "\\bthe (?:previous|earlier|last) (?:question|item|part|example|exercise|answer|paragraph|page|case|sentence|task)\\b",
+    "\\bthe following example\\b",
+    "\\bin the text\\b",
+    "\\bas in the (?:book|slides?|lecture|class|chapter|text)\\b",
+    "\\bblock (?:height |number |no\\.? ?)?#?\\d[\\d,]*",
+    "\\bheight \\d[\\d,]*",
+    "\\b(?:in|since|during|before|after|on|by|until) (?:19|20)\\d\\d\\b",
+    "\\b(?:January|February|March|April|May|June|July|August|September|October|November|December) \\d{1,2}\\b",
+    "\\b\\d{1,2}(?:st|nd|rd|th)? (?:of )?(?:January|February|March|April|May|June|July|August|September|October|November|December)\\b"
+   ],
+   "name_patterns": [
+    "Satoshi Nakamoto",
+    "Nakamoto",
+    "Hal Finney",
+    "Finney",
+    "Laszlo Hanyecz",
+    "Hanyecz",
+    "Mt\\.? ?Gox",
+    "Silk Road",
+    "Bitmain",
+    "Binance",
+    "Blockstream",
+    "Pieter Wuille",
+    "Andreas Antonopoulos",
+    "Gavin Andresen",
+    "Nick Szabo",
+    "David Chaum",
+    "Tesla",
+    "Microsoft",
+    "Google",
+    "Ledger",
+    "Trezor"
+   ],
+   "explanation_patterns": [
+    "^\\s*\\([^()]{12,}\\)",
+    "^\\s*,\\s*(?:which|that|who)\\s+(?:is|are|means|was|were)\\b",
+    "^\\s*(?:means|that is)\\b",
+    "^\\s*[-–—]\\s*\\w+"
+   ],
+   "tip_explanation_patterns": [
+    "^\\s*(?:is|are|means|was|were)\\b",
+    "^\\s*[:=]\\s*\\S",
+    "^\\s*\\([^()]{12,}\\)",
+    "^\\s*,\\s*(?:which|that|who)\\s+(?:is|are|means)\\b",
+    "^\\s*[-–—]\\s*\\w+"
+   ]
+  },
+  "C2": {
+   "label": "intention sentence",
+   "text": "The LAST sentence of every stem starts with 'You are asked to' (exact capitals).",
+   "required_start": "You are asked to"
+  },
+  "C3": {
+   "label": "key entry with steps",
+   "text": "Every item has a solution. A calculation (type NumericAnswer) has at least min_steps_calculation ordered steps, each step with a number (a field 'number' that holds a digit); every other item has at least min_steps_other steps. Every solution has a why_right sentence; a choice item has a why_wrong clause for every option except the right one (keys A, B, ...); a matching, ordering or fill-in item has a why_wrong clause for every row, step or blank (keys 1, 2, ...). A calculation needs no why_wrong.",
+   "min_steps_calculation": 2,
+   "min_steps_other": 1,
+   "calculation_types": [
+    "NumericAnswer"
+   ],
+   "choice_type_prefix": "Choice",
+   "row_types": [
+    "Matching",
+    "Ordering",
+    "FillBlankGroup"
+   ]
+  },
+  "C4": {
+   "label": "options match the intention",
+   "text": "The options of a choice item (and the responses of a matching item, and the bank of a fill-in item) are distinct, none is empty and none says 'all of the above' or 'none of the above'; in a choice item the longest option has at most max_length_ratio times the words of the shortest, and the answer points at exactly one option. Whether every option is plausible and the wording has no trick is a human judgement and is printed NOT_MEASURED, never passed.",
+   "max_length_ratio": 3,
+   "forbidden_options": [
+    "all of the above",
+    "none of the above",
+    "all of these",
+    "none of these"
+   ]
+  },
+  "C5": {
+   "label": "length",
+   "text": "Each stem has at most max_stem_words words (the intention sentence counts) and each tip line at most max_tip_words words after 'Tip:'.",
+   "max_stem_words": 60,
+   "max_tip_words": 12
+  }
+ }
+}
