@@ -1,0 +1,27 @@
+{
+  "version": "1.1.0",
+  "note": "Readability rule for the SEN0401 exam texts (owner point 5 and the plain-wording part of point 4, 2026-11-02). Data only: no question and no answer. The numbers 60 and 25 are the lineage agent's rule from the owner's point and are not to be changed. v1.1.0 (owner redesign 2026-11-02): only R3 is replaced; R1, R2, R4, R5, R6 and the 60 and 25 word limits are as in v1.0.0.",
+  "rules": {
+    "R1": {"label": "stem length", "text": "A stem (the question text without code listings and without the answer-format line) has at most max_stem_words words.", "max_stem_words": 60},
+    "R2": {"label": "no tips or glossary inside a stem", "text": "No stem contains the word Tips (any case, whole word) or a glossary sentence of the form 'term: meaning'. On the paper a paragraph that starts with 'Tips' under a question counts against that question.", "glossary_pattern": "(?:^|[.;(]\\s*|\\s[-–]\\s)([A-Za-z][A-Za-z0-9' -]{0,40}):\\s+\\S"},
+    "R3": {"label": "one short tip under the stem", "text": "A stem that needs a tip (its item says so) is followed on the question page by exactly ONE tip line that starts with 'Tip:' and has at most max_tip_words words after the prefix. There is no tips page, no 'see tip' reference, no second tip line and no tip inside the stem. A tip on a stem that needs none is allowed if it obeys the same limits. Replaces the v1.0.0 R3 (named tips on a tips page).", "max_tip_words": 12, "tip_line_pattern": "^Tip:\\s+(?=\\S)", "see_tip_pattern": "\\bsee tips?\\b"},
+    "R4": {"label": "answer-format line", "text": "Every answer-format line has at most max_format_words words, starts with one of the verbs, names the unit in words when the item has a unit, and contains none of the forbidden phrases unless the phrase is explained on the spot (followed at once by a bracket or by 'means' or 'that is').", "max_format_words": 25,
+           "verbs": ["Write", "Circle", "Fill", "Put", "Match", "Choose"],
+           "forbidden_phrases": ["Sheet row", "Unit:", "digit per box"],
+           "explained_after": ["\\s*(?:\\d+[a-z]\\s*)?\\(", "\\s+means\\b", "\\s+that is\\b"],
+           "format_markers": ["sheet rows?", "answer sheet", "digits? per box", "unit:", "printed result"]},
+    "R5": {"label": "direction length", "text": "Every direction sentence of the cover (all paragraphs before the first Question heading, tables and footers left out) has at most max_direction_words words.", "max_direction_words": 25},
+    "R6": {"label": "abbreviations spelled out", "text": "Every abbreviation is spelled out at its first use (reading order: cover, questions, tips), as 'words (ABBR)' or 'ABBR (words)'. An abbreviation is a token of two or more capital letters, a camel-case token with two capitals, a lower-case token with a capital inside (such as kB), or a key of an item's own abbreviations list.",
+           "capital_patterns": ["\\b[A-Z]{2,}[0-9]*\\b", "\\b[A-Z][a-z]+[A-Z][A-Za-z0-9]*\\b", "\\b[a-z]+[A-Z][A-Za-z0-9]*\\b"],
+           "not_abbreviations": ["SEN0401", "INSTRUCTIONS", "WARNING", "FORBIDDEN", "ZERO", "ONE", "CODE", "NOT", "ALL", "ANY", "NONE", "ONLY", "MUST", "DO", "NO", "YES", "OR", "AND", "TRUE", "FALSE", "THE", "BONUS"],
+           "lower_case_twin_is_a_word": true}
+  },
+  "sentence_split": "(?<=[.!?])\\s+(?=[A-Z(\"'])",
+  "points_marker": "\\(\\s*\\d+(?:\\.\\d+)?\\s+points?\\b[^)]*\\)\\.?",
+  "label_paragraph": "^(\\d+[a-z])(?:-(\\d+[a-z]))?\\.\\s+",
+  "option_paragraph": "^(?:[A-H]\\.\\t|\\d+\\)\\s|\\d\\d\\t)",
+  "question_heading": "^Question\\s+(\\d+)\\s+-\\s+",
+  "tips_heading": "^Tips(?:\\s+page)?$",
+  "code_fonts": ["Courier", "Mono", "Consolas"],
+  "tip_paragraph": "^Tip\\s+(\\d+[a-z])[.:]\\s*"
+}
