@@ -1,0 +1,18 @@
+# Brief for executor E13: a family of recovery-code numeric templates for the SEN0401 mock bank (owner order 2026-11-03 02:11, printed 2h; standing rule STANDING_RULE_Simple_Calculations.md)
+Read ONLY this brief, STANDING_RULE_Simple_Calculations.md and MOCK_SCHEMA_AND_PLAN.md (same folder). Private output folder /home/claude/CME/exams/SEN0401/08-tooling/exam/mock/parts/ (all stem-bearing files PRIVATE; public repo gets code without item text and logs without item text). Do not read the real exam item; its numbers and key are in the launch message only, to be avoided.
+## Course point (chapter 5, critical points CP5.03 "How many words does 256 bits of entropy make?" and CP5.08 "A recovery code is entropy in words: 11 bits a word, checksum included"; outcome LO-5)
+A recovery code is the secret (entropy) in words, each word 11 bits, plus a few checksum bits that catch typing mistakes (BIP39: 128 bits entropy + 4 checksum = 132 bits = 12 words; 256 + 8 = 264 = 24 words). The owner: simplify, state directly what the student would otherwise derive, no equation solving, no trap.
+## Task
+mock_bank_ch5y_v1_0_0.json {"chapter":5,"family":"recovery_code","items":[6 to 8 numeric templates]}, numeric schema of the plan (ids n5y_1.., points 3, can_be_4 on exactly one, 8+ instances each with 8 different key values, field "why_question", tips without prefix "Tip:", at most 2 steps that contain an operation, every step with a number). Generator mock_numeric_gen_ch5y_v1_0_0.py and check mock_check_ch5y_v1_0_0.py (3 planted defects fail). Stems: the rules written as their own lines (e.g. "Each word stands for 11 bits." / "The checksum has 4 bits." / "The code has 12 words."), at most 60 words, last sentence "You are asked to ...", tip at most 12 words. Templates (each ONE or TWO plain operations, every operation stated):
+1 total bits of a code from the words and the bits per word (words x bits per word),
+2 entropy bits when the total bits and the checksum bits are both stated (total minus checksum),
+3 total bits when entropy bits and checksum bits are stated (sum),
+4 the number of words when the total bits and the bits per word are stated (total divided by bits per word; exact),
+5 the number of words for a stated entropy and stated checksum (entropy plus checksum, then divide by 11),
+6 the checksum bits when total and entropy are stated (total minus entropy),
+7 the entropy bits for a code of N words and a stated checksum (words x 11, minus checksum: two stated operations),
+8 optional: how many bits of checksum a stated entropy needs when "1 checksum bit for every 32 entropy bits" is stated (entropy divided by 32; exact).
+Word counts 12, 15, 18, 21, 24 with their real entropy (128, 160, 192, 224, 256) and checksum (4, 5, 6, 7, 8) for most instances so the numbers are true to BIP39; the bits per word is 11 in every stem. AVOID the real item's combination (word count with its stated ratio asked as entropy) and its key; no reuse of its wording; do NOT state the ratio and ask the student to solve for entropy.
+Worked solution: the operation with its numbers, why_right, three common_wrong with the mistake (forgot the checksum, used 8 instead of 11 bits, divided instead of multiplied).
+Fixed line (why_question): "Why this question: a recovery code is secret bits written in words, plus a few check bits that catch typing mistakes. Counting the bits shows how many words a wallet needs for a given secret."
+Checks: control script (python3 -I /home/claude/sen0401/08-tooling/exam/sen0401_mock_control_v1_0_0.py bank FILE --gen GENERATOR --avoid=...) findings 0; family adapter v1_0_2 all PASS; regeneration identical; commit public (code, logs only) /tmp/cm.sh, private git -C /home/claude/CME and push. About 12 minutes.
