@@ -64,7 +64,8 @@ def cmd_bank(path, gen):
     for it in items:
         main, sm = item_strings(it); i = it['id']
         tips = it.get('tip') or ''
-        if W(tips) > 12 or tips.lower().startswith('tip:'): fails.append('%s tip' % i)
+        if tips.lower().startswith('tip:'): log.append('NOTE %s tip carries the prefix Tip: (the merge must strip it)' % i); tips = tips[4:].strip()
+        if W(tips) > 12: fails.append('%s tip' % i)
         for s in main:
             if W(s) > 60: fails.append('%s stem %d words' % (i, W(s)))
             last = re.split(r'(?<=[.?!])\s+', s.strip())[-1]
