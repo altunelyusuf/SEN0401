@@ -316,7 +316,7 @@ def it6(pre):
 CASES["items6"] = it6("Ev121ka")
 def r2(pre):
     CK = TL + "sen0401_ch03page2_control_check_v1_0_0.py"
-    return dict(crit="AC9_Repair_Ch03_Page2", tk="TK_Repair_Ch03_Page2_Build", vt="TK_Repair_Ch03_Page2_Verify", brief="iter64", bp="08-tooling/briefs/iter64/BRIEF_TK_Repair_Ch03_Page2_Build.md", pre=pre, ei="EI" + pre, n="00", partial=None,
+    return dict(crit="AC9_Repair_Ch03_Page2", tk="TK_Repair_Ch03_Page2_Build", vt="TK_Repair_Ch03_Page2_Verify", brief="iter64", bp="08-tooling/briefs/iter63/BRIEF_TK_Repair_Ch03_Page2_Build.md", pre=pre, ei="EI" + pre, n="00", partial=None,
    kinds=lambda c: [("nochange", CCC, "nochange " + c), ("cause", CK, "cause"), ("page", CK, "page")],
    label={"nochange": "the executor's commits add only new files (diagnostic copies of the page test and hold scripts and logs); no earlier committed file is edited (net)",
           "cause": "the control's own count of the diagnostic runner files: v9_75_0 10 runs, 2 with a main-thread budget [FAIL]; v9_73_0 1 run, 0 budget [FAIL]; no 2063 ms task in any log; DOM probe 98 editors on both pages (8443 and 9109 elements). NOT in the executor's report: the endless-program feature failed in one v9_75_0 busy run and in the one v9_73_0 busy run, so the shipped page v9_73_0 also failed one of its one busy runs",
