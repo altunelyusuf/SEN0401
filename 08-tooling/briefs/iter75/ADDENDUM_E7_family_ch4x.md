@@ -1,0 +1,5 @@
+# Addendum for E7 only: the hash-search family (file mock_bank_ch4x_v1_0_0.json, from E9) - read together with ADDENDUM_E7_family_ch3x.md
+1. File and schema: mock/parts/mock_bank_ch4x_v1_0_0.json = {"chapter":4,"family":"hash_search","items":[>=6 numeric templates n4x_1.., 8+ instances each]}, same schema, field "why_question" as in the other family. If missing at assembly, build without it and say so.
+2. Composition now: the 8 numeric places of a mock = 2 instances of the release-tag family (ch3x) + 2 instances of the hash-search family (ch4x) + 4 from the 24 chapter templates (one of those keeps the 4-point place via can_be_4). If one family file is missing, fill its two places from the main bank.
+3. Arithmetic: each family 48 instances / 2 = 24 mocks; main 192 / 4 = 48 mocks; choice 60 / 7 = 8, fill 24 / 3 = 8 -> the number of fully disjoint mocks STAYS 8. State it; the disjointness proof includes both family id sets.
+4. Result view and exclusion gate: as for the other family (the line "Why this question" after the worked solution; numeric-key rule with the real item's bit count, accepted results and speed read from the private index, ids only in logs).
