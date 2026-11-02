@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEN0401 Practice Midterm</title>
+<style>
+:root{--bg:#fbfbf8;--fg:#1d2330;--mut:#566074;--card:#ffffff;--line:#cfd5df;--acc:#2a5db0;--ok:#1d7a3c;--okbg:#e5f4ea;--bad:#b3261e;--badbg:#fbe9e7;--part:#8a5a00;--partbg:#fff3d6;--fs:17px}
+@media (prefers-color-scheme:dark){:root{--bg:#161a22;--fg:#e8ebf2;--mut:#a3adbf;--card:#1e2430;--line:#3a4356;--acc:#7fa8ee;--ok:#6fd08c;--okbg:#17301f;--bad:#ff9d93;--badbg:#3a1d1a;--part:#f0c36a;--partbg:#3a2f12}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:var(--fs)/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-wrap:anywhere}
+.wrap{max-width:900px;margin:0 auto;padding:12px 16px 60px}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select,input{font:inherit;color:inherit}
+button.btn{min-height:44px;padding:6px 14px;border:1px solid var(--acc);background:var(--card);color:var(--acc);border-radius:8px;cursor:pointer}
+button.btn.primary{background:var(--acc);color:var(--bg);font-weight:600}
+button.btn:disabled{opacity:.45;cursor:not-allowed}
+label.f{display:inline-flex;gap:6px;align-items:center;color:var(--mut)}
+input.num{width:6.5em;min-height:44px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+h1{font-size:1.35em;margin:14px 0 4px} h2{font-size:1.15em;margin:26px 0 8px;padding-bottom:4px;border-bottom:2px solid var(--line)}
+.meta{color:var(--mut);margin:2px 0 8px;font-size:.92em}
+#notice,#bank-note{color:var(--part);font-weight:600;margin:6px 0}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;border-left:6px solid var(--line)}
+.item.ok{border-left-color:var(--ok);background:var(--okbg)}.item.bad,.item.blank{border-left-color:var(--bad)}.item.part{border-left-color:var(--part)}
+.ihead{display:flex;justify-content:space-between;gap:8px;font-weight:700}
+.pts{color:var(--mut);font-weight:600}
+.stem{margin:6px 0;white-space:pre-line}.tip{margin:4px 0 8px;color:var(--mut);font-style:italic}.how{margin:8px 0 4px;color:var(--mut);font-size:.92em}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;min-height:48px;padding:8px 10px;border:2px solid var(--line);background:var(--bg);border-radius:8px;cursor:pointer}
+.opt[aria-pressed="true"]{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,var(--bg))}
+.opt .let{flex:0 0 2em;height:2em;line-height:2em;text-align:center;border-radius:50%;border:2px solid var(--acc);font-weight:700}
+.opt[aria-pressed="true"] .let{background:var(--acc);color:var(--bg)}
+.opt.isright{border-color:var(--ok)}.opt.iswrong{border-color:var(--bad)}
+.opt:disabled{color:inherit;opacity:1}
+.pbox{display:none}
+.numrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.digwrap{position:relative;display:inline-block}.digwrap.isright .dbox{border-color:var(--ok)}.digwrap.iswrong .dbox{border-color:var(--bad)}
+.digits{display:inline-flex;gap:4px}.dbox{width:2.1em;height:2.5em;border:2px solid var(--line);border-radius:6px;text-align:center;line-height:2.4em;background:var(--bg);font-weight:700}
+.digin{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;cursor:text}
+.digin:focus+*{outline:none}.digwrap:focus-within .dbox{border-color:var(--acc)}
+.rows{display:grid;gap:8px;margin:6px 0}
+.row{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.rn{flex:0 0 1.6em;font-weight:700}.rt{flex:1 1 14em}
+.ans{display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.sel{min-height:44px;min-width:4.5em;padding:4px 6px;border:2px solid var(--line);border-radius:8px;background:var(--bg)}
+.mark.isright{color:var(--ok);font-weight:700}.mark.iswrong{color:var(--bad);font-weight:700}
+.bank{margin:6px 0 6px 0;padding-left:2em}.bank li{margin:3px 0}
+#result{background:var(--card);border:2px solid var(--acc);border-radius:10px;padding:10px 16px;margin:16px 0}
+#score-total{font-size:1.4em;font-weight:800;margin:4px 0}
+#score-q{margin:4px 0 8px;padding-left:1.2em}
+.qscore{font-weight:700;text-align:right;margin:4px 0}
+details{margin-top:10px;border-top:1px dashed var(--line);padding-top:6px}summary{cursor:pointer;font-weight:700;min-height:32px}
+.sol p{margin:5px 0}.sol-steps,.sol-wrong{margin:4px 0 8px;padding-left:1.4em}.sol-wrong li{margin:3px 0}
+.whyq{margin-top:8px;padding:8px 10px;border-left:4px solid var(--acc);background:var(--bg);font-style:italic}
+.printonly{display:none}
+.tools{display:flex;gap:6px;align-items:center}
+@media (max-width:700px){.wrap{padding:8px 16px 60px}.bar{gap:6px}.row{flex-direction:column;gap:4px}.rn{flex:0 0 auto}.rt{flex:0 0 auto}.ans{white-space:normal}.row .rn{display:inline-block}}
+@media print{
+ :root{--bg:#fff;--fg:#000;--card:#fff;--line:#000;--mut:#222;--fs:11pt}
+ body{font:11pt/1.35 Georgia,serif}
+ .bar,#result,.noprint,.fb,#notice,#bank-note,.mark,.qscore,.how{display:none!important}
+ .printonly{display:block}.wrap{max-width:none;padding:0}
+ .item{break-inside:avoid;border:1px solid #000;border-left:1px solid #000;background:#fff!important}
+ .opt{border:none;padding:2px 0;min-height:0}.opt .let{border:1px solid #000;width:1.6em;height:1.6em;line-height:1.6em}
+ .opt[aria-pressed="true"] .let{background:#fff;color:#000}
+ .dbox{border:1px solid #000;background:#fff;color:#fff}
+ .digin,.sel{display:none}.pbox{display:inline-block;width:2.2em;height:1.6em;border:1px solid #000;vertical-align:middle}
+ .opt .pbox{display:none}
+ .row{border-bottom:1px solid #999;padding-bottom:3px}
+ h2{break-after:avoid}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="bar noprint" role="toolbar" aria-label="Mock controls">
+ <label class="f">Mock <input id="in-k" class="num" type="number" min="1" step="1" inputmode="numeric"></label>
+ <label class="f">Seed <input id="in-seed" class="num" type="number" step="1" inputmode="numeric"></label>
+ <button id="btn-load" class="btn" type="button">Load</button>
+ <button id="btn-derive" class="btn" type="button">Derive a new mock</button>
+ <button id="btn-check" class="btn primary" type="button">Check my answers</button>
+ <button id="btn-sol" class="btn" type="button" disabled>Show solutions</button>
+ <button id="btn-print" class="btn" type="button">Print</button>
+ <button id="btn-reset" class="btn" type="button">Clear answers</button>
+ <span class="tools"><button id="fs-down" class="btn" type="button" aria-label="Smaller text">A-</button><button id="fs-up" class="btn" type="button" aria-label="Larger text">A+</button></span>
+</div>
+<p id="bank-note"></p>
+<p id="notice"></p>
+<main id="paper"></main>
+<section id="result" class="noprint" hidden aria-live="polite"></section>
+<p class="meta noprint">This is a practice paper. Answers are checked on your device only; nothing is sent anywhere. Use the same seed to get the same paper again.</p>
+<footer id="set-footer" class="meta">/*@@SETFOOTER@@*/</footer>
+</div>
+<script id="mock-bank" type="application/json">/*@@BANK@@*/</script>
+<script>/*@@PRESET@@*/</script>
+<script>/*@@SCORING@@*/</script>
+<script>/*@@DERIVE@@*/</script>
+<script>/*@@UI@@*/</script>
+</body>
+</html>
