@@ -75,3 +75,11 @@ Quote and time are recorded in v0.147. No work agent runs until the coordinator 
 - work begun (Iter_16) recorded as v0.181 at 2026-10-22T06:54:06 UTC for the template and test tasks
 - sen0401_slides_lineage_v0_182_0.ttl: control of Iter_16 template and tests: TK_PageGates_Template and TK_PageGates_Test Done (bridge 11 of 11); click timeout of ch11 recorded as a test artefact; CR3_PageClick with one owner question (Pending); CONFORMANT
 - work begun (Iter_16) recorded as v0.183 at 2026-10-22T08:21:33 UTC for the regression task; briefs regenerated (brief_gates v1_1_0)
+
+---
+**2026-11-08 — Lineage 3 closed by narrowing; Lineage 4 opened.** This log was not kept current between
+v0.183 (2026-10-22) and the register's actual tip v0.1044.0 (2026-11-03) — stated plainly rather than
+backfilled. Full closure reasoning and fit-gap: `07-lineage/sen0401_lineage3_closure_narrowing_v1_0_0.md`.
+Lineage 4 (fresh, narrow, Chapters 7–8 this week only) charter: `07-lineage/sen0401_lineage4_charter_v1_0_0.md`.
+The 14 InProgress items at the register's tip are all exam-paper work (midterm v8.0.2, printed) and are
+not carried forward; exam work now runs outside this repository.
