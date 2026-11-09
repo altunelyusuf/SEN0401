@@ -95,3 +95,10 @@ story box by shape name, its 5N1K coverage by invisible alt-text tags — the sa
 marker already set for code boxes) and `sen0401_deck_standard_check_v2_0_0.py` (D5 now fails a visible
 label instead of requiring one). Both decks pass D1–D12 clean under v2.0.0. Old tool/deck versions stay
 committed, unedited. No TTL encoding of this repair done yet — same disclosed gap as Lineage 4's opening.
+
+---
+**2026-11-09 — process correction: the CME handover was misplaced.** The 5N1K-and-citation-convention
+proposal (`09-handovers-out/HANDOVER_sen0401_to_cme_5n1k-and-citation-convention_v1_0_0.md`) was written
+into SEN0401's own outbox, which CME's session has no reason to read; CME's own inbox convention is its
+`07-handover-inbox/pending/`. Deposited there today instead (same content, a corrected placement note).
+The file stays here too, unedited, as the record of when it was first written.
