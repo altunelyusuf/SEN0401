@@ -83,3 +83,15 @@ backfilled. Full closure reasoning and fit-gap: `07-lineage/sen0401_lineage3_clo
 Lineage 4 (fresh, narrow, Chapters 7–8 this week only) charter: `07-lineage/sen0401_lineage4_charter_v1_0_0.md`.
 The 14 InProgress items at the register's tip are all exam-paper work (midterm v8.0.2, printed) and are
 not carried forward; exam work now runs outside this repository.
+
+---
+**2026-11-09 — Lineage 4: 5N1K taken off-screen, decks and the deck-standard checker fixed.** The owner
+ruled the live decks' story slides must not show WHO/WHAT/WHEN/WHERE/WHY/HOW on-screen, and that this is
+now a standing discipline for the session, not only for the chapter drafts. Fixed: `SEN0401_Ch07_..._v2_3_0.pptx`
+and `SEN0401_Ch08_..._v2_1_0.pptx` (labels stripped, three facts per deck folded into prose that had lived
+only in the removed label chips — Satoshi Nakamoto and Pieter Wuille now named, Chapter 8's block number
+and the sender's stated anonymity now in prose); `sen0401_story_marker_v1_0_0.py` (new, the marker: a
+story box by shape name, its 5N1K coverage by invisible alt-text tags — the same convention the code
+marker already set for code boxes) and `sen0401_deck_standard_check_v2_0_0.py` (D5 now fails a visible
+label instead of requiring one). Both decks pass D1–D12 clean under v2.0.0. Old tool/deck versions stay
+committed, unedited. No TTL encoding of this repair done yet — same disclosed gap as Lineage 4's opening.
