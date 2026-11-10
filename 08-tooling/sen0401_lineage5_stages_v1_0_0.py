@@ -272,15 +272,23 @@ def backlog_stage(t, prev_commit, now_iso):
                 carried.append(str(s).split("#")[-1])
     carried = sorted(set(carried))
     n = 0
+    not_found = []
     for name in carried:
-        pat = re.compile(r"(ex:%s a backlog:\w+ ;.*?)(backlog:admittedByOutput ex:Out3_Backlog)" % re.escape(name), re.S)
+        # the real admittedByOutput target carries a stage-revision suffix (e.g. Out3_BacklogR62), discovered by
+        # inspection after this script's first, word-boundary-free attempt silently produced a dangling
+        # "Out5_BacklogR62" reference (matched "Out3_Backlog" as a PREFIX of "Out3_BacklogR62" and left the
+        # suffix dangling off the replacement) - caught before committing, not shipped. \b enforces the real token.
+        pat = re.compile(r"(ex:%s a backlog:\w+ ;.*?)backlog:admittedByOutput ex:Out3_Backlog\w*\b" % re.escape(name), re.S)
         t2, k = pat.subn(lambda m: m.group(1) + "backlog:preLineageItem true ; backlog:admittedByOutput ex:Out5_Backlog", t, count=1)
         if k:
             t = t2; n += 1
+        else:
+            not_found.append(name)
     t += "ex:Obj5_CarriedVisible backlog:metricMovableBy %s .\n" % ", ".join("ex:" + x for x in carried) if carried else ""
+    assert not not_found, "items not re-admitted (admittedByOutput pattern did not match): %s" % not_found
     return t + output(t, "Backlog"), ("the fifth lineage's Backlog stage closes: 4 chapter 7/8 stories admitted Done with real evidence "
                                        "(deck standard check re-run fresh, PASS on both; page 5N1K assertion verified, full suite incomplete and disclosed); "
-                                       "%d of the third lineage's %d carried items re-admitted under this lineage's own Backlog output (the rest were not found with the exact 'admittedByOutput ex:Out3_Backlog' pattern this script matches - carried unchanged either way, since preLineageItem/belongsToLineage already marks them, but not individually reassigned; see disclosure)." % (n, len(carried)))
+                                       "all %d of the third lineage's open items re-admitted (admittedByOutput moved from ex:Out3_BacklogR62 to ex:Out5_Backlog, preLineageItem set true), read from the register, not listed by hand." % n)
 
 
 EVENTS_SIMPLE = {"mission": (mission_block, "Mission"), "scope": (scope_block, "Scope"), "goal": (goal_block, "Goal")}
