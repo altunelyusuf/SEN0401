@@ -124,3 +124,32 @@ each passing its own run_checks(). Regenerated `page_data_v9_89_0.json`/`v9_90_0
 pages from that with `sen0401_page_build_v4_20_0.py` + template 9.52.11, and re-ran the real test suite: the 5N1K
 fact-row assertion PASSED again on both canonically-rebuilt pages; grep against both rebuilt HTML files also
 confirms 0 occurrences of the three label tags in either.
+
+---
+**2026-11-10 — correction: Lineage 3 was never actually closed, and "Lineage 4" was never registered; fixed via a real succession.**
+The 2026-11-08 entry above ("Lineage 3 closed by narrowing; Lineage 4 opened") was markdown narrative only - the
+governed register (`07-lineage/sen0401_slides_lineage_v*.ttl`) still read `ex:Lineage3 ... backlog:hasLineageStatus
+backlog:LS_InProgress` the whole time, and `ex:Lineage4` already existed in that register for an unrelated,
+Abandoned midterm lineage (`Mission_Midterm`) - the name was never free. Fixed today with the real route (BRSF
+ruling G105: out-scope, close, succeed), run as five separate, git-committed stages:
+1. `sen0401_lineage_succession5_v1_0_0.py declare` - out-scoped the 161 items actually read open under Lineage3
+   (not the 2-item narrative above: Ch1-6 deck/page/teach work, stray Ch8/Ch11 page-measure remnants, and the
+   exam-paper V6/V7 story chain), owner-decided.
+2. `... close` - Lineage3 -> `LS_Achieved`; `ex:Lineage5` opened as its successor under the unchanged Mission
+   (numbered 5, not 4, to match the register). In the same edit: the register's own `owl:versionInfo` header,
+   found frozen at `0.1016.0` since file `v0_1016_0.ttl` across 28 later filename-versioned snapshots (no earlier
+   git history exists in this repo to show why - it arrived that way in the one bulk handover commit before this
+   week), was resynced to the real current version, disclosed in the commit, not silently.
+3-7. `sen0401_lineage5_stages_v1_0_0.py mission|scope|goal|objective|backlog`, one commit each: admits chapter
+   7/8's deck and page as Done with real evidence (git dates/hashes, a fresh re-run of the deck standard check -
+   both PASS all 12 elements - and the previously-verified 5N1K page assertion, disclosed as not a full-suite
+   run), and re-admits all 161 carried items under Lineage5's own Backlog output. One bug caught before it was
+   committed: the first carry-forward attempt matched `Out3_Backlog` as a bare prefix of the real target
+   `Out3_BacklogR62` and left a dangling, non-existent `Out5_BacklogR62` reference in 161 triples: found by
+   querying the written file before committing it, fixed with a word-boundary pattern, re-verified by query
+   (all 161 now point at the real `ex:Out5_Backlog`) before it was committed.
+Full SHACL validation has still not been run end-to-end against this register this session (the validator takes
+2+ minutes here and a run did not complete); what's stated above is checked directly by SPARQL-style query and
+the turtle parser's syntax check only, both shown in the session transcript. The markdown charter/closure files
+below (`sen0401_lineage3_closure_narrowing_v1_0_0.md`, `sen0401_lineage4_charter_v1_0_0.md`) describe the old,
+wrong story and have not been rewritten to match; read the register, not them, for lineage state from now on.
