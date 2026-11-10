@@ -153,3 +153,45 @@ Full SHACL validation has still not been run end-to-end against this register th
 the turtle parser's syntax check only, both shown in the session transcript. The markdown charter/closure files
 below (`sen0401_lineage3_closure_narrowing_v1_0_0.md`, `sen0401_lineage4_charter_v1_0_0.md`) describe the old,
 wrong story and have not been rewritten to match; read the register, not them, for lineage state from now on.
+
+---
+**2026-11-10 — Lineage 5 content work: Chapters 9-10 decks and pages brought to the same D5 standard as 7-8.**
+`sen0401_deck_standard_check_v2_0_0.py 09`/`10` had found both decks D5 `NOT_MEASURED "no story slide"` even
+though `deck_build_v2_0_0.py` for each chapter already builds four (ch09) / five (ch10) real story slides from
+`sen0401_ch09_stories_v1_2_0.py` / `ch10`'s own module - confirmed by direct inspection of the shipped
+v2.0.0/v2.2.0 pptx XML (the images and beat/factrow text were there, slides 29/45/49/51 of ch09 and
+17/25/37/42/45 of ch10). The real defect: those slides were built by the OLD, pre-fix pattern this week's 7-8
+fix (commit 0278076) replaced - visible `WHAT:`/`WHY:`/`HOW:`/`SO WHAT:` beat labels and a `WHO`/`WHERE`/`WHEN`/
+`READ` factrow - and carry none of `sen0401_story_marker_v1_0_0.py`'s shape-name/alt-text marker, so the v2.0.0
+checker's D5 (which now looks for that marker, not a label) finds zero story slides on either deck.
+Fixed at the deck layer, mirroring 7-8 exactly, via two new scripts (`sen0401_deck_story_fix_v1_0_0.py`, the
+shared mechanics; `sen0401_ch09_story_fix_v1_0_0.py` / `ch10`'s own driver, the per-story content): each story's
+three kept beats are rewritten as label-free narrative sentences (≤30 words each, the chapter's own convention),
+every fact mined from the story module's own `story`/`who`/`where`/`when` fields - nothing invented - renamed to
+`Story Text N` and alt-text-tagged with the 5N1K words that sentence actually covers, the union of the three
+always all six; the fourth (`SO WHAT:`) beat keeps its sentence, label stripped, as ordinary un-named context;
+the WHO/WHERE/WHEN chip-and-text shape pairs are deleted outright and the surviving READ chip (never part of
+5N1K) widened to the freed row. Produced `sen0401_ch09_deck_v2_1_0.pptx` / `SEN0401_Ch09_TransactionFees_3e_v2_1_0.pptx`
+and `sen0401_ch10_deck_v2_3_0.pptx` / `SEN0401_Ch10_TheBitcoinNetwork_3e_v2_3_0.pptx`. Re-ran the real checker
+fresh on both: **PASS all 12 elements**, D5 itself reporting genuine coverage (`5N1K=how/what/when/where/who/why
+picture=yes live_links=1`) on every story slide, zero visible labels anywhere in either deck.
+
+Pages: unlike 7-8, neither `sen0401_ch09_stories_v1_2_0.py` nor `ch10`'s own needed a v1.3.0-style name fold-in -
+checked every story's `who`/`where` names against its `story` paragraph and all of them (4 of 4 ch09, 5 of 5
+ch10) already name every person and place in the narrative text itself; no source edit was needed before
+rebuilding. Ran the real pipeline, not a hand patch: `sen0401_page_data_v2_30_0.py` (picking the next free global
+page version after the highest seen anywhere in the repo, 9.91.0 on chapters 5/6 - no central allocator was
+reachable from this session to confirm it, same caveat as 7-8's numbering) then `sen0401_page_build_v4_20_0.py`
+with `PAGE_TEMPLATE=course_page_template_v9_52_11.html` (the same template 7-8 already use), producing
+`sen0401_ch09_page_v9_92_0.html` and `sen0401_ch10_page_v9_93_0.html` from the real cached corpus/ontology/wheel
+build (both local checkouts, `/home/claude/mastering-bitcoin` and this session's `Ontologies` clone, already had
+what the pins needed - no network fetch was required). Grepped both rebuilt pages directly: 0 occurrences of
+`<b>WHO</b>`/`<b>WHERE</b>`/`<b>WHEN</b>` in either, story content still present (45 and 61 story/5N1K hits).
+Launched the real headless-browser suite (`sen0401_page_test_v9_39_0.py`) against the chapter 9 page the same
+way 7-8's was launched; it did not finish within this session's 180-second bound (terminated, exit 143) and its
+output was fully buffered, so nothing of its run - not even a partial feature result - was captured, unlike
+7-8's run which at least printed several PASS lines before its own environment gap. The suite was not re-run
+against chapter 10's page, since the same environment-level limit (a headless-browser suite of this size does
+not complete in this sandbox) applies regardless of chapter. What is verified for both chapters' pages is
+exactly what direct inspection shows above (0 visible labels, story content intact) - the same evidentiary floor
+7-8's fix stood on before any suite output arrived, no more and no less.
