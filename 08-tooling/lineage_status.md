@@ -195,3 +195,38 @@ against chapter 10's page, since the same environment-level limit (a headless-br
 not complete in this sandbox) applies regardless of chapter. What is verified for both chapters' pages is
 exactly what direct inspection shows above (0 visible labels, story content intact) - the same evidentiary floor
 7-8's fix stood on before any suite output arrived, no more and no less.
+
+---
+**2026-11-10 — the chapter 9/10 work formally admitted: Lineage 5's first change-management cycle.**
+`ex:Scope5`'s own text (written when this lineage opened) named chapters 9-14 explicitly as this lineage's "own
+next ordinary work, through change management, not re-opening a closed lineage" - so the content work above is
+formalized that way, not by re-touching the lineage's opening ceremony. Five events, one commit each, via a new
+`sen0401_lineage5_change1_v1_0_0.py` (adapted from `sen0401_lineage5_stages_v1_0_0.py`, reusing its digest and
+write mechanics unchanged):
+1. **request** - `ex:CR1_Ch0910` (`ChangeRequest`, `Direction_Grow`, `Disp_Pending`) targeting `ex:Scope5`, with
+   `ex:IA1_Ch0910` (`ImpactAssessment`): the only active lineage is `ex:Lineage5` itself (`ex:Lineage3` is
+   `LS_Achieved` and retired to this lineage as its successor; `ex:Lineage4` is an unrelated, already-`Abandoned`
+   midterm lineage), so no concurrently active lineage carries any risk - required by the standard before
+   disposition may move past `Disp_Pending`.
+2. **accept** - the owner's "Yes, proceed" moves `ex:CR1_Ch0910` to `Disp_Accepted`; `ex:SC1_Ch0910`
+   (`ScopeChange`) records the actual admission decision, kept distinct from the request per the standard's own
+   terms (`ChangeRequest` exists before any decision; `ScopeChange` only ever records one already made).
+3-6. **scope / goal / objective / backlog** revisions, each closing its own `StageOutput` named with this
+   register's own `R<n>` revision-suffix convention (first seen on `ex:Out3_BacklogR62`, not a term the standard
+   itself defines - a `StageOutput` is produced once per closing event, and change-managed growth of an
+   already-closed stage re-closes it): `ex:Out5_ScopeR1` (consumes `ex:Out5_Scope`) adds `ex:Area5_Ch0910` /
+   `ex:Del5_Ch0910`, mirroring `ex:Area5_Ch0708` / `ex:Del5_Ch0708` in shape; `ex:Out5_GoalR1` (consumes
+   `ex:Out5_ScopeR1`) adds `ex:G5_Ch0910Done` / `ex:G5_Ch0910DeckStdMet`; `ex:Out5_ObjectiveR1` (consumes
+   `ex:Out5_GoalR1`) adds the matching objectives with metric, checkpoint and baseline observation; `ex:Out5_
+   BacklogR1` (consumes `ex:Out5_Backlog`) admits the four stories (chapter 9/10 deck and page) **Done**, each
+   with real evidence - file hash, git commit `841f808`, and either a fresh deck-standard-check run (PASS all 12
+   on both decks, D5 itself genuinely verified: real picture, real live link, 5N1K coverage all six) or a direct
+   grep confirming 0 occurrences of the WHO/WHERE/WHEN label tags on the rebuilt page (the real browser suite was
+   launched again for this admission and again did not complete - disclosed in the story's own audit note, not
+   claimed). `ex:Out5_BacklogR1`'s own `closedAtCommit` stays `"PENDING"`, the same as `ex:Out5_
+   Backlog` before it - no later event in this session exists to fill a stage's own closing commit; both are
+   disclosed as such, not silently left to look finished.
+Every stage revision was checked by parsing the written Turtle with `rdflib` before committing (consistent with
+this session's standing substitute for the SHACL validator, which still does not complete here in reasonable
+time) and by direct query of each new individual's key properties (state, admittedByOutput, consumesOutput,
+closedAtCommit) before moving to the next event - no step taken on narrative alone.
