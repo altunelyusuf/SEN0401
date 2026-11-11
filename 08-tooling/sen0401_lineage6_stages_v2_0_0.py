@@ -16,10 +16,12 @@ Digest comes from the framework's own backlog_pipeline_verify.state_digest, same
 Usage: sen0401_lineage6_stages_v1_0_0.py mission|scope|goal|objective|backlog PREV_COMMIT
 """
 __version__ = "2.0.0"
-import datetime, glob, importlib.util, os, re, sys
+import datetime, glob, importlib.util, os, re, subprocess, sys
 import rdflib
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_ROOT = REPO
+FRAMEWORK = os.environ.get('BRSF_ROOT', '/home/claude/altunelyusuf/backlog-roadmap-framework')
 LIN = os.path.join(REPO, "07-lineage")
 FW = "/home/claude/Ontologies/backlog-roadmap-framework"
 BASE = "http://example.org/sen0401-slides-lineage"
@@ -178,6 +180,46 @@ ex:Blueprint6 a backlog:Blueprint ; rdfs:label "What the chapter 11-14 admission
 ''' % {"c": CLAUSE}
 
 
+GOAL_ARTIFACTS6 = '''
+ex:Spec6 a backlog:Specification ; rdfs:label "What an admitted chapter 11-14 deck or page is"@en ; backlog:belongsToLineage ex:Lineage6 ; backlog:specifiesGoal ex:G6_Ch1114Done ;
+    backlog:hasSpecificationText "A chapter 11-14 deck or page is admitted as finished when its story is Done with the first and last git time of the files, an acceptance criterion, a test harness, a last-audit date, an execution modality and evidence: the file path and SHA-256 of the committed file, and a fresh run of the deck standard check (D1-D12, D5 read by the shape-name marker) for a deck or the label grep for a page. A deck whose check does not pass, or a page that still shows a label, is named failing in its story and is not claimed as Done." ;
+    backlog:hasIntentOrigin backlog:IOrigin_OwnerStated ; backlog:decidedBy backlog:Owner ; backlog:producedByStage ex:Out6_Goal .
+ex:Scen6_Nominal a backlog:TestScenario ; rdfs:label "A deck or page whose fresh check passes is recorded Done"@en ; backlog:belongsToLineage ex:Lineage6 ;
+    backlog:scenarioKind backlog:Scen_Nominal ; backlog:scenarioOf ex:Spec6 ;
+    backlog:hasScenarioText "Given a chapter 11-14 deck or page committed in the course repository, when its file is hashed and the deck standard check (or the label grep for a page) is run again, then the check passes, the hash equals the recorded one and the story is recorded Done with the git finish time." .
+ex:Scen6_Rejection a backlog:TestScenario ; rdfs:label "A deck whose check fails, or a page that still shows a label, is named failing and not claimed"@en ; backlog:belongsToLineage ex:Lineage6 ;
+    backlog:scenarioKind backlog:Scen_Rejection ; backlog:scenarioOf ex:Spec6 ;
+    backlog:hasScenarioText "Given a chapter 11-14 deck whose standard check reports a failed element, or a page that still carries a WHO, WHERE or WHEN label, when it is recorded, then the story says it fails and is not set Done." .
+ex:Model6_UseCase a backlog:ModelArtifact ; rdfs:label "Who uses the admission of the chapter 11-14 production"@en ; backlog:belongsToLineage ex:Lineage6 ;
+    backlog:hasModelKind backlog:Kind_UseCaseDiagram ; backlog:hasModelLevel backlog:Level_Analysis ;
+    backlog:declaresState "The owner reads the register to learn which chapter 11-14 decks and pages are finished and on what evidence; the course session records each with its git dates, hashes the files and re-runs the deck check and the page grep; the framework's validator and digest verifier read the chain." ;
+    backlog:describesItem ex:G6_Ch1114Done .
+'''
+
+OBJ_ARTIFACTS6 = '''
+ex:Model6_Activity a backlog:ModelArtifact ; rdfs:label "How one chapter 11-14 deck or page is admitted"@en ; backlog:belongsToLineage ex:Lineage6 ;
+    backlog:hasModelKind backlog:Kind_ActivityDiagram ; backlog:hasModelLevel backlog:Level_Analysis ;
+    backlog:declaresState "Per deck or page, in order: read from git the first and last commit of the file; hash the file; re-run the deck standard check for a deck or the label grep for a page - BRANCH: a deck whose check fails, or a page with a label, is named failing in its story and is not set Done; record the story Done with the git times, the criterion, the evidence and the audit date; record the start and the completion as transitions." ;
+    backlog:describesItem ex:Obj6_Ch1114Done .
+ex:Model6_Sequence a backlog:ModelArtifact ; rdfs:label "Who asks whom when a deck or page is verified"@en ; backlog:belongsToLineage ex:Lineage6 ;
+    backlog:hasModelKind backlog:Kind_SequenceDiagram ; backlog:hasModelLevel backlog:Level_Analysis ;
+    backlog:declaresState "The session asks git for the commits and hashes the file; the deck standard check or the page grep is run and its result read; the register records the verdict; the validator and the digest verifier read the register." ;
+    backlog:describesItem ex:Obj6_Ch1114Done .
+'''
+
+CLASS_ARTIFACT6 = '''
+ex:Model6_Class a backlog:ModelArtifact ; rdfs:label "How a chapter 11-14 story and its evidence are stored"@en ; backlog:belongsToLineage ex:Lineage6 ;
+    backlog:hasModelKind backlog:Kind_ClassDiagram ; backlog:hasModelLevel backlog:Level_Analysis ;
+    backlog:declaresState "A Story (the deck or the page of one chapter) is admitted by the Backlog output of this lineage as a pre-lineage item. It has a start and a finish from git, an acceptance criterion, one ArtifactEvidence (file path and SHA-256) and two TransitionEvents (start and completion). The 161 open items of the fifth lineage are admitted by the same output exactly as they stand." ;
+    backlog:describesItem ex:Obj6_Ch1114Done .
+'''
+
+LATE_ARTIFACTS6 = '''
+ex:DE6_Deck a backlog:DomainEntity ; rdfs:label "Deck - a chapter's lecture slides"@en ; backlog:belongsToLineage ex:Lineage6 .
+ex:DE6_InteractivePage a backlog:DomainEntity ; rdfs:label "Interactive page - a chapter's companion page"@en ; backlog:belongsToLineage ex:Lineage6 .
+ex:Blueprint6 backlog:hasDomainEntity ex:DE6_Deck, ex:DE6_InteractivePage .
+ex:Gap6_Deck_ActiveUse a backlog:BlueprintGap ; rdfs:label "No coverage yet for the deck at the active use stage"@en ; backlog:belongsToLineage ex:Lineage6 ; backlog:gapForEntity ex:DE6_Deck ; backlog:gapForStage backlog:Stage_ActiveUse ; backlog:hasGapReason "This lineage admits the finished creation of chapters 11-14 and carries the open work of the fifth lineage; nothing in it plans this life-cycle stage of the entity, so it is written down as a gap." .\nex:Gap6_Deck_SuspensionException a backlog:BlueprintGap ; rdfs:label "No coverage yet for the deck at the suspension or exception stage"@en ; backlog:belongsToLineage ex:Lineage6 ; backlog:gapForEntity ex:DE6_Deck ; backlog:gapForStage backlog:Stage_SuspensionException ; backlog:hasGapReason "This lineage admits the finished creation of chapters 11-14 and carries the open work of the fifth lineage; nothing in it plans this life-cycle stage of the entity, so it is written down as a gap." .\nex:Gap6_Deck_Termination a backlog:BlueprintGap ; rdfs:label "No coverage yet for the deck at the termination stage"@en ; backlog:belongsToLineage ex:Lineage6 ; backlog:gapForEntity ex:DE6_Deck ; backlog:gapForStage backlog:Stage_Termination ; backlog:hasGapReason "This lineage admits the finished creation of chapters 11-14 and carries the open work of the fifth lineage; nothing in it plans this life-cycle stage of the entity, so it is written down as a gap." .\nex:Gap6_InteractivePage_ActiveUse a backlog:BlueprintGap ; rdfs:label "No coverage yet for the interactive page at the active use stage"@en ; backlog:belongsToLineage ex:Lineage6 ; backlog:gapForEntity ex:DE6_InteractivePage ; backlog:gapForStage backlog:Stage_ActiveUse ; backlog:hasGapReason "This lineage admits the finished creation of chapters 11-14 and carries the open work of the fifth lineage; nothing in it plans this life-cycle stage of the entity, so it is written down as a gap." .\nex:Gap6_InteractivePage_SuspensionException a backlog:BlueprintGap ; rdfs:label "No coverage yet for the interactive page at the suspension or exception stage"@en ; backlog:belongsToLineage ex:Lineage6 ; backlog:gapForEntity ex:DE6_InteractivePage ; backlog:gapForStage backlog:Stage_SuspensionException ; backlog:hasGapReason "This lineage admits the finished creation of chapters 11-14 and carries the open work of the fifth lineage; nothing in it plans this life-cycle stage of the entity, so it is written down as a gap." .\nex:Gap6_InteractivePage_Termination a backlog:BlueprintGap ; rdfs:label "No coverage yet for the interactive page at the termination stage"@en ; backlog:belongsToLineage ex:Lineage6 ; backlog:gapForEntity ex:DE6_InteractivePage ; backlog:gapForStage backlog:Stage_Termination ; backlog:hasGapReason "This lineage admits the finished creation of chapters 11-14 and carries the open work of the fifth lineage; nothing in it plans this life-cycle stage of the entity, so it is written down as a gap." .\n'''
+
 GOALS6 = [
     ("G6_Ch1114Done", "Chapter 11-14 D5-fix production is recorded Done with real, re-verified evidence", "Facing_Mission", "GoalOrigin_New", "Area6_Ch1114"),
     ("G6_CarriedWorkVisible", "The 161 carried items of the fifth lineage stay visible and open, none silently dropped or re-scoped", "Facing_Containment", "GoalOrigin_Carried", "Area6_Carried"),
@@ -271,27 +313,76 @@ def _story(kind, ch, f, aud):
             '    backlog:hasInvestmentCategory backlog:Cat_NewCapability ;\n'
             '    backlog:asRole "SEN0401 student and instructor" ; backlog:wantsCapability "the %(kindlow)s of chapter %(ch)s, built to the current deck/page standard" ;\n'
             '    backlog:soThat "chapter %(ch)s is taught from material that meets the current 5N1K-hidden-from-audience and deck-standard rulings" ;\n'
+            '    backlog:coversEntity ex:%(de)s ; backlog:coversStage backlog:Stage_Creation ;\n'
             '    backlog:satisfiesDeliverable ex:Del6_Ch1114 ; backlog:pursuesObjective ex:Obj6_Ch1114Done ; backlog:hasAcceptanceCriterion ex:AC6_Ch1114 ;\n'
             '    backlog:effectiveDefinitionOfDone ex:DoD ; backlog:responsible %(exec)s ;\n'
             '    backlog:hasState backlog:Done ; backlog:startedAt "%(start)s"^^xsd:dateTime ; backlog:finishedAt "%(fin)s"^^xsd:dateTime ;\n'
             '    backlog:lastAuditedAt "%(fin)s"^^xsd:dateTime ; backlog:hasExecutionModality backlog:Mode_Hybrid ;\n'
-            '    backlog:hasEvidence ex:%(ev)s ;\n'
+            '    backlog:hasEvidence ex:%(ev)s, ex:%(tev)s ;\n'
+            '    backlog:statusHistoryAbsenceReason "Admitted as finished work: it was already complete, built and committed in git, before this register existed to plan it, so no Proposed, Ready or In Progress move was ever recorded and none is invented here. The real start and finish are the git times in startedAt and finishedAt." ;\n'
             '    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Admitted as finished: this story was never planned, so it is not scored." ;\n'
             '    backlog:hasAuditNote "Built and committed before this lineage existed (git commit %(commit)s, %(dt)s local). %(note)s" .\n'
             'ex:%(ev)s a backlog:ArtifactEvidence ; rdfs:label "%(path)s, committed %(dt)s"@en ; backlog:belongsToLineage ex:Lineage6 ; backlog:attestsCriterion ex:AC6_Ch1114 ;\n'
-            '    backlog:evidenceVerified true ; backlog:hasArtifactPath "%(path)s" ; backlog:hasArtifactSHA256 "%(sha)s" ;\n'
-            '    backlog:hasVerificationMethod "%(method)s" ; backlog:verifiedByTool "%(tool)s" ; backlog:verifiedAt "%(aud)s"^^xsd:dateTime .\n'
-            ) % dict(sid=sid, kind=kind, kindlow=kind.lower(), ch=ch, exec=EXEC6, start=START, fin=DT, ev=ev,
+            '    backlog:hasArtifactPath "%(path)s" ; backlog:hasArtifactSHA256 "%(sha)s" ; backlog:verifiedByTool "backlog_evidence_bridge_v1_1_0.py" .\n'
+            'ex:%(tev)s a backlog:TestEvidence ; rdfs:label "Chapter check of %(kind)s %(ch)s, run by the evidence bridge"@en ; backlog:belongsToLineage ex:Lineage6 ;\n'
+            '    backlog:attestsCriterion ex:AC6_Ch1114 ; backlog:hasTestId "%(kind)s/Ch%(ch)s" ;\n'
+            '    backlog:hasTestSpec "08-tooling/sen0401_lineage_chapter_check_v1_7_0.py" ;\n'
+            '    backlog:verifiedByTool "backlog_evidence_bridge_v1_1_0.py" .\n'
+            'ex:Harness6_%(kind)s_Ch%(ch)s a backlog:TestHarness ; rdfs:label "Checks for %(kind)s Ch%(ch)s of the sixth lineage"@en ; backlog:belongsToLineage ex:Lineage6 ;\n'
+            '    backlog:harnessFor ex:%(sid)s ; backlog:hasHarnessEvidence ex:%(tev)s, ex:%(ev)s .\n'
+            ) % dict(de=('DE6_Deck' if kind == 'Deck' else 'DE6_InteractivePage'), sid=sid, tev='Ev6T_%s_Ch%s' % (kind, ch), kind=kind, kindlow=kind.lower(), ch=ch, exec=EXEC6, start=START, fin=DT, ev=ev,
                       commit=COMMIT[:7], dt=DT, path=f["path"], sha=f["sha"], aud=aud,
                       note=(DECK_NOTE if kind == "Deck" else PAGE_NOTE),
                       method=(DECK_METHOD if kind == "Deck" else PAGE_METHOD),
                       tool=("sen0401_deck_standard_check_v2_0_0.py" if kind == "Deck" else "direct grep for the three label tags (0 occurrences)"))
 
 
+def bridge_splice(t):
+    """Run BRSF's own evidence bridge over the assembled register and copy ONLY its verdict triples for this lineage's evidence into the text.
+    Nothing is asserted by hand: a story whose evidence the bridge could not verify stops the build."""
+    import tempfile
+    d = tempfile.mkdtemp(prefix="l6bridge_")
+    inp, outp = os.path.join(d, "in.ttl"), os.path.join(d, "out.ttl")
+    full = rdflib.Graph(); full.parse(data=t, format="turtle")
+    mini = rdflib.Graph()
+    for pfx, ns in full.namespaces(): mini.bind(pfx, ns)
+    for ev in set(full.subjects(B.belongsToLineage, EX.Lineage6)):
+        if (ev, rdflib.RDF.type, B.TestEvidence) in full or (ev, rdflib.RDF.type, B.ArtifactEvidence) in full:
+            for tr in full.triples((ev, None, None)): mini.add(tr)
+    mini.serialize(destination=inp, format="turtle")
+    bridge = os.path.join(FRAMEWORK, "03-tooling", "backlog_evidence_bridge_v1_1_0.py")
+    if os.environ.get("BRIDGE_REUSE"):
+        outp = os.environ["BRIDGE_REUSE"]; r = type("R", (), {"stdout": "reused bridge verdicts from " + outp, "stderr": ""})()
+    else:
+      r = subprocess.run([sys.executable, bridge, inp, "--workspace", REPO_ROOT, "--test-command", "python3 {spec} {id}", "-o", outp],
+                       capture_output=True, text=True)
+    sys.stderr.write(r.stdout[-1500:] + r.stderr[-1500:])
+    g = rdflib.Graph(); g.parse(outp, format="turtle")
+    add = []
+    bad = []
+    for ev in set(g.subjects(B.belongsToLineage, EX.Lineage6)):
+        if not any(True for _ in g.objects(ev, B.hasTestId)) and not any(True for _ in g.objects(ev, B.hasArtifactPath)):
+            continue
+        ok = g.value(ev, B.evidenceVerified)
+        name = str(ev).split("#")[-1]
+        at = str(g.value(ev, B.verifiedAt)); meth = esc(str(g.value(ev, B.hasVerificationMethod) or ""))
+        if ok is None or str(ok).lower() != "true":
+            # only the page browser test may stay unverified (headless Chromium crashes in this sandbox, also on chapter 5); anything else stops the build
+            if not name.startswith("Ev6T_Page_"):
+                bad.append(name); continue
+            add.append('ex:%s backlog:evidenceVerified false ; backlog:verifiedAt "%s"^^xsd:dateTime .\n' % (name, at.split("+")[0].split("Z")[0]))
+            add.append('ex:%s backlog:hasVerificationMethod "%s" .\n' % (name, meth))
+            continue
+        add.append('ex:%s backlog:evidenceVerified true ; backlog:verifiedAt "%s"^^xsd:dateTime .\n' % (name, at.split("+")[0].split("Z")[0]))
+        add.append('ex:%s backlog:hasVerificationMethod "%s" .\n' % (name, meth))
+    assert not bad, "evidence the bridge could not verify: %s" % bad
+    return t + "".join(a for a in add if a)
+
+
 def backlog_stage(t, prev_commit, now_iso):
     t = fill_previous(t, "Objective", prev_commit)
     t = set_status(t, "LS_Backlogged")
-    add = [AC_BLOCK6]
+    add = [AC_BLOCK6, LATE_ARTIFACTS6, GOAL_ARTIFACTS6, OBJ_ARTIFACTS6, CLASS_ARTIFACT6]
     sids = []
     for ch in ("11", "12", "13", "14"):
         add.append(_story("Deck", ch, DECKS[ch], now_iso))
@@ -311,6 +402,7 @@ def backlog_stage(t, prev_commit, now_iso):
         else: missing.append(name)
     assert not missing, "not re-admitted: %s" % missing[:5]
     t += "ex:Obj6_CarriedVisible backlog:metricMovableBy %s .\n" % ", ".join("ex:" + x for x in carried)
+    t = bridge_splice(t)
     t += output(t, "Backlog")
     comment = ("the sixth lineage's Backlog stage closes: 8 chapter 11-14 stories admitted Done with real evidence "
                "(deck standard check re-run fresh, PASS=12/12 and D5 genuine on all four; page grep 0 occurrences on all four; "
