@@ -182,6 +182,93 @@ ex:Obs70_Ch11Pass a backlog:MetricObservation ; rdfs:label "Baseline measured on
 ''' % now_iso
 
 
+EXEC7 = "ex:Executor_ClaudeCodeSession"
+ARTIFACTS7 = '''
+ex:DE7_Deck a backlog:DomainEntity ; rdfs:label "Deck - a chapter's lecture slides, corrected to the rulings"@en ; backlog:belongsToLineage ex:Lineage7 .
+ex:DE7_InteractivePage a backlog:DomainEntity ; rdfs:label "Interactive page - a chapter's companion page, corrected to the rulings"@en ; backlog:belongsToLineage ex:Lineage7 .
+ex:Blueprint7 backlog:hasDomainEntity ex:DE7_Deck, ex:DE7_InteractivePage .
+ex:Gap7_Deck_ActiveUse a backlog:BlueprintGap ; rdfs:label "No coverage yet for the deck at the active use stage"@en ; backlog:belongsToLineage ex:Lineage7 ; backlog:gapForEntity ex:DE7_Deck ; backlog:gapForStage backlog:Stage_ActiveUse ; backlog:hasGapReason "This urgent lineage corrects one chapter's files at their creation stage; nothing in it plans this later life-cycle stage of the entity, so it is written down as a gap." .\nex:Gap7_Deck_SuspensionException a backlog:BlueprintGap ; rdfs:label "No coverage yet for the deck at the suspension or exception stage"@en ; backlog:belongsToLineage ex:Lineage7 ; backlog:gapForEntity ex:DE7_Deck ; backlog:gapForStage backlog:Stage_SuspensionException ; backlog:hasGapReason "This urgent lineage corrects one chapter's files at their creation stage; nothing in it plans this later life-cycle stage of the entity, so it is written down as a gap." .\nex:Gap7_Deck_Termination a backlog:BlueprintGap ; rdfs:label "No coverage yet for the deck at the termination stage"@en ; backlog:belongsToLineage ex:Lineage7 ; backlog:gapForEntity ex:DE7_Deck ; backlog:gapForStage backlog:Stage_Termination ; backlog:hasGapReason "This urgent lineage corrects one chapter's files at their creation stage; nothing in it plans this later life-cycle stage of the entity, so it is written down as a gap." .\nex:Gap7_InteractivePage_ActiveUse a backlog:BlueprintGap ; rdfs:label "No coverage yet for the interactive page at the active use stage"@en ; backlog:belongsToLineage ex:Lineage7 ; backlog:gapForEntity ex:DE7_InteractivePage ; backlog:gapForStage backlog:Stage_ActiveUse ; backlog:hasGapReason "This urgent lineage corrects one chapter's files at their creation stage; nothing in it plans this later life-cycle stage of the entity, so it is written down as a gap." .\nex:Gap7_InteractivePage_SuspensionException a backlog:BlueprintGap ; rdfs:label "No coverage yet for the interactive page at the suspension or exception stage"@en ; backlog:belongsToLineage ex:Lineage7 ; backlog:gapForEntity ex:DE7_InteractivePage ; backlog:gapForStage backlog:Stage_SuspensionException ; backlog:hasGapReason "This urgent lineage corrects one chapter's files at their creation stage; nothing in it plans this later life-cycle stage of the entity, so it is written down as a gap." .\nex:Gap7_InteractivePage_Termination a backlog:BlueprintGap ; rdfs:label "No coverage yet for the interactive page at the termination stage"@en ; backlog:belongsToLineage ex:Lineage7 ; backlog:gapForEntity ex:DE7_InteractivePage ; backlog:gapForStage backlog:Stage_Termination ; backlog:hasGapReason "This urgent lineage corrects one chapter's files at their creation stage; nothing in it plans this later life-cycle stage of the entity, so it is written down as a gap." .\nex:Spec7 a backlog:Specification ; rdfs:label "What a chapter deck and page must be under the rulings of 2026-11-14"@en ; backlog:belongsToLineage ex:Lineage7 ; backlog:specifiesGoal ex:G7_Ch11Meets ;
+    backlog:hasSpecificationText "Deck: every non-divider slide title has at least four words; every non-divider slide carries a visual (picture, native chart, table, group of shapes, or a code frame); every presenter note is 60 to 140 words (30 to 140 on the first, last and divider slides) and teaches its slide without a label prefix; no code frame shows a prompt marker, every code frame parses as shown, no lambda appears unless taught. Page: every slide code frame appears on the page, no prompt marker and no lambda in the page's code, and a Slide code tab lists the slide code in slide order." ;
+    backlog:hasIntentOrigin backlog:IOrigin_OwnerStated ; backlog:decidedBy backlog:Owner ; backlog:producedByStage ex:Out7_Goal .
+ex:Scen7_Nominal a backlog:TestScenario ; rdfs:label "A corrected deck and page pass the material check"@en ; backlog:belongsToLineage ex:Lineage7 ;
+    backlog:scenarioKind backlog:Scen_Nominal ; backlog:scenarioOf ex:Spec7 ;
+    backlog:hasScenarioText "Given the corrected chapter 11 deck and page, when cme_material_check is run fresh on them, then every condition reports PASS." .
+ex:Scen7_Rejection a backlog:TestScenario ; rdfs:label "A deck with a thin note, a bare slide or a prompt marker is refused"@en ; backlog:belongsToLineage ex:Lineage7 ;
+    backlog:scenarioKind backlog:Scen_Rejection ; backlog:scenarioOf ex:Spec7 ;
+    backlog:hasScenarioText "Given a deck with a note under 60 words, a content slide with no visual, a code frame starting with a prompt marker or a lambda that was not taught, when the check is run, then the matching condition reports FAIL and the story is not Done." .
+ex:Model7_UseCase a backlog:ModelArtifact ; rdfs:label "Who uses the corrected chapter 11 material"@en ; backlog:belongsToLineage ex:Lineage7 ;
+    backlog:hasModelKind backlog:Kind_UseCaseDiagram ; backlog:hasModelLevel backlog:Level_Analysis ;
+    backlog:declaresState "The instructor teaches from the deck with the notes as the script; the student works the same code on the page; the material check and the three reviewing roles read both." ;
+    backlog:describesItem ex:G7_Ch11Meets .
+ex:Model7_Activity a backlog:ModelArtifact ; rdfs:label "How the chapter 11 deck and page are corrected"@en ; backlog:belongsToLineage ex:Lineage7 ;
+    backlog:hasModelKind backlog:Kind_ActivityDiagram ; backlog:hasModelLevel backlog:Level_Analysis ;
+    backlog:declaresState "Measure the current files with the check; correct titles, notes, visuals, code frames and lambdas in the deck and the page; run the check again - BRANCH: any condition failing sends the work back to the correction step; the three reviewing roles read the result; the new files are versioned and recorded." ;
+    backlog:describesItem ex:Obj7_Ch11Pass .
+ex:Model7_Sequence a backlog:ModelArtifact ; rdfs:label "Who asks whom when the corrected files are verified"@en ; backlog:belongsToLineage ex:Lineage7 ;
+    backlog:hasModelKind backlog:Kind_SequenceDiagram ; backlog:hasModelLevel backlog:Level_Analysis ;
+    backlog:declaresState "The correction script rewrites the deck and the page; the session runs the material check and the deck and page tests; the register records the verdicts; the validator reads the register." ;
+    backlog:describesItem ex:Obj7_Ch11Pass .
+ex:Model7_Class a backlog:ModelArtifact ; rdfs:label "How the chapter 11 correction stories are stored"@en ; backlog:belongsToLineage ex:Lineage7 ;
+    backlog:hasModelKind backlog:Kind_ClassDiagram ; backlog:hasModelLevel backlog:Level_Analysis ;
+    backlog:declaresState "Two Stories (deck, page), each decomposed into four typed Tasks (design, implement, verify, validate), each Story with an acceptance criterion, the lineage's own Definition of Done and its evidence." ;
+    backlog:describesItem ex:Obj7_Ch11Pass .
+ex:AC7_Ch11 a backlog:AcceptanceCriterion ; rdfs:label "The corrected chapter 11 deck or page passes every condition of the material check on a fresh run"@en ; backlog:belongsToLineage ex:Lineage7 ;
+    backlog:hasGherkinText "Given the corrected chapter 11 deck and page, when cme_material_check is run on them, then all conditions report PASS, and when a note is cut below 60 words the notes condition reports FAIL (the check keeps its ability to refuse)." ;
+    backlog:satisfiedByArtifact "the material check output on the new deck and page" .
+ex:DoD7 a backlog:DefinitionOfDone ; rdfs:label "What finished means for the chapter 11 correction"@en ; backlog:belongsToLineage ex:Lineage7 ;
+    backlog:hasDoDCriterion ex:DoD7_CheckPasses, ex:DoD7_NotesTeach, ex:DoD7_CodeRuns, ex:DoD7_StoryNotRepeated .
+ex:DoD7_CheckPasses a backlog:DoDCriterion ; rdfs:label "The material check passes on the new deck and page"@en ;
+    backlog:hasCheckQuery "python3 08-tooling/cme_material_check_v1_0_0.py DECK PAGE, run fresh." ; backlog:hasExpectedResult "Every condition PASS; the same run on a deck with a planted thin note fails the notes condition." .
+ex:DoD7_NotesTeach a backlog:DoDCriterion ; rdfs:label "Every presenter note teaches its slide in the instructor's own words"@en ;
+    backlog:hasCheckQuery "The academician and the undergraduate reader each read ten notes drawn at random and answer: could I teach this slide from the note alone?" ; backlog:hasExpectedResult "Both answer yes on all ten; a no is a defect item." .
+ex:DoD7_CodeRuns a backlog:DoDCriterion ; rdfs:label "Every code example runs as the slide shows and its page twin runs"@en ;
+    backlog:hasCheckQuery "Extract every code frame, run it under the current Python, compare with the slide's shown result; run the page's example tests." ; backlog:hasExpectedResult "Each frame runs and prints what its slide shows; a stale one is named and refused." .
+ex:DoD7_StoryNotRepeated a backlog:DoDCriterion ; rdfs:label "No story told in this chapter is told again in another chapter or course without the owner's confirmation"@en ;
+    backlog:hasCheckQuery "Compare the chapter's stories with the stories of the other chapters' decks and pages." ; backlog:hasExpectedResult "No story appears twice; a repeat is replaced or confirmed by the owner." .
+'''
+
+
+def _task7(sid, kind, ttype, text, produces=""):
+    tid = "TK7_%s_%s" % (sid, kind)
+    return tid, (
+        'ex:%(tid)s a backlog:ExecutionTask ; rdfs:label "%(kind)s: %(text)s"@en ; backlog:hasIdentifier "%(tid)s" ; backlog:hasTitle "%(kind)s: %(text)s" ;\n'
+        '    backlog:belongsToLineage ex:Lineage7 ; backlog:hasTaskType backlog:%(tt)s ; backlog:hasInvestmentCategory backlog:Cat_Compliance ;\n'
+        '    backlog:responsible %(ex)s ; backlog:effectiveDefinitionOfDone ex:DoD7 ; backlog:hasState backlog:Proposed ;\n'
+        '    backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked by its story; scoring both would double-count." .\n') % dict(tid=tid, kind=kind, tt=ttype, text=text, ex=EXEC7)
+
+
+def _story7(kind, what):
+    sid = "Ch11_%s" % kind
+    st = "ST7_%s" % sid
+    tasks = [_task7(sid, "Design", "Task_DesignDefinition", "list what fails and plan the correction of the chapter 11 %s" % what),
+             _task7(sid, "Implement", "Task_Implementation", "correct the chapter 11 %s to the rulings" % what),
+             _task7(sid, "Verify", "Task_Verification", "run the material check and the code on the corrected %s" % what),
+             _task7(sid, "Validate", "Task_Validation", "the three reading roles judge the corrected %s" % what)]
+    t = ('ex:%(st)s a backlog:Story ; rdfs:label "Correct the chapter 11 %(what)s to the rulings of 2026-11-14"@en ;\n'
+         '    backlog:hasIdentifier "%(st)s" ; backlog:hasTitle "Correct the chapter 11 %(what)s to the rulings of 2026-11-14" ;\n'
+         '    backlog:belongsToLineage ex:Lineage7 ; backlog:hasInvestmentCategory backlog:Cat_Compliance ;\n'
+         '    backlog:asRole "SEN0401 instructor" ; backlog:wantsCapability "the chapter 11 %(what)s to pass the written material rulings" ;\n'
+         '    backlog:soThat "the chapter can be taught from notes that teach, slides that show something and code that runs, as the owner ruled on 2026-11-14" ;\n'
+         '    backlog:coversEntity ex:%(de)s ; backlog:coversStage backlog:Stage_Creation ;\n'
+         '    backlog:satisfiesDeliverable ex:Del7_Ch11 ; backlog:pursuesObjective ex:Obj7_Ch11Pass ; backlog:hasAcceptanceCriterion ex:AC7_Ch11 ;\n'
+         '    backlog:effectiveDefinitionOfDone ex:DoD7 ; backlog:responsible %(ex)s ; backlog:hasState backlog:Proposed ;\n'
+         '    backlog:standsAlone true ; backlog:notYetScoreable true ; backlog:hasScoreabilityReason "Ranked in the planning step that follows the backlog stage, by BRSF\'s own method." ;\n'
+         '    backlog:hasAuditNote "Groomed at the Backlog stage. Its tasks (design, implement, verify, validate) are created at the planning ceremony that puts it into an iteration, because a task needs a planning event in the register." .\n') % dict(st=st, what=what, de=("DE7_Deck" if kind == "Deck" else "DE7_InteractivePage"), ex=EXEC7)
+    return st, t
+
+
+def backlog_stage(t, prev_commit):
+    t = fill_previous(t, "Objective", prev_commit)
+    t = set_status(t, "LS_Backlogged")
+    add = [ARTIFACTS7]; sids = []
+    for kind, what in (("Deck", "deck"), ("Page", "page")):
+        st, txt = _story7(kind, what); add.append(txt); sids.append("ex:" + st)
+    t += "".join(add)
+    t += "ex:Obj7_Ch11Pass backlog:metricMovableBy %s .\n" % ", ".join(sids)
+    t += output(t, "Backlog")
+    return t, "seventh lineage, Backlog stage closed: two groomed correction stories (chapter 11 deck and page), each with an acceptance criterion and the lineage's own Definition of Done; the stage artifacts the obligations name are carried."
+
+
 def main():
     ev = sys.argv[1]; prev = sys.argv[2] if len(sys.argv) > 2 else None
     src = newest(); t = open(src, encoding="utf-8").read(); nxt, cur = next_version(src)
@@ -199,6 +286,8 @@ def main():
     elif ev == "objective":
         t = fill_previous(t, "Goal", prev); t = set_status(t, "LS_Objectived"); t2 = t + objective_block(now_iso)
         t = t2 + output(t2, "Objective"); comment = "seventh lineage, Objective stage closed."
+    elif ev == "backlog":
+        t, comment = backlog_stage(t, prev)
     else:
         raise SystemExit("unknown event " + ev)
     out = write_new(src, t, nxt, cur, comment)
