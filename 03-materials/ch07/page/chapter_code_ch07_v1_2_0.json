@@ -1,0 +1,384 @@
+{
+ "manifest": "chapter_code_ch07_v1_2_0",
+ "chapter": 7,
+ "deck": "SEN0401_Ch07_AuthorizationAuthentication_3e_v2_4_0.pptx",
+ "deck_version": "2.4.0",
+ "python_of_expected_values": "3.14.6",
+ "rule": "order = the order of the code slides of the deck; the page tab lists the examples by name in this order; each runs as setup + listing, with the two library modules defined in the page",
+ "library": {
+  "module": "sen0401_ch07_deck_lib_v1_0_0",
+  "file": "08-tooling/sen0401_ch07_deck_lib_v1_0_0.py",
+  "sha256": "d388bc8ce99a294330072fde9ec9978c015c7b0717438cf074385b8e60ed444c",
+  "import": "import sen0401_ch07_deck_lib_v1_0_0 as K",
+  "data_files": [
+   {
+    "module": "sen0401_ch07_script_lib_v1_0_0",
+    "file": "08-tooling/sen0401_ch07_script_lib_v1_0_0.py",
+    "sha256": "abb114830d1a96b1ec6c7b39feba02939fc60c9cb48f91e5ac5ffe3beff1de6c",
+    "import": "import sen0401_ch07_script_lib_v1_0_0 as L"
+   }
+  ]
+ },
+ "setup": {
+  "code": "# setup: the chapter's script library and the worked-example helpers; the page runs this before every example\nimport sen0401_ch07_script_lib_v1_0_0 as L\nimport sen0401_ch07_deck_lib_v1_0_0 as K\nfrom sen0401_ch07_deck_lib_v1_0_0 import p2pkh, old_joined, LOCK, CLTV, CSV, RED, MOH_LEAVES, MOH_ITEMS, moh_tap, moh_wsh\n"
+ },
+ "examples": [
+  {
+   "order": 1,
+   "id": "ex01",
+   "name": "Stack arithmetic: 2 3 OP_ADD 5 OP_EQUAL",
+   "slide": 7,
+   "branch": "Scripts and the Script language",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# Run the unlocking data '2 3' against the locking script\npassing = L.run('2 3', 'OP_ADD 5 OP_EQUAL')\n# The same script with a six instead of a five must fail\nfailing = L.run('2 3', 'OP_ADD 6 OP_EQUAL')\n# Turn the five words of the script into bytes, shown as hex\nscript_hex = L.assemble('2 3 OP_ADD 5 OP_EQUAL').hex()\nresults = [passing, failing, script_hex]\nprint(results)",
+   "show": [
+    {
+     "expression": "results",
+     "expected": "['OK', 'EVAL_FALSE', '5253935587']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 2,
+   "id": "ex02",
+   "name": "The OP_RETURN bug of 2010",
+   "slide": 9,
+   "branch": "Scripts and the Script language",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# The software of 2010 joined both scripts into one program\njoined_old = old_joined('OP_1 OP_RETURN', LOCK)\n# Today the two scripts run apart, so the same pair fails\nrun_now = L.run('OP_1 OP_RETURN', LOCK, flags=())\n# The owner's real key still opens the lock\nowner_key = '0x06' + b'secret'.hex()\nowner_run = L.run(owner_key, LOCK, flags=())\nresults = [joined_old, run_now, owner_run]\nprint(results)",
+   "show": [
+    {
+     "expression": "results",
+     "expected": "['OK', 'OP_RETURN', 'OK']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 3,
+   "id": "ex03",
+   "name": "Pay to public key hash: the right key and the wrong one",
+   "slide": 15,
+   "branch": "Locking a coin to a key",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# Build the 25-byte lock from the hash of public key number 1\nlock = L.p2pkh_script(L.hash160(K.pub(1)))\nlock_facts = (len(lock), L.classify(lock)[0])\n# Spend with the right key, another key, and a changed amount\nright_key = p2pkh()\nwrong_key = p2pkh(signer=2)\nchanged_amount = p2pkh(amount_after=99999)\nresults = (right_key, wrong_key, changed_amount)\nprint(results)",
+   "show": [
+    {
+     "expression": "lock_facts",
+     "expected": "(25, 'pubkeyhash')"
+    },
+    {
+     "expression": "results",
+     "expected": "('OK', 'EVAL_FALSE', 'EVAL_FALSE')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 4,
+   "id": "ex04",
+   "name": "A DER signature, strict and loose",
+   "slide": 17,
+   "branch": "Locking a coin to a key",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# Sign the message 'pay Bob' with secret key number 1\nsignature = L.ecdsa_sign(K.secret(1), L.sha256(b'pay Bob'))\n# Append the hash-type byte and look at the result\nsig_full = signature + b'\\x01'\nfacts = [len(sig_full), sig_full[0], L.is_low_s(sig_full)]\n# Without the strict rule a padded signature passes; with it, not\nno_strict_rule = L.MAINNET_FLAGS - {'DERSIG'}\nloose_old = p2pkh(loose=True, flags=no_strict_rule)\nloose_now = p2pkh(loose=True)\nresults = [loose_old, loose_now]\nprint(results)",
+   "show": [
+    {
+     "expression": "facts",
+     "expected": "[72, 48, True]"
+    },
+    {
+     "expression": "results",
+     "expected": "['OK', 'SIG_DER']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 5,
+   "id": "ex05",
+   "name": "A 2-of-3 multisignature and its extra element",
+   "slide": 21,
+   "branch": "Scripted multisignatures",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# Two of three keys sign: in key order, swapped, and only one\nin_order = K.ms_spend(2, 3, [0, 2])\nswapped = K.ms_spend(2, 3, [2, 0])\ntoo_few = K.ms_spend(2, 3, [1])\n# The extra element in front of the signatures must be empty\nbad_dummy = K.ms_spend(2, 3, [0, 1], dummy=b'\\x01')\n# Collect the three verdicts\nresults = [in_order, swapped, too_few]\nprint(results)",
+   "show": [
+    {
+     "expression": "results",
+     "expected": "['OK', 'EVAL_FALSE', 'INVALID_STACK_OPERATION']"
+    },
+    {
+     "expression": "bad_dummy",
+     "expected": "'SIG_NULLDUMMY'"
+    },
+    {
+     "expression": "len(RED)",
+     "expected": "105"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 6,
+   "id": "ex06",
+   "name": "Pay to script hash and the redeem script",
+   "slide": 25,
+   "branch": "Pay to script hash",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# The 23-byte lock holds only the hash of the redeem script\nlock = L.p2sh_script(L.hash160(RED))\naddress = L.script_to_address(lock)\n# Reveal the true script, then a script that hashes differently\nrevealed = K.ms_spend(2, 3, [0, 1], wrap='p2sh')\nwrong_script = K.p2sh_spend(RED, hashed=RED + b'\\x00')\n# The address starts with 3; the lock is 23 bytes\nresults = [address[:6], len(lock), revealed, wrong_script]\nprint(results)",
+   "show": [
+    {
+     "expression": "results",
+     "expected": "['3BuKam', 23, 'OK', 'EVAL_FALSE']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 7,
+   "id": "ex07",
+   "name": "OP_CHECKLOCKTIMEVERIFY: not before block 800,000",
+   "slide": 29,
+   "branch": "Data and timelocks",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# A sequence below 0xffffffff keeps the lock time switched on\nnot_final = 0xfffffffe\non_time = K.key_spend(CLTV, locktime=800000,\n                      sequence=not_final)\n# One block too early fails\ntoo_early = K.key_spend(CLTV, locktime=799999,\n                        sequence=not_final)\n# A final sequence makes nodes ignore the lock time, so it fails\nfinal_sequence = K.key_spend(CLTV, locktime=800000)\nresults = [on_time, too_early, final_sequence]\nprint(results)",
+   "show": [
+    {
+     "expression": "results",
+     "expected": "['OK', 'UNSATISFIED_LOCKTIME', 'UNSATISFIED_LOCKTIME']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 8,
+   "id": "ex08",
+   "name": "OP_CHECKSEQUENCEVERIFY: a wait of 4,320 blocks",
+   "slide": 31,
+   "branch": "Data and timelocks",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# Version 2 and a sequence of 4,320 blocks: about thirty days\nwaited = K.key_spend(CSV, version=2, sequence=4320)\n# One block short, and the same wait with transaction version 1\ntoo_early = K.key_spend(CSV, version=2, sequence=4319)\nversion_one = K.key_spend(CSV, version=1, sequence=4320)\n# Setting bit 31 of the sequence switches the relative lock off\ndisabled_bit = 0x80000000 | 4320\nbit_set = K.key_spend(CSV, version=2, sequence=disabled_bit)\nprint(bit_set)",
+   "show": [
+    {
+     "expression": "waited",
+     "expected": "'OK'"
+    },
+    {
+     "expression": "too_early",
+     "expected": "'UNSATISFIED_LOCKTIME'"
+    },
+    {
+     "expression": "version_one",
+     "expected": "'UNSATISFIED_LOCKTIME'"
+    },
+    {
+     "expression": "bit_set",
+     "expected": "'UNSATISFIED_LOCKTIME'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 9,
+   "id": "ex09",
+   "name": "Mohammed's capital account: three paths",
+   "slide": 35,
+   "branch": "Flow control and complex scripts",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# The script of Mohammed's capital account, and path one\nscript_size = len(K.moh_script())\npath_one = K.moh_spend(1)\n# Path two: lawyer and a partner, 4,320 blocks, then one less\nwaits = (4320, 4319)\npath_two = [K.moh_spend(2, sequence=w) for w in waits]\n# Path three: the lawyer alone, 12,960 blocks, then 4,320\nwaits = (12960, 4320)\npath_three = [K.moh_spend(3, sequence=w) for w in waits]\nprint(path_three)",
+   "show": [
+    {
+     "expression": "script_size",
+     "expected": "192"
+    },
+    {
+     "expression": "path_one",
+     "expected": "'OK'"
+    },
+    {
+     "expression": "path_two",
+     "expected": "['OK', 'UNSATISFIED_LOCKTIME']"
+    },
+    {
+     "expression": "path_three",
+     "expected": "['OK', 'UNSATISFIED_LOCKTIME']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 10,
+   "id": "ex10",
+   "name": "Pay to witness public key hash",
+   "slide": 39,
+   "branch": "Segregated witness scripts",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# Spend a witness key-hash output directly and wrapped in P2SH\nworks = [K.wpkh_spend(), K.wpkh_spend(nested=True)]\n# Change the signed amount: the signature no longer matches\nwrong_amount = K.wpkh_spend(signed_amount=99999)\n# The 22-byte witness program and its bech32 address\nprogram = L.p2wpkh_script(L.hash160(K.pub(1)))\naddress = L.script_to_address(program)\nprint(address)",
+   "show": [
+    {
+     "expression": "works",
+     "expected": "['OK', 'OK']"
+    },
+    {
+     "expression": "wrong_amount",
+     "expected": "'EVAL_FALSE'"
+    },
+    {
+     "expression": "address",
+     "expected": "'bc1qm5gqhe7e46jhyy2ca00x66slmrlljwa33n9fts'"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 11,
+   "id": "ex11",
+   "name": "A script tree: the proof grows with the logarithm",
+   "slide": 47,
+   "branch": "Script trees and key tweaks",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# Length of the proof for each leaf of Mohammed's script tree\nproof_lengths = [len(p) for p in K.tap_tree(MOH_LEAVES)[1]]\n# Tree depth for 3, 8, 1,024 and about a million scripts\nleaf_counts = (3, 8, 1024, 2**20)\ndepths = [(n - 1).bit_length() for n in leaf_counts]\nprint(depths)",
+   "show": [
+    {
+     "expression": "proof_lengths",
+     "expected": "[2, 2, 1]"
+    },
+    {
+     "expression": "leaf_counts",
+     "expected": "(3, 8, 1024, 1048576)"
+    },
+    {
+     "expression": "depths",
+     "expected": "[2, 3, 10, 20]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 12,
+   "id": "ex12",
+   "name": "Taproot: a key path spend",
+   "slide": 52,
+   "branch": "Taproot and tapscript",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# Tweak key 1 with an empty script tree: the taproot output key\nparity, output_key = L.taproot_tweak_pubkey(K.xpub(1), b'')\naddress = L.script_to_address(L.p2tr_script(output_key))\nlock_facts = (address[:6], len(output_key))\n# Key path spend: one 64-byte signature; untweaked key fails\nverdict, witness, weight = K.tr_keypath(1)\nuntweaked = K.tr_keypath(1, MOH_LEAVES, tamper='untweaked')[0]\nresults = (verdict, len(witness[0]), weight, untweaked)\nprint(results)",
+   "show": [
+    {
+     "expression": "lock_facts",
+     "expected": "('bc1pwd', 32)"
+    },
+    {
+     "expression": "results",
+     "expected": "('OK', 64, 308, 'SCHNORR_SIG')"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 13,
+   "id": "ex13",
+   "name": "Taproot: three script path spends",
+   "slide": 55,
+   "branch": "Taproot and tapscript",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# Spend each of the three leaves of the script tree\nverdicts = [moh_tap(i)[0] for i in range(3)]\ntap_weights = [moh_tap(i)[2] for i in range(3)]\n# The same three paths inside an ordinary witness script hash\nwsh_weights = [moh_wsh(path) for path in (1, 2, 3)]\nprint(verdicts)",
+   "show": [
+    {
+     "expression": "verdicts",
+     "expected": "['OK', 'OK', 'OK']"
+    },
+    {
+     "expression": "tap_weights",
+     "expected": "[577, 617, 414]"
+    },
+    {
+     "expression": "wsh_weights",
+     "expected": "[585, 584, 509]"
+    }
+   ],
+   "result_picture": "native chart"
+  },
+  {
+   "order": 14,
+   "id": "ex14",
+   "name": "OP_CHECKSIGADD: 2-of-3 in tapscript",
+   "slide": 57,
+   "branch": "Taproot and tapscript",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# A 2-of-3 lock written with OP_CHECKSIGADD\nscript = K.csa_script([0, 1, 2], 2)\nsizes = (len(script), len(RED))\n# Two signatures and one empty slot pass; one signature fails\ntwo_sigs = [b'', ('sig', 1), ('sig', 0)]\npassing = K.tr_spend([script], 0, two_sigs)[0]\none_sig = K.tr_spend([script], 0, [b'', b'', ('sig', 0)])[0]\nresults = [passing, one_sig]\nprint(results)",
+   "show": [
+    {
+     "expression": "sizes",
+     "expected": "(104, 105)"
+    },
+    {
+     "expression": "results",
+     "expected": "['OK', 'EVAL_FALSE']"
+    }
+   ],
+   "result_picture": "table"
+  },
+  {
+   "order": 15,
+   "id": "ex15",
+   "name": "OP_SUCCESS: opcodes kept for upgrades",
+   "slide": 58,
+   "branch": "Taproot and tapscript",
+   "library": "sen0401_ch07_deck_lib_v1_0_0",
+   "needs": [
+    "setup"
+   ],
+   "code": "# Count the opcodes kept free for future upgrades\nreserved = sum(1 for op in range(256) if L.is_op_success(op))\n# In tapscript an upgrade opcode makes the script succeed\ntapscript = K.tr_spend([bytes([0x51, 152])], 0, [])[0]\n# In an old script the same opcode is disabled and fails\nold_script = L.run('OP_1 OP_LSHIFT', 'OP_1', flags=())\nresults = [reserved, tapscript, old_script]\nprint(results)",
+   "show": [
+    {
+     "expression": "results",
+     "expected": "[87, 'OK', 'DISABLED_OPCODE']"
+    }
+   ],
+   "result_picture": "table"
+  }
+ ]
+}
