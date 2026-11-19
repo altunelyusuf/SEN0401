@@ -199,12 +199,16 @@ D = os.path.join(REPO, "03-materials", "ch0%d" % ch); PD = os.path.join(D, "page
 deck = newest(os.path.join(D, "SEN0401_Ch0%d_*_3e_v*.pptx" % ch), "pptx"); page = newest(os.path.join(PD, "sen0401_ch0%d_page_v*.html" % ch), "html"); man = newest(os.path.join(PD, "chapter_code_ch0%d_v*.json" % ch), "json")
 dv, pv, mv = vk(deck, "pptx"), vk(page, "html"), vk(man, "json")
 deck2 = re.sub(r"_v\d+_\d+_\d+\.pptx$", "_v%d_%d_0.pptx" % (dv[0], dv[1] + 1), deck)
-page2 = re.sub(r"_v\d+_\d+_\d+\.html$", "_v%d_%d_0.html" % (pv[0], pv[1] + 1), page)
+# a page is versioned against the last RELEASED page (on origin), one step; an unreleased draft is rewritten in place, never counted up
+import subprocess
+rel = subprocess.run(["git", "-C", REPO, "ls-tree", "-r", "--name-only", "origin/HEAD", "03-materials/ch0%d/page" % ch], capture_output=True, text=True).stdout.split()
+relv = max(vk(f, "html") for f in rel if re.search(r"_page_v\d+_\d+_\d+\.html$", f)); pnew = (relv[0], relv[1] + 1, 0)
+page2 = re.sub(r"_v\d+_\d+_\d+\.html$", "_v%d_%d_0.html" % pnew[:2], page)
 man2 = re.sub(r"_v\d+_\d+_\d+\.json$", "_v%d_%d_0.json" % (mv[0], mv[1] + 1), man)
-data2 = os.path.join(DD, "page_data_v%d_%d_0.json" % (pv[0], pv[1] + 1))
+data2 = os.path.join(DD, "page_data_v%d_%d_0.json" % pnew[:2])
 OUT = os.environ.get("BALLOON_OUT")   # preview mode: write only the deck there
 if not OUT:
-    for f in (deck2, page2, man2, data2): assert not os.path.exists(f), f
+    for f in (deck2, man2): assert not os.path.exists(f), f
 P = Presentation(deck); say = {}
 for n in sorted(set(CARD) | set(CODEC)):
     s = P.slides[n - 1]; old = s.notes_slide.notes_text_frame.text
@@ -222,7 +226,7 @@ P.save(deck2)
 M = json.load(open(man)); M["deck"] = os.path.basename(deck2); M["deck_version"] = "%d.%d.0" % (dv[0], dv[1] + 1); M["manifest"] = os.path.basename(man2)[:-5]
 json.dump(M, open(man2, "w"), indent=1, ensure_ascii=False)
 H = open(page, encoding="utf-8").read(); tag = '<script type="application/json" id="data">'; a = H.index(tag) + len(tag); b = H.index("</script>", a)
-data = json.loads(H[a:b]); old_ver = data["_version"]; new_ver = "%d.%d.0" % (pv[0], pv[1] + 1)
+data = json.loads(H[a:b]); old_ver = data["_version"]; new_ver = "%d.%d.0" % pnew[:2]
 for L in data["lecture"]:
     if L["n"] in say: L["say"] = say[L["n"]][0] + "\n\n" + say[L["n"]][1]
 data["_version"] = new_ver; data["chaptercode"]["file"] = "03-materials/ch0%d/page/%s" % (ch, os.path.basename(man2)); data["chaptercode"]["version"] = "%d.%d.0" % (mv[0], mv[1] + 1)
