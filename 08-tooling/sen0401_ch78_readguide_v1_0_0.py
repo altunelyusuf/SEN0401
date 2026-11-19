@@ -51,7 +51,7 @@ GUIDE = {
     line1="L and K are the course's own libraries, loaded before every box",
     sub="Where L and K come from, what is real in them and what is invented",
     take="L and K are the course's own code, checked against Bitcoin Core",
-    note=("L and K are not packages you install from the internet. Both are written for this course and kept in its 08-tooling folder, so the same code runs "
+    note=("L and K are not packages you install from the internet. Both are written for this course, so the same code runs "
           "in the lecture, in the chapter builder and in the page's Python. L is a pure-Python Bitcoin Script interpreter that follows Bitcoin Core's own "
           "interpreter and is checked by a verify script against Core's test data and real mainnet transactions. It is not Bitcoin Core, which stays the reference: "
           "github.com/bitcoin/bitcoin, with the rules in github.com/bitcoin/bips. K builds ready-made spends with toy keys 12, 13 and on, which must never hold "
@@ -69,7 +69,7 @@ GUIDE = {
           "print(results)"],
     chips=[0, 1, 2, 5],
     balloons=["**K** is course-written: it recomputes the chapter's claims from the library and from saved evidence.",
-              "**K.SK** is a fixed toy key kept in the course repository: never use it for real coins.",
+              "**K.SK** is a fixed toy key: never use it for real coins.",
               "**L** is the course's script library from chapter 7, not an installed package; it follows Bitcoin Core.",
               "**C** is written for this chapter from the book, the BIPs and RFC 6979; it is not part of Bitcoin Core."],
     libs=[("K", "Toy key, message and claims", "Course-written, for this chapter"),
@@ -83,7 +83,7 @@ GUIDE = {
     line1="L, C and K are the course's own libraries, loaded before every box",
     sub="Where L, C and K come from, what is real in them and what is invented",
     take="L, C and K are the course's own code; L is checked against Bitcoin Core",
-    note=("L, C and K are not packages you install from the internet. All three are written for this course and kept in its 08-tooling folder. L is the "
+    note=("L, C and K are not packages you install from the internet. All three are written for this course. L is the "
           "pure-Python Bitcoin Script and signature library of chapter 7, which follows Bitcoin Core's interpreter and is checked against Core's test data and "
           "real transactions; Core stays the reference at github.com/bitcoin/bitcoin, with the rules in github.com/bitcoin/bips. C adds what only this chapter "
           "needs, written from the book, the BIPs and RFC 6979, and it also holds teaching constructions, such as the toy protocol and the simplified signature, "
