@@ -5,7 +5,7 @@ import sys, os, re, glob, json, shutil, importlib.util
 from pptx import Presentation
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); TOOL = os.path.join(REPO, "08-tooling")
 sp = importlib.util.spec_from_file_location("rn", os.path.join(TOOL, "sen0401_ch78_readernotes_v1_0_0.py")); RN = importlib.util.module_from_spec(sp); sp.loader.exec_module(RN)
-ch = int(sys.argv[1]); NOTES = {7: RN.RN7, 8: RN.RN8}[ch]; PAGE_MINOR = {7: 99, 8: 100}[ch]
+ch = int(sys.argv[1]); NOTES = {7: RN.RN7, 8: RN.RN8}[ch]; PAGE_MINOR = {7: 91, 8: 92}[ch]
 D = os.path.join(REPO, "03-materials", "ch0%d" % ch); PD = os.path.join(D, "page"); DD = os.path.join(TOOL, "ch0%d-page" % ch)
 def vk(p, ext): return tuple(int(x) for x in re.search(r"_v(\d+)_(\d+)_(\d+)\.%s$" % ext, p).groups())
 def newest(pat, ext): return sorted(glob.glob(pat), key=lambda p: vk(p, ext))[-1]

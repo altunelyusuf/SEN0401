@@ -21,9 +21,9 @@ EXM = load("sen0401_ch78_examples_v1_0_0"); NTM = load("sen0401_ch78_notes_v1_0_
 
 CFG = {
  7: dict(deck_glob="SEN0401_Ch07_AuthorizationAuthentication_3e_v*.pptx", deck_fmt="SEN0401_Ch07_AuthorizationAuthentication_3e_v%d_%d_0.pptx", dir="ch07",
-         page_new=(9, 97), data_dir="ch07-page", EX=EXM.EX7, NOTES=NTM.NOTES7, FULL=NTM.NOTES7_FULL, EXT=NTM.EXT7, TITLES=NTM.TITLES7, cc_new=(1, 2), n_examples=15),
+         page_new=(9, 90), data_dir="ch07-page", EX=EXM.EX7, NOTES=NTM.NOTES7, FULL=NTM.NOTES7_FULL, EXT=NTM.EXT7, TITLES=NTM.TITLES7, cc_new=(1, 2), n_examples=15),
  8: dict(deck_glob="SEN0401_Ch08_DigitalSignatures_3e_v*.pptx", deck_fmt="SEN0401_Ch08_DigitalSignatures_3e_v%d_%d_0.pptx", dir="ch08",
-         page_new=(9, 98), data_dir="ch08-page", EX=EXM.EX8, NOTES=NTM.NOTES8, FULL={}, EXT=NTM.EXT8, TITLES=NTM.TITLES8, cc_new=(1, 1), n_examples=20),
+         page_new=(9, 91), data_dir="ch08-page", EX=EXM.EX8, NOTES=NTM.NOTES8, FULL={}, EXT=NTM.EXT8, TITLES=NTM.TITLES8, cc_new=(1, 1), n_examples=20),
 }
 ch = int(sys.argv[1]); C = CFG[ch]
 def vkey(p, ext): return tuple(int(x) for x in re.search(r"_v(\d+)_(\d+)_(\d+)\.%s$" % ext, p).groups())
