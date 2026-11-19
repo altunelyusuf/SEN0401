@@ -28,72 +28,71 @@ WARN = []
 # ----------------------------------------------------------------------------------------------- the content, per chapter
 GUIDE = {
 7: dict(
-    code=["# L, the script library, hashes the word 'bitcoin'",
+    code=["# L: this course's own script library, after Bitcoin Core",
           "digest = L.sha256(b'bitcoin')",
-          "# K, the helper library, hands out public key number 1",
+          "# K: this course's helpers, with toy keys 12, 13, 14 ...",
           "key = K.pub(1)",
-          "# len counts bytes; hex shows bytes as text",
+          "# len and hex are Python's own; no library is needed",
           "facts = (len(digest), len(key), digest.hex()[:8])",
-          "# A box ends by gathering its verdicts and printing them",
           "results = [facts]",
           "print(results)"],
-    chips=[0, 1, 3, 7],
-    balloons=["A line that starts with **#** is a comment: it says in words what the next lines do.",
-              "**digest = L.sha256(...)** stores a value; read it from right to left: compute it, then name it.",
-              "**K.pub(1)** asks library K for public key number 1; the letter before the dot names the library.",
-              "A box ends with **results** and **print**; those values fill the result table."],
-    libs=[("L", "The chapter's script library", "L.run(unlock, lock)"),
-          ("K", "Ready-made spends and test keys", "K.pub(1), p2pkh(signer=2)"),
-          ("Python", "Its own len, hex, bytes, sum, print", "len(lock), digest.hex()"),
-          ("results", "The name every box ends with", "print(results)")],
+    chips=[0, 1, 2, 3],
+    balloons=["**L** is not an installed package: it is this course's own pure-Python script library, written for the chapter.",
+              "It follows **Bitcoin Core's** script interpreter and is checked against Core's test data; it is not Core itself.",
+              "**K** is course-written too: ready-made spends signed with toy keys that must never hold real coins.",
+              "**K.pub(1)** is a toy key's public key; helpers like **old_joined** replay history and are invented to teach."],
+    libs=[("L", "Script interpreter, signing, hashes", "Course-written, after Bitcoin Core"),
+          ("K", "Ready-made spends and toy keys", "Course-written, for this chapter"),
+          ("Python", "len, hex, bytes, sum, print", "Built in; nothing to install"),
+          ("results", "Name each box ends with", "Convention: fills the result table")],
+    refs="Reference code: github.com/bitcoin/bitcoin (src/script/interpreter.cpp) and github.com/bitcoin/bips.",
     rows=["Digest length, in bytes", "Public key length, in bytes", "First hex digits of the digest"],
-    boot="import sen0401_ch07_script_lib_v1_0_0 as L\nimport sen0401_ch07_deck_lib_v1_0_0 as K\n",
     library="sen0401_ch07_deck_lib_v1_0_0",
-    line1="L and K are loaded once before every box",
-    note=("From here on every code slide uses the same small set of tools, and this slide names them. Two libraries are loaded once before every box: "
-          "L, the chapter's script library that assembles and runs Script programs, and K, which holds ready-made spends and test keys. "
-          "The letter before a dot says which library a call belongs to, so L.sha256(...) asks L for a hash. "
-          "Python's own len, hex and print need no library. A line that starts with # is a comment that says what the next lines do. "
-          "A name followed by = stores a value, read from right to left. Every box ends by gathering its verdicts in results and printing them, "
-          "and those values fill the result table beside the box. To remember: comments first, then the calls, then the table.")),
+    line1="L and K are the course's own libraries, loaded before every box",
+    sub="Where L and K come from, what is real in them and what is invented",
+    take="L and K are the course's own code, checked against Bitcoin Core",
+    note=("L and K are not packages you install from the internet. Both are written for this course and kept in its 08-tooling folder, so the same code runs "
+          "in the lecture, in the chapter builder and in the page's Python. L is a pure-Python Bitcoin Script interpreter that follows Bitcoin Core's own "
+          "interpreter and is checked by a verify script against Core's test data and real mainnet transactions. It is not Bitcoin Core, which stays the reference: "
+          "github.com/bitcoin/bitcoin, with the rules in github.com/bitcoin/bips. K builds ready-made spends with toy keys 12, 13 and on, which must never hold "
+          "real coins. Helpers such as old_joined are invented for teaching: they replay the 2010 bug. Python's own len, hex and print need no library.")),
 8: dict(
-    code=["# K holds the chapter's fixed secret key and message",
+    code=["# K: this course's claims module; it recomputes the text",
           "secret_key, message = K.SK, K.MSG",
-          "# L, the library, makes the public key and signs",
+          "# L: the course's script library from chapter 7",
           "public_key = L.pubkey_create(secret_key)",
           "signature = L.ecdsa_sign(secret_key, message)",
-          "# C, the signature library, builds a sample transaction",
+          "# C: the course's signature library for this chapter",
           "tx = C.make_tx(1, 1)",
-          "# len counts the bytes of each value",
           "facts = (len(public_key), len(signature), len(tx.vin))",
-          "# A box ends by gathering its verdicts and printing them",
           "results = [facts]",
           "print(results)"],
-    chips=[0, 3, 6, 10],
-    balloons=["A line that starts with **#** is a comment: it says in words what the next lines do.",
-              "**public_key = L.pubkey_create(...)** stores a value; read it from right to left: compute it, then name it.",
-              "**C.make_tx(1, 1)** asks library C for a sample transaction; the letter before the dot names the library.",
-              "A box ends with **results** and **print**; those values fill the result table."],
-    libs=[("K", "The fixed secret key and message", "K.SK, K.MSG"),
-          ("L", "The script library, as in Ch 7", "L.ecdsa_sign(sk, msg)"),
-          ("C", "The signature library of Ch 8", "C.make_tx(1, 1)"),
-          ("Python", "Its own len, hex, sum, max, zip", "len(sig), sig.hex()"),
-          ("results", "The name every box ends with", "print(results)")],
+    chips=[0, 1, 2, 5],
+    balloons=["**K** is course-written: it recomputes the chapter's claims from the library and from saved evidence.",
+              "**K.SK** is a fixed toy key kept in the course repository: never use it for real coins.",
+              "**L** is the course's script library from chapter 7, not an installed package; it follows Bitcoin Core.",
+              "**C** is written for this chapter from the book, the BIPs and RFC 6979; it is not part of Bitcoin Core."],
+    libs=[("K", "Toy key, message and claims", "Course-written, for this chapter"),
+          ("L", "Script and signature library", "Course-written (Ch 7), after Bitcoin Core"),
+          ("C", "Signing, hashes, attack demos", "Course-written, from book, BIPs, RFCs"),
+          ("Python", "len, hex, sum, max, zip", "Built in; a few boxes import more"),
+          ("results", "Name each box ends with", "Convention: fills the result table")],
+    refs="Reference code: github.com/bitcoin/bitcoin (src/script/interpreter.cpp) and github.com/bitcoin/bips.",
     rows=["Public key length, in bytes", "Signature length, in bytes", "Inputs of the sample transaction"],
-    boot="import sen0401_ch07_script_lib_v1_0_0 as L, sen0401_ch08_sig_lib_v1_0_0 as C, sen0401_ch08_claims_v1_0_0 as K\n",
     library="sen0401_ch08_sig_lib_v1_0_0",
-    line1="L, C and K are loaded once before every box",
-    note=("From here on every code slide uses the same small set of tools, and this slide names them. Three libraries are loaded once before every box: "
-          "L, the script library already known from chapter 7, C, the signature library of this chapter, and K, which holds the fixed secret key and message. "
-          "The letter before a dot says which library a call belongs to. "
-          "Python's own len, hex and print need no library, and a few boxes import Counter, combinations or date from the standard library. "
-          "A line that starts with # is a comment, and a name followed by = stores a value, read from right to left. Every box ends by gathering its "
-          "verdicts in results and printing them, and those values fill the result table. To remember: comments first, then the calls, then the table.")),
+    line1="L, C and K are the course's own libraries, loaded before every box",
+    sub="Where L, C and K come from, what is real in them and what is invented",
+    take="L, C and K are the course's own code; L is checked against Bitcoin Core",
+    note=("L, C and K are not packages you install from the internet. All three are written for this course and kept in its 08-tooling folder. L is the "
+          "pure-Python Bitcoin Script and signature library of chapter 7, which follows Bitcoin Core's interpreter and is checked against Core's test data and "
+          "real transactions; Core stays the reference at github.com/bitcoin/bitcoin, with the rules in github.com/bitcoin/bips. C adds what only this chapter "
+          "needs, written from the book, the BIPs and RFC 6979, and it also holds teaching constructions, such as the toy protocol and the simplified signature, "
+          "that are invented to explain and are not Bitcoin's real protocol. K holds a fixed toy key, never to be used for real coins.")),
 }[ch]
-TITLE = "How to read the code in this chapter"
-SUB = "Libraries, names and conventions behind every box that follows"
-TAKE = "Read the comments first, then the calls, then the result table"
-EXNAME = "Reading the code: libraries, names and results"
+TITLE = "Where the code's libraries come from"
+SUB = GUIDE["sub"]
+TAKE = GUIDE["take"]
+EXNAME = "Where the libraries come from: L, K and the results"
 
 # ----------------------------------------------------------------------------------------------- helpers
 def plain(t): return t.replace("**", "")
@@ -240,7 +239,7 @@ def settext(sh, t):
 for sh in new.shapes:
     if not sh.has_text_frame: continue
     t = sh.text_frame.text
-    if t == "Scripts and the Script language (1 of 4)" or re.fullmatch(r"Chapter \d+ .*|.*\(1 of \d\)", t): settext(sh, TITLE)
+    if re.fullmatch(r".*\(1 of \d\)", t): settext(sh, TITLE)
     elif t == "What each term means, in plain words": settext(sh, SUB)
     elif t == "Say each idea in your own words before you go on": settext(sh, TAKE)
     elif re.fullmatch(r"\d+ / \d+", t): settext(sh, "%d / %d" % (POS, TOTAL))
@@ -256,19 +255,22 @@ for i, line in enumerate(GUIDE["code"]):
     pa = tf.paragraphs[0] if i == 0 else tf.add_paragraph(); pa.line_spacing = Pt(11.5); code_runs(pa, line)
     if len(line) > 60: WARN.append("code line of %d characters: %s" % (len(line), line))
 for k, li in enumerate(GUIDE["chips"], 1):
-    cy = by + 0.08 + li * LH + LH / 2 - 0.13
-    chip = box(new, MSO_SHAPE.OVAL, 0.4, cy, 0.26, 0.26, ORANGE); chip.name = "Step %d" % k
-    cn = new.shapes.add_textbox(Emu(int(0.4 * E)), Emu(int(cy * E)), Emu(int(0.26 * E)), Emu(int(0.26 * E))); cn.name = "Step number %d" % k
+    cy = by + 0.08 + li * LH + LH / 2 - 0.085
+    chip = box(new, MSO_SHAPE.OVAL, 0.42, cy, 0.17, 0.17, ORANGE); chip.name = "Step %d" % k
+    cn = new.shapes.add_textbox(Emu(int(0.42 * E)), Emu(int(cy * E)), Emu(int(0.17 * E)), Emu(int(0.17 * E))); cn.name = "Step number %d" % k
     tfc = cn.text_frame; tfc.vertical_anchor = MSO_ANCHOR.MIDDLE; tfc.margin_left = tfc.margin_right = tfc.margin_top = tfc.margin_bottom = 0
-    pc = tfc.paragraphs[0]; pc.alignment = PP_ALIGN.CENTER; rc = pc.add_run(); rc.text = str(k); rc.font.size = Pt(11); rc.font.bold = True; rc.font.name = "Cambria"; rc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    pc = tfc.paragraphs[0]; pc.alignment = PP_ALIGN.CENTER; rc = pc.add_run(); rc.text = str(k); rc.font.size = Pt(8); rc.font.bold = True; rc.font.name = "Cambria"; rc.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
 ry = by + bh + 0.04
 rn = new.shapes.add_textbox(Emu(int(0.5 * E)), Emu(int(ry * E)), Emu(int(5.12 * E)), Emu(int(0.18 * E))); rn.name = "Run note"
 tfr = rn.text_frame; tfr.margin_left = tfr.margin_right = tfr.margin_top = tfr.margin_bottom = 0; tfr.vertical_anchor = MSO_ANCHOR.MIDDLE
 rr = tfr.paragraphs[0].add_run(); rr.text = "run under Python 3.14.6 - %s" % GUIDE["line1"]; rr.font.size = Pt(9); rr.font.italic = True; rr.font.name = "Calibri"; rr.font.color.rgb = RGBColor(0x6E, 0x65, 0x5C)
 # left, below: where the names come from
 ty = ry + 0.26; rowh = 0.215
-lib_rows = [("Name", "What it is", "Used like")] + GUIDE["libs"]
-table(new, 0.5, ty, [0.72, 2.28, 2.2], lib_rows, rowh, mono_col=2)
+lib_rows = [("Name", "What it is", "Where it comes from")] + GUIDE["libs"]
+table(new, 0.5, ty, [0.7, 2.0, 2.5], lib_rows, rowh)
+rf = new.shapes.add_textbox(Emu(int(0.5 * E)), Emu(int((ty + rowh * len(lib_rows) + 0.05) * E)), Emu(int(5.2 * E)), Emu(int(0.32 * E))); rf.name = "References"
+rf.text_frame.word_wrap = True; rf.text_frame.margin_left = rf.text_frame.margin_right = rf.text_frame.margin_top = rf.text_frame.margin_bottom = 0
+rq = rf.text_frame.paragraphs[0].add_run(); rq.text = GUIDE["refs"]; rq.font.size = Pt(8.5); rq.font.italic = True; rq.font.name = "Calibri"; rq.font.color.rgb = RGBColor(0x6E, 0x65, 0x5C)
 if ty + rowh * len(lib_rows) > 5.0: WARN.append("the library table ends at %.2f in" % (ty + rowh * len(lib_rows)))
 
 # right: four balloons, then the result table of this box
