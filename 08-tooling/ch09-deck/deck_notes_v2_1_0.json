@@ -1,0 +1,329 @@
+{
+ "meta": {
+  "note": "notes of 60 to 140 words and titles of four or more words for the deck 2.2.0; gen_title is the generator's title of the slide"
+ },
+ "slides": [
+  {
+   "slide": 1,
+   "gen_title": "Chapter 9: Transaction Fees",
+   "notes": "This deck explains transaction fees: who pays them, how they are priced, how a payment is replaced or bumped, and what changed since the book went to print. Every number on a result picture was computed with the chapter's own Python library. Bitcoin Core 31.1 was run once on a test network, and its answers are only read back, so they are labelled as recorded. The course page for chapter 9 carries the full text, the sources and the code that runs.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 2,
+   "gen_title": "Today's route",
+   "notes": "The route has seven parts that follow the order of the chapter. Four true stories and twenty-seven code examples are spread across them. The examples are listed in the same order in the chapter code tab of the course page, so every listing in this deck can be run and edited there. Each part opens with a divider that states, in one line, what the part establishes, and closes with the example that proves it.",
+   "title": "Today's route through seven parts",
+   "sub": null
+  },
+  {
+   "slide": 3,
+   "gen_title": "The questions this chapter answers",
+   "notes": "The seven questions are the chapter's own, rewritten so that each has an answer on a slide of this deck. They cover who pays a fee, how a fee rate is computed, how a node estimates a rate, what a replacement must pay, how a child pays for its parent, how a family can pin a payment, and what fee sniping is. A reader who can answer all seven has understood the chapter, and the summary returns to them.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 4,
+   "gen_title": "One chapter, seven parts",
+   "notes": "The chapter has seven parts and thirty-one key concepts. Each part gets a divider, concept cards with literal meanings, code that runs, and some parts a true story. The deck follows the order of the chapter, so the map on this slide is also the table of contents of the course page. The numbers under each part count the concepts and the examples that belong to it.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 5,
+   "gen_title": "Who pays the fee",
+   "notes": "A transaction has no fee field. The fee is what the inputs hold and the outputs do not claim, so the spender pays it and only the spender can change it. This part shows how to see that in the raw bytes, what goes wrong when the change output is forgotten, and why nobody else can add to the fee of a signed payment. The three examples of the part are computed from one recorded run of Bitcoin Core.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 7,
+   "gen_title": "A fee is a difference, not a field",
+   "notes": "A transaction lists its inputs and its outputs, and nothing else. The miner's fee is whatever the inputs hold and the outputs do not claim. The listing parses the raw bytes of one real payment with the chapter's own parser and finds no fee field. The inputs hold 2,000,000,000 satoshis and the outputs claim 100,000,000, so 1,900,000,000 satoshis are left over for the miner. It is example 1 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 9,
+   "gen_title": "Forgetting the change",
+   "notes": "If a wallet forgets the change output, the difference between inputs and outputs becomes an enormous fee. The node refuses the payment with the reason max-fee-exceeded, which is a safety limit and not a consensus rule. Mined with that limit lifted, the miner's reward equals the subsidy plus the fee, which shows where the money went. It is example 2 in the chapter code tab of the course page.",
+   "title": "What a forgotten change output costs",
+   "sub": null
+  },
+  {
+   "slide": 11,
+   "gen_title": "Only the spender can raise the fee",
+   "notes": "The listing cuts the first output of a signed payment by 5,000 satoshis. The node rejects the copy because the signature covers the amounts and no longer fits. So the fee belongs to the spender: anyone else who wants a payment confirmed sooner must pay in a second transaction, which is the idea of child pays for parent in a later part. It is example 3 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 12,
+   "gen_title": "Fees and fee rates",
+   "notes": "Miners are paid by the space a payment takes, not by its value. This part measures size, weight and virtual size, turns a fee into a rate, and meets the floors that nodes, wallets and dust rules set. Block space is limited, so the fee rate is the unit in which payments compete. The five examples of the part measure one payment, one block and three kinds of minimum.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 14,
+   "gen_title": "Size, weight and virtual size",
+   "notes": "One payment has 113 bytes without witness data and 222 bytes in all. Its weight is 561 units, because witness bytes count one each and the other bytes four. Its virtual size is 141, the weight over four rounded up. Fees and block space are measured in this unit, so two payments with the same value can differ in cost. It is example 4 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 15,
+   "gen_title": "A fee rate and its units",
+   "notes": "The rate is the fee over the virtual size: 282 satoshis over 141 virtual bytes gives 2 satoshis per byte. Some tools speak in coins per thousand bytes, so 0.0000657 means 6.57 satoshis per byte. Two spellings of ten satoshis per byte give the same fee, and a wrong factor gives an absurd one, which is why the units must always be written next to the number. It is example 5 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 16,
+   "gen_title": "Space in a block is limited",
+   "notes": "The consensus limit is four million units of weight per block. Block 840,000 weighs 3,993,281 units, which is 99.83 percent of the limit. When blocks are full, payments must bid for room, and the fee rate is the bid. The limit is a constant in the saved source of Bitcoin Core, so the listing reads it from there instead of typing it. It is example 6 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 17,
+   "gen_title": "The minimum relay fee",
+   "notes": "A node relays only payments above its floor, here a tenth of a satoshi per byte. For 141 bytes that is 14.1 satoshis, so payments of 8 and 14 satoshis are refused and one of 15 is accepted. The floor protects nodes from spam, and it is policy, not consensus: another node may set it differently. It is example 7 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 18,
+   "gen_title": "Dust and the wallet's floor",
+   "notes": "An output is dust when spending it would cost more than it holds. The limit is three satoshis for each byte of the output plus its spending input, which gives 294 satoshis for the common segwit key output. The anchor output is the smallest limit of the three. The wallet in this run also refuses rates below one satoshi per byte. It is example 8 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 19,
+   "gen_title": "Fee estimation",
+   "notes": "A wallet must guess a rate that will confirm in time. This part shows how the estimator learns from past blocks, where its answers stop, and how two real blocks show a market that moves by a factor of five hundred. An estimate is a summary of what earlier blocks confirmed, so it can only be as good as the history it has seen. The three examples of the part use one recorded run and the census of two mainnet blocks.",
+   "title": "Fee estimation from past blocks",
+   "sub": null
+  },
+  {
+   "slide": 21,
+   "gen_title": "An estimate needs history",
+   "notes": "A node without history answers an estimate request with an error: insufficient data. After 120 rounds of test traffic it can estimate, here about 1.2 satoshis per byte at every target tried. The estimate is a summary of what past blocks confirmed, so a new node cannot yet say what a fee should be. It is example 9 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 22,
+   "gen_title": "How far the estimator can see",
+   "notes": "Asked for a target of 144 blocks, the node answers with the 60 blocks it can see. The default mode equals the economical mode at every target tried. The conservative mode is more cautious and answers differently at the longest target, so a wallet should choose the mode that fits its risk. It is example 10 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 23,
+   "gen_title": "Two blocks, two fee markets",
+   "notes": "The census holds the 599 highest-paying payments of the halving block 840,000 and of block 971,489. The median rate in the first was 1,436.45 satoshis per byte and in the second 3.02. A fee estimate is only as good as the market it was learned in, because the same payment would have cost a factor of five hundred less in the second block. It is example 11 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 24,
+   "gen_title": "Replace by fee (RBF)",
+   "notes": "A payment that waits too long can be replaced by a copy that pays more. This part runs the signal that invites replacement, the rules a replacement must meet, the default that changed in release 28.0, and the hazards of replacing. The rules are policy, so they changed with releases of Bitcoin Core. The four examples of the part replace payments on a test network.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 26,
+   "gen_title": "The opt-in replacement signal",
+   "notes": "A payment signals that it may be replaced when one of its inputs has a sequence number below 0xfffffffe. In the halving block 485 of 599 payments signalled; in block 971,489 only 273. The signal matters less now that replacement needs no signal, but it still tells other software what the sender intends. It is example 12 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 27,
+   "gen_title": "A replacement must pay enough",
+   "notes": "A replacement must pay more than the payment it replaces, and it must also pay for its own size at the incremental rate. For a payment of 564 satoshis and 141 bytes the least acceptable fee is 579. The copies at 514, 564 and 578 are refused, and the one at 579 is accepted. The listing sends four conflicting copies of one payment to the node and records whether each is accepted. It is example 13 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 28,
+   "gen_title": "Full replacement is the default",
+   "notes": "The first payment used the final sequence number, so it never asked to be replaceable. A conflicting payment replaced it anyway. Release 28.0 made full replacement the default and release 29.0 removed the option, so starting the node with it off now fails. The book describes the older rule, so this is a change since print. It is example 14 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 29,
+   "gen_title": "A node that only listens to replacements",
+   "notes": "This is a true story, dated 12 December 2022. Peter Todd posted to the bitcoin-dev list a build of Bitcoin Core 24.0.1 that carries Antoine Riard's full-rbf peering code, so that nodes willing to replace could find each other. The lesson is that policy is what most nodes choose to relay, and it changes by their choice. The picture is a stand-in; the link leads to the post.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 30,
+   "gen_title": "Paying the payee twice",
+   "notes": "Three versions of a payment replace each other in turn. Versions 0 and 2 do not conflict, so once version 0 is mined, version 2 can be mined as well. The payee asked for 40,000,000 satoshis and received 80,000,000, so the sender pays twice. This is a hazard of replacement for the sender for the payee. It is example 15 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 31,
+   "gen_title": "Policy or consensus?",
+   "notes": "Most rules of this chapter are policy: the relay floor, the replacement rules, the version 3 limits and the cluster limits. A payment that breaks them can still be valid in a block that a miner builds. Policy changes with a release of the software, which each node operator may or may not install; consensus changes only by a fork, which every node must follow. The block weight limit is the one consensus rule of the part.",
+   "title": "Is a rule policy or consensus?",
+   "sub": null
+  },
+  {
+   "slide": 32,
+   "gen_title": "Child pays for parent (CPFP)",
+   "notes": "When the parent cannot be changed, a child can pay for it. This part measures the package rate, shows why nodes now relay packages, and meets the cluster mempool that replaced the old chain limits. A child spends an output of the parent and pays a fee large enough for both, so miners take the pair together. The five examples of the part run on a test network of Bitcoin Core.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 34,
+   "gen_title": "A child lifts its parent",
+   "notes": "A parent pays 1 satoshi per byte and would wait a long time. Its child pays 100. Miners treat the pair as one package of 50.77 satoshis per byte, which beats a waiting payment at 20, so the pair is mined first. The listing reads the fees and sizes that the node reports for each entry and divides them. It is example 16 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 35,
+   "gen_title": "A weak child does not help",
+   "notes": "This time the child pays only 5 satoshis per byte. The pair together pays 3.02, less than the waiting payment A at 20. Miners took A and left the pair out of the block. A child must pay enough to lift the whole package above the competition, so the fee of the child is chosen from the size of both transactions. It is example 17 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 36,
+   "gen_title": "Package relay",
+   "notes": "A parent with a fee of 8 satoshis fails the relay floor of 15 on its own, and its child cannot be sent first because the parent is unknown. As a package the pair is judged by its combined rate and accepted. Limited package relay of one parent and one child exists since release 28.0. The listing records the answer for the parent alone, for the child alone and for the package. It is example 18 in the chapter code tab of the course page.",
+   "title": "Package relay judges a pair together",
+   "sub": null
+  },
+  {
+   "slide": 37,
+   "gen_title": "Cluster limits",
+   "notes": "Release 31.0 groups connected payments into clusters, limited to 64 payments and 101,000 virtual bytes. Of a chain of 65, 64 are accepted and the next is refused as a too-large cluster. The old limit of 25 ancestors is gone, so a chain of 26 is accepted. The limits are policy and can change again. It is example 19 in the chapter code tab of the course page.",
+   "title": "Cluster limits of the mempool",
+   "sub": null
+  },
+  {
+   "slide": 38,
+   "gen_title": "Mempool size and expiry",
+   "notes": "The mempool holds 300 megabytes by default. A payment that waits too long is dropped after 336 hours, which is 14 days. The book speaks of about a day's worth, which describes neither default. The listing reads both defaults from the saved source of Bitcoin Core and converts the expiry into days. It is example 20 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 39,
+   "gen_title": "Pinning and anchors",
+   "notes": "A large child can make a parent costly to replace, and a pre-signed payment cannot guess a future fee. This part runs the carve-out, the version 3 limits and the pay-to-anchor output that answer both problems. Each of them is policy that was added to keep a fee bump possible when the fee is not known in advance. The four examples of the part are followed by the story of the carve-out.",
+   "title": "Pinning, anchors and fee bumping",
+   "sub": null
+  },
+  {
+   "slide": 41,
+   "gen_title": "A big child pins its parent",
+   "notes": "A parent that pays 705 satoshis gets a child of 90,012 bytes. To replace the parent, the replacer must pay for the whole family: 450,780 satoshis. With a version 3 child, capped at 1,000 bytes, the same replacement costs 5,145 satoshis, about 88 times less. That is why the cap bounds pinning. It is example 21 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 42,
+   "gen_title": "TRUC limits on a family",
+   "notes": "A version 3 parent may have one child of at most 1,000 virtual bytes. A child of 1,350 is refused and one of 141 is accepted. A second child at the same rate is refused, and one at a higher rate evicts its sibling, so a pin cannot last. The rules are called topologically restricted until confirmation, which is the long name of version 3 payments. It is example 22 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 43,
+   "gen_title": "Pay to anchor",
+   "notes": "The parent has a zero-value output with the script 51024e73, which anyone can spend, and it pays no fee. Alone the node refuses it. The child spends the anchor with an empty witness and pays 10,000 satoshis, so the package is accepted. This is the form that Lightning channels use to add the fee after the payment was signed. It is example 23 in the chapter code tab of the course page.",
+   "title": "Pay to anchor: a spendable output",
+   "sub": null
+  },
+  {
+   "slide": 44,
+   "gen_title": "The carve-out limit",
+   "notes": "The carve-out allowed one extra child beyond the usual limits. The book gives its size as 1,000 virtual bytes, while the source code says 10,000. Release 31.0 removed the rule, because the cluster limits replaced the descendant limits that it worked around. The listing reads the limit from the saved source file and compares it with the book. It is example 24 in the chapter code tab of the course page.",
+   "title": "The carve-out limit in the code",
+   "sub": null
+  },
+  {
+   "slide": 45,
+   "gen_title": "A pre-signed payment cannot guess its fee",
+   "notes": "This is a true story, dated 29 November 2018. Matt Corallo wrote that Lightning channels exchange pre-signed transactions that are broadcast much later, so their fee has to be predicted or added afterwards by a child. The lesson is that a limit built for one attack can outlive the problem it solved. The picture is a stand-in; the link leads to the proposal on the mailing list.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 46,
+   "gen_title": "Fee sniping and incentives",
+   "notes": "A block pays a subsidy and fees, and the mix changes. When fees dominate, a miner may gain by re-mining a block. This part computes the odds of winning such a race and shows how wallets defend with the lock time. The three examples of the part use the census of two real blocks and the recorded run of Bitcoin Core on a test network.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 48,
+   "gen_title": "Fees against the subsidy",
+   "notes": "In block 840,000 the fees were 3,762,561,499 satoshis of a 4,075,061,499 reward, so the subsidy of 312,500,000 was only the rest. That is 92.33 percent fees. In block 971,489 fees were 0.46 percent of the reward. The two blocks come from the census saved with the page, so every figure can be recomputed. It is example 25 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 49,
+   "gen_title": "Block 840,000: fees were nearly the reward",
+   "notes": "This is a true story, dated 20 April 2024. Block 840,000 was found at 00:09 UTC by the pool ViaBTC and held 3,050 transactions. It was the first block after the fourth halving, and its fees were nearly the whole reward. The lesson is to check a book's claim against the block, because the market moves. The picture is a stand-in; the link leads to the block.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 50,
+   "gen_title": "Odds of winning a sniping race",
+   "notes": "A miner with a share x of the hash rate wins the race to re-mine a block with probability x over one minus x, squared. That is 1.23 percent at 10 percent of the hash rate and 66.94 percent at 45 percent. At half the hash rate the chance is certain. The listing computes the formula with the chapter library for four shares. It is example 26 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 51,
+   "gen_title": "What if nobody got a subsidy?",
+   "notes": "This is a true story, dated 21 October 2016. Arvind Narayanan announced on the Princeton CITP blog the paper On the Instability of Bitcoin Without the Block Reward, written with Miles Carlsten, Harry Kalodner and Matt Weinberg and presented at ACM CCS the next week. When fees are the main income, a miner can gain by undercutting a rival's block. The link leads to the blog post.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 52,
+   "gen_title": "Wallets lock to the chain tip",
+   "notes": "A wallet sets the lock time of a payment to the current height, so that a miner who rewrites the block cannot take it. Of 60 payments in the test, 56 sit at the tip and four are set back. Such a payment is not final in the block of that height. The result table also counts the payments of the two census blocks whose lock time is the tip. It is example 27 in the chapter code tab of the course page.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 53,
+   "gen_title": "The chapter in five lines",
+   "notes": "These five lines are the deck in miniature. A line that feels unproven should send the reader back to its code slide, because every figure in it was computed there. The chapter code tab of the course page reruns all twenty-seven examples, so each line can be checked and changed by editing the listing. The five lines also answer the seven questions of the opening, grouped by part.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 54,
+   "gen_title": "Where to go from here",
+   "notes": "Everything here is free to read or watch. A good start is the Antonopoulos talk on fees, then the Optech topic on replace by fee next to the chapter. The course page for chapter 9 carries the full text and the sources behind every figure. Each entry on this slide is a live link, and the date shows when it was last opened.",
+   "title": null,
+   "sub": null
+  },
+  {
+   "slide": 55,
+   "gen_title": "What you should now be able to say",
+   "notes": "These are four claims, each carried by a computation that ran on a slide of this deck. A reader should be able to say who pays a fee and how rates work, how payments are replaced or bumped, how packages, clusters and anchors work, and why sniping matters and how the lock time defends against it. The course page for chapter 9 has every word behind them, the stories with their sources, and the question bank to test yourself.",
+   "title": null,
+   "sub": null
+  }
+ ]
+}
