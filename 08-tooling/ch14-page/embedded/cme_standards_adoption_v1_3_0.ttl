@@ -1,0 +1,253 @@
+@prefix cme:     <http://example.org/cme#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+#################################################################
+#  How CME adopts each verified standard into the STRUCTURE of a
+#  course ontology.
+#
+#  Ontology-native by the owner's ruling: this is the mapping, not a
+#  document describing it. A course repository is organised into the
+#  parts below, and each part is governed by the standard named for
+#  it. A part a course repository cannot fill is left empty and says
+#  so; it is never filled with an invented structure.
+#
+#  Adoption modes:
+#    Align   - CME's classes are declared equivalent to, or narrower
+#              than, the standard's own terms; the standard's IRIs
+#              are used, not re-minted
+#    Profile - the standard defines an exchange shape; a course
+#              repository must be exportable to it, but does not
+#              store in it
+#    Cite    - the standard informs rules CME writes itself; nothing
+#              of it is imported
+#    Exclude - the standard is recognised and deliberately not held,
+#              with the reason
+#    Pending - named but not verified at its steward's page; nothing
+#              may rest on it until it is
+#  1.2.0 is the BP-D53 split of 2026-10-05: classes and properties
+#  moved verbatim to cme_standards_adoption_tbox_v1_0_0.ttl; every individual and every
+#  record below is byte-identical to cme_standards_adoption_v1_1_0.ttl.
+#################################################################
+
+<http://example.org/cme/standards-adoption> a owl:Ontology ;
+    rdfs:label "CME: adoption of international standards into the structure of a course ontology"@en ;
+    owl:versionInfo "1.3.0" ;
+    dcterms:identifier "cme_standards_adoption_v1_3_0" ;
+    rdfs:comment "1.3.0 adds the narrative-to-diagram module: ten narrative patterns and the diagram type each is drawn as (the owner's ruling of 2026-10-07 14:46), as a module of this file under BP-D54."@en ;
+    dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+    dcterms:source "00-standards/standards_evidence_v1_0_0.json - each standard fetched at its steward's own page before being named" .
+
+cme:Align a cme:AdoptionMode ; rdfs:label "align"@en .
+cme:Profile a cme:AdoptionMode ; rdfs:label "profile for export"@en .
+cme:Cite a cme:AdoptionMode ; rdfs:label "cite"@en .
+cme:Exclude a cme:AdoptionMode ; rdfs:label "exclude"@en .
+cme:Pending a cme:AdoptionMode ; rdfs:label "pending verification"@en .
+
+#################################################################
+#  The parts of a course repository
+#################################################################
+
+cme:Part_CourseProfile a cme:CoursePart ; rdfs:label "course profile"@en ; cme:partFolder "00-course-profile" ;
+    skos:definition "What the course is: code, title, credits, term, prerequisites, instructor, the textbook it adopts."@en .
+cme:Part_Outcomes a cme:CoursePart ; rdfs:label "learning outcomes"@en ; cme:partFolder "01-outcomes" ;
+    skos:definition "What a student can do after the course, each outcome at a stated cognitive level."@en .
+cme:Part_Textbook a cme:CoursePart ; rdfs:label "textbook ontology"@en ; cme:partFolder "02-textbook" ;
+    skos:definition "The adopted book, modelled as its own ontology: chapters, sections, constructs, concepts, examples, questions."@en .
+cme:Part_Materials a cme:CoursePart ; rdfs:label "teaching materials"@en ; cme:partFolder "03-materials" ;
+    skos:definition "Slides, renderings, handouts and worked examples, each described as a learning resource."@en .
+cme:Part_Assessment a cme:CoursePart ; rdfs:label "assessment"@en ; cme:partFolder "04-assessment" ;
+    skos:definition "Exams, quizzes and their items, each aligned to the outcomes it tests."@en .
+cme:Part_Projects a cme:CoursePart ; rdfs:label "projects"@en ; cme:partFolder "05-projects" ;
+    skos:definition "Project briefs, proposals and their assessment rubrics."@en .
+cme:Part_Quality a cme:CoursePart ; rdfs:label "quality evidence"@en ; cme:partFolder "06-quality" ;
+    skos:definition "The evidence that outcomes, materials and assessment are aligned and reviewed."@en .
+cme:Part_Gamification a cme:CoursePart ; rdfs:label "gamification"@en ; cme:partFolder "09-gamification" ;
+    skos:definition "Games that practise the course's teaching subjects: each game its own file, built on one shared game shell, described as a learning resource and linked from the concept it practises. Added by the owner's ruling of 2026-09-27T08:50:13; a course carries it once its critical content is complete."@en .
+cme:Part_Records a cme:CoursePart ; rdfs:label "student records"@en ; cme:partFolder "(none - never in a course repository)" ;
+    skos:definition "Rosters, enrolments and results. Named so its absence is a decision, not an oversight."@en .
+
+#################################################################
+#  The adoptions - one per verified standard, plus the pending three
+#################################################################
+
+cme:Adopt_SchemaCourse a cme:StandardAdoption ;
+    cme:standardName "Schema.org Course" ; cme:standardSource "https://schema.org/Course"^^xsd:anyURI ;
+    cme:governsPart cme:Part_CourseProfile ; cme:hasAdoptionMode cme:Align ;
+    cme:adoptionRationale "The course profile uses Schema.org's own terms for what a course is - its code, name, provider, prerequisites and credits - so a course repository describes itself in the vocabulary the web already reads." .
+
+cme:Adopt_CASE a cme:StandardAdoption ;
+    cme:standardName "1EdTech Competencies and Academic Standards Exchange (CASE)" ; cme:standardSource "https://www.1edtech.org/standards/case"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Outcomes ; cme:hasAdoptionMode cme:Align ;
+    cme:adoptionRationale "Learning outcomes are held as a CASE framework of items, so an outcome has one identity that materials and assessment items can both point at. The cognitive level of each outcome uses the Bloom levels already defined in RDODI's learning-design vocabulary, rather than a second copy." .
+
+cme:Adopt_LOM a cme:StandardAdoption ;
+    cme:standardName "IEEE 1484.12.1-2020 Learning Object Metadata" ; cme:standardSource "https://standards.ieee.org/ieee/1484.12.1/7699/"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Materials, cme:Part_Textbook, cme:Part_Gamification ; cme:hasAdoptionMode cme:Align ;
+    cme:adoptionRationale "Every slide deck, rendering and handout, and the textbook itself, is described with LOM's categories - what it is, its lifecycle and version, its rights, its educational use. The rights category is where a book's licence and a publisher's data-file terms are recorded, which is the question the first-edition package left unanswered." .
+
+cme:Adopt_QTI a cme:StandardAdoption ;
+    cme:standardName "1EdTech Question and Test Interoperability (QTI)" ; cme:standardSource "https://www.1edtech.org/standards/qti"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Assessment ; cme:hasAdoptionMode cme:Profile ;
+    cme:adoptionRationale "Assessment items are authored ontologically and must be exportable as QTI, so an exam can move into any platform that reads it. The ontology is the source; QTI is the exchange shape." .
+
+cme:Adopt_CommonCartridge a cme:StandardAdoption ;
+    cme:standardName "1EdTech Common Cartridge" ; cme:standardSource "https://www.1edtech.org/standards/cc"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Materials, cme:Part_Assessment ; cme:hasAdoptionMode cme:Profile ;
+    cme:adoptionRationale "A whole course repository must be exportable as one cartridge into a learning platform. The repository is organised so that export is mechanical rather than a rewrite." .
+
+cme:Adopt_LTI a cme:StandardAdoption ;
+    cme:standardName "1EdTech Learning Tools Interoperability (LTI)" ; cme:standardSource "https://www.1edtech.org/standards/lti"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Materials ; cme:hasAdoptionMode cme:Cite ;
+    cme:adoptionRationale "Governs how an interactive tool - a gradebook, an exercise page - is launched from a course platform. Informs how such tools are described; nothing of LTI is stored in a course ontology." .
+
+cme:Adopt_OpenBadges a cme:StandardAdoption ;
+    cme:standardName "1EdTech Open Badges, on W3C Verifiable Credentials Data Model v2.0" ; cme:standardSource "https://www.1edtech.org/standards/open-badges"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Projects ; cme:hasAdoptionMode cme:Cite ;
+    cme:adoptionRationale "The shape a project or capstone achievement would take if one is ever issued. Cited so the option is designed for; not held, since issuing a credential concerns an individual student." .
+
+cme:Adopt_ESG a cme:StandardAdoption ;
+    cme:standardName "ENQA Standards and Guidelines for Quality Assurance in the EHEA (ESG 2015)" ; cme:standardSource "https://www.enqa.eu/esg-standards-and-guidelines-for-quality-assurance-in-the-european-higher-education-area/"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Quality ; cme:hasAdoptionMode cme:Cite ;
+    cme:adoptionRationale "Informs what quality evidence a course repository must be able to show - chiefly that outcomes, teaching and assessment are aligned. CME writes those checks itself, as shapes run on every change." .
+
+cme:Adopt_OneRoster a cme:StandardAdoption ;
+    cme:standardName "1EdTech OneRoster" ; cme:standardSource "https://www.1edtech.org/standards/oneroster"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Records ; cme:hasAdoptionMode cme:Exclude ;
+    cme:adoptionRationale "Rosters, enrolments and results are student data. By the owner's standing ruling student data is never pushed to a repository, and course repositories are student-readable. OneRoster is recognised so a future integration knows the shape; nothing is held." .
+
+cme:Adopt_xAPI a cme:StandardAdoption ;
+    cme:standardName "IEEE 9274.1.1-2023 Learner Experience Data Tracking and Access (xAPI)" ; cme:standardSource "https://standards.ieee.org/ieee/39274-1-1/12268/9274.1.1/7321/"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Gamification ; cme:hasAdoptionMode cme:Cite ;
+    cme:adoptionRationale "A game records what a student does in it as xAPI statements - actor, verb, activity, result - so its events have the shape learning technology already reads. Cited, not profiled: by the owner's standing ruling student data is never pushed to a repository, so statements stay in the student's own browser and nothing is sent to a Learning Record Store or stored in a course repository." .
+
+cme:Adopt_ISO21001 a cme:StandardAdoption ;
+    cme:standardName "ISO 21001:2018 Educational organizations - management systems" ; cme:standardSource "https://www.iso.org/standard/66266.html"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Quality ; cme:hasAdoptionMode cme:Pending ;
+    cme:adoptionRationale "The steward's page returned HTTP 403 to this environment. Nothing may rest on it until it is verified." .
+
+cme:Adopt_ECTS a cme:StandardAdoption ;
+    cme:standardName "ECTS Users' Guide 2015" ; cme:standardSource "https://op.europa.eu/en/publication-detail/-/publication/da7467e6-8450-11e5-b8b7-01aa75ed71a1"^^xsd:anyURI ;
+    cme:governsPart cme:Part_CourseProfile ; cme:hasAdoptionMode cme:Pending ;
+    cme:adoptionRationale "The steward's page returned HTTP 429 to this environment. It matters more than the others: it is the basis for credits and workload in a course profile, so until it is verified the credit field records the figure the owner states and cites nothing." .
+
+cme:Adopt_MLR a cme:StandardAdoption ;
+    cme:standardName "ISO/IEC 19788 Metadata for Learning Resources" ; cme:standardSource "https://www.iso.org/standard/50772.html"^^xsd:anyURI ;
+    cme:governsPart cme:Part_Materials ; cme:hasAdoptionMode cme:Pending ;
+    cme:adoptionRationale "The steward's page returned HTTP 403 to this environment. LOM covers the same part and is verified, so nothing is waiting on this one." .
+
+# ---- module: narrative-to-diagram mapping (the patterns and the types), added in 1.3.0 ----
+#################################################################
+#  CME: which diagram a narrative calls for.
+#  The owner's examples of 2026-10-07: "if there is a work flow like spending,
+#  activity diagram; possible usages of bitcoin, a use-case diagram; the life
+#  of a transaction, a state diagram". The mapping is read by the course page
+#  builders, so a chapter author declares the pattern of a passage and the
+#  diagram type follows from here, the same in every course.
+#  Vocabulary: cme_narrative_diagram_tbox_v1_0_0.ttl.
+#################################################################
+
+<http://example.org/cme/narrative-diagram> dcterms:isPartOf <http://example.org/cme/standards-adoption> ;
+    rdfs:label "CME: narrative patterns and the diagram each one is drawn as - module"@en ;
+    dcterms:identifier "cme_narrative_diagram_v1_0_0" ;
+    dcterms:created "2026-10-07"^^xsd:date .
+
+# ---- diagram types ----
+cme:ActivityDiagram a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "activity diagram"@en ;
+    skos:definition "Actions in order with decisions and branches - the flow of a piece of work from its start to its end."@en ;
+    cme:notation "UML 2.5.1 activity diagram: rounded actions, diamond decisions with guarded outgoing flows, a filled initial node, a bull's-eye final node, optional swimlanes for who does what"@en ;
+    cme:notationSource <https://www.omg.org/spec/UML/2.5.1/> ;
+    cme:elements "start, steps (action or decision with yes/no branches), lanes (optional), end"@en ;
+    cme:renderer "ndActivity" .
+cme:UseCaseDiagram a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "use-case diagram"@en ;
+    skos:definition "Who uses a system, and for what: actors outside a boundary, use cases inside it, lines for who does which."@en ;
+    cme:notation "UML 2.5.1 use-case diagram: stick-figure actors, elliptical use cases inside the system boundary, association lines"@en ;
+    cme:notationSource <https://www.omg.org/spec/UML/2.5.1/> ;
+    cme:elements "system, actors, use cases, links (actor to use case)"@en ;
+    cme:renderer "ndUsecase" .
+cme:StateDiagram a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "state diagram"@en ;
+    skos:definition "The states a thing can be in and the events that move it from one to the next - its life from creation to its final state."@en ;
+    cme:notation "UML 2.5.1 state machine diagram: rounded states, labelled transitions, initial pseudostate, final state"@en ;
+    cme:notationSource <https://www.omg.org/spec/UML/2.5.1/> ;
+    cme:elements "states, initial, final, transitions (from, to, event)"@en ;
+    cme:renderer "ndState" .
+cme:SequenceDiagram a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "sequence diagram"@en ;
+    skos:definition "Who sends what to whom, in time order: participants across the top, their lifelines down, messages as arrows between them."@en ;
+    cme:notation "UML 2.5.1 sequence diagram: lifelines, synchronous and reply messages, time running downwards"@en ;
+    cme:notationSource <https://www.omg.org/spec/UML/2.5.1/> ;
+    cme:elements "participants, messages (from, to, text) in order"@en ;
+    cme:renderer "ndSequence" .
+cme:MindMap a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "mind map"@en ;
+    skos:definition "One topic at the centre and its parts, aspects or choices as branches, each branch with its own sub-branches - a topic laid out for remembering."@en ;
+    cme:notation "Mind map in the sense of Buzan (1974): a central image or word, radiating branches, one key word per branch"@en ;
+    cme:notationSource <https://en.wikipedia.org/wiki/Mind_map> ;
+    cme:elements "root, branches (label, children)"@en ;
+    cme:renderer "ndMindmap" .
+cme:TaxonomyTree a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "taxonomy tree"@en ;
+    skos:definition "Kinds and their sub-kinds as a tree: what is a kind of what."@en ;
+    cme:notation "Indented or left-to-right tree of is-a-kind-of links"@en ; cme:elements "nodes with parents"@en ; cme:renderer "drawTaxo" .
+cme:ClassDiagram a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "class diagram"@en ;
+    skos:definition "The kinds of thing a subject is made of, each with what it is written with and what it does, and how the kinds specialise one another."@en ;
+    cme:notation "UML 2.5.1 class diagram"@en ; cme:notationSource <https://www.omg.org/spec/UML/2.5.1/> ; cme:elements "classes (attributes, operations), generalisations"@en ; cme:renderer "drawOclass" .
+cme:EntityRelationshipDiagram a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "entity-relationship diagram"@en ;
+    skos:definition "The records a system would keep about a subject and how many of one relate to how many of another."@en ;
+    cme:notation "Crow's foot entity-relationship notation (Everest, 1976)"@en ; cme:notationSource <https://en.wikipedia.org/wiki/Entity%E2%80%93relationship_model> ; cme:elements "entities (attributes), relationships with cardinalities"@en ; cme:renderer "drawOerd" .
+cme:Chart a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "chart"@en ;
+    skos:definition "A quantity against another - over time, across categories - with its axes labelled from a sourced data table."@en ;
+    cme:notation "Line, bar or histogram chart with data labels"@en ; cme:elements "series, axes, labels"@en ; cme:renderer "chartBox" .
+cme:ExecutionTrace a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "execution trace"@en ;
+    skos:definition "What a program does when it runs: its steps, values and output, shown from a real execution."@en ;
+    cme:notation "Step list or branch-flow drawn from an executed example"@en ; cme:elements "program, steps, values, output"@en ; cme:renderer "visRun" .
+cme:ConceptMap a cme:DiagramType ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "concept map"@en ;
+    skos:definition "Concepts as boxes and their stated relations as labelled lines - how the ideas of a chapter hang together."@en ;
+    cme:notation "Concept map (Novak, 1972): nodes and labelled links"@en ; cme:notationSource <https://en.wikipedia.org/wiki/Concept_map> ; cme:elements "concepts, relations"@en ; cme:renderer "renderGraph" .
+
+# ---- narrative patterns and the diagram each one suggests ----
+cme:Workflow a cme:NarrativePattern ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "workflow"@en ;
+    cme:answersQuestion "How is it done, step by step, and where does the path split?"@en ;
+    cme:cuePhrase "step", "first", "then", "next", "process", "procedure", "how to", "workflow", "until", "if ... otherwise" ;
+    cme:suggestsDiagram cme:ActivityDiagram ;
+    skos:example "spending bitcoin: choose outputs, build the transaction, sign it, broadcast it, wait for confirmation"@en .
+cme:SetOfUses a cme:NarrativePattern ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "set of uses"@en ;
+    cme:answersQuestion "Who uses it, and for what?"@en ;
+    cme:cuePhrase "can be used to", "uses", "usage", "user", "lets you", "allows", "serves", "for example you can" ;
+    cme:suggestsDiagram cme:UseCaseDiagram ;
+    skos:example "the possible usages of bitcoin: a buyer pays, a merchant receives, a miner earns, a developer builds"@en .
+cme:LifeCycle a cme:NarrativePattern ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "life cycle"@en ;
+    cme:answersQuestion "What states does it pass through, and what moves it from one to the next?"@en ;
+    cme:cuePhrase "becomes", "state", "status", "pending", "confirmed", "once", "after", "until it is", "life of", "lifecycle" ;
+    cme:suggestsDiagram cme:StateDiagram ;
+    skos:example "the life of a transaction: created, signed, broadcast, in the mempool, in a block, confirmed"@en .
+cme:Interaction a cme:NarrativePattern ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "interaction"@en ;
+    cme:answersQuestion "Who sends what to whom, in which order?"@en ;
+    cme:cuePhrase "sends", "receives", "asks", "replies", "request", "response", "message", "to the", "from the", "between" ;
+    cme:suggestsDiagram cme:SequenceDiagram ;
+    skos:example "a wallet asks a node for the fee rate, the node answers, the wallet broadcasts, the node relays"@en .
+cme:TopicAndParts a cme:NarrativePattern ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "topic and its parts"@en ;
+    cme:answersQuestion "What are its parts, aspects or choices, and theirs?"@en ;
+    cme:cuePhrase "consists of", "kinds of", "aspects", "choices", "options", "made of", "includes", "three ways", "types of" ;
+    cme:suggestsDiagram cme:MindMap ;
+    skos:example "choosing a wallet: platform, who holds the keys, which node it trusts, how it is backed up"@en .
+cme:Hierarchy a cme:NarrativePattern ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "hierarchy of kinds"@en ;
+    cme:answersQuestion "What is a kind of what?"@en ;
+    cme:cuePhrase "is a kind of", "subclass", "category", "taxonomy", "falls under" ;
+    cme:suggestsDiagram cme:TaxonomyTree .
+cme:Structure a cme:NarrativePattern ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "structure of records"@en ;
+    cme:answersQuestion "What would a system keep about it, and how do the records relate?"@en ;
+    cme:cuePhrase "record", "field", "attribute", "has a", "belongs to", "one or more", "stores" ;
+    cme:suggestsDiagram cme:EntityRelationshipDiagram, cme:ClassDiagram .
+cme:QuantityOverTime a cme:NarrativePattern ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "quantity over time or across cases"@en ;
+    cme:answersQuestion "How much, and when or where?"@en ;
+    cme:cuePhrase "per", "rate", "grew", "fell", "every", "total", "over the years", "percent" ;
+    cme:suggestsDiagram cme:Chart .
+cme:Computation a cme:NarrativePattern ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "computation"@en ;
+    cme:answersQuestion "What happens when this code runs?"@en ;
+    cme:cuePhrase "computes", "returns", "prints", "the program", "run", "evaluates" ;
+    cme:suggestsDiagram cme:ExecutionTrace .
+cme:WebOfIdeas a cme:NarrativePattern ; dcterms:isPartOf <http://example.org/cme/narrative-diagram> ; rdfs:label "web of related ideas"@en ;
+    cme:answersQuestion "How do these ideas relate to one another?"@en ;
+    cme:cuePhrase "relates to", "depends on", "operates on", "together with" ;
+    cme:suggestsDiagram cme:ConceptMap .

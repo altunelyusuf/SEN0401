@@ -1,0 +1,92 @@
+@prefix cme:     <http://example.org/cme#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+#################################################################
+#  CME standards adoption - TBox (BP-D53 three-file structure).
+#  The classes and properties moved verbatim on 2026-10-05 from
+#  cme_standards_adoption_v1_1_0.ttl, which mixed T-Box and A-Box roles; the
+#  individuals continue as cme_standards_adoption_v1_2_0.ttl.
+#################################################################
+
+<http://example.org/cme/standards-adoption/tbox> a owl:Ontology ;
+    rdfs:label "CME standards adoption - TBox"@en ;
+    owl:versionInfo "1.1.0" ;
+    dcterms:identifier "cme_standards_adoption_tbox_v1_1_0" ;
+    rdfs:comment "1.1.0 adds the narrative-to-diagram module (the owner's ruling of 2026-10-07 14:46), as a module of this file under BP-D54: one T-Box per package, its subjects as modules with dcterms:isPartOf."@en .
+
+cme:CoursePart a owl:Class ;
+    rdfs:label "part of a course repository"@en ;
+    skos:definition "A division every course repository is organised into, each governed by one standard."@en .
+
+cme:StandardAdoption a owl:Class ;
+    rdfs:label "standard adoption"@en ;
+    skos:definition "The decision recording which standard governs which part of a course ontology, and how."@en .
+
+cme:AdoptionMode a owl:Class ;
+    rdfs:label "adoption mode"@en .
+
+cme:governsPart a owl:ObjectProperty ; rdfs:domain cme:StandardAdoption ; rdfs:range cme:CoursePart ;
+    rdfs:label "governs part"@en .
+cme:hasAdoptionMode a owl:ObjectProperty ; rdfs:domain cme:StandardAdoption ; rdfs:range cme:AdoptionMode ;
+    rdfs:label "adoption mode"@en .
+cme:standardName a owl:DatatypeProperty ; rdfs:domain cme:StandardAdoption ; rdfs:range xsd:string ;
+    rdfs:label "standard"@en .
+cme:standardSource a owl:DatatypeProperty ; rdfs:domain cme:StandardAdoption ; rdfs:range xsd:anyURI ;
+    rdfs:label "steward's page"@en .
+cme:adoptionRationale a owl:DatatypeProperty ; rdfs:domain cme:StandardAdoption ; rdfs:range xsd:string ;
+    rdfs:label "why"@en .
+cme:partFolder a owl:DatatypeProperty ; rdfs:domain cme:CoursePart ; rdfs:range xsd:string ;
+    rdfs:label "folder in a course repository"@en .
+
+# ---- module: narrative-to-diagram mapping (vocabulary), added in 1.1.0 ----
+#################################################################
+#  CME narrative-to-diagram mapping - TBox (BP-D53 three-file structure).
+#  The owner's ruling of 2026-10-07 (14:46): a teaching paragraph gets the
+#  diagram its narrative calls for - a workflow an activity diagram, the
+#  possible uses of a thing a use-case diagram, the life of a thing a state
+#  diagram, an exchange between parties a sequence diagram, a topic and its
+#  parts a mind map - and "we need to add these mappings to our ontology as
+#  well so that it would be reused later". This file holds the vocabulary;
+#  cme_narrative_diagram_v1_0_0.ttl holds the mappings; a course's chapter
+#  declares its authored diagrams as cme:NarrativeDiagram individuals.
+#################################################################
+
+<http://example.org/cme/narrative-diagram/tbox> dcterms:isPartOf <http://example.org/cme/standards-adoption/tbox> ;
+    rdfs:label "CME narrative-to-diagram mapping - TBox module"@en ;
+    dcterms:identifier "cme_narrative_diagram_tbox_v1_0_0" ;
+    dcterms:created "2026-10-07"^^xsd:date ;
+    dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+    rdfs:comment "Vocabulary for matching a narrative (what a teaching paragraph is about) with the diagram type that shows it, so that every course material chooses its diagrams by the same rule and the rule is kept in one place."@en .
+
+cme:NarrativePattern a owl:Class ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:label "narrative pattern"@en ;
+    skos:definition "What a passage of teaching text is about, seen as a shape: a workflow, a set of uses, a life cycle, an exchange between parties, a topic and its parts, a hierarchy of kinds, a structure of records, a quantity over time, a computation. Each pattern answers one kind of question, and that question is the test for recognising it."@en .
+cme:DiagramType a owl:Class ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:label "diagram type"@en ;
+    skos:definition "A kind of diagram with a fixed notation (UML 2.5 activity, use-case, state-machine and sequence diagrams; mind map; taxonomy tree; class diagram; entity-relationship diagram; chart; execution trace; concept map)."@en .
+cme:NarrativeDiagram a owl:Class ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:label "narrative diagram"@en ;
+    skos:definition "One authored diagram in a course material: the concept(s) it accompanies, the narrative pattern it was recognised as, the diagram type the mapping gives it, and the source passage it was read from."@en .
+
+cme:answersQuestion a owl:DatatypeProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:NarrativePattern ; rdfs:range xsd:string ; rdfs:label "answers the question"@en ;
+    skos:definition "The question a passage of this pattern answers; the test for recognising the pattern."@en .
+cme:cuePhrase a owl:DatatypeProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:NarrativePattern ; rdfs:range xsd:string ; rdfs:label "cue phrase"@en ;
+    skos:definition "A word or phrase whose presence in a passage suggests the pattern; a hint for an author or a tool, never a proof."@en .
+cme:suggestsDiagram a owl:ObjectProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:NarrativePattern ; rdfs:range cme:DiagramType ; rdfs:label "suggests the diagram"@en ;
+    skos:definition "The diagram type a passage of this pattern is drawn as."@en .
+cme:notation a owl:DatatypeProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:DiagramType ; rdfs:range xsd:string ; rdfs:label "notation"@en .
+cme:notationSource a owl:ObjectProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:DiagramType ; rdfs:label "notation source"@en ;
+    skos:definition "The published specification or canonical description of the notation."@en .
+cme:elements a owl:DatatypeProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:DiagramType ; rdfs:range xsd:string ; rdfs:label "elements"@en ;
+    skos:definition "The named elements an authored diagram of this type is made of, as the page renderer expects them."@en .
+cme:renderer a owl:DatatypeProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:DiagramType ; rdfs:range xsd:string ; rdfs:label "renderer"@en ;
+    skos:definition "The identifier of the renderer in the course page template that draws this type."@en .
+
+cme:accompanies a owl:DatatypeProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:NarrativeDiagram ; rdfs:range xsd:string ; rdfs:label "accompanies the concept"@en ;
+    skos:definition "The identifier of a chapter concept whose paragraph the diagram is shown beside."@en .
+cme:hasPattern a owl:ObjectProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:NarrativeDiagram ; rdfs:range cme:NarrativePattern ; rdfs:label "pattern"@en .
+cme:hasDiagramType a owl:ObjectProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:NarrativeDiagram ; rdfs:range cme:DiagramType ; rdfs:label "diagram type"@en .
+cme:readFrom a owl:DatatypeProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:NarrativeDiagram ; rdfs:range xsd:string ; rdfs:label "read from"@en ;
+    skos:definition "The passage of the course corpus the diagram's content was read from (a concept explanation, a section of the textbook, a standard)."@en .
+cme:elementCount a owl:DatatypeProperty ; dcterms:isPartOf <http://example.org/cme/narrative-diagram/tbox> ; rdfs:domain cme:NarrativeDiagram ; rdfs:range xsd:integer ; rdfs:label "element count"@en .
