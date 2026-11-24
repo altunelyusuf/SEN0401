@@ -6,138 +6,161 @@
    "gen_slide": 1,
    "title": "Chapter 7: Scripts and Signatures",
    "course_slide": 1,
+   "course_title": "Chapter 7: Scripts and Signatures",
    "notes": "This chapter is about the two halves of every Bitcoin spend: the script that locks a coin and the data that unlocks it. It is chapter 7 of Mastering Bitcoin, third edition, and the figure on the slide shows a locking script paired with an unlocking script.\n\nEvery result in this deck was computed with the chapter's own Python library under Python 3.14.6, so no Bitcoin Core node was needed. Each code slide has a twin in the chapter code tab of the course page, where you can edit the listing and run it yourself.\n\nIt helps to recall chapter 6 first: a transaction spends earlier outputs, and this chapter explains the rule that decides whether such a spend is allowed."
   },
   {
    "gen_slide": 2,
    "title": "Today's route",
    "course_slide": 2,
+   "course_title": "Today's route through the chapter",
    "notes": "This slide lists the route through the chapter in nine parts, each with the slide numbers where it lives, so you can jump straight to a topic. The order follows the book: the Script language, locking a coin to a key, multisignatures, pay to script hash, data and timelocks, flow control, segregated witness, script trees and key tweaks, and finally taproot and tapscript.\n\nThe figures on the right summarise the deck: sixty-one slides, three true stories, and fifteen code examples that each end in a picture of the result.\n\nThe table on every divider slide repeats this route, so you always know which part you are in. Later ideas such as segregated witness and taproot are changes to the earlier ones, so a hard part is easier after revisiting the part before it."
   },
   {
    "gen_slide": 3,
    "title": "The questions this chapter answers",
    "course_slide": 3,
+   "course_title": "The questions this chapter answers",
    "notes": "These seven questions are the chapter's own competency questions: the things you should be able to answer after studying it. Each is answered on a slide of this deck, and the closing slide returns to them.\n\nUse them as a self-test. Try to answer each in a sentence before reading on, and let an unanswered question send you to the part of the route where its answer lives. The first two concern the foundations: how scripts decide a spend, and why Script is deliberately limited. The next three concern cost, time and malleability. The last two concern taproot and tapscript.\n\nIf a question contains an unfamiliar word, the course page for chapter 7 has an entry for it under the concept of the same name."
   },
   {
    "gen_slide": 4,
    "title": "One chapter, nine parts",
    "course_slide": 4,
+   "course_title": "One chapter, nine parts",
    "notes": "The concept map shows the whole chapter as nine groups, each with the number of concepts the book introduces there: fourteen for the Script language, six for locking to a key, five for multisignatures, six for pay to script hash, eleven for data and timelocks, eight for flow control, sixteen for segregated witness, ten for script trees and key tweaks, and eleven for taproot and tapscript.\n\nThe counts show where the weight lies. Segregated witness carries the most concepts because it changes how a transaction is organised, not only how a script runs.\n\nEvery later slide belongs to one of these groups. The same map is on the course page, where you can filter it and open each concept for a full explanation."
   },
   {
    "gen_slide": 5,
    "title": "Scripts and the Script language",
    "course_slide": 5,
+   "course_title": "A script is a lock and key recipe that every node checks the same way.",
    "notes": "This divider opens the first part, which answers a basic question: how does the network decide that a spender may take a coin? A script is a lock and key recipe made of data items and operation words, and every node follows the same recipe in the same way, so every node reaches the same verdict.\n\nThe part has two themes. Language and limits explains what Script is and why it is kept small and free of loops. Locking and running explains how the lock placed by the payer and the data shown by the spender run one after the other.\n\nThe table at the bottom marks where this part sits among the nine parts of the chapter."
   },
   {
    "gen_slide": 6,
    "title": "Scripts and the Script language (1 of 4)",
    "course_slide": 6,
+   "course_title": "Scripts and the Script language (1 of 4)",
    "notes": "Slide 7 runs the smallest example, and slide 8 names the pieces it uses.\n\nA rule per coin lets people build conditions such as shared accounts or time delays without changing the protocol. Every full node runs the same interpreter, so the language is kept small on purpose and is easy to implement identically. A language with loops would let one transaction keep every node busy for as long as its author wanted, which is why Script has none."
   },
   {
    "gen_slide": 7,
    "title": "Script is arithmetic on a stack",
    "course_slide": 8,
+   "course_title": "Script is arithmetic on a stack",
    "notes": "Script is read from left to right. In the first box the numbers 2 and 3 are pushed onto a stack, OP_ADD takes the top two items and pushes their sum, the number 5 is pushed, and OP_EQUAL compares the top two items. With a six in place of the five the comparison fails and the result is EVAL_FALSE, the error for a final false answer.\n\n In 5253935587, 0x52 and 0x53 are the opcodes for the numbers 2 and 3, 0x93 is OP_ADD, 0x55 is the number 5 and 0x87 is OP_EQUAL.\n\nExample 1 in the chapter code tab lets you change the numbers and watch the verdict change.\n\nA script is valid when it ends with a true value on top of the stack; any other ending is a failure."
   },
   {
    "gen_slide": 8,
    "title": "Scripts and the Script language (2 of 4)",
    "course_slide": 9,
+   "course_title": "Scripts and the Script language (2 of 4)",
    "notes": "Slide 9 shows what went wrong when they were joined.\n\nA stack is the simplest memory a language can have: only the top is visible, which is one reason why Script can be checked so fast. Python lists behave in the same way through append and pop, which makes the idea easy to try by hand. Slide 11 collects the vocabulary of this part."
   },
   {
    "gen_slide": 9,
    "title": "The OP_RETURN bug of 2010",
    "course_slide": 10,
+   "course_title": "The OP_RETURN bug of 2010",
    "notes": "An input script of OP_1 followed by OP_RETURN stopped that program at once with a true result, whatever the lock demanded, so the coin could be spent without knowing its secret. That is the first row of the result table: OK, meaning that anyone could spend.\n\nThe same input still fails, now with OP_RETURN as the error, and only the real secret opens the lock, in both engines.\n\nThe design lesson is to run what a stranger supplies separately from the rule it must satisfy, and to treat anything unknown as a failure. Slide 10 tells the history of the bug.\n\nThe second row of the table is the lasting repair: the spend fails closed whenever the lock's own rules are not met."
   },
   {
    "gen_slide": 10,
    "title": "The script that ended with a true result",
    "course_slide": 11,
+   "course_title": "The script that ended with a true result",
    "notes": "On 28 July 2010 two bugs in Bitcoin's script handling were shown on the test network. One of them let a stranger spend coins that were not theirs. The cause was that the first software joined the input script and the output script into one program, so an input script of 1 followed by OP_RETURN ended the run with a true result before the lock was ever tested.\n\nSatoshi Nakamoto's fix, released in version 0.3.5, split the two scripts apart for good, which is the behaviour slide 9 reproduces. Many unused opcodes were disabled as well. In tapscript, unknown opcodes such as OP_LSHIFT (152) are now OP_SUCCESS, a different safeguard explained later in the chapter.\n\nThe picture is a bust of Satoshi Nakamoto in Budapest by Fekist, CC BY-SA 4.0."
   },
   {
    "gen_slide": 11,
    "title": "Scripts and the Script language (3 of 4)",
    "course_slide": 12,
+   "course_title": "Scripts and the Script language (3 of 4)",
    "notes": "The output script and the input script are the two names to keep: one is the lock, the other is the key that opens it, and a node runs them one after the other. The call stack of a Python program is a familiar example of last in, first out: the function called last is the first to return. Two stack words appear in the next locks: OP_DUP copies the top item, and OP_HASH160 replaces it by its hash."
   },
   {
    "gen_slide": 12,
    "title": "Scripts and the Script language (4 of 4)",
    "course_slide": 13,
+   "course_title": "Scripts and the Script language (4 of 4)",
    "notes": "Both names still appear in code, in the output of Bitcoin Core and in older books, so it is worth recognising them. A simple way to remember them is that the scriptSig sits in the input that spends, and the scriptPubKey sits in the output that is spent.\n\nModern descriptions say input script and output script, because the content is no longer always a signature or a public key. Slide 11 introduced the newer names.\n\nIn the output of Bitcoin Core and in older books you may still meet the field names scriptSig and scriptPubKey, and matching them with input script and output script saves confusion. Segregated witness moved the signature elsewhere for new outputs, which is one more reason why the neutral names are better."
   },
   {
    "gen_slide": 13,
    "title": "Locking a coin to a key",
    "course_slide": 14,
+   "course_title": "A key lock is a safe-deposit box labelled with a fingerprint.",
    "notes": "A key lock is a safe-deposit box labelled with a fingerprint. Anyone can read the label, but only the holder of the matching key opens the box.\n\nThis second part moves from the language to its most common use. Key and key hash explains how a coin is locked either to a public key directly or to the hash of one, and why the hash is the usual choice. Checking signatures explains how a signature is tied to this particular transaction and how it is written down in bytes.\n\nThe part leads into multisignatures, which replace the single key by several keys."
   },
   {
    "gen_slide": 14,
    "title": "Locking a coin to a key (1 of 2)",
    "course_slide": 15,
+   "course_title": "Locking a coin to a key (1 of 2)",
    "notes": "Slide 15 tries the lock with the right key, a wrong key and a changed amount.\n\nHashing the key has two effects: the lock is short and of fixed size, and the public key itself stays unseen until the coin is spent. The price is that the spender must supply the key and the signature later, which is what the second box of slide 15 does. Legacy addresses that start with 1 hide exactly this lock."
   },
   {
    "gen_slide": 15,
    "title": "A key-hash lock, tried three ways",
    "course_slide": 16,
+   "course_title": "A key-hash lock, tried three ways",
    "notes": "The first box builds a P2PKH lock. It is exactly 25 bytes long: OP_DUP, OP_HASH160, the 20-byte key hash, OP_EQUALVERIFY and OP_CHECKSIG, and the library classifies it as pubkeyhash.\n\nThe second box spends it in three ways. A signature from another key does not verify against the key in the lock, and a changed amount no longer matches what was signed, so both end in EVAL_FALSE.\n\nThe point to remember is that a signature is more than proof of owning a key: it also commits to the transaction, so changing the amount breaks it. Slide 16 names what exactly is signed, and chapter 8 treats signatures in depth. Example 3 lets you change the signer or the amount.\n\nThe hash160 of a key is SHA-256 followed by RIPEMD-160, so the lock never contains the key itself."
   },
   {
    "gen_slide": 16,
    "title": "Locking a coin to a key (2 of 2)",
    "course_slide": 17,
+   "course_title": "Locking a coin to a key (2 of 2)",
    "notes": "Slide 17 measures a real DER signature, and slide 18 tells what happened when nodes disagreed about the format.\n\nA signature always signs a digest and never the raw transaction, so the rules that build the digest decide what a signature protects. The hash type byte chooses among them, and chapter 8 shows each choice with a measurement. DER matters because two encodings of one signature would give two different byte strings for the same meaning, and nodes must agree on every byte."
   },
   {
    "gen_slide": 17,
    "title": "A DER signature, strict and loose",
    "course_slide": 18,
+   "course_title": "A DER signature, strict and loose",
    "notes": "The result is 72 bytes long, begins with 0x30 (48), the byte that marks a DER sequence, and has a low s value. Low s is the rule that of the two valid forms of s only the smaller is accepted.\n\nThe third box shows why the encoding is a consensus rule. A padded signature, with extra leading zero bytes, passes under the older loose rules but fails with SIG_DER once the strict DERSIG rule is switched on.\n\nNodes must agree on every byte they accept, otherwise the network splits. Slide 18 tells such a case from 2015, and chapter 8 explains the two forms of s.\n\nStrict encoding leaves one valid byte pattern for each signature value, so nodes have no room to disagree."
   },
   {
    "gen_slide": 18,
    "title": "Half the miners did not check the block",
    "course_slide": 19,
+   "course_title": "Half the miners did not check the block",
    "notes": "On 4 July 2015, at block 363,725, Pieter Wuille's BIP66 took effect and made strict DER signatures a consensus rule. A fork of six blocks followed. About half of the hash rate was mining without fully validating, so those miners built on an invalid block from a miner that had not upgraded.\n\nThe fork lasted from 02:10 to 03:50 UTC. A second fork of three blocks followed on 5 July, and the first fork showed no double spend. Bitcoin Core 0.9.5 and later checked the rule and were unaffected. The lesson is that a rule you do not check protects nobody, which connects back to slide 17.\n\nThe photograph shows a bitcoin mining farm in 2014 by Marko Ahtisaari, CC BY 2.0. The bitcoin.org notice linked on the slide is the primary account."
   },
   {
    "gen_slide": 19,
    "title": "Scripted multisignatures",
    "course_slide": 20,
+   "course_title": "A multisignature is a vault that opens when enough directors turn their keys.",
    "notes": "A multisignature is a vault that opens when enough directors turn their keys. This part covers scripts that ask for t signatures out of k keys, such as two out of three.\n\nThe t-of-k script shows the shape of such a lock and how large it may grow, because every public key takes space in the output. The extra element explains a historical oddity: the CHECKMULTISIG opcode removes one item too many from the stack, so one useless item must sit in front of the signatures.\n\nMultisignatures serve shared wallets, escrow and company treasuries. Slide 21 tests a 2-of-3 lock, and the next parts show how pay to script hash and taproot make such locks cheaper."
   },
   {
    "gen_slide": 20,
    "title": "Scripted multisignatures (1 of 2)",
    "course_slide": 21,
+   "course_title": "Scripted multisignatures (1 of 2)",
    "notes": "That is the error SIG_NULLDUMMY on slide 21.\n\nSlide 21 puts a 2-of-3 lock to the test.\n\nThe m-of-n notation is common: 2-of-3 means any two of three keys, as in a shared account that needs two directors. The oddity of CHECKMULTISIG is a good example of a bug that became part of the rules because fixing it would have split the network. Slide 21 tries the 2-of-3 case."
   },
   {
    "gen_slide": 21,
    "title": "A 2-of-3 multisignature",
    "course_slide": 22,
+   "course_title": "A 2-of-3 multisignature put to the test",
    "notes": "The lock lists three public keys and asks for two signatures. In the first box the signatures of keys 0 and 2, given in the same order as the keys, are accepted. The same two signatures in swapped order fail, because the opcode walks through the keys once and never goes back. One signature alone is too few and ends in an invalid stack operation.\n\nThe second box shows that the extra dummy element must be empty. A dummy with content is refused with SIG_NULLDUMMY.\n\nTo remember the rules: signatures follow the order of the keys, and one empty item leads. Example 5 in the chapter code tab lets you try other combinations of keys.\n\nThree of the four spends fail, each for a different reason, which shows how many details a multisignature depends on."
   },
   {
    "gen_slide": 22,
    "title": "Scripted multisignatures (2 of 2)",
    "course_slide": 23,
+   "course_title": "Scripted multisignatures (2 of 2)",
    "notes": "Slide 20 describes the oddity, and this slide names the part that carries it.\n\nThe opcode walks through the keys once and never goes back, so a list of signatures in the wrong order fails even when every signature is valid. The empty dummy rule also removes a way of changing a transaction's identifier without changing its meaning. Both rules are the checks behind the errors on slide 21."
   },
   {
    "gen_slide": 23,
    "title": "Pay to script hash",
    "course_slide": 26,
+   "course_title": "Pay to script hash",
    "notes": "The lock is 23 bytes long: OP_HASH160, a 20-byte hash and OP_EQUAL, however long the script behind it is.\n\nIn the second box the spender reveals the redeem script, a 2-of-3 multisignature, and the spend is accepted because the script hashes to the value in the lock and then runs successfully. A different script, whose hash does not match, fails with EVAL_FALSE even if it would have succeeded on its own.\n\nSo a node does two things in order: it checks the hash and then it runs the revealed script. The cost of the long script moves from the payer to the spender. Example 6 lets you try other scripts.\n\nThe payer never sees the 2-of-3 script; only its hash appears in the lock."
   },
   {
@@ -150,216 +173,252 @@
    "gen_slide": 26,
    "title": "Pay to script hash: concepts (2 of 2)",
    "course_slide": 27,
+   "course_title": "Pay to script hash: concepts (2 of 2)",
    "notes": "Base58Check is also used by the older addresses that start with 1.\n\nA node works in a fixed order: first the hash check, then the execution. If the revealed script does not hash to the value in the lock, nothing runs at all. Base58Check, which writes the hash as an address, is the same format as in the older addresses that start with 1, only with a different version byte."
   },
   {
    "gen_slide": 27,
    "title": "Data and timelocks",
    "course_slide": 28,
+   "course_title": "A timelock delays when a coin can be spent; a data output stores a small piece of data.",
    "notes": "A timelock delays when a coin can be spent, and a data output stores a small piece of data. This part covers two uses of scripts that are not about who may spend.\n\nRecording data explains how a few bytes of data go on the chain in an output that nobody can spend. Absolute timelocks make a transaction or a coin wait for a fixed time or block height. Relative timelocks make a coin wait for an age, counted from the day it was mined.\n\nThe two kinds of waiting live in different places. Lock time is a field of the transaction, while the script words OP_CHECKLOCKTIMEVERIFY and OP_CHECKSEQUENCEVERIFY make a coin demand a wait. Slides 29 and 31 test one of each."
   },
   {
    "gen_slide": 28,
    "title": "Data and timelocks: concepts (1 of 3)",
    "course_slide": 29,
+   "course_title": "Data and timelocks: concepts (1 of 3)",
    "notes": "Slide 29 tests OP_CLTV, and slide 31 tests the relative lock.\n\nBlock height and Unix time are the two units in which a lock time can be written. Three different tools appear on this slide: OP_RETURN for data, lock time for a whole transaction, and OP_CLTV with relative locks for the coin itself. Keep them apart: a data output can never be spent, whereas the timelocks decide when a spend becomes valid."
   },
   {
    "gen_slide": 29,
    "title": "A lock until block 800,000",
    "course_slide": 30,
+   "course_title": "A lock until block 800,000",
    "notes": "The script says that the coin may not be spent before block 800,000, and three spends are tried. In the first, the transaction's lock time is 800,000 and its sequence is below the maximum value 0xffffffff, so it is not final: the lock time is switched on and the check passes. In the third spend the lock time is right but the sequence is final, which tells nodes to ignore the lock time, so the script fails with UNSATISFIED_LOCKTIME.\n\nIn short, the lock time of the transaction must reach the number in the script, and the sequence must not be final. A lock time below 500,000,000 is read as a block height, and above it as a Unix time. Example 7 lets you try other values.\n\nThe number 800,000 is read as a block height because it is below 500,000,000."
   },
   {
    "gen_slide": 30,
    "title": "Data and timelocks: concepts (2 of 3)",
    "course_slide": 31,
+   "course_title": "Data and timelocks: concepts (2 of 3)",
    "notes": "OP_CLTV is defined in BIP 65, OP_CSV in BIP 112, and BIP 68 explains how the sequence field is read as a relative wait. The size of data that nodes relay in an OP_RETURN output is a policy setting and not a consensus rule. Lock time and CLTV are absolute, sequence and CSV are relative, and each pair belongs together."
   },
   {
    "gen_slide": 31,
    "title": "A wait of 4,320 blocks",
    "course_slide": 32,
+   "course_title": "A wait of 4,320 blocks",
    "notes": "The script demands a wait of 4,320 blocks, about thirty days at ten minutes a block. A version 2 transaction with an input sequence of 4,320 passes. One block short, at 4,319, fails with UNSATISFIED_LOCKTIME, and so does the same sequence in a version 1 transaction, because relative locks are enforced only from transaction version 2. In the third box, setting bit 31 (0x80000000) of the sequence switches the relative lock off, and the script then fails.\n\nCompare slide 29. There the absolute lock time was read from the transaction, whereas here the age is read from the sequence of each input. Relative waits are the basis of designs such as payment channels. Example 8 lets you change the numbers.\n\nAt ten minutes a block, 4,320 blocks are thirty days."
   },
   {
    "gen_slide": 32,
    "title": "Data and timelocks: concepts (3 of 3)",
    "course_slide": 33,
+   "course_title": "Data and timelocks: concepts (3 of 3)",
    "notes": "On slide 29 the sequence only had to be not final.\n\nKeep the pairs together: lock time goes with CLTV and means a date or a height, and sequence goes with CSV and means an age.\n\nBIP 68 defines how the sequence field is read as a relative wait, and it is the place to look for the exact bit layout. The VERIFY at the end of both long names means that the script fails at once if the check does not hold, instead of leaving a false value for a later step. Keep the pairs together: lock time with CLTV means a date or a height, sequence with CSV means an age."
   },
   {
    "gen_slide": 33,
    "title": "Flow control and complex scripts",
    "course_slide": 34,
+   "course_title": "Flow control is a fork in the road with a checkpoint on each path.",
    "notes": "Flow control is a fork in the road with a checkpoint on each path. A script can choose between several ways of being spent, and it can stop early when a check fails.\n\nConditionals and guards covers the branches that choose a path, written with IF, ELSE and ENDIF, and the VERIFY words that stop a script when a check fails. Complex scripts covers a real lock that mixes partners, a lawyer and delays. It is Mohammed's capital account from the book, built and tested on slide 35.\n\nThat example combines multisignatures, relative timelocks and flow control, so this part is also a revision of the earlier ones."
   },
   {
    "gen_slide": 34,
    "title": "Flow (1 of 2)",
    "course_slide": 35,
+   "course_title": "Flow (1 of 2)",
    "notes": "Slide 35 builds it and tests every path, and slide 36 names the opcodes behind it more closely.\n\nEvery path through an IF branch is a separate way to spend, so more branches mean more cases to test. That is why slide 35 tries every path and every wait, and why a mistake in one branch can leave coins stuck or open to the wrong person."
   },
   {
    "gen_slide": 35,
    "title": "Three ways out of one output",
    "course_slide": 36,
+   "course_title": "Three ways out of one output",
    "notes": "Mohammed's capital account is one script of 192 bytes with three ways of being spent. Path two lets the lawyer and one partner spend after 4,320 blocks, about thirty days. Path three lets the lawyer alone spend after 12,960 blocks, about ninety days. Each path works only after its wait, and asking one block early fails with UNSATISFIED_LOCKTIME, as the table shows.\n\nThe script picks its path from a value that the spender supplies, which IF and ELSE read. The example combines three earlier ideas: the multisignature of slide 21, the relative timelock of slide 31 and flow control. Example 9 lets you change the waits.\n\nThree paths and six trials: every row of the table is one way in which the account may or may not open."
   },
   {
    "gen_slide": 36,
    "title": "Flow (2 of 2)",
    "course_slide": 37,
+   "course_title": "Flow (2 of 2)",
    "notes": "Analysis before use is what makes mistakes in hand-written scripts visible early: a tool can list every way a lock can be spent and what each way costs. Mohammed's capital account from slide 35 is the kind of lock where this helps. The Bitcoin Optech topic page on Miniscript is a good place for further reading. OP_IF, OP_ELSE and OP_ENDIF are the branching words, and OP_VERIFY is the usual way to end a check early. Slide 35 uses them in the account with three paths."
   },
   {
    "gen_slide": 37,
    "title": "Segregated witness scripts",
    "course_slide": 38,
+   "course_title": "Segregated witness moves the proof to a window beside the counter.",
    "notes": "Segregated witness moves the proof to a window beside the counter. The signatures and other proofs of a spend, called the witness, are kept apart from the part of the transaction that gives it its identifier.\n\nWitness programs explains how a segregated witness lock is written and addressed. The upgrade explains how the change reached old nodes without splitting the network, which leads to the idea of a soft fork on slide 44.\n\nThis is the largest part of the chapter, with sixteen concepts on the map of slide 4."
   },
   {
    "gen_slide": 38,
    "title": "Segregated witness scripts (1 of 4)",
    "course_slide": 39,
+   "course_title": "Segregated witness scripts (1 of 4)",
    "notes": "Segregated means separated: the witness is kept apart from the rest of the transaction. In a native witness spend the signature and the key move out of the input script into the witness, so the input script itself is empty. The four cards name the key-hash lock, the script-hash lock, and how wallets create and spend them. Slide 39 shows a direct spend and a nested one."
   },
   {
    "gen_slide": 39,
    "title": "Pay to witness public key hash",
    "course_slide": 40,
+   "course_title": "Pay to witness public key hash",
    "notes": "A witness key-hash output can be spent directly, or wrapped in a P2SH output so that older wallets, which cannot send to the new addresses, can still pay it. Both give OK. In the second box the signed amount is changed and the spend fails with EVAL_FALSE, because a segregated witness signature commits to the amount being spent.\n\nThe third box builds the 22-byte witness program, made of a version byte and a 20-byte hash, and encodes it as a bech32 address, which begins with bc1q.\n\nCompare slide 15. The idea of the lock is the same, but the proof moved and the signature covers more. Example 10 lets you change the amount.\n\nCompare slide 15: the lock is the same idea, but the proof now sits in the witness."
   },
   {
    "gen_slide": 40,
    "title": "What 1,022 real inputs spend",
    "course_slide": 41,
+   "course_title": "What 1,022 real inputs spend",
    "notes": "The chart shows what real coins are spent from. The chapter's own interpreter ran every input of the first 599 non-coinbase transactions of block 775,072, which makes 1,022 inputs, using bytes from mempool.space, and sorted the inputs by the kind of output they spend. Coinbase transactions are left out because they create new coins and have no earlier output to classify.\n\nWitness key hashes lead, and taproot is still rare. So most real coins already move through witness programs.\n\nThe chart is a sample of one block, not a statistic for the whole chain, so read the proportions as a snapshot. You can repeat the check on any block with the chapter's library and an explorer such as mempool.space."
   },
   {
    "gen_slide": 41,
    "title": "Segregated witness scripts (2 of 4)",
    "course_slide": 42,
+   "course_title": "Segregated witness scripts (2 of 4)",
    "notes": "Slide 44 explains the kind of fork behind the upgrade.\n\nThe program length is how the new rules tell the two lock kinds apart, and a witness program is recognised by its version number followed by the hash. Wrapping it in P2SH solved a practical problem: wallets that had not yet learned the new addresses could still send coins to it, and the upgrade did not have to wait for them."
   },
   {
    "gen_slide": 42,
    "title": "Segregated witness scripts (3 of 4)",
    "course_slide": 43,
+   "course_title": "Segregated witness scripts (3 of 4)",
    "notes": "Slide 43 completes the vocabulary, and slide 44 explains why old nodes keep following the chain.\n\nBecause the witness sits apart from the identifier data, changing a signature no longer changes the identifier of a witness spend, which is the removal of a source of malleability. The version number in a witness program leaves room for later upgrades, and taproot later used version 1."
   },
   {
    "gen_slide": 43,
    "title": "Segregated witness scripts (4 of 4)",
    "course_slide": 44,
+   "course_title": "Segregated witness scripts (4 of 4)",
    "notes": "BIP 173 defines bech32, and its text is the place for the exact character set and checksum. Addresses that begin with bc1 belong to the segwit family, whereas those that begin with 3 may be old script hashes or nested witness. A soft fork only tightens what was allowed before, which is why old nodes keep accepting the blocks. Slide 41 told how old and new software live side by side, and slide 44 compares the soft fork with a hard fork."
   },
   {
    "gen_slide": 44,
    "title": "Hard fork or soft fork?",
    "course_slide": 45,
+   "course_title": "Hard fork or soft fork?",
    "notes": "A hard fork loosens the rules. Blocks that old nodes reject become valid, so every node must upgrade or the chain splits in two.\n\nA soft fork tightens the rules. New nodes reject more than before and accept nothing new, so old nodes still follow the chain and accept its blocks.\n\nSegregated witness was activated as a soft fork. Because it only restricts what is valid, nodes that did not upgrade carried on, although they no longer checked the new rules themselves. Remember the lesson of slide 18: a rule that you do not check protects nobody."
   },
   {
    "gen_slide": 45,
    "title": "Script trees and key tweaks",
    "course_slide": 46,
+   "course_title": "A script tree is a menu of which only the ordered dish is shown.",
    "notes": "A script tree is a menu of which only the ordered dish is shown. Many spending rules can be committed to with a single hash, and a spender reveals just the one rule they use.\n\nScript trees covers how many spending rules hide behind one hash. Key tweaks covers how a key is changed a little to commit to hidden data, so that the key itself carries a promise about that data.\n\nBoth ideas are the building blocks of taproot, which is the next part, so this part is best read before it."
   },
   {
    "gen_slide": 46,
    "title": "Script trees and key tweaks (1 of 3)",
    "course_slide": 47,
+   "course_title": "Script trees and key tweaks (1 of 3)",
    "notes": "Slide 47 counts the hashes that a proof needs.\n\nThe three ideas are the road to taproot: MAST for hiding scripts, P2C for tweaking keys and joint signatures for hiding groups. Each removes information from the chain without removing the guarantee, so spends become smaller and more private. Slide 47 counts the hashes that a proof needs, and slide 48 explains the words root, proof and tweak."
   },
   {
    "gen_slide": 47,
    "title": "A proof grows with the logarithm",
    "course_slide": 48,
+   "course_title": "A proof grows with the logarithm",
    "notes": "A spend from a script tree shows the chosen script and a proof, which is the list of sibling hashes leading from its leaf up to the top of the tree. Mohammed's three scripts need proofs of 2, 2 and 1 hashes. The second box computes the depth of trees of 3, 8, 1,024 and about a million scripts. The depth grows with the base-two logarithm, so a tree of 1,048,576 scripts needs only 20 hashes in a proof.\n\nThat is why a huge number of spending rules can sit behind one hash at little cost. Compare slide 23: P2SH reveals the whole script, whereas a script tree reveals one leaf and a short proof. Example 11 lets you change the number of scripts.\n\nDoubling the number of scripts adds only one more hash to a proof."
   },
   {
    "gen_slide": 48,
    "title": "Script trees and key tweaks (2 of 3)",
    "course_slide": 49,
+   "course_title": "Script trees and key tweaks (2 of 3)",
    "notes": "The first two cards make slide 47 work, and the third underlies slide 52.\n\nTogether, the root and the proof let a spender show one script without showing the others. The tweak adds a number derived from a hash to a key, so the key commits to the data without anyone seeing the data. The first two cards make slide 47 work."
   },
   {
    "gen_slide": 49,
    "title": "Script trees and key tweaks (3 of 3)",
    "course_slide": 50,
+   "course_title": "Script trees and key tweaks (3 of 3)",
    "notes": "Both cards continue the idea of the scriptless multisignature on the previous slide: the group structure is kept off the chain, and the chain checks one ordinary signature.\n\nChapter 8 explains why keys that simply add up are unsafe and what MuSig2 changes.\n\nA group of three that needs two signatures is a typical use. Outsiders see one key and one signature, so a 2-of-3 account looks like any other payment. Simply adding keys has a danger, because one signer can choose a share that cancels the others, and chapter 8 explains what MuSig2 changes."
   },
   {
    "gen_slide": 50,
    "title": "Taproot and tapscript",
    "course_slide": 51,
+   "course_title": "Taproot is a front door with a hidden side entrance.",
    "notes": "Taproot is a front door with a hidden side entrance. The output is one key. The owner may spend it with a plain signature, which is the front door, or by revealing one script from a hidden tree, which is the side entrance.\n\nTaproot outputs covers the single output key that can be spent either way. Tapscript covers the script rules that apply inside a taproot spend, which differ in small ways from the older Script.\n\nThis last part brings together the ideas of the previous ones: the script trees of slide 47, the key tweaks of slide 48 and Schnorr signatures, which chapter 8 treats in full."
   },
   {
    "gen_slide": 51,
    "title": "Taproot and tapscript: concepts (1 of 3)",
    "course_slide": 52,
+   "course_title": "Taproot and tapscript: concepts (1 of 3)",
    "notes": "Slide 52 tests the key path, and slide 55 tests the script path.\n\nBIP 341 defines the taproot spending rules and BIP 342 defines tapscript. A spender chooses one of two ways: the key path when everybody agrees, and the script path when a particular branch is needed. Slide 52 tests the key path, and slide 55 tests the script path."
   },
   {
    "gen_slide": 52,
    "title": "Taproot: a key path spend",
    "course_slide": 53,
+   "course_title": "Taproot: a key path spend",
    "notes": "The output key is the internal key plus a tweak, and here there is no script at all.\n\nIn the second box the output is spent along the key path with one signature of 64 bytes, in 308 weight units, and the result is OK. A key that was not tweaked as the output says is refused with SCHNORR_SIG.\n\nThe prefix helps recognition: bc1q marks a version 0 witness program, as on slide 39, and bc1p marks version 1, which is taproot. Slide 53 tells the history, and chapter 8 explains Schnorr signatures. Example 12 lets you try other keys.\n\nThe 308 weight units are the measure in which block capacity is counted."
   },
   {
    "gen_slide": 53,
    "title": "From a patented signature to taproot",
    "course_slide": 54,
+   "course_title": "From a patented signature to taproot",
    "notes": "At block 709,632, mined on 14 November 2021, the taproot rules took effect together with Schnorr signatures. They are specified in BIPs 340 to 342. BIP340 was assigned in January 2020, and a soft fork then added taproot and tapscript to the running chain.\n\nClaus-Peter Schnorr had patented his signature, which kept it out of open standards for almost two decades, so ECDSA was used instead. A key path spend is one 64-byte signature that looks the same whether one person or a million made it, which connects to the threshold signatures of slide 49.\n\nThe portrait shows Claus-Peter Schnorr in 1986, by Konrad Jacobs, CC BY-SA 2.0 de. The mempool.space link on the slide leads to a live view of the chain."
   },
   {
    "gen_slide": 54,
    "title": "Taproot and tapscript: concepts (2 of 3)",
    "course_slide": 55,
+   "course_title": "Taproot and tapscript: concepts (2 of 3)",
    "notes": "Slide 57 shows it at work.\n\nTo keep the two keys apart, recall that they differ by the tweak (slide 52), and that anyone can recompute the output key from the internal key and the tree.\n\nThe tweak ties the output key to the script tree, which is how a script path spend can be checked against it. Anyone can recompute the output key from the internal key and the tree, so nothing has to be taken on trust."
   },
   {
    "gen_slide": 55,
    "title": "Taproot: the script path",
    "course_slide": 56,
+   "course_title": "Taproot: the script path",
    "notes": "The chart compares the weight of each spend in two ways: the orange bars are the taproot script path, and the green bars are the same path as an ordinary witness script hash. Weight units are the unit in which block capacity is counted. Each path costs about as much as a plain witness script.\n\nSo taproot does not make script spends much cheaper in this example. The script path reveals only the leaf that is used and a proof, whereas the witness script hash reveals the whole script. The large saving comes when all parties agree and use the key path of slide 52. Example 13 lets you change the path.\n\nFor these scripts the saving of taproot lies in the key path, not in the script path."
   },
   {
    "gen_slide": 56,
    "title": "Taproot and tapscript: concepts (3 of 3)",
    "course_slide": 57,
+   "course_title": "Taproot and tapscript: concepts (3 of 3)",
    "notes": "Slide 58 shows how this works.\n\nChapter 8 treats Schnorr signatures in full.\n\nChapter 8 shows how the equation s = k + e x makes this adding-up possible. Mutual satisfaction is the hoped-for case: all parties agree, sign together, and the rules for a dispute never appear on the chain. OP_SUCCESS shows how the language leaves room for upgrades, and slide 58 shows how it works."
   },
   {
    "gen_slide": 57,
    "title": "Counting signatures: OP_CHECKSIGADD",
    "course_slide": 58,
+   "course_title": "Counting signatures with OP_CHECKSIGADD",
    "notes": "In tapscript the t-of-k rule works as a counter. For each public key in turn, OP_CHECKSIGADD adds one to the counter if the signature is valid, and an empty slot adds nothing. At the end the counter is compared with t.\n\nA 2-of-3 lock written this way is 104 bytes, one byte shorter than the old CHECKMULTISIG form of 105 bytes on slide 21, and it needs no dummy element. Two valid signatures and one empty slot reach the count and give OK. One signature leaves the count at one, and the result is EVAL_FALSE.\n\nCompare slide 20: the oddity that required an empty dummy is gone. Example 14 lets you change which signatures are present.\n\nTapscript does not offer CHECKMULTISIG, so counting with CHECKSIGADD is the way to write a t-of-k rule there."
   },
   {
    "gen_slide": 58,
    "title": "Opcodes kept for upgrades",
    "course_slide": 59,
+   "course_title": "Opcodes kept for upgrades",
    "notes": "Of the 256 possible opcode values, 87 are OP_SUCCESS in tapscript, and a script that contains one succeeds on sight. The second box shows opcode 152, formerly the disabled shift OP_LSHIFT. In tapscript it makes the script succeed, but in an old script the same word fails with DISABLED_OPCODE.\n\nIt may sound unsafe for unknown words to succeed. The reason is upgrading: a later soft fork can give any of these words a meaning under which some scripts fail, which is a tightening, so old nodes keep accepting the blocks. This is the soft fork idea of slide 44 applied to the language itself, and slide 10 mentioned the same words. Example 15 lets you try other opcode values.\n\nUnknown opcode values are therefore an upgrade path in tapscript and not an error."
   },
   {
    "gen_slide": 59,
    "title": "The chapter in five lines",
    "course_slide": 60,
+   "course_title": "The chapter in five lines",
    "notes": "The five lines summarise the chapter, one line for each group of parts, and each can be proved from its slides.\n\nA coin is locked by a script, the spender's script is the key, and the two run apart on a stack. Key hashes, multisignatures and script hashes lock a coin to what the spender can prove and move the long lock to the spender. Lock time and sequence make a spend wait, and flow control gives one output several ways out. Segregated witness moves the proof out of the identifier, as a soft fork that old nodes accept. Taproot commits to a tree of scripts with one key, so agreement looks like a single signature.\n\nIf a line feels unproven, the code slide of its part carries the receipt."
   },
   {
    "gen_slide": 60,
    "title": "Where to go from here",
    "course_slide": 61,
+   "course_title": "Where to go from here",
    "notes": "Everything on this slide is free to read or watch, and each entry is a live link in the file. The groups form a path. Read and explore starts with the Bitcoin white paper, the Bitcoin Wiki pages on Script and on taproot, and the Optech summary of taproot. Standards are the authoritative texts: BIP 66 for strict DER signatures, BIP 141 for segregated witness, and BIPs 341 and 342 for taproot and tapscript.\n\nThe stories give the primary sources for slides 10 and 18: the early script engine, the entry for the 2010 bug and the 2015 miner alert. The community entries are where questions get answered, and the two Optech workshops are videos on Schnorr signatures and on tapscript.\n\nThe course page for chapter 7 carries the full text behind every slide."
   },
   {
    "gen_slide": 61,
    "title": "What you should now be able to say",
    "course_slide": 62,
+   "course_title": "And where each claim gets its proof",
    "notes": "These four statements are what you should be able to say after the chapter: how a lock and a key decide a spend, how signatures and script hashes are checked, how timelocks shape who spends and when, and what segregated witness and taproot change.\n\nEach is carried by a computation that ran on a slide of this deck, and slide 59 lists where. A statement you cannot yet say in your own words sends you back to that slide.\n\nThe course page for chapter 7 has every word behind the slides, the stories with their sources and the question bank for testing yourself. Bring remaining questions to your instructor, and use the community links on slide 60."
   }
  ]
