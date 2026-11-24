@@ -1,0 +1,303 @@
+{
+ "meta": {
+  "deck": "SEN0401 Chapter 10, deck 2.4.0",
+  "rule": "notes of 60 to 140 words, full sentences, written for the reader; no presenter direction, no everyday analogy",
+  "version": "2.4.0"
+ },
+ "slides": [
+  {
+   "slide": 1,
+   "title": "Chapter 10: The Bitcoin Network",
+   "words": 88,
+   "notes": "This chapter describes the Bitcoin peer-to-peer network: who is on it, how nodes find each other, and how blocks and payments travel between them. Every figure on a result picture was either read from one recorded run of Bitcoin Core 31.1 on private test chains or computed by the chapter's own Python library. Where a number comes from a single run, the slide says so. The chapter has three parts, twenty-two code examples and five true stories, and every example can be run again on the course page."
+  },
+  {
+   "slide": 2,
+   "title": "Today's route through the chapter",
+   "words": 88,
+   "notes": "The route has three parts that follow the order of the chapter: who is on the network, how peers, blocks and transactions move, and how light clients, privacy and transport work. The right-hand column counts the slides, the true stories and the code examples. The examples appear in the same order in the chapter code tab of the course page, so every listing in this deck can be run and edited there. The slide ranges in the boxes tell you where each part starts and where it ends."
+  },
+  {
+   "slide": 3,
+   "title": "The questions this chapter answers",
+   "words": 91,
+   "notes": "The seven questions are the questions of the chapter, rewritten so that each one has an answer on a slide. They move from the first greeting of two nodes, through the way blocks and payments travel, to the privacy of light clients and the encrypted transport. We return to the same seven questions in the summary near the end. A reader who can answer all seven in their own words has understood the chapter. Keep the list at hand while you read, and mark each question when you meet its answer."
+  },
+  {
+   "slide": 4,
+   "title": "One chapter, three parts",
+   "words": 79,
+   "notes": "The chapter has three parts and fifty-six key concepts: eleven for who is on the network, twenty-one for peers, blocks and transactions, and twenty-four for light clients, privacy and transport. Each part gets a divider, concept cards with literal meanings, code that runs, and true stories. The boxes also count the code examples of each part: three, ten and nine. The deck follows the order of the chapter, so every slide belongs to exactly one of these three boxes."
+  },
+  {
+   "slide": 5,
+   "title": "Who is on the network",
+   "words": 101,
+   "notes": "This part answers the first question: who is on the Bitcoin network, and what does a node say when it first meets another? A node is an ordinary computer that runs Bitcoin software and follows the same rules as every other node. Nodes differ in what they store, because full, archival, pruned and light nodes keep different data. Two nodes begin every conversation with a version message and a verack reply, and each node announces the services it offers in a single field of bits. The three columns name these topics, and the strip below marks the part you are in."
+  },
+  {
+   "slide": 6,
+   "title": "Network: key concepts (1 of 2)",
+   "words": 101,
+   "notes": "These cards cover six key concepts of the part Who is on the network. Each card names one concept of the chapter and gives its meaning in one sentence. The cards define the network, Bitcoin, Bitcoin Core, full nodes and the types of node, using the labels of the chapter research. A full node is the strictest of these roles, because it checks every block and every transaction itself and trusts no other node. Retell each meaning in your own words before you read on. The full explanation, with the code that runs, is on the course page for chapter 10."
+  },
+  {
+   "slide": 7,
+   "title": "The handshake: version, then verack",
+   "words": 103,
+   "notes": "Two nodes cannot exchange blocks or payments until they have greeted each other. The first message is version, which names the software, the protocol version and the chain height. In the recorded run the software was Satoshi 31.1.0, the protocol version 70016 and the chain height 2099. The peer answers with verack to accept the greeting, and between them the nodes send messages that switch features on, such as wtxidrelay and sendaddrv2. Nine messages passed in all. This greeting was recorded from Bitcoin Core 31.1 on a test chain, and it is example 1 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 8,
+   "title": "A message is a 24-byte frame",
+   "words": 100,
+   "notes": "Every message on the peer-to-peer network starts with the same 24 bytes. Four bytes of network magic say which network the message belongs to, twelve bytes hold the command name, four bytes give the length of the payload, and four bytes hold the start of a double SHA-256 checksum of the payload. A verack message has no payload at all, so its length is zero and only the frame remains. On the main network the magic is f9beb4d9, and the checksum of an empty payload is 5df6e0e2. This is example 2 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 9,
+   "title": "Network: key concepts (2 of 2)",
+   "words": 98,
+   "notes": "These cards cover five more key concepts of the part Who is on the network: archival full nodes, mining, nodes, peer-to-peer networks and peers. Each card gives the meaning of one concept in one sentence. Two of them are easy to confuse: a peer is a node that a given node is directly connected to, while the word node covers every computer on the network. Archival full nodes keep every block since the first, whereas other full nodes may delete old blocks. The full explanation, with the code that runs, is on the course page for chapter 10."
+  },
+  {
+   "slide": 10,
+   "title": "Services: what a node offers",
+   "words": 97,
+   "notes": "Services travel as bits in the greeting. A full node offers the NETWORK service, which means it can serve the whole chain to a peer. A pruned node has deleted old blocks and so leaves that bit out, although both nodes in the recorded run offer WITNESS, NETWORK_LIMITED and the encrypted transport P2P_V2. Neither node offers BLOOM or COMPACT_FILTERS, because Bitcoin Core switches both off by default. The table lists every service bit of the chapter library for the two nodes of the run. This is example 3 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 11,
+   "title": "Who is on the network today",
+   "words": 92,
+   "notes": "Onion addresses are the largest group of reachable nodes in the snapshot, ahead of IPv4 and I2P. The Bitnodes snapshot of 15 October 2026 counted 25,361 reachable nodes, and almost all of them run Bitcoin Core or its variant Knots. Most advertise the encrypted version 2 transport, while only a minority still offer Bloom filters. These counts come from one saved snapshot, so treat them as a picture of one day and not as a constant. The numbers are recorded in the research package and are not computed on the course page."
+  },
+  {
+   "slide": 12,
+   "title": "Peers, blocks and transactions",
+   "words": 100,
+   "notes": "This part answers how a new node finds its first peers, how many links it keeps, how a block can travel in a few hundred bytes, and where a payment waits. The four columns name the topics: finding peers, connections, blocks and transactions. A new node starts with no neighbours, so it asks DNS seeds and addr messages for addresses. It then keeps a limited set of links of different kinds, downloads headers before blocks, and holds payments in its own memory pool until a block takes them. The strip at the bottom marks the second of the three parts."
+  },
+  {
+   "slide": 13,
+   "title": "Peers and blocks: key concepts (1 of 4)",
+   "words": 99,
+   "notes": "These cards cover six key concepts of the part Peers, blocks and transactions: BIP 152, the Bitcoin Relay Network, compact block relay, DNS seeds, forward error correction and FIBRE. Each card names one concept and gives its meaning in one sentence. Five of them belong together: compact block relay is defined by BIP 152, the Bitcoin Relay Network and FIBRE are relay networks that move blocks quickly for miners, and FIBRE adds forward error correction to its packets. DNS seeds are the first contact of a new node. The full explanation is on the course page for chapter 10."
+  },
+  {
+   "slide": 14,
+   "title": "DNS seeds hand out addresses",
+   "words": 106,
+   "notes": "A new node has no peers, so it asks the DNS seeds that are written into its own code. Each seed answered with a different list of reachable IPv4 addresses, between twenty and twenty-nine in the recorded run, so the eight seeds together give the new node many nodes to try first. The node then dials those addresses on the default port, 8333, which the code reads from the chainparams file of Bitcoin Core. From the first peers it learns about more nodes through addr messages. This is example 4 in the chapter code tab of the course page, and the answers are recorded, not live."
+  },
+  {
+   "slide": 15,
+   "title": "Address gossip: addr against addrv2",
+   "words": 111,
+   "notes": "Nodes tell each other about other nodes by gossip. The old addr message has room for IPv4 and IPv6 addresses only, because an address in it has no network field. The newer addrv2 message, defined in BIP 155, gives each address a network id and a length, so longer onion and I2P addresses fit. In the recorded run both messages carried 23 entries, and the addrv2 entries used network ids 1 and 2 with lengths of 4 and 16 bytes. A reply is capped at 23 percent of the address book, a constant that the code reads from net_processing.cpp in Bitcoin Core. This is example 5 in the chapter code tab."
+  },
+  {
+   "slide": 16,
+   "title": "Connection types and their limits",
+   "words": 98,
+   "notes": "A node keeps different kinds of links, and not every link relays everything. Full-relay links carry blocks, payments and addresses. Block-relay-only links carry blocks but no payments and no addresses, which makes it harder for an observer to map the network. The table lists the three kinds of link that one recorded node opened, and whether each carried payments and addresses. Bitcoin Core keeps eight full-relay links and two block-relay-only links, and at most 125 links in all, constants that the code reads from net.h. This is example 6 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 17,
+   "title": "Eight connections, one liar",
+   "words": 94,
+   "notes": "This is a true story, dated 12 August 2015. At the USENIX Security Symposium in Washington, Ethan Heilman and colleagues presented Eclipse Attacks on Bitcoin's Peer-to-Peer Network. An attacker who controls every connection of a victim node can feed it a false view of the chain and use it for double spending, so a node is only as honest as the peers it happens to meet. Bitcoin Core now keeps anchor connections, opens two block-relay-only links and picks peers from different autonomous systems. The picture is a stand-in, an eclipse and not the paper."
+  },
+  {
+   "slide": 18,
+   "title": "Headers first: 80 bytes a block",
+   "words": 96,
+   "notes": "A new node asks for headers before blocks. Each header is 80 bytes, and one reply holds at most 2000 of them. In the recorded run two replies carried the whole test chain of 2,101 headers, 2,000 in the first and 101 in the second, about 170 kilobytes in all. The node checks that the headers link up and only then downloads the blocks. This order lets a new node reject a false chain cheaply, before it has spent any bandwidth on blocks. This is example 7 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 19,
+   "title": "Peers and blocks: key concepts (2 of 4)",
+   "words": 90,
+   "notes": "These cards cover five key concepts of the part Peers, blocks and transactions: mempools and orphan pools, network discovery, private block relay networks, unspent transaction outputs and block-finding races. Each card gives the meaning of one concept in one sentence. The unspent outputs are the set that a full node keeps to check every payment, and they differ from the memory pool, which holds payments that no block contains yet. Block-finding races explain why miners pay for private relay. The full explanation is on the course page for chapter 10."
+  },
+  {
+   "slide": 20,
+   "title": "Relay by wtxid and the fee filter",
+   "words": 109,
+   "notes": "A node announces a payment to its peers by the witness transaction id, the wtxid, and a peer fetches the payment if it does not have it yet. A peer can also set a fee filter that says it wants to hear only of payments above a fee rate. In the recorded run the node announced two payments, at 2 and 20 satoshi per virtual byte. The normal peer heard of both, while the peer with a filter of 5,000 satoshi per kilobyte, which is 5 satoshi per virtual byte, heard of the dearer payment only. This is example 8 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 21,
+   "title": "An orphan waits for its parent",
+   "words": 102,
+   "notes": "A child payment can arrive before the payment it spends. The node cannot check the child yet, so it does not accept it into the memory pool. It keeps the child aside and asks the sender for the missing parent, using a request for a witness transaction. When the parent arrives, the node validates it, finds that the child now has all its inputs, and both enter the memory pool. The table lists these four steps in order. The child was not dropped, and no second announcement was needed. This is example 9 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 22,
+   "title": "Every node has its own memory pool",
+   "words": 102,
+   "notes": "A memory pool holds payments that are valid but not yet in a block, and every node has its own. In the recorded run node F held six payments and node G, which was never told about them, held none. The two nodes nevertheless agreed on the set of unspent outputs, 107 of them, because only blocks change that set. The waiting list is therefore local while the chain state is shared. A payment that one node has not seen is simply absent from its pool; it does not make the nodes disagree. This is example 10 in the chapter code tab."
+  },
+  {
+   "slide": 23,
+   "title": "Peers and blocks: key concepts (3 of 4)",
+   "words": 91,
+   "notes": "These cards cover five key concepts of the part Peers, blocks and transactions: the blockchain, blocks, the high-bandwidth and low-bandwidth modes of compact block relay, and the memory pool. A block bundles transactions and names the block before it, and the blockchain is the chain of such blocks, each committing to the hash of its parent. The two modes of compact block relay differ in who speaks first. The memory pool holds the valid payments that no block contains yet. The full explanation is on the course page for chapter 10."
+  },
+  {
+   "slide": 24,
+   "title": "Compact blocks: 332 bytes, not 3,062",
+   "words": 104,
+   "notes": "A peer already knows most payments of a new block from its memory pool, so the block does not need to travel whole. The compact block of BIP 152 carries the header, a short id of 6 bytes for each payment the peer is expected to have, and the payments it cannot have, such as the coinbase. In the recorded run a block of 13 payments travelled as 332 bytes instead of 3,062, which is 10.8 percent of its size. The peer rebuilds the block from its own memory pool and asks for anything missing. This is example 11 in the chapter code tab."
+  },
+  {
+   "slide": 25,
+   "title": "Sending a block as a list of short codes",
+   "words": 104,
+   "notes": "This is a true story, dated 27 April 2016, when BIP 152, Compact Block Relay, was assigned to Matt Corallo. Suhas Daftuar wrote the Bitcoin Core code, which shipped in version 0.13.0 in August 2016. A node already knows most payments of a new block from its memory pool, so sending them again wastes time on the wire. The block therefore travels as a header, a 6-byte short id per payment and the few payments the peer cannot have. The run of this chapter reproduces the result with a block of 13 payments. The picture is optical fibre, a stand-in and not the BIP."
+  },
+  {
+   "slide": 26,
+   "title": "Two ways to announce a compact block",
+   "words": 95,
+   "notes": "BIP 152 lets each peer choose how compact blocks reach it. In low-bandwidth mode the peer first announces the block, and we ask for the compact block only if we want it. This wastes nothing on a peer that already has the block. In high-bandwidth mode the peer sends the compact block at once, before it has fully checked the block. This saves one round trip, which matters when two miners are racing to find the next block. A node asks only a few peers for high-bandwidth mode and uses low-bandwidth mode with the rest."
+  },
+  {
+   "slide": 27,
+   "title": "The race to find a block",
+   "words": 100,
+   "notes": "Blocks arrive at random moments, on average every 600 seconds. While your block is still travelling, someone else may find another one, and then the network holds two competing blocks. The longer the delay, the likelier the rival: a block that takes 1 second to travel has a 0.17 percent chance of a rival, and a block that takes 60 seconds has 9.5 percent. Fast relay therefore matters most to miners, who lose the reward of a block that loses the race. This is example 12 in the chapter code tab of the course page, computed by the chapter library."
+  },
+  {
+   "slide": 28,
+   "title": "Peers and blocks: key concepts (4 of 4)",
+   "words": 91,
+   "notes": "These cards cover five key concepts of the part Peers, blocks and transactions: orphan pools, private block relay, syncing the blockchain, transactions and unconfirmed transactions. Orphan pools hold payments whose parent is not yet known. Private block relay passes blocks over a dedicated fast channel instead of the open network. Syncing downloads headers first, then the blocks, and checks them. Unconfirmed transactions are valid payments that no block contains yet. Connect each meaning with the code slides of this part. The full explanation is on the course page for chapter 10."
+  },
+  {
+   "slide": 29,
+   "title": "A parity part rebuilds a lost part",
+   "words": 108,
+   "notes": "Forward error correction sends a little extra data so that a receiver can repair losses without asking again. The simplest form is one parity part: the XOR of all the other parts. If any single part is lost, XORing the surviving parts with the parity gives the lost part back. In the example a message is cut into four parts of six bytes and one parity part is added; part 2 is lost and rebuilt, and the message is whole again. FIBRE, the relay network for miners, applies a stronger form of this idea to blocks sent over UDP. This is example 13 in the chapter code tab."
+  },
+  {
+   "slide": 30,
+   "title": "Light clients, privacy and transport",
+   "words": 108,
+   "notes": "This part answers how a phone can check a payment without the chain, what Bloom filters leaked, how block filters turn the question around, and what the encrypted transport hides. A light client keeps only headers and asks full nodes for proofs, so what it asks can reveal what it owns. The four columns name the topics: light clients, Bloom filters, block filters and transport. A Merkle path proves a payment, a Bloom filter leaked the addresses of a wallet, a block filter lets the client download instead of ask, and version 2 of the transport encrypts peer traffic. The strip at the bottom marks the third part."
+  },
+  {
+   "slide": 31,
+   "title": "Light clients: key concepts (1 of 4)",
+   "words": 93,
+   "notes": "These cards cover six key concepts of the part Light clients, privacy and transport: BIP 157, BIP 158, BIP 37, Bloom filters, compact block filters and the download of block filters from several peers. BIP 37 is the 2012 proposal that added Bloom filters, and BIP 157 and BIP 158 replace them with block filters that the node builds. A client compares the filter headers of several peers before it trusts one filter, which is how it detects a peer that lies. The full explanation is on the course page for chapter 10."
+  },
+  {
+   "slide": 32,
+   "title": "A light client checks a Merkle path",
+   "words": 100,
+   "notes": "A light client keeps only block headers. To check a payment it asks a full node for the payment and its Merkle path, the hashes that link the payment to the root stored in the header. Recomputing the path and arriving at the same root proves that the payment is in the block. In the recorded run a path of 3 hashes in a block of 5 payments reached the root of the header, and the proof was 215 bytes against 4,448 bytes for the whole block. This is example 14 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 33,
+   "title": "Double-spend odds by confirmations",
+   "words": 108,
+   "notes": "An attacker tries to build a longer secret chain that replaces the chain holding a payment. Nakamoto's paper computes the chance that an attacker with a share q of the hash rate ever catches up from z blocks behind. With 10 percent of the hash rate the chance falls from 1.0 at zero blocks to 0.0132 at three blocks and 0.0002 at six. With 30 percent it stays large for longer, at 0.1321 after six blocks. More confirmations therefore make catching up far less likely, and a stronger attacker needs more of them. This is example 15 in the chapter code tab; the numbers are computed, not recorded."
+  },
+  {
+   "slide": 34,
+   "title": "Light clients: key concepts (2 of 4)",
+   "words": 88,
+   "notes": "These cards cover six key concepts of the part Light clients, privacy and transport: encrypted and authenticated connections, two entries on Golomb-Rice coded sets, how Bloom filters work, how lightweight clients use them, and lightweight clients themselves. A Bloom filter sets several bits for each item, and a test reads the same bits. The client sends such a filter of its addresses and receives the matching transactions. Version 2 of the transport encrypts but does not authenticate. The full explanation is on the course page for chapter 10."
+  },
+  {
+   "slide": 35,
+   "title": "A toy Bloom filter",
+   "words": 107,
+   "notes": "A Bloom filter sets a few bits for each item added, and a test looks at the same bits. If one of them is clear, the item was definitely not added; if all are set, it may have been, and the answer may be wrong. In the toy filter of 16 bits and 3 hash functions both patterns that were added are found, and 6 of the 16 bits are set. The measured rate of strangers that pass is 5.3 percent, against 3.1 percent from the formula, so the two roughly follow each other. This is example 16 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 36,
+   "title": "Bloom filters are off by default",
+   "words": 101,
+   "notes": "Bloom filters told full nodes which addresses a wallet owned, which is why Bitcoin Core now keeps the service off. In the recorded run a node with default settings did not advertise the BLOOM service bit and disconnected a peer that sent filterload. With the option switched on, a filter of 7 bytes matched one payment out of five. The default therefore closed the door that leaked addresses, and an operator who wants the service must turn it on. This is example 17 in the chapter code tab of the course page, and the values are recorded from Bitcoin Core 31.1."
+  },
+  {
+   "slide": 37,
+   "title": "The filter that told on the wallet",
+   "words": 99,
+   "notes": "This is a true story, dated 24 October 2012, when BIP 37 was assigned to Mike Hearn and Matt Corallo: light clients send a Bloom filter of their addresses to a node. In 2014 Arthur Gervais and colleagues at ETH Zurich showed that this leaks considerable information about the addresses of the user. BIP 111 added the service bit NODE_BLOOM in 2015, and Bitcoin Core 0.19.0.1 turned the service off by default. In the run of this chapter a default node closed the connection of a peer that sent filterload. A privacy tool can leak more than it hides."
+  },
+  {
+   "slide": 38,
+   "title": "Light clients: key concepts (3 of 4)",
+   "words": 94,
+   "notes": "These cards cover six key concepts of the part Light clients, privacy and transport: lightweight clients and privacy, reducing bandwidth with lossy encoding, SPV clients, Tor transport, using compact block filters and what data to include in a block filter. Asking a node about your addresses tells that node about you, and the other cards describe ways around that. The basic filter holds output scripts and spent scripts and leaves out OP_RETURN data. Tor lets a node reach peers without revealing its address. The full explanation is on the course page for chapter 10."
+  },
+  {
+   "slide": 39,
+   "title": "Golomb coding sends differences",
+   "words": 105,
+   "notes": "A block filter is a sorted list of hash values. Instead of sending each value in full, send the first and then only the gaps between neighbours. Sorted numbers differ by less than they are, so the gaps need fewer bits. In the example the five numbers 379, 476, 653, 849 and 900 need up to 10 bits each, while their differences, which are 379, 97, 177, 196 and 51, need at most 8 bits. Adding the differences back restores the list exactly. This is the first step of Golomb coding, and it is example 18 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 40,
+   "title": "Golomb-Rice coding is lossless",
+   "words": 104,
+   "notes": "Golomb-Rice coding writes each difference as a quotient in unary followed by p remainder bits. It is lossless: decoding returns the identical list. In the example, with p equal to 7, the five numbers need 44 bits instead of the 50 that a fixed width needs, and the coded set occupies 6 bytes. BIP 158 uses the same code with other parameters to compress the block filters of the previous slides. Because the code is lossless, a client that decodes a filter gets exactly the set that the full node built. This is example 19 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 41,
+   "title": "A block filter rebuilt without Core",
+   "words": 105,
+   "notes": "The chapter library rebuilds the basic block filter of a block from the block and the scripts it spends, without using any Bitcoin Core code. For one test block it matched the filter of Bitcoin Core and its filter header, which chains the filter to the previous header as BIP 157 defines. The filter holds 104 elements in 275 bytes, about 21 bits per element. The same code also reproduces all ten test vectors published with BIP 158. Independent code that agrees with Core is evidence that the specification and the implementation say the same thing. This is example 20 in the chapter code tab."
+  },
+  {
+   "slide": 42,
+   "title": "An anonymous post turned the filter around",
+   "words": 103,
+   "notes": "This is a true story, dated 9 May 2016, when a developer writing as bfd posted Committed Bloom filters to the bitcoin-dev mailing list. A Bloom filter makes the client reveal its addresses, so the idea was to turn the question around. The full node builds one small filter per block, and the client downloads it and tests its own addresses privately. Olaoluwa Osuntokun and Alex Akselrod turned the idea into BIP 157 and BIP 158, which use Golomb-coded sets, and the code of this chapter reproduced all ten test vectors. The picture is a stand-in: Solomon Golomb, whose coding the filter uses."
+  },
+  {
+   "slide": 43,
+   "title": "Light clients: key concepts (4 of 4)",
+   "words": 89,
+   "notes": "These cards cover six key concepts of the part Light clients, privacy and transport: downloading multiple block filters, encryption, false positives, lossless encoding, lossy encoding and privacy. Lossless coding restores the original exactly, as Golomb-Rice coding does, while lossy coding drops detail for size and cannot be undone. A false positive is an item reported as present although it was never added. Privacy means that watchers should not learn who sends, who asks or who owns a coin. The full explanation is on the course page for chapter 10."
+  },
+  {
+   "slide": 44,
+   "title": "Transport v1 shows its magic, v2 hides it",
+   "words": 106,
+   "notes": "In the old transport, version 1, the network magic and the word version are plain to see on the wire. In version 2, defined in BIP 324, neither appears, and the first 4,096 bytes of the stream have an entropy of 7.953 bits per byte, where random data would give 8. An observer therefore sees what looks like random bytes. The recording came from the same two nodes speaking each transport once. Version 2 encrypts the traffic but does not authenticate the peer, so it hides the content from eavesdroppers and does not stop an active attacker. This is example 21 in the chapter code tab."
+  },
+  {
+   "slide": 45,
+   "title": "From a closed proposal to the default",
+   "words": 103,
+   "notes": "This is a true story, dated 8 March 2019, when BIP 324, the version 2 encrypted transport, was assigned to Dhruv Mehta, Tim Ruffing, Jonas Schnelli and Pieter Wuille. Version 1 sends everything in the clear, so anyone on the path can read it and tell Bitcoin traffic from other traffic. Bitcoin Core 26.0 added version 2 as an option in December 2023, and 27.0 made it the default in April 2024. It encrypts but does not authenticate. In the run of this chapter the v2 stream showed neither the magic bytes nor the word version. Defaults decide how private a network is."
+  },
+  {
+   "slide": 46,
+   "title": "Networks a node can reach",
+   "words": 101,
+   "notes": "A fresh node reaches the Internet over IPv4 and IPv6. A node configured to use Tor reaches the onion network only, so peers never see its address. The table compares the five networks that a node can use, namely IPv4, IPv6, Tor, I2P and CJDNS, for the two nodes of the recorded run. The fresh node reaches IPv4 and IPv6, the Tor node reaches onion only, and neither reaches I2P or CJDNS because neither was configured for them. The chapter library reads both configurations from the recorded run. This is example 22 in the chapter code tab of the course page."
+  },
+  {
+   "slide": 47,
+   "title": "The chapter in five lines",
+   "words": 100,
+   "notes": "These five lines are the deck in miniature, one line for each group of slides. A line that feels unproven should send you back to its code slide, because every figure in it was read from the recorded run or computed there. The first line comes from the handshake and frame slides, the second from the peer discovery and connection slides, the third from the headers, compact block and memory pool slides, the fourth from the Merkle path and filter slides, and the fifth from the transport slides. The chapter code tab of the course page reruns all twenty-two examples."
+  },
+  {
+   "slide": 48,
+   "title": "Where to go from here",
+   "words": 92,
+   "notes": "Everything here is free to read or watch, and every link was opened on the date in the subtitle. A good start is the USENIX talk on eclipse attacks, then the Optech topic on compact block relay. The links also cover the Optech topic on the version 2 transport, BIP 152 and BIP 324, the Bitnodes census, a talk on the Neutrino light client, and the places where developers discuss proposals in public. The course page for chapter 10 carries the full text, the stories with their sources and the question bank."
+  },
+  {
+   "slide": 49,
+   "title": "What you should now be able to say",
+   "words": 103,
+   "notes": "These four claims close the chapter, and each is carried by a computation that ran on a slide of this deck. Who is on the network and how nodes meet comes from the handshake, frame, services and census slides. How blocks and payments travel and wait comes from the headers, relay, orphan, memory pool and compact block slides. How a light client verifies and what filters leaked comes from the Merkle path, Bloom filter and block filter slides. What the encrypted transport hides comes from the transport slide. The course page for chapter 10 has every word behind them and the question bank."
+  }
+ ]
+}
