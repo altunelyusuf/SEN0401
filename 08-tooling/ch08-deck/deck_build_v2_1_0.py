@@ -472,6 +472,18 @@ BIPS = {"Deployed": 6, "Complete": 2, "Draft": 4, "Closed": 1}
 RES_SUB = "Opened on 2026-10-23; every entry is a live link in this file"
 
 
+def apply_notes():
+    """the full notes (60 to 140 words) of the finished course deck, renumbered to this deck, replace the short generator notes of the slides whose title matches (deck_notes_v1_0_0.json)"""
+    p = os.path.join(HERE, "deck_notes_v1_0_0.json")
+    if not os.path.exists(p): return
+    d = json.load(open(p)); n = 0
+    for e in d["slides"]:
+        i = e["gen_slide"]
+        if i <= len(S) and S[i - 1]["title"] == e["title"]: S[i - 1]["notes"] = e["notes"]; n += 1
+    short = [i for i, s in enumerate(S, 1) if W(s["notes"]) < 60]
+    print("notes taken from the course deck: %d of %d slides; slides with notes under 60 words: %s" % (n, len(S), short))
+
+
 def refuse(N):
     """the deck standard held at build time: D2 (30 words per text box), D7 (notes of at most 140 words; thin notes under 60 are counted and reported below), D1 (numbering is the renderer's), D4/D11 (the key concepts)"""
     bad = []
@@ -545,7 +557,7 @@ def manifest(N):
 
 
 def main(render):
-    N = build(); cov = refuse(N)
+    N = build(); apply_notes(); cov = refuse(N)
     plan = {"meta": {"title": "Chapter 8: Digital Signatures", "sub": "SEN0401, third-edition deck 2.0.0", "version": VER, "python": PY, "total": N,
                      "redesign": "2026-10-23, task TK_Ch08_Deck_Build: content, code with explanation beside it and the result as a picture, dividers with meanings, deck standard D1-D12",
                      "notes": "short reader's prose: 2-4 sentences, at most 60 words",
