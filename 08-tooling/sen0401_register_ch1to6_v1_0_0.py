@@ -8,12 +8,10 @@ if os.path.exists(dst): sys.exit('refuse: ' + dst + ' exists')
 s = open(src, encoding='utf-8').read()
 V = lambda f: tuple(map(int, re.search(r'_v(\d+)_(\d+)_(\d+)\.\w+$', f).groups()))
 NAME = {1: 'Introduction', 2: 'How Bitcoin Works', 3: 'Bitcoin Core', 4: 'Keys and Addresses', 5: 'Wallet Recovery', 6: 'Transactions'}
-CME = {1: '9 of 9', 2: '9 of 9', 3: '8 of 9', 4: '8 of 9, with lambda taught on slide 10', 5: '9 of 9', 6: '8 of 9'}
-NOPROMPT = {3: ' The one element not met is no-prompts: it reads ellipsis lines of the book\'s own console listings inside the embedded book ontology, which stays byte-identical to its file.',
-            4: ' no-prompts reads the book\'s own console listing (lines that start with a prompt) inside the embedded book ontology, which stays byte-identical to its file, so on this page it is read as not met.',
-            6: ' The one element not met is no-prompts: it reads ellipsis lines of the book\'s own script listings inside the embedded book ontology, which stays byte-identical to its file.'}
-unt = subprocess.run(['git', 'status', '--porcelain', '--untracked-files=all'], capture_output=True, text=True, cwd='..').stdout.split('\n')
-unt = [l[3:] for l in unt if l.startswith('??')]
+CME = {1: '9 of 9', 2: '9 of 9', 3: '9 of 9', 4: '9 of 9, with the lambda taught on slide 10', 5: '9 of 9', 6: '9 of 9'}
+NOPROMPT = {}
+unt = subprocess.run(['git', 'show', '--name-only', '--diff-filter=A', '--pretty=format:', '335d322'], capture_output=True, text=True, cwd='..').stdout.split('\n')
+unt = [l for l in unt if l]
 new = []; notes = []
 for c in range(1, 7):
     n = '%02d' % c
@@ -28,7 +26,7 @@ for c in range(1, 7):
     dcterms:replaces sen0401:%s ;
     cme:fileInPart "03-materials/%s" ;
     cme:servesOutcome %s ;
-    rdfs:comment "Registered in 1.7.0. Measured on 2026-11-25 against the deck standard v3.1.0 (twelve of twelve elements) and the CME material check v1.2.0 (%s)."@en .
+    rdfs:comment "Registered in 1.7.0. Measured on 2026-11-25 against the deck standard v3.1.0 (twelve of twelve elements) and the CME material check v1.3.0 (%s)."@en .
 ''' % (n, *dv, c, NAME[c], *dv, prevdeck, deck, lo, CME[c]))
     new.append('''sen0401:Page_Ch%s_v%d_%d_%d a schema:LearningResource ;
     dcterms:title "Chapter %d interactive page, version %d.%d" ;
@@ -36,7 +34,7 @@ for c in range(1, 7):
     dcterms:replaces sen0401:%s ;
     cme:fileInPart "03-materials/%s" ;
     cme:servesOutcome %s ;
-    rdfs:comment "Registered in 1.7.0. Keeps the mock exam that opens its results; carries the chapter code with no prompts and no lambda unless taught, the slide notes of the new deck, a top menu item that runs the slide examples in order, and the chapter library in a wheel that matches the library source (library match check: all match).%s"@en .
+    rdfs:comment "Registered in 1.7.0. Keeps the mock exam that opens its results; carries the chapter code with no prompts (book listings quoted inside the embedded book ontology are not page code and are not counted) and no lambda unless taught, the slide notes of the new deck, a top menu item that runs the slide examples in order, and the chapter library in a wheel that matches the library source (library match check: all match).%s"@en .
 ''' % (n, *pv, c, pv[0], pv[1], prevpage, page, lo, NOPROMPT.get(c, '')))
     comp = sorted(f for f in unt if f.startswith('03-materials/ch%s/' % n) and f not in ('03-materials/' + deck, '03-materials/' + page))
     comp += sorted(f for f in unt if re.match(r'08-tooling/sen0401_ch%s_lib_v[0-9_]+\.py$' % n, f))
