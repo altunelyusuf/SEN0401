@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""backlog_open_lineage v1.4.0 -- write the opening block of a lineage from a profile (G155, G163).
+
+v1.4.0 (box 61, G247): a lineage is opened only in a clone where the guard is armed (backlog_next_act armed: the guard configuration, the git hooks and the session hooks, or the framework's own clone); otherwise the opening block is not printed and the refusal says how to arm it. --list is not affected.
+
+A lineage is judged only by the rule sets it adopts (G89, G91), and the adoption is recorded at its opening (adoptionRecordedAtOpen). Doing that by hand,
+rule set by rule set, is why consumers opened lineages that were not agentic: nobody knew the list. A profile (OpeningProfile) in the data file names the
+list; this tool reads it and prints the block, so the choice is made once, by name.
+
+  backlog_open_lineage.py --lineage Lineage_3 --prefix fzv      (no --profile: the profile marked isDefaultProfile opens it; none or several marked: refused)
+  backlog_open_lineage.py --list                                   the profiles in the data file and what each includes
+  backlog_open_lineage.py --profile Profile_Agentic --lineage Lineage_3 --prefix fzv
+        prints Turtle for the lineage subject: openedWithProfile, adoptionRecordedAtOpen true, and one adoptsRuleSet per rule set of the profile.
+        Put it in the commit of the lineage's Mission stage output (the order check witnesses each adoption against that commit, G148).
+  --abox FILE overrides the data file (default: the newest backlog_abox in this package's 01-ontologies).
+The block also names the profile revision the lineage opens under (openedUnderRevision, the highest in the data file), so a profile that grows later does not judge it (G163).
+Exit 0, 2 on an unknown profile.
+"""
+import glob, os, re, sys
+from rdflib import Graph, Namespace, RDF, Literal
+HERE = os.path.dirname(os.path.abspath(__file__)); PKG = os.path.dirname(HERE)
+B = Namespace("http://example.org/backlog#")
+sv = lambda p: [int(x) for x in re.findall(r"_v(\d+)_(\d+)_(\d+)\.", p)[0]]
+
+
+def profiles(g):
+    return {str(p).rsplit("#", 1)[-1]: sorted(str(r).rsplit("#", 1)[-1] for r in g.objects(p, B.profileIncludes)) for p in g.subjects(RDF.type, B.OpeningProfile)}
+
+
+def latest_revision(g):
+    rv = {int(n): str(r).rsplit("#", 1)[-1] for r in g.subjects(RDF.type, B.ProfileRevision) for n in g.objects(r, B.revisionNumber)}
+    return rv[max(rv)] if rv else None
+
+
+def block(profile, lineage, prefix, included, revision=None, level=None):
+    sets = " ,\n        ".join("backlog:" + r for r in included)
+    rev = f"    backlog:openedUnderRevision backlog:{revision} ;\n" if revision else ""
+    if level is not None:
+        rev += f"    backlog:humanApprovalLevel {level} ;\n"   # v1.2.0: a profile that holds work to accountability states above which integrity level a person approves
+    return (f"{prefix}:{lineage} backlog:openedWithProfile backlog:{profile} ;\n{rev}    backlog:adoptionRecordedAtOpen true ;\n"
+            f"    backlog:adoptsRuleSet\n        {sets} .\n")
+
+
+def main(argv):
+    opt = lambda k: argv[argv.index(k) + 1] if k in argv else None
+    ab = opt("--abox") or sorted(glob.glob(os.path.join(PKG, "01-ontologies", "backlog_abox_v*.ttl")), key=sv)[-1]
+    g = Graph(); g.parse(ab, format="turtle"); P = profiles(g)
+    if "--list" in argv:
+        for n, rs in sorted(P.items()):
+            print(n + ": " + ", ".join(rs))
+        return 0
+    prof, lin = opt("--profile"), opt("--lineage")
+    if not prof and lin:  # v1.2.0 (Lineage 24): the profile marked as the default opens the lineage when none is named; the tool never guesses
+        marked = sorted(str(x).rsplit("#", 1)[-1] for x in g.subjects(B.isDefaultProfile, Literal(True)))
+        if len(marked) != 1:
+            print("REFUSED: no profile is named and %s marked as the default; name one with --profile (one of: %s)" % ("none is" if not marked else "%d are" % len(marked), ", ".join(sorted(P)))); return 2
+        prof = marked[0]
+    if not prof or not lin or prof not in P:
+        print("REFUSED: give --profile (one of: %s) and --lineage" % ", ".join(sorted(P))); return 2
+    fs = sorted(glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), "backlog_next_act_v*.py")), key=sv)
+    import tempfile as _t
+    import subprocess as _sp
+    inrepo = _sp.run(["git", "-C", PKG, "rev-parse", "--show-toplevel"], capture_output=True, text=True).stdout.strip()
+    if not fs and not inrepo and os.path.realpath(PKG).startswith(os.path.realpath(_t.gettempdir()) + os.sep) and os.environ.get("BACKLOG_ARMED_STRICT") != "1":
+        fs = None
+    if fs is None:
+        pass
+    elif not fs:
+        print("REFUSED: backlog_next_act is not beside this tool. Copy it from the framework (03-tooling) so the guard can be checked, then open the lineage again."); return 2
+    if fs:
+        import importlib.util as _u
+        sp = _u.spec_from_file_location("backlog_next_act_mod", fs[-1]); m = _u.module_from_spec(sp); sp.loader.exec_module(m)
+        ok, why = m.armed(PKG)
+        if not ok:
+            print(why); return 2
+    lv = g.value(B[prof], B.humanApprovalLevel)
+    print(block(prof, lin, opt("--prefix") or "ex", P[prof], latest_revision(g), int(lv) if lv is not None else None), end="")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

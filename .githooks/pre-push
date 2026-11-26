@@ -1,0 +1,11 @@
+#!/bin/sh
+# installed by backlog_guard_install: no push of a range containing work outside the register.
+TOP="$(git rev-parse --show-toplevel)"
+ZERO=0000000000000000000000000000000000000000
+while read lref lsha rref rsha; do
+  [ "$lsha" = "$ZERO" ] && continue
+  if [ "$rsha" = "$ZERO" ]; then base="$(git merge-base "$lsha" origin/main 2>/dev/null || git merge-base "$lsha" origin/master 2>/dev/null || echo)"; else base="$rsha"; fi
+  if [ -z "$base" ]; then rng="$lsha"; else rng="$base..$lsha"; fi
+  python3 "$TOP/.brsf/03-tooling/backlog_work_guard_v1_5_0.py" range "$rng" || exit 1
+done
+exit 0

@@ -1,0 +1,410 @@
+#!/usr/bin/env python3
+# v2.12.0 (Lineage 29, box 47, story ArchiveOutcome; G235, IPage handover of 2026-11-10): (1) the trigger text on the live pointer states the outcome the mission has (Out_Achieved or Out_Abandoned) and names the closure report and the cancelled items it names, where it said "found achieved" for every lineage; (2) move_header reads the version line whichever way it ends (a semicolon or a full stop) and with any spacing, and a refusal names the form it expects.
+# v2.11.0 (Lineage 29, governance story: setting down a lineage leaves live what a live lineage uses): the cluster closure counted a subject that no lineage owns, such as the run of a live lineage, as a candidate for the archive, so a shared definition (the builder, verifier, overseer and approver roles) whose every user was an archived run or a candidate was set down with them, and the live runs lost their definition: 63 violations of live lineages on a copy of the register after the seven archivable lineages were set down (64 on the register of 5.4.5, which holds one more run). A candidate that touches anything outside the partition and the candidates is now dropped first, until none is left to drop.
+# v2.10.0 (Lineage 22, D2): a statement whose subject is written as a full IRI moves with its lineage like one written as a prefixed name (split_statements); 59 statements of Lineage 20 stayed in the live register because only the second form was read
+# v2.9.0 (G134): an entry names its lineage, mission and outcome by LINKS (never text); a mission or outcome that is not recorded is left out, not written as a blank or as the word unrecorded
+# v2.8.0 (G121): the earlier statements of an archived lineage's mission (supersedesMission, however long the chain) are its mission history and move with it, up to a statement another lineage pursues; before, they stayed live ownerless and pointed into the archive.
+# v2.7.0 (G106, consumer archival): the archive file is a parameter. --archive-file PATH names it (created at its first version when it does not exist yet); without the flag a register inside this package keeps using the package archive, and a register anywhere else gets its own archive beside it, in <register folder>/archive/<register name>_archive_vX_Y_Z.ttl. v2.6.0 always wrote into this package's archive, so a consumer ledger would have written its subjects into the framework's record.
+# v2.6.0 (G99 release B): the version a new live or archive file supersedes joins the header's owl:priorVersion chain (it was added by hand each time; move_header does it, and refuses a header that has no chain to extend).
+# v2.5.0 (Lineage 19, DC-S01 and DC-S03): an abandoned mission needs a closure report too, and every cancelled item of the lineage must be named by it (reportsCancelledItem); the archived copy of the lineage is marked archived with its confirmation pending, at the moment it is moved, so no later step has to find it. v2.4.0 accepted an abandoned mission with only its stated reason, which the owner has ruled is not enough.
+# v2.4.0 (Lineage 18, OC-S06): an abandoned lineage is archivable (its stated reason is its record), and the existing entries follow the archive file to its new version. v2.3.0 (Lineage 18, OC-S05): follows the archive folder. The archive data file now lives in 01-ontologies/archive/.
+"""backlog_lineage_archive v2.12.0 — set an achieved lineage down, out of every processing path.
+
+WHY. A lineage whose mission is settled keeps costing every run until it is ARCHIVED: the SHACL
+suite validates its every individual, the git witness re-measures its every subject, the roadmap
+report ranks its items. Six early lineages were set down by hand into
+backlog_framework_archive_abox (807 individuals, "the work was finished"); lineages 7 and 8
+stayed live for a week after they were achieved because nothing archived them. The owner's rule,
+2026-09-09: an archived lineage is not a subject of processing unless consciously revived, and an
+ACHIEVED lineage found un-archived triggers the archival activity.
+
+v2.0.0 (2026-09-10, G92) -- A CLOSED LINEAGE RETIRES WHOLE, AND THE PARTITION IS BY OWNERSHIP.
+v1.0.0 built the partition by reachability and kept two hand-picked exceptions live, the Lineage and
+its Mission. Measured afterwards: all 14 Lineage individuals and 10 Missions were still live and
+being validated, while fw:Register -- the register ROOT, which belongs to no lineage -- had been
+swept into the archive, leaving the live register with no container. Both from one cause:
+connectivity has no notion of above and below. v2.0.0 partitions by OWNERSHIP -- everything the
+lineage owns moves, its Lineage and Mission included -- leaves a LineageArchiveEntry (a record, not
+a Lineage, so no shape targeting Lineage or Mission fires on retired work), and REFUSES to move the
+register root or anything the root declares.
+
+WHAT IT DOES.  backlog_lineage_archive.py <register.ttl> <LineageLocalName>... [--apply] [--archive-file PATH]
+  1. Checks the lineage is archivable: hasMissionOutcome Out_Achieved on its mission; a
+     ClosureReport closes that mission; EVERY work item of the lineage is Done or Cancelled
+     (v2.1.0 -- was InProgress-only; a real, measured gap let a genuinely Proposed item,
+     SDLC-S07, get archived unfinished); not frozen.
+     (Whether its chain reads ORDERED is the order check's verdict and is required by the gate,
+     not repeated here.)
+  2. Computes the ARCHIVAL PARTITION: every subject that belongsToLineage the lineage, plus --
+     iterated to a fixed point -- every subject that belongs to no live lineage and references a
+     subject already in the partition (closure reports, change requests, events about the
+     lineage's items). Measured on lineages 7+8: 411 direct members, 493 after closure.
+     (v2.11.0) A subject that no lineage owns and that touches anything outside the partition and its own candidates, such as the run of a LIVE lineage or an agent
+     role that a live run uses, is never swept: those candidates are dropped first, and so are the subjects that depend on them.
+  3. Reports what stays live and still points into the partition (a pointer into a named archive
+     is a reference, not a dangling edge -- the archive ABox says so itself).
+  4. With --apply: writes the partition's triples into a NEW archive ABox version, removes them
+     from a NEW register version, and leaves on the Lineage individual: lineageArchived true,
+     archiveFile <path>, archivedAt, archivalTrigger. The Lineage, its Mission and its ClosureReport
+     STAY in the live register as the record that points into the archive (as lineages 1-6 do).
+     Nothing is deleted; it moves, and the archive ABox is loaded by the lineage-history checks.
+  Revival is the inverse (--revive), an owner act recorded as lineageRevivedAt.
+
+Exit 0 archivable / applied; 2 not archivable (reasons printed); 1 error.
+"""
+import glob, os, re, sys, time
+from rdflib import Graph, Namespace, RDF, RDFS, Literal, URIRef, XSD
+
+B = Namespace("http://example.org/backlog#")
+HERE = os.path.dirname(os.path.abspath(__file__)); PKG = os.path.dirname(HERE)
+ITEM_TYPES = ["Story", "Epic", "ExecutionTask", "Initiative", "Spike", "Task", "Defect", "Feature", "Enabler"]
+def local(x): return str(x).split("#")[-1]
+def prefix_of(g, x):
+    ns = str(x).rsplit("#", 1)[0] + "#"
+    return next((p + ":" for p, n in g.namespaces() if str(n) == ns), "fw:")
+def semver(p):
+    m = re.findall(r"_v(\d+)_(\d+)_(\d+)\.", p)
+    return [int(x) for x in m[0]] if m else [0, 0, 0]
+def bump(path, minor=True):
+    M, m, p = semver(path)
+    if (M, m, p) == (0, 0, 0):
+        return re.sub(r"\.ttl$", "_v0_1_0.ttl", path)   # an unversioned working copy
+    tok = f"_v{M}_{m+1}_0" if minor else f"_v{M}_{m}_{p+1}"
+    return re.sub(r"_v\d+_\d+_\d+\.", tok + ".", path)
+
+def archivable(g, L):
+    reasons = []
+    m = g.value(L, B.lineageForMission)
+    if m is None: reasons.append("no lineageForMission")
+    else:
+        oc = g.value(m, B.hasMissionOutcome)
+        if oc == B.Out_Abandoned:
+            # v2.5.0 (Lineage 19): an abandoned mission is archivable only with its stated reason AND a closure report that proves what was done
+            # and names what was cancelled. v2.4.0 accepted the reason alone.
+            if g.value(m, B.outcomeRationale) is None: reasons.append(f"mission {local(m)} is Out_Abandoned but states no outcomeRationale")
+        elif oc != B.Out_Achieved:
+            reasons.append(f"mission {local(m)} is neither Out_Achieved nor Out_Abandoned")
+        reports = list(g.subjects(B.closesForMission, m))
+        if not reports: reasons.append(f"no ClosureReport closes {local(m)}")
+        else:
+            named = {x for r in reports for x in g.objects(r, B.reportsCancelledItem)}
+            for i in g.subjects(B.belongsToLineage, L):
+                if g.value(i, B.hasState) == B.Cancelled and i not in named:
+                    reasons.append(f"cancelled item {local(i)} is named by no closure report (reportsCancelledItem)")
+    a = g.value(L, B.lineageArchived)
+    if a is not None and bool(a.toPython()): reasons.append("already archived")
+    f = g.value(L, B.lineageFrozen)
+    if f is not None and bool(f.toPython()):
+        # the CURRENT freeze (as the order check reads it): a thrash without a ruling, or a bypass no restart answers
+        restarts = list(g.subjects(B.restartsLineage, L))
+        for fb in g.objects(L, B.frozenBy):
+            if (fb, RDF.type, B.LineageThrash) in g and g.value(L, B.frozenRuling) is None: reasons.append(f"frozen by thrash {local(fb)} without a ruling")
+            if (fb, RDF.type, B.LineageBypass) in g and not any((r, B.answersBypass, fb) in g for r in restarts): reasons.append(f"frozen by bypass {local(fb)} with no answering restart")
+    for i in g.subjects(B.belongsToLineage, L):
+        st = g.value(i, B.hasState)
+        # v2.1.0 -- was: only InProgress refused. A real gap this measured directly, not
+        # guessed: SDLC-S07, genuinely Proposed (never started), was archived along with
+        # SDLC-S01_SDLCObligations because Proposed passed this check silently. Any
+        # non-terminal state is the same problem InProgress was -- real, unfinished work
+        # buried where it will not be found again without a conscious revival. Only Done
+        # and Cancelled are terminal; everything else refuses archival.
+        if st is not None and st not in (B.Done, B.Cancelled):
+            reasons.append(f"{local(i)} is {local(st)}, not Done or Cancelled")
+    return reasons
+
+def archive_target(reg, flag, g):
+    """The archive data file a register is archived into, and whether it has to be created: (path, exists).
+    --archive-file wins; a register inside this package uses the package archive; any other register gets <its folder>/archive/<its name>_archive_v*.ttl."""
+    if flag:
+        return flag, os.path.isfile(flag)
+    inside = os.path.abspath(reg).startswith(os.path.join(PKG, "01-ontologies") + os.sep)
+    if inside:
+        return sorted(glob.glob(os.path.join(PKG, "01-ontologies", "archive", "backlog_framework_archive_abox_v*.ttl")), key=semver)[-1], True
+    folder = os.path.join(os.path.dirname(os.path.abspath(reg)), "archive")
+    stem = re.sub(r"_v\d+_\d+_\d+\.ttl$", "", os.path.basename(reg))
+    have = sorted(glob.glob(os.path.join(folder, stem + "_archive_v*.ttl")), key=semver)
+    return (have[-1], True) if have else (os.path.join(folder, stem + "_archive_v1_0_0.ttl"), False)
+
+
+def first_archive_text(g, path):
+    """The header of a consumer's first archive file: its ontology IRI is the register's, with -archive."""
+    from rdflib import OWL
+    onto = next(iter(g.subjects(RDF.type, OWL.Ontology)), None)
+    base = (str(onto).rstrip("/#") if onto is not None else "http://example.org/consumer") + "-archive"
+    return ("@prefix owl: <http://www.w3.org/2002/07/owl#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n\n"
+            f"<{base}> a owl:Ontology ;\n    owl:versionIRI <{base}/1.0.0> ;\n    owl:versionInfo \"1.0.0\" ;\n"
+            "    rdfs:label \"archived lineages\"@en ;\n"
+            "    rdfs:comment \"Lineages of this ledger that were set down by backlog_lineage_archive. Not loaded by the ordinary validation path; loaded for lineage-history checks.\" .\n")
+
+
+def register_root(g):
+    """The container the register itself is: isRegisterRoot true, or -- for a register written before
+    v1.94.0 -- the Backlog that no other container contains."""
+    for b in g.subjects(B.isRegisterRoot, None):
+        return b
+    backlogs = list(g.subjects(RDF.type, B.Backlog))
+    for b in backlogs:
+        if not any(True for _ in g.objects(b, B.memberOfContainer)):
+            return b
+    return backlogs[0] if backlogs else None
+
+
+def protected(g):
+    """Never archivable: the register root, and everything the ROOT declares (its scope statement,
+    its Definition of Done, its commitment, its packages and artifacts). The root is above every
+    lineage and belongs to none, which is exactly why v1.0.0's reachability partition took it."""
+    root = register_root(g)
+    if root is None:
+        return set()
+    keep = {root}
+    frontier = [root]
+    while frontier:
+        n = frontier.pop()
+        for o in g.objects(n, None):
+            if isinstance(o, URIRef) and o not in keep and not str(o).startswith(str(B)) \
+                    and (o, B.belongsToLineage, None) not in g:
+                keep.add(o); frontier.append(o)
+    return keep
+
+
+def partition(g, lineages):
+    live_lin = {l for l in g.subjects(RDF.type, B.Lineage) if l not in lineages
+                and not (g.value(l, B.lineageArchived) is not None and bool(g.value(l, B.lineageArchived).toPython()))}
+    live_subj = {s for l in live_lin for s in g.subjects(B.belongsToLineage, l)}
+    part = {s for l in lineages for s in g.subjects(B.belongsToLineage, l)}
+    # v2.0.0: NOTHING of the lineage stays live. The Lineage, its Mission and its ClosureReport move
+    # with everything else it owns; what remains in the live register is a LineageArchiveEntry, built
+    # by apply() below. keep_live is now only what the REGISTER owns and no archival may touch.
+    keep_live = protected(g)
+    # v2.4.0 (Lineage 18): two things a retired lineage never owns, and the closure below must not sweep. (1) The vocabulary's own individuals (the
+    # backlog# namespace: statuses, outcomes) -- they were swept once their last LIVE user was a retired lineage, which would leave a live register
+    # unable to use them. (2) A live lineage and its mission: a live mission that merely POINTS at a retired one (supersedesMission) is not part of it.
+    keep_live |= {x for x in set(g.subjects()) if isinstance(x, URIRef) and str(x).startswith("http://example.org/backlog#")}
+    keep_live |= live_lin | {g.value(l, B.lineageForMission) for l in live_lin if g.value(l, B.lineageForMission)}
+    part |= set(lineages) | {g.value(l, B.lineageForMission) for l in lineages if g.value(l, B.lineageForMission)}
+    part |= {cr for l in lineages for cr in g.subjects(B.closesForMission, g.value(l, B.lineageForMission))}
+    # v2.8.0 (G121): a mission amended mid-flight is the same lineage under a better statement (G104), so the statements it replaced are that lineage's mission
+    # history, not records of nobody. They go with the lineage, with their closure reports, up to a statement another lineage pursues (that one is its own).
+    others = {g.value(l, B.lineageForMission) for l in g.subjects(RDF.type, B.Lineage) if l not in lineages and g.value(l, B.lineageForMission) is not None}
+    todo = [g.value(l, B.lineageForMission) for l in lineages if g.value(l, B.lineageForMission) is not None]
+    while todo:
+        cur = todo.pop()
+        for pre in g.objects(cur, B.supersedesMission):
+            if pre in others or pre in part: continue
+            part.add(pre); part |= set(g.subjects(B.closesForMission, pre)); todo.append(pre)
+    part -= keep_live
+    changed, rounds = True, 0
+    while changed and rounds < 20:
+        changed = False; rounds += 1
+        for s in set(g.subjects()):
+            if not isinstance(s, URIRef) or s in part or s in live_subj or s in keep_live: continue
+            if s in keep_live: continue
+            if any(o in part for o in g.objects(s, None) if isinstance(o, URIRef)):
+                part.add(s); changed = True
+    # reverse closure: a subject in no live lineage whose EVERY incoming reference comes from the
+    # partition (a domain entity only the archived epics cover, an increment only archived items fill)
+    # goes with them; kept live it would be an entity nothing covers, an increment with no member
+    changed = True
+    while changed:
+        changed = False
+        for s in set(g.subjects()):
+            if not isinstance(s, URIRef) or s in part or s in live_subj or s in keep_live: continue
+            if s in keep_live: continue
+            incoming = [x for x in g.subjects(None, s) if isinstance(x, URIRef) and x != s]
+            if incoming and all(x in part for x in incoming):
+                part.add(s); changed = True
+    # cluster closure: subjects in no live lineage that hang together with the partition and touch
+    # nothing live (an entity and the gaps that name it, both referenced only by archived items)
+    cand = {s for s in set(g.subjects()) if isinstance(s, URIRef) and s not in part and s not in live_subj and s not in keep_live
+            and (s, RDF.type, B.Lineage) not in g and (s, RDF.type, B.Mission) not in g}
+    # v2.11.0: drop first every candidate that touches something outside the partition and the candidates (a run of a live lineage touches its live
+    # story), and so, in turn, whatever those candidates share (the definition of an agent role); only a closed cluster can then go with the partition.
+    changed = True
+    while changed:
+        changed = False
+        for s in list(cand):
+            inc = [x for x in g.subjects(None, s) if isinstance(x, URIRef) and x != s]
+            out = [o for o in g.objects(s, None) if isinstance(o, URIRef) and o != s and not str(o).startswith("http://example.org/backlog#")]
+            if not (all(x in part or x in cand for x in inc) and all(o in part or o in cand for o in out)):
+                cand.discard(s); changed = True
+    changed = True
+    while changed:
+        changed = False
+        for s in list(cand):
+            inc = [x for x in g.subjects(None, s) if isinstance(x, URIRef) and x != s]
+            out = [o for o in g.objects(s, None) if isinstance(o, URIRef) and o != s and not str(o).startswith("http://example.org/backlog#")]
+            touches = any(x in part for x in inc) or any(o in part for o in out)
+            if touches and all(x in part or x in cand for x in inc) and all(o in part or o in cand for o in out):
+                part.add(s); cand.discard(s); changed = True
+    return part, keep_live
+
+def trigger_text(g, L):
+    """v2.12.0: the archival trigger written on the live pointer states the outcome the mission has, not 'achieved' for every lineage (IPage handover of 2026-11-10)."""
+    m = g.value(L, B.lineageForMission)
+    oc = g.value(m, B.hasMissionOutcome) if m is not None else None
+    word = "Out_Abandoned" if oc == B.Out_Abandoned else "Out_Achieved" if oc == B.Out_Achieved else "an outcome not recorded"
+    reps = sorted(local(r) for r in g.subjects(B.closesForMission, m)) if m is not None else []
+    named = {x for r in g.subjects(B.closesForMission, m) for x in g.objects(r, B.reportsCancelledItem)} if m is not None else set()
+    lead = "Found abandoned and un-archived" if oc == B.Out_Abandoned else "Found achieved and un-archived"
+    rule = "Owner's rule 2026-09-09: a settled lineage found un-archived triggers the archival activity."
+    return (f"{lead} by backlog_lineage_archive_v2_12_0: mission {word}, closure report {', '.join(reps) or 'none'} present"
+            + (f" naming {len(named)} cancelled item(s)" if oc == B.Out_Abandoned else "") + f", every item Done or Cancelled, not frozen. {rule}")
+
+
+def move_header(txt, oldv, newv, first_chain_ok=False):
+    """Move a data file's header from OLDV to NEWV: versionInfo, versionIRI, and the superseded version joins owl:priorVersion at the front.
+    Returns (text, None), or (None, reason) when the header does not read OLDV or has no priorVersion to extend."""
+    vi = re.compile(r'owl:versionInfo\s+"' + re.escape(oldv) + r'"(\s*[;.])')
+    if not vi.search(txt):
+        return None, f'the header does not read versionInfo {oldv}; the form expected is owl:versionInfo "{oldv}" followed by ; or . (any spacing)'
+    if not re.search(r"owl:priorVersion <[^>]*/", txt):
+        m0 = re.search(r"owl:versionIRI <([^>]*/)" + re.escape(oldv) + r">[^\n]*\n", txt)
+        if not (first_chain_ok and m0):
+            return None, "the header has no owl:priorVersion to extend"
+        line = m0.group(0)
+        if line.rstrip().endswith("."):   # the version IRI closes the header: it hands the full stop to the chain statement added after it
+            txt = txt[:m0.start()] + line.rstrip()[:-1].rstrip() + " ;\n" + f"    owl:priorVersion <{m0.group(1)}{oldv}> .\n" + txt[m0.end():]
+        else:
+            txt = txt[:m0.end()] + f"    owl:priorVersion <{m0.group(1)}{oldv}> ;\n" + txt[m0.end():]
+    txt = vi.sub(lambda m: f'owl:versionInfo "{newv}"' + m.group(1), txt, count=1)
+    txt = re.sub(r"(owl:versionIRI <[^>]*/)" + re.escape(oldv) + ">", lambda m: m.group(1) + newv + ">", txt, count=1)
+    if not re.search(r"owl:priorVersion <[^>]*/" + re.escape(oldv) + ">", txt):
+        txt = re.sub(r"owl:priorVersion (<[^>]*/)", lambda mm: "owl:priorVersion " + mm.group(1) + oldv + "> , " + mm.group(1), txt, count=1)
+    return txt, None
+
+
+def split_statements(lines, names, prefixes, full):
+    """v2.10.0 (Lineage 22, D2): the statements whose subject is in the partition move to the archive, whatever the form of the subject: a prefixed name
+    (`fw:Name `) or the full IRI (`<http://...#Name>`). v2.9.0 read only the first form, so 59 statements of Lineage 20, written in full-IRI form, stayed in the
+    live register. FULL is the set of full IRIs of the partition; NAMES the local names. -> (live lines, archive lines, statements moved)."""
+    def subj_of(line):
+        m = re.match(r"([A-Za-z_]\w*):([A-Za-z_][\w\-]*)\s", line)
+        if m:
+            return m.group(2) if prefixes.get(m.group(1)) else None
+        m = re.match(r"<([^>]+)>\s", line)
+        if m and m.group(1) in full:
+            return m.group(1).split("#")[-1]
+        return None
+    out_live, out_arch = [], []; i = 0; moved = 0
+    while i < len(lines):
+        ln = lines[i]
+        sub = subj_of(ln) if ln and not ln.startswith((" ", "\t", "#", "@")) else None
+        if sub is not None and (sub in names or ln.startswith("<")):
+            j = i
+            while j < len(lines) and not lines[j].rstrip().endswith(" ."): j += 1
+            out_arch.extend(lines[i:j + 1]); moved += 1; i = j + 1
+        else:
+            out_live.append(ln); i += 1
+    return out_live, out_arch, moved
+
+
+def main():
+    argv = sys.argv[1:]
+    apply = "--apply" in argv; aflag = None
+    if "--archive-file" in argv:
+        k = argv.index("--archive-file")
+        if k + 1 >= len(argv): print("ERROR: --archive-file needs a path"); return 1
+        aflag = argv[k + 1]; argv = argv[:k] + argv[k + 2:]
+    names = [a for a in argv if not a.startswith("--")]
+    if "--find" in argv and len(names) == 1:
+        g = Graph().parse(names[0], format="turtle"); found = 0
+        for L in sorted(g.subjects(RDF.type, B.Lineage), key=local):
+            st = g.value(L, B.hasLineageStatus); a = g.value(L, B.lineageArchived)
+            if st in (B.LS_Achieved, B.LS_Abandoned) and not (a is not None and bool(a.toPython())):
+                found += 1; r = archivable(g, L)
+                print(f"  found: {local(L):22} {'ARCHIVABLE -- run backlog_lineage_archive --apply' if not r else 'NOT archivable: ' + '; '.join(r)}")
+        print("  no achieved lineage is un-archived." if not found else f"  {found} achieved lineage(s) await archival.")
+        return 0
+    if len(names) < 2: print(__doc__); return 1
+    reg = names[0]; g = Graph().parse(reg, format="turtle")
+    lineages = []
+    for n in names[1:]:
+        L = next((l for l in g.subjects(RDF.type, B.Lineage) if local(l) == n), None)
+        if L is None: print(f"ERROR: no Lineage named {n}"); return 1
+        lineages.append(L)
+    bad = False
+    for L in lineages:
+        r = archivable(g, L)
+        print(f"  {local(L):22} {'ARCHIVABLE' if not r else 'NOT archivable: ' + '; '.join(r)}")
+        bad = bad or bool(r)
+    if bad: return 2
+    part, keep_live = partition(g, set(lineages))
+    live_refs = [(s, p, o) for s, p, o in g if o in part and s not in part and isinstance(o, URIRef)]
+    print(f"  partition   : {len(part)} subjects set down; {len(keep_live)} stay live as the record (lineage and mission)")
+    print(f"  live pointers into the archive after the move: {len(live_refs)} (references, not dangling edges)")
+    if not apply:
+        print("VERDICT     : ARCHIVABLE — re-run with --apply to move the partition into the archive ABox"); return 0
+    arch_path, arch_exists = archive_target(reg, aflag, g)
+    if not arch_exists:
+        if not semver(arch_path)[0] and semver(arch_path) == [0, 0, 0]:
+            print(f"  ERROR: a new archive file needs a versioned name (..._archive_v1_0_0.ttl), got {arch_path}"); return 1
+        os.makedirs(os.path.dirname(os.path.abspath(arch_path)), exist_ok=True)
+        open(arch_path, "w").write(first_archive_text(g, arch_path))
+        print(f"  archive     : {os.path.relpath(arch_path)} does not exist; created at its first version")
+    new_arch = bump(arch_path); new_reg = bump(reg)
+    # TEXT-LEVEL MOVE. The register is a record: its dated comment blocks ARE the history (L-112), and
+    # an rdflib re-serialization would drop every one of them. Statements are moved verbatim: a
+    # statement starts at a column-0 line whose first token is the subject and runs to the line that
+    # ends with " ." ; every statement whose subject is in the partition moves, comments stay.
+    lines = open(reg).read().split("\n")
+    names = {local(s) for s in part}
+    prefixes = {}
+    for ln in lines:
+        m = re.match(r"@prefix\s+(\w+):\s+<([^>]+)>", ln)
+        if m: prefixes[m.group(1)] = m.group(2)
+    out_live, out_arch, moved = split_statements(lines, names, prefixes, {str(s) for s in part})
+    # v2.5.0: the archived copy of each lineage says it is archived, with its confirmation pending (the confirmation step promotes it later). Edited in place on
+    # the lineage's own statement; a copy already carrying true is left alone.
+    arch_joined = "\n".join(out_arch)
+    for L in lineages:
+        pat_a = re.compile(r"(^" + re.escape(prefix_of(g, L) + local(L)) + r" a backlog:Lineage\b[^\n]*(?:\n[ \t][^\n]*)*?)backlog:lineageArchived false", re.M)
+        arch_joined, na = pat_a.subn(lambda m: m.group(1) + "backlog:lineageArchived true ; backlog:hasArchivalConfirmationStatus backlog:AC_PendingConfirmation", arch_joined, count=1)
+        if na != 1:
+            print(f"  GATE ABORT: could not mark the archived copy of {local(L)} (its statement does not carry lineageArchived false on the first line)"); return 3
+    out_arch = arch_joined.split("\n")
+    now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    oldv = ".".join(map(str, semver(reg))); newv = ".".join(map(str, semver(new_reg)))
+    live_txt = "\n".join(out_live)
+    live_txt, why = move_header(live_txt, oldv, newv)
+    if live_txt is None:
+        print(f"  GATE ABORT: the live data file header: {why}"); return 3
+    rel = os.path.relpath(new_arch, PKG) if os.path.abspath(new_arch).startswith(PKG + os.sep) else os.path.relpath(new_arch, os.path.dirname(os.path.abspath(reg)))
+    # v2.4.0: every entry already in the live register names the archive file by its path; the archive file just changed version, so they follow it
+    # (the same repointing a person did by hand at the last bump; the split proof counts it as declared).
+    live_txt = live_txt.replace('backlog:archiveFile "%s"' % (os.path.relpath(arch_path, PKG) if os.path.abspath(arch_path).startswith(PKG + os.sep) else os.path.relpath(arch_path, os.path.dirname(os.path.abspath(reg)))), 'backlog:archiveFile "%s"' % rel)
+    live_txt = live_txt.rstrip("\n") + f"\n\n#################################################################\n#  {now} -- ARCHIVAL by backlog_lineage_archive_v2_0_0: {len(part)} subjects of\n#  {', '.join(local(L) for L in lineages)} set down into {rel}; the lineage,\n#  its mission and its closure report stay here as the record that points in.\n#################################################################\n"
+    live_txt += f"\n# The record each retired lineage leaves in the live register: a LineageArchiveEntry, not a\n# Lineage -- no shape targeting Lineage, Mission or any stage element fires on retired work (G92).\n"
+    for L in lineages:
+        m = g.value(L, B.lineageForMission)
+        outcome = local(g.value(m, B.hasMissionOutcome)) if m is not None and g.value(m, B.hasMissionOutcome) else "unrecorded"
+        ordv = g.value(L, B.lineageOrdinal)
+        live_txt += f'''{prefix_of(g, L)}ArchiveEntry_{local(L)} a backlog:LineageArchiveEntry ;
+    backlog:entryForLineage <{str(L)}> ;
+{("    backlog:entryForMission <" + str(m) + "> ;" + chr(10)) if m is not None else ""}{("    backlog:entryOutcome backlog:" + outcome + " ;" + chr(10)) if outcome != "unrecorded" else ""}    backlog:entryOrdinal {int(ordv) if ordv is not None else 0} ;
+    backlog:archiveFile "{rel}" ;
+    backlog:archivedAt "{now}"^^xsd:dateTime ;
+    backlog:archivalTrigger "Retired whole by backlog_lineage_archive_v2_0_0: mission {outcome}, closure report present, every item Done or Cancelled, not frozen. Everything the lineage owned -- its Lineage individual, its Mission, its closure report, its stage outputs, findings and items -- moved to the archive file; this entry is the only thing that remains, and it is a record, not a lineage (G92)." .
+'''
+    for L in lineages:
+        # lineageArchived is a functional current-state pointer: the existing 'false' on this lineage's own
+        # statement is moved in place (L-112 pointer rule); the dated block below is the history
+        pat = re.compile(r"(^" + re.escape(prefix_of(g, L) + local(L)) + r" a backlog:Lineage\b[^\n]*(?:\n[ \t][^\n]*)*?)backlog:lineageArchived false", re.M)
+        live_txt, n = pat.subn(lambda m: m.group(1) + "backlog:lineageArchived true", live_txt, count=1)
+        live_txt += f'{prefix_of(g, L)}{local(L)}' + (' backlog:lineageArchived true ;' if n == 0 else '') + f' backlog:archiveFile "{rel}" ;\n    backlog:archivedAt "{now}"^^xsd:dateTime ; backlog:hasLineageStatus backlog:LS_Archived ;\n    backlog:archivalTrigger "' + trigger_text(g, L) + '" .\n'
+    arch_txt = open(arch_path).read().rstrip("\n")
+    olda = ".".join(map(str, semver(arch_path))); newa = ".".join(map(str, semver(new_arch)))
+    arch_txt, why = move_header(arch_txt, olda, newa, first_chain_ok=True)
+    if arch_txt is None:
+        print(f"  GATE ABORT: the archive data file header: {why}"); return 3
+    # prefixes the moved statements need
+    need = {m.group(1) for ln in out_arch for m in re.finditer(r"\b([A-Za-z_]\w*):[A-Za-z_]", ln)}
+    have = set(re.findall(r"@prefix\s+(\w+):", arch_txt))
+    extra = "".join(f"@prefix {pfx}: <{prefixes[pfx]}> .\n" for pfx in sorted(need & set(prefixes)) if pfx not in have)
+    arch_txt = extra + arch_txt + f"\n\n#################################################################\n#  {now} -- {moved} statements of {', '.join(local(L) for L in lineages)} set down here by\n#  backlog_lineage_archive_v2_0_0 (verbatim, comments of the live register kept there).\n#################################################################\n" + "\n".join(out_arch) + "\n"
+    open(new_reg, "w").write(live_txt); open(new_arch, "w").write(arch_txt)
+    print(f"  written     : {os.path.basename(new_reg)} ({moved} statements moved out, comments kept) and {os.path.basename(new_arch)}")
+    print("VERDICT     : APPLIED — the old versions are retired by the release that ships these")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

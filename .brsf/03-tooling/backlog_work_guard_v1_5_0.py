@@ -1,0 +1,647 @@
+#!/usr/bin/env python3
+"""backlog_work_guard v1.5.0 -- the safeguard that sits IN THE PATH of the act, not after it.
+
+WHY THIS EXISTS (ruling G101). FizyoVibe opened Lineage_2 to stop work happening outside the register, closed its
+Mission..Objective stages, never built the Backlog stage, and shipped nine releases from a work ledger. Every safeguard
+it had was either prose (a "standing practice" written after each of ~20 earlier drifts) or a check run after the act
+(order check, validator). Nothing stood between the coordinator and a commit. This tool is that thing.
+
+Four entry points, one rule: no work-path change without a registered, groomed, admitted item.
+  status                 print the lineage's start-gate facts and the NEXT REQUIRED ACT (put in front of the session at
+                         start, so it does not depend on what a compacted conversation remembers). v1.2.0 (G122): when
+                         backlog_session_brief is beside the guard, it also prints the brief: the objective to work toward, the
+                         items In Progress, the checkpoints falling due, and what each open iteration still needs to close
+  edit FILE              before a file is written: if FILE is a work path, the lineage must be READY (start gate)
+  commit-msg MSGFILE     before a commit: if the staged files include a work path, the message must carry
+                         `Work-Item: NAME` trailers and each named item must be READY in the register
+  range A..B             after the fact, for CI: the same check over every non-merge commit in the range. This is the
+                         layer `git commit --no-verify` cannot skip. v1.1.0 (G119): the CONFIGURATION is read at A, so a
+                         commit that loosens it takes effect only in the next range; each commit's Work-Items are judged
+                         against the register at THAT COMMIT'S PARENT (ready before the commit, as the commit-msg hook
+                         judges it), and an item that became ready inside the range is reported. --strict-base turns that
+                         report into a failure for an adopter that wants readiness established before the range.
+
+CONFIG  (.backlog-guard.json at the repository root, or --config PATH)
+  {"register": ["packages/X/register.ttl"], "active_lineage": "Lineage_2",
+   "work_paths": ["app/**", "src/**"], "exempt_paths": ["app/README.md"], "governed_from": "<commit sha>"}
+  governed_from: commits that are ancestors of it (inclusive) predate the guard and are not examined by `range`; the
+  installer sets it to the commit at install time, a restart sets it to the restart commit.
+  A work path is a glob (`**` crosses directories, `*` does not). Everything else is not governed work.
+  protected_paths (v1.1.0): always governed, and no exempt path can release them: the configuration, .githooks/**,
+  .claude/settings.json, the CI workflow and the vendored tooling directory ("tooling_dir"). Changing the guard needs a
+  ready Work-Item like any other work. The installer writes them; a configuration without the key gets the defaults.
+
+v1.5.0 (box 63, G248; the arming of a clone must never block the lineage it arms, and no state of a lineage is without a permitted act):
+  - a work path that matches no tracked file is a WARNING while the lineage is not ready, and a refusal once it is ready (a ready lineage with a guard over nothing proves nothing);
+    an empty work_paths list, a missing register and an unreadable register still fail closed.
+  - a commit that changes the register alone (the records of the lineage's chain: mission, scope, goals, objectives, change requests, impediments, rulings, work items) is a record
+    commit and needs no Work-Item; the register is also the one governed file an edit may touch while the lineage is not ready (that is how its stages are built). A commit that mixes the
+    register with other governed work still needs a ready Work-Item.
+  - the first installation of the configuration (the configuration is absent at HEAD) may be carried by a commit that changes only the guard's own files and the configuration and states
+    `Guard-Install: REASON`; the configuration of a clone that is already armed is still governed work.
+  - every refusal and every status prints the acts the guard permits in the state the lineage is in (the guard states of backlog:GuardState; STATE_ACTS below holds the same acts as the
+    register records and the probe compares them).
+
+v1.4.0 (G161, FizyoVibe handovers of 2026-10-26):
+  - a register entry that names an exact versioned file the examined revision no longer holds resolves to the highest version of the same
+    stem, as the pattern would. A renamed register no longer blinds the guard; this loosens nothing (the entry named that stem already).
+  - a commit that changes only the configuration, replaces nothing but an exact register path by the pattern of the same stem, and carries
+    `Guard-Install: REASON` is a guard-install commit: the range check lists it. It cannot weaken the guard, so it needs no ready work item.
+
+v1.3.0 (G123):
+  - a register entry may name the register by pattern, `dir/name_v*.ttl`: the highest version present at the examined
+    revision is the register (G102: a register follows BP-D7 and is cited by pattern, never pinned). An exact path still
+    works. A register rename then touches only the register, not the configuration.
+  - the guard's own files (tooling_dir, .githooks, .claude/settings.json, the CI workflow; NOT the configuration) may be
+    changed while the lineage is not ready by a commit that changes nothing else and carries `Guard-Install: REASON`. The
+    range check lists every such commit and its files; it does not judge them by readiness, it shows them.
+  - rdflib is needed only to read the register: building the guard and deciding that a path is not governed need none.
+
+THE GUARD MUST NOT BE ABLE TO PASS OVER NOTHING (the failure it exists to prevent):
+  - a work_path glob matching no tracked file fails the run once the lineage is ready (before that it is a warning): a guard configured over nothing proves nothing
+  - an empty work_paths list fails; a missing register fails; an unparseable register fails (fail closed, exit 2)
+  - every run prints what it examined: commits, work-touching commits, items
+
+Exit 0 compliant (or not work), 2 a violation or a guard that could not examine anything (block), 1 usage error.
+Reads only; never edits the repository or the register. Needs rdflib and git.
+"""
+import fnmatch, glob, importlib.util, json, os, re, subprocess, sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+# The guard states and their permitted acts (G248). The register records the same states and acts (backlog:GuardState, backlog:PermittedAct) and the probe compares the two.
+COMMON_ACTS = {
+    "RecordChain": "Commit the records of the lineage's chain (mission, scope, goals, objectives, change requests, impediments, rulings) in a commit that changes only the register; it needs no Work-Item.",
+    "GuardInstall": "Commit the guard's own files (the tools, the hooks, the session hooks, the CI workflow, and the configuration when the clone is first armed) in a commit that changes nothing else and carries `Guard-Install: REASON`; it needs no Work-Item.",
+}
+STATE_ACTS = {
+    "installed": [],
+    "mission": ["Record the mission of the lineage and its output of the Mission stage in a commit of the register alone, the Owner affirming the mission."],
+    "scope": ["Record the scope of the lineage (areas, deliverables, exclusions) and its output of the Scope stage in a commit of the register alone."],
+    "goal": ["Record the goals of the lineage and its output of the Goal stage in a commit of the register alone."],
+    "objective": ["Record the objectives of the lineage (metric, baseline, target, checkpoint) and its output of the Objective stage in a commit of the register alone."],
+    "backlog": ["Record the work items (concern, acceptance criterion, planning event) in a commit of the register alone; no work commit is made until an item is ready."],
+    "ready": ["Commit the work with a `Work-Item: NAME` trailer naming an item that is Ready or InProgress, groomed, with an acceptance criterion and an iteration.",
+              "Record the work items (concern, acceptance criterion, planning event) in a commit of the register alone; no work commit is made until an item is ready."],
+    "inbox": ["Commit the work with a `Work-Item: NAME` trailer naming an item that is Ready or InProgress, groomed, with an acceptance criterion and an iteration."],
+}
+STAGE_STATE = {"Stage_Mission": "mission", "Stage_Scope": "scope", "Stage_Goal": "goal", "Stage_Objective": "objective", "Stage_Backlog": "backlog"}
+TRAILER = re.compile(r"^Work-Item:[ \t]*([A-Za-z0-9_.:-]+)[ \t\r]*$", re.M)
+INSTALL = re.compile(r"^Guard-Install:[ \t]*\S+", re.M)
+
+
+def _ready_module():
+    sv = lambda p: [int(x) for x in re.findall(r"_v(\d+)_(\d+)_(\d+)\.", p)[0]]
+    cands = sorted(glob.glob(os.path.join(HERE, "backlog_execution_ready_v*.py")), key=sv)
+    cands = [c for c in cands if "probe" not in os.path.basename(c)]
+    if not cands:
+        raise SystemExit("guard cannot ask the start gate: backlog_execution_ready is not beside it")
+    spec = importlib.util.spec_from_file_location("backlog_execution_ready", cands[-1])
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def glob_re(pat):
+    out, i = "", 0
+    while i < len(pat):
+        if pat.startswith("**/", i):
+            out += "(?:.*/)?"; i += 3
+        elif pat.startswith("**", i):
+            out += ".*"; i += 2
+        elif pat[i] == "*":
+            out += "[^/]*"; i += 1
+        elif pat[i] == "?":
+            out += "[^/]"; i += 1
+        else:
+            out += re.escape(pat[i]); i += 1
+    return re.compile("^" + out + "$")
+
+
+def pattern_of(rel):
+    """dir/name_v1_2_3.ttl -> dir/name_v*.ttl (the pattern of the same stem); a name with no version is returned unchanged."""
+    return re.sub(r"_v\d+_\d+_\d+\.", "_v*.", rel)
+
+
+def narrowing_only(old, new):
+    """True when NEW differs from OLD only by replacing exact register paths with the pattern of the same stem."""
+    if not isinstance(old, dict) or not isinstance(new, dict):
+        return False
+    a, b = dict(old), dict(new)
+    ra, rb = a.pop("register", []), b.pop("register", [])
+    if a != b or len(ra) != len(rb) or ra == rb:
+        return False
+    return all(x == y or (y == pattern_of(x) and "*" in y and "*" not in x) for x, y in zip(ra, rb))
+
+
+def git(root, *args):
+    r = subprocess.run(["git", "-C", root, "-c", "core.quotePath=false"] + list(args), capture_output=True, text=True)
+    if r.returncode != 0:
+        raise RuntimeError(f"git {' '.join(args)}: {r.stderr.strip()}")
+    return r.stdout
+
+
+class Guard:
+    def __init__(self, config_path, root=None, cfg=None):
+        self.root = root or os.path.dirname(os.path.abspath(config_path))
+        self.config_path = config_path
+        if cfg is None:
+            try:
+                cfg = json.load(open(config_path))
+            except Exception as e:
+                raise SystemExit(f"GUARD BLOCKS: cannot read config {config_path}: {e}")
+        self.cfg = cfg
+        self.work = [glob_re(p) for p in self.cfg.get("work_paths", [])]
+        self.exempt = [glob_re(p) for p in self.cfg.get("exempt_paths", [])]
+        prot = self.cfg.get("protected_paths")
+        if prot is None:
+            prot = [os.path.relpath(os.path.abspath(config_path), self.root), ".githooks/**", ".claude/settings.json", ".github/workflows/backlog-work-guard.yml"]
+            if self.cfg.get("tooling_dir"):
+                prot.append(self.cfg["tooling_dir"].strip("/") + "/**")
+        self.protected = [glob_re(p) for p in prot]
+        self.lineage = self.cfg.get("active_lineage")
+        inst = [".githooks/**", ".claude/settings.json", ".github/workflows/backlog-work-guard.yml"]
+        if self.cfg.get("tooling_dir"):
+            inst.append(self.cfg["tooling_dir"].strip("/") + "/**")
+        self.install = [glob_re(p) for p in inst]
+        self._ready = None
+
+    @property
+    def ready(self):
+        if self._ready is None:
+            try:
+                self._ready = _ready_module()
+            except ImportError as e:
+                raise SystemExit(f"GUARD BLOCKS: cannot read the register without {e.name or 'a Python module'}: install rdflib and pyshacl (python3 -m pip install rdflib pyshacl)")
+        return self._ready
+
+    def is_install_only(self, files):
+        """True when every changed file is one of the guard's own files (the configuration is not among them)."""
+        return bool(files) and all(any(r.match(re.sub(r"^\./", "", f)) for r in self.install) for f in files)
+
+    def config_narrowing(self, files, old_text, new_text):
+        """True when the only changed file is the configuration and the change only narrows an exact register path to its pattern."""
+        rel_cfg = os.path.relpath(os.path.abspath(self.config_path), self.root)
+        if list(files) != [rel_cfg]:
+            return False
+        try:
+            return narrowing_only(json.loads(old_text), json.loads(new_text))
+        except Exception:
+            return False
+
+    def register_files(self, rev=None, listed=None):
+        """The register files at REV: an entry with * in its file name resolves to the highest _vX_Y_Z version present."""
+        sv = lambda p: [int(x) for x in re.findall(r"_v(\d+)_(\d+)_(\d+)\.", p)[0]]
+        out = []
+        for rel in (self.cfg.get("register", []) if listed is None else listed):
+            if "*" not in rel:
+                # v1.4.0 (G161): an exact versioned path whose file is gone resolves to the highest version of the same stem
+                if pattern_of(rel) == rel:
+                    out.append(rel); continue
+                if rev:
+                    here = subprocess.run(["git", "-C", self.root, "cat-file", "-e", f"{rev}:{rel}"], capture_output=True).returncode == 0
+                else:
+                    here = os.path.exists(os.path.join(self.root, rel))
+                if here:
+                    out.append(rel); continue
+                rel = pattern_of(rel)
+            d, pat = os.path.split(rel)
+            if rev:
+                try:
+                    names = git(self.root, "ls-tree", "--name-only", rev, *([d + "/"] if d else [])).splitlines()
+                except RuntimeError:
+                    names = []
+                names = [os.path.basename(n) for n in names]
+            else:
+                names = os.listdir(os.path.join(self.root, d or "."))
+            c = sorted((n for n in names if fnmatch.fnmatch(n, pat) and re.search(r"_v\d+_\d+_\d+\.", n)), key=sv)
+            out.append(os.path.join(d, c[-1]) if c else rel)
+        return out
+
+    def is_work(self, path):
+        path = re.sub(r"^\./", "", path)
+        if re.search(r"(^|/)__pycache__/", path) or path.endswith(".pyc"):
+            return False        # interpreter bytecode is never work; running the tools writes it into their own directory
+        if any(r.match(path) for r in self.protected):
+            return True
+        return any(r.match(path) for r in self.work) and not any(r.match(path) for r in self.exempt)
+
+    def state_of(self, g):
+        """The guard state of the lineage in G (G248): installed (the register does not hold the lineage), the stage being built, backlog (every stage built, no item ready),
+        ready, or inbox (ready, and a box of the lineage is open)."""
+        if g is None:
+            return "installed"
+        B = self.ready.B
+        L = self.ready.find(g, self.lineage)
+        if L is None:
+            return "installed"
+        for st in self.ready.STAGES:
+            outs = [o for o in g.subjects(B.belongsToLineage, L) if (o, B.outputOfStage, B[st]) in g and self.ready.active(g, o)]
+            if not outs:
+                return STAGE_STATE.get(st, "mission")
+        if self.ready.evaluate(g, self.lineage, None, emit=lambda *_: None):
+            return "backlog"
+        from rdflib.namespace import RDF
+        for it in g.subjects(RDF.type, B.Iteration):
+            if (it, B.belongsToLineage, L) in g and (it, B.hasState, B.InProgress) in g:
+                return "inbox"
+        return "ready"
+
+    def permitted_lines(self, g):
+        """The acts the guard permits in the state the lineage is in: the lines every refusal and the status print (G248)."""
+        try:
+            st = self.state_of(g)
+        except Exception:
+            st = "installed"
+        acts = list(STATE_ACTS[st]) + list(COMMON_ACTS.values())
+        return [f"PERMITTED in this state ({st}):"] + ["  - " + a for a in acts]
+
+    def self_check(self, g=None):
+        """A guard over nothing proves nothing: fail unless the configuration reaches real files. Returns (errors, warnings): a work path that matches
+        no tracked file is a warning while the lineage is not ready and an error once it is (G248)."""
+        errs, warns = [], []
+        if not self.work:
+            errs.append("work_paths is empty: the guard governs nothing")
+        if not self.cfg.get("register"):
+            errs.append("register is not configured")
+        if not self.lineage:
+            errs.append("active_lineage is not configured")
+        try:
+            tracked = git(self.root, "ls-files").splitlines()
+        except RuntimeError as e:
+            return [str(e)], warns
+        unmatched = [pat for pat, r in zip(self.cfg.get("work_paths", []), self.work) if not any(r.match(t) for t in tracked)]
+        if unmatched:
+            if g is None:
+                g = self.graph(tolerant=True)
+            ready = g is not None and self.state_of(g) in ("ready", "inbox")
+            for pat in unmatched:
+                (errs if ready else warns).append(f"work path '{pat}' matches no tracked file (a guard configured over nothing)" + ("" if ready else "; it is a warning until the lineage is ready"))
+        return errs, warns
+
+    def is_register(self, path, rev=None):
+        """True when PATH is a register file, or an older or newer version of one (a register renamed to its next version is still the register)."""
+        path = re.sub(r"^\./", "", path)
+        # Review 2 D1: the guard's own files are never the register, and in commit mode the register list is the COMMITTED one
+        # (a commit that edits the configuration cannot name itself, or app work, as the register).
+        rel_cfg = os.path.relpath(os.path.abspath(self.config_path), self.root)
+        if path == rel_cfg or any(r.match(path) for r in self.protected) or any(r.match(path) for r in self.install):
+            return False
+        listed = self.cfg.get("register", [])
+        if rev is None:
+            r = subprocess.run(["git", "-C", self.root, "show", f"HEAD:{rel_cfg}"], capture_output=True, text=True)
+            if r.returncode == 0:
+                try:
+                    listed = json.loads(r.stdout).get("register", [])
+                except Exception:
+                    pass
+        regs = set(self.register_files(rev, listed)) | {x for x in listed if "*" not in os.path.basename(x)}
+        stems = {pattern_of(r) for r in regs}
+        return path in regs or (pattern_of(path) != path and pattern_of(path) in stems)
+
+    def is_record_commit(self, work, rev=None):
+        """True when every governed file changed is a register file: the commit records the lineage's chain and needs no Work-Item."""
+        return bool(work) and all(self.is_register(f, rev) for f in work)
+
+    def first_install(self, files, msg, rev=None):
+        """True when the commit carries the configuration for the first time (it is absent before), changes only the guard's own files and the configuration, and states `Guard-Install:`."""
+        rel_cfg = os.path.relpath(os.path.abspath(self.config_path), self.root)
+        if rel_cfg not in files or TRAILER.search(msg) or not INSTALL.search(msg):
+            return False
+        before = (rev + "^") if rev else "HEAD"
+        if subprocess.run(["git", "-C", self.root, "cat-file", "-e", f"{before}:{rel_cfg}"], capture_output=True).returncode == 0:
+            return False
+        return all(f == rel_cfg or any(r.match(re.sub(r"^\./", "", f)) for r in self.install) for f in files)
+
+    def graph(self, rev=None, tolerant=False):
+        """The register at REV (the working tree when None). tolerant: return None instead of stopping when the register
+        did not exist or could not be read at REV (a commit before the register was committed judges nothing ready)."""
+        try:
+            from rdflib import Graph
+        except ImportError as e:
+            raise SystemExit(f"GUARD BLOCKS: cannot read the register without {e.name}: install rdflib and pyshacl (python3 -m pip install rdflib pyshacl)")
+        g = Graph()
+        for rel in self.register_files(rev):
+            try:
+                if rev:
+                    data = git(self.root, "show", f"{rev}:{rel}")
+                    g.parse(data=data, format="turtle")
+                else:
+                    g.parse(os.path.join(self.root, rel), format="turtle")
+            except Exception as e:
+                if tolerant:
+                    return None
+                raise SystemExit(f"GUARD BLOCKS: cannot read the register {rel}: {str(e)[:200]}")
+        if len(g) == 0:
+            if tolerant:
+                return None
+            raise SystemExit("GUARD BLOCKS: the register is empty (examined: 0 triples)")
+        return g
+
+    def blob_key(self, rev):
+        """Identity of the register files at REV, so one parse serves every commit that sees the same bytes."""
+        out = []
+        for rel in self.register_files(rev):
+            try:
+                out.append(git(self.root, "rev-parse", f"{rev}:{rel}").strip())
+            except RuntimeError:
+                out.append("absent")
+        return tuple(out)
+
+    def item_problem(self, g, name):
+        """None when NAME is ready in G, else the sentence saying why not."""
+        lin = self.item_lineage(g, name)
+        if lin is None:
+            return f"Work-Item {name}: not found in the register, or it belongs to no lineage"
+        miss = self.ready.evaluate(g, lin, name, emit=lambda *_: None)
+        return f"Work-Item {name} (lineage {lin}) is not ready: " + "; ".join(miss) if miss else None
+
+    def item_lineage(self, g, name):
+        from rdflib import URIRef
+        B = self.ready.B
+        X = self.ready.find(g, name)
+        if X is None:
+            return None
+        L = g.value(X, B.belongsToLineage)
+        if L is None:
+            for o in g.objects(X, B.admittedByOutput):
+                L = g.value(o, B.belongsToLineage)
+                if L is not None:
+                    break
+        return str(L).replace("/", "#").rsplit("#", 1)[-1] if L is not None else None
+
+    def check_items(self, g, items, out):
+        bad = []
+        for name in items:
+            lin = self.item_lineage(g, name)
+            if lin is None:
+                bad.append(f"Work-Item {name}: not found in the register, or it belongs to no lineage")
+                continue
+            lines = []
+            miss = self.ready.evaluate(g, lin, name, emit=lines.append)
+            if miss:
+                bad.append(f"Work-Item {name} (lineage {lin}) is not ready: " + "; ".join(miss))
+            else:
+                out(f"  ok    Work-Item {name} (lineage {lin}) is ready")
+        return bad
+
+    def next_act(self, g):
+        B = self.ready.B
+        L = self.ready.find(g, self.lineage)
+        if L is None:
+            return f"the lineage {self.lineage} does not exist in the register"
+        for st in self.ready.STAGES:
+            outs = [o for o in g.subjects(B.belongsToLineage, L) if (o, B.outputOfStage, B[st]) in g and self.ready.active(g, o)]
+            if not outs:
+                return f"build the {st.replace('Stage_', '')} stage (one commit per stage, owner affirms the Mission); no work until then"
+        return "register and groom work items (concern, criterion, planning event), then name each as Work-Item in the commit"
+
+
+def staged_files(root):
+    return [l for l in git(root, "diff", "--cached", "--name-only", "--diff-filter=ACMRD").splitlines() if l]
+
+
+def cmd_status(gd, out=print):
+    try:
+        g = gd.graph()
+    except SystemExit as e:
+        out(str(e)); _refuse(gd, out)       # an unreadable register still gets the permitted acts (G248)
+        return 1
+    errs, warns = gd.self_check(g)
+    lines = []
+    miss = gd.ready.evaluate(g, gd.lineage, None, emit=lines.append)
+    out(f"BACKLOG GUARD  lineage {gd.lineage}: " + ("READY" if not miss else f"NOT READY ({len(miss)} fact(s) missing)"))
+    for l in lines:
+        if "FAIL" in l:
+            out(l)
+    out("NEXT REQUIRED ACT: " + gd.next_act(g))
+    for l in gd.permitted_lines(g):
+        out(l)
+    for e in errs:
+        out("  GUARD CONFIG: " + e)
+    for w in warns:
+        out("  GUARD CONFIG (warning): " + w)
+    out("Work paths are governed: " + ", ".join(gd.cfg.get("work_paths", [])) + ". Every work commit needs `Work-Item:` trailers.")
+    try:
+        sv = lambda p: [int(x) for x in re.findall(r"_v(\d+)_(\d+)_(\d+)\.", p)[0]]
+        bc = sorted(glob.glob(os.path.join(HERE, "backlog_session_brief_v*.py")), key=sv)
+        if bc:
+            spec = importlib.util.spec_from_file_location("backlog_session_brief", bc[-1])
+            m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+            m.brief(g, gd.lineage, out=out)
+        else:
+            out("BRIEF        not shown: backlog_session_brief is not beside the guard (vendor it to see the focus, due checkpoints and close needs)")
+    except Exception as e:      # the brief informs; it must never stop the gate from speaking
+        out(f"BRIEF        could not be computed ({type(e).__name__}); the gate facts above stand")
+    return 0
+
+
+def cmd_edit(gd, path, out=print):
+    root = gd.root
+    rel = os.path.relpath(os.path.abspath(path), root) if os.path.isabs(path) or os.path.exists(path) else path
+    if not gd.is_work(rel):
+        return 0
+    if gd.is_register(rel):
+        return 0        # the register holds the lineage's chain: editing it is how the stages are built (G248)
+    if gd.is_install_only([rel]):
+        out(f"guard: {rel} is one of the guard's own files; the commit must change only such files and carry `Guard-Install: REASON` (or name a ready Work-Item)")
+        return 0
+    try:
+        g = gd.graph()
+    except SystemExit as e:
+        out(str(e)); _refuse(gd, out)
+        return 2
+    lines = []
+    miss = gd.ready.evaluate(g, gd.lineage, None, emit=lines.append)
+    if miss:
+        out(f"GUARD BLOCKS this edit of {rel}: it is governed work and lineage {gd.lineage} is not ready.")
+        for m in miss:
+            out(f"  missing: {m}")
+        out("NEXT REQUIRED ACT: " + gd.next_act(g))
+        for l in gd.permitted_lines(g):
+            out(l)
+        return 2
+    return 0
+
+
+def _refuse(gd, out, g=None):
+    """Name the acts that are permitted (G248): every refusal says what the lineage may do in the state it is in."""
+    if g is None:
+        g = gd.graph(tolerant=True)
+    for l in gd.permitted_lines(g):
+        out(l)
+
+
+def cmd_commit_msg(gd, msgfile, out=print):
+    errs, warns = gd.self_check()
+    for w in warns:
+        out("guard: warning: " + w)
+    if errs:
+        for e in errs:
+            out("GUARD BLOCKS: " + e)
+        _refuse(gd, out)
+        return 2
+    files = staged_files(gd.root)
+    work = [f for f in files if gd.is_work(f)]
+    out(f"guard: {len(files)} staged file(s), {len(work)} governed work file(s)")
+    if not work:
+        return 0
+    msg = open(msgfile).read()
+    items = TRAILER.findall(msg)
+    rel_cfg = os.path.relpath(os.path.abspath(gd.config_path), gd.root)
+    if not items and gd.first_install(files, msg):
+        out("guard: the first installation of the guard (the configuration is carried for the first time with the guard's own files, `Guard-Install:` stated); it is listed by the range check")
+        return 0
+    if not items and INSTALL.search(msg) and files == [rel_cfg]:
+        try:
+            old_t, new_t = git(gd.root, "show", f"HEAD:{rel_cfg}"), git(gd.root, "show", f":{rel_cfg}")
+        except RuntimeError:
+            old_t = new_t = ""
+        if gd.config_narrowing(files, old_t, new_t):
+            out("guard: a guard-install commit (the configuration only replaces an exact register path by the pattern of the same stem, `Guard-Install:` stated); it cannot weaken the guard and is listed by the range check")
+            return 0
+    if not items and INSTALL.search(msg) and gd.is_install_only(work) and len(work) == len(files):
+        out("guard: a guard-install commit (only the guard's own files, `Guard-Install:` stated); it is listed by the range check")
+        return 0
+    if gd.is_record_commit(work):
+        out("guard: a record commit (it changes only the register, " + ", ".join(work[:3]) + "); it needs no Work-Item and is listed by the range check")
+        return 0
+    if not items:
+        out("GUARD BLOCKS this commit: it changes governed work but names no `Work-Item: NAME` trailer.")
+        out("  work files: " + ", ".join(work[:5]) + (" ..." if len(work) > 5 else ""))
+        _refuse(gd, out)
+        return 2
+    try:
+        g = gd.graph()
+    except SystemExit as e:
+        out(str(e))
+        _refuse(gd, out)
+        return 2
+    bad = gd.check_items(g, items, out)
+    for b in bad:
+        out("GUARD BLOCKS this commit: " + b)
+    if bad:
+        _refuse(gd, out, g)
+    return 2 if bad else 0
+
+
+def cmd_range(gd, rng, out=print, strict_base=False):
+    base, tip = (re.split(r"\.{2,3}", rng, maxsplit=1) + [""])[:2] if ".." in rng else ("", rng)
+    base, tip = base or "HEAD", tip or "HEAD"
+    # v1.1.0 (G119): the configuration that judges a range is the one in force BEFORE it. A commit in the range that
+    # loosens it (adds an exempt path, raises governed_from) takes effect in the next range, not in this one.
+    rel_cfg = os.path.relpath(os.path.abspath(gd.config_path), gd.root)
+    try:
+        base_cfg = json.loads(git(gd.root, "show", f"{base}:{rel_cfg}"))
+    except Exception:
+        base_cfg = None
+    if base_cfg is None:
+        out(f"guard range {rng}: no configuration at {base}; the configuration at the tip is used (this range installs the guard)")
+    elif base_cfg != gd.cfg:
+        out(f"guard range {rng}: the configuration changed inside this range; it was read at {base}, so the change governs the next range")
+        gd = Guard(gd.config_path, gd.root, cfg=base_cfg)
+    errs, warns = gd.self_check()
+    for w in warns:
+        out("  WARN  " + w)
+    if errs:
+        for e in errs:
+            out("GUARD FAILS: " + e)
+        _refuse(gd, out)
+        return 2
+    cmd = ["rev-list", "--no-merges", "--reverse", rng]
+    gf = gd.cfg.get("governed_from")
+    if gf:
+        cmd.append(f"^{gf}")
+    revs = git(gd.root, *cmd).split()
+    touched = 0
+    bad = []
+    named = set()
+    graphs, verdicts, readied, installs, records = {}, {}, [], [], []
+    g_base = gd.graph(base, tolerant=True)
+    def at(rev):
+        k = gd.blob_key(rev)
+        if k not in graphs:
+            graphs[k] = gd.graph(rev, tolerant=True)
+        return k, graphs[k]
+    for r in revs:
+        files = git(gd.root, "diff-tree", "--no-commit-id", "--name-only", "-r", "--root", r).splitlines()
+        work = [f for f in files if gd.is_work(f)]
+        if not work:
+            continue
+        touched += 1
+        msg = git(gd.root, "log", "-1", "--format=%B", r)
+        items = TRAILER.findall(msg)
+        if not items and gd.first_install(files, msg, rev=r):
+            installs.append((r[:9], files))
+            continue
+        if not items and INSTALL.search(msg) and len(work) == len(files) and gd.is_install_only(work):
+            installs.append((r[:9], work))
+            continue
+        if not items and INSTALL.search(msg) and files == [rel_cfg]:
+            try:
+                o_t, n_t = git(gd.root, "show", f"{r}^:{rel_cfg}"), git(gd.root, "show", f"{r}:{rel_cfg}")
+            except RuntimeError:
+                o_t = n_t = ""
+            if gd.config_narrowing(files, o_t, n_t):
+                installs.append((r[:9], files))
+                continue
+        if gd.is_record_commit(work, rev=r):
+            records.append((r[:9], work))
+            continue
+        if not items:
+            bad.append(f"{r[:9]} changes governed work ({work[0]}{' ...' if len(work) > 1 else ''}) and names no Work-Item")
+            continue
+        has_parent = subprocess.run(["git", "-C", gd.root, "rev-parse", "-q", "--verify", f"{r}^"], capture_output=True).returncode == 0
+        k, g = at(f"{r}^") if has_parent else (("root",), None)
+        for i in items:
+            named.add(i)
+            if g is None:
+                bad.append(f"{r[:9]} Work-Item {i}: there was no register before this commit")
+                continue
+            if (k, i) not in verdicts:
+                verdicts[(k, i)] = gd.item_problem(g, i)
+            if verdicts[(k, i)]:
+                bad.append(f"{r[:9]} {verdicts[(k, i)]}")
+            elif g_base is None or gd.item_problem(g_base, i):
+                readied.append((r[:9], i))
+    out(f"guard range {rng}: examined {len(revs)} commit(s), {touched} touch governed work, {len(named)} item(s) named")
+    for r9, fl in installs:
+        out(f"  NOTE  {r9} guard-install commit, not judged by readiness: " + ", ".join(fl[:6]) + (" ..." if len(fl) > 6 else ""))
+    for r9, fl in records:
+        out(f"  NOTE  {r9} record commit (the register alone), not judged by readiness: " + ", ".join(fl[:6]) + (" ..." if len(fl) > 6 else ""))
+    for r9, i in readied:
+        out(f"  NOTE  {r9} Work-Item {i} was not ready at {base}; it became ready inside this range" + (" (a failure under --strict-base)" if strict_base else ""))
+        if strict_base:
+            bad.append(f"{r9} Work-Item {i} was not ready before the range began")
+    for b in bad:
+        out("  FAIL  " + b)
+    if bad:
+        _refuse(gd, out)
+    out("VERDICT: " + ("PASS" if not bad else f"FAIL -- {len(bad)} work commit(s) outside the register"))
+    return 2 if bad else 0
+
+
+def main(argv):
+    cfg = None
+    args = list(argv)
+    strict = "--strict-base" in args
+    args = [a for a in args if a != "--strict-base"]
+    if "--config" in args:
+        i = args.index("--config"); cfg = args[i + 1]; del args[i:i + 2]
+    if not args or args[0] not in ("status", "edit", "commit-msg", "range"):
+        print(__doc__); return 1
+    if cfg is None:
+        top = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True).stdout.strip() or os.getcwd()
+        cfg = os.path.join(top, ".backlog-guard.json")
+    gd = Guard(cfg)
+    cmd = args[0]
+    if cmd == "status":
+        return cmd_status(gd)
+    if len(args) < 2:
+        print(__doc__); return 1
+    if cmd == "range":
+        return cmd_range(gd, args[1], strict_base=strict)
+    return {"edit": cmd_edit, "commit-msg": cmd_commit_msg}[cmd](gd, args[1])
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

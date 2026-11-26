@@ -1,0 +1,152 @@
+#!/usr/bin/env python3
+"""backlog_release_tool_probe v1.3.6 -- the release tool refuses what it must refuse and does what it says (G99 release A; OE rule R4).
+
+Each case is a fact about backlog_release_tool, shown on a throwaway folder, and each failing case must really fail:
+  1 a header bump renames the file and moves versionInfo, versionIRI and priorVersion (the old version is added to the prior list);
+  2 a bump is refused when the file is not at the stated version, when the new version is not above the old, when the header does not read the
+    old version, and when the target file already exists (the folder is unchanged after each refusal);
+  3 clean-bytecode removes nested __pycache__ folders and leaves other files;
+  4 a push is retried after a transient server error and succeeds; a rejection that is not transient is NOT retried (one attempt);
+  5 a release is refused when the changelog has no entry for the version, and the dry run runs nothing (VERSION.txt unchanged).
+  6 (v1.1.0) deletion_args writes the named paths one per line behind --expect-delete, and nothing when no path is named;
+  7 (v1.1.0, v1.2.0 adds the archived-digest result files) prune-cache removes only cache-kind files older than the limit, keeps recent ones and leaves every other file alone;
+  8 (v1.1.0) the release path does not remove the fixture-suite stamp.
+  9 (v1.3.1) gate_failures does not read "declaration FAILED : 0" as a failure, still reads a non-zero count, a VERDICT: FAIL and an ABORT, and drops the drift section.
+  10 (v1.3.4) public_keep: the derived 04-documentation/README.md is not overwritten by the public copy's older one, while the root README, DISTRIBUTION and LICENSE are kept;
+     when the derivation did not produce it the public copy's own is kept; a file the public copy does not have is not invented.
+  11 (v1.3.4) the release path exports the measured probe inputs beside the proof stamps.
+  12 (v1.3.5) ensure_stamps creates both stamp files when absent and leaves an existing one (and its bytes) alone.
+  13 (v1.3.6) kind_probe_failures: with no kind probe beside the tool nothing is asked; a failing newest probe stops the preflight with its own first FAIL line; a passing newest probe lets it go on; the preflight calls it.
+Exit 0 all hold; 2 a case failed.
+"""
+import importlib.util, os, subprocess, sys, tempfile, glob
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+spec = importlib.util.spec_from_file_location("rt", sorted(glob.glob(os.path.join(HERE, "backlog_release_tool_v*.py")))[-1])
+RT = importlib.util.module_from_spec(spec); spec.loader.exec_module(RT)
+FAILS = []
+
+
+def check(name, cond):
+    print("  %-4s %s" % ("ok" if cond else "FAIL", name))
+    if not cond:
+        FAILS.append(name)
+
+
+HDR = ('<http://example.org/backlog> a owl:Ontology ;\n    owl:versionIRI <http://example.org/x/shacl/1.2.0> ;\n    owl:versionInfo "1.2.0" ;\n'
+       '    owl:priorVersion <http://example.org/x-shapes/1.1.0> .\n')
+
+
+if sys.argv[1:] == ["--deps"]:
+    print(os.path.abspath(__file__)); print(RT.__file__)
+    sys.exit(0)
+
+
+def main():
+    with tempfile.TemporaryDirectory() as d:
+        f = os.path.join(d, "x_shacl_v1_2_0.ttl"); open(f, "w").write(HDR)
+        r = RT.bump_file(f, "1.2.0", "1.3.0", "http://example.org/x/shacl", "http://example.org/x-shapes")
+        t = os.path.join(d, "x_shacl_v1_3_0.ttl")
+        s = open(t).read() if os.path.exists(t) else ""
+        check("1 bump renames the file and moves the header", r == t and not os.path.exists(f) and 'versionInfo "1.3.0"' in s
+              and "shacl/1.3.0>" in s and "x-shapes/1.2.0> , <http://example.org/x-shapes/1.1.0>" in s)
+        before = sorted(os.listdir(d)); cont = open(t).read()
+        e1 = RT.bump_file(os.path.join(d, "x_shacl_v9_9_9.ttl"), "9.9.9", "9.9.10", "a", "b")
+        e2 = RT.bump_file(t, "1.3.0", "1.3.0", "http://example.org/x/shacl", "http://example.org/x-shapes")
+        e3 = RT.bump_file(t, "1.3.0", "1.2.9", "http://example.org/x/shacl", "http://example.org/x-shapes")
+        e4 = RT.bump_file(t, "1.3.0", "1.4.0", "http://example.org/WRONG", "http://example.org/x-shapes")
+        open(os.path.join(d, "x_shacl_v1_4_0.ttl"), "w").write("x")
+        e5 = RT.bump_file(t, "1.3.0", "1.4.0", "http://example.org/x/shacl", "http://example.org/x-shapes")
+        os.remove(os.path.join(d, "x_shacl_v1_4_0.ttl"))
+        refused = all(isinstance(e, str) and not e.endswith(".ttl") for e in (e1, e2, e3, e4, e5))
+        check("2 bump refused: missing file, not above, header mismatch, target exists", refused)
+        check("2 the folder and the file are unchanged after refusals", sorted(os.listdir(d)) == before and open(t).read() == cont)
+
+        os.makedirs(os.path.join(d, "a", "__pycache__")); os.makedirs(os.path.join(d, "a", "b", "__pycache__")); open(os.path.join(d, "a", "keep.py"), "w").write("1")
+        n = RT.clean_bytecode(d)
+        check("3 clean-bytecode removes nested __pycache__, keeps files", n == 2 and os.path.exists(os.path.join(d, "a", "keep.py"))
+              and not os.path.exists(os.path.join(d, "a", "b", "__pycache__")))
+
+        bare, work = os.path.join(d, "bare.git"), os.path.join(d, "work")
+        env = dict(os.environ, GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@t", GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@t")
+        g = lambda *a, cwd=work: subprocess.run(["git", *a], cwd=cwd, env=env, capture_output=True, text=True)
+        subprocess.run(["git", "init", "-q", "--bare", "-b", "main", bare], env=env)
+        os.makedirs(work); g("init", "-q", "-b", "main"); g("remote", "add", "origin", bare)
+        open(os.path.join(work, "f"), "w").write("1"); g("add", "-A"); g("commit", "-q", "-m", "c1")
+        hook = os.path.join(bare, "hooks", "pre-receive"); cnt = os.path.join(d, "count")
+        open(hook, "w").write('#!/bin/sh\nn=$(cat "%s" 2>/dev/null || echo 0); n=$((n+1)); echo $n > "%s"\n'
+                              'if [ "$n" -le 1 ]; then echo "error: HTTP 500 Internal Server Error" >&2; exit 1; fi\nexit 0\n' % (cnt, cnt)); os.chmod(hook, 0o755)
+        rc, tries = RT.push_retry(work, tries=3, delay=0.1)
+        check("4 a transient server error is retried and the push lands", rc == 0 and tries == 2)
+        open(os.path.join(work, "f"), "w").write("2"); g("add", "-A"); g("commit", "-q", "-m", "c2")
+        open(cnt, "w").write("0")
+        open(hook, "w").write('#!/bin/sh\necho "remote: permission denied" >&2\nexit 1\n'); os.chmod(hook, 0o755)
+        rc, tries = RT.push_retry(work, tries=3, delay=0.1)
+        check("4 a rejection that is not transient is not retried", rc != 0 and tries == 1)
+
+    with tempfile.TemporaryDirectory() as d2:
+        a = RT.deletion_args(["03-tooling/x.py", " 03-tooling/y.py "], d2)
+        check("6 deletion_args writes the paths behind --expect-delete", a[0] == "--expect-delete" and open(a[1]).read() == "03-tooling/x.py\n03-tooling/y.py\n")
+        check("6 no deletions, no argument", RT.deletion_args([], d2) == [])
+        import time as _t
+        d2 = os.path.join(d2, "cache"); os.makedirs(d2)
+        old_t = _t.time() - 40 * 86400
+        names = {"shape_" + "a" * 64 + ".ttl": True, "b" * 64 + ".json": True, "cacheproof_" + "c" * 8 + ".ok": True, "archdigest_" + "e" * 64 + ".json": True,
+                 "stamp_fixture_fixture_negative_v1_20_0.ttl.key": True}
+        for n in names:
+            open(os.path.join(d2, n), "w").write("x"); os.utime(os.path.join(d2, n), (old_t, old_t))
+        open(os.path.join(d2, "shape_" + "d" * 64 + ".ttl"), "w").write("recent"); open(os.path.join(d2, "notes.txt"), "w").write("keep"); os.utime(os.path.join(d2, "notes.txt"), (old_t, old_t))
+        rem, kept = RT.prune_cache(d2, 14)
+        check("7 prune removes the old cache files only", rem == 5 and kept == 1 and sorted(os.listdir(d2)) == ["notes.txt", "shape_" + "d" * 64 + ".ttl"])
+    check("8 the release path never removes the fixture-suite stamp", "os.remove(stamp)" not in open(RT.__file__).read())
+
+    with tempfile.TemporaryDirectory() as d12:
+        made = RT.ensure_stamps(d12)
+        open(os.path.join(d12, ".clause-proof-stamp"), "w").write("keep")
+        again = RT.ensure_stamps(d12)
+        check("12 ensure_stamps creates both stamps once and keeps an existing one", sorted(made) == [".clause-proof-stamp", ".fixture-suite-stamp"] and again == [] and open(os.path.join(d12, ".clause-proof-stamp")).read() == "keep")
+
+    gf = RT.gate_failures
+    check("9 a zero count of failures is not a failure", gf("  declaration verified    : 134\n  declaration FAILED      : 0\n") == [])
+    check("9 a non-zero count, a failed verdict and an abort are failures", len(gf("  declaration FAILED      : 2\nVERDICT   : FAIL\nABORT: x\n")) == 3)
+    check("9 the drift section is dropped", gf("== Distribution-drift gate -- x\nVERDICT   : FAIL\nDistribution-drift gate FAILED\n\n== Next ==\nok\n") == [])
+
+    with tempfile.TemporaryDirectory() as d:
+        pd, pc = os.path.join(d, "pd"), os.path.join(d, "pc")
+        for base in (pd, pc):
+            os.makedirs(os.path.join(base, "04-documentation"))
+        w = lambda path, t: open(path, "w").write(t)
+        w(os.path.join(pd, "04-documentation", "README.md"), "derived new")
+        w(os.path.join(pc, "04-documentation", "README.md"), "older public")
+        w(os.path.join(pc, "README.md"), "root"); w(os.path.join(pc, "DISTRIBUTION.md"), "dist"); w(os.path.join(pc, "LICENSE"), "lic")
+        k = RT.public_keep(pd, pc)
+        check("10 the derived 04-documentation README is not replaced by the public copy's older one", os.path.join("04-documentation", "README.md") not in k)
+        check("10 the root README, DISTRIBUTION and LICENSE of the public copy are kept", sorted(k) == ["DISTRIBUTION.md", "LICENSE", "README.md"] and k["README.md"] == b"root")
+        os.remove(os.path.join(pd, "04-documentation", "README.md"))
+        k = RT.public_keep(pd, pc)
+        check("10 without a derived one the public copy's own is kept", k.get(os.path.join("04-documentation", "README.md")) == b"older public")
+        os.remove(os.path.join(pc, "LICENSE"))
+        check("10 a file the public copy lacks is not invented", "LICENSE" not in RT.public_keep(pd, pc))
+    src = open(RT.__file__).read()
+    check("11 the release path exports the measured probe inputs", "backlog_probe_inputs_v*.py" in src and "PROBE_INPUTS.json" in src and '"export", memo, pi' in src)
+
+    ver = os.path.join(RT.PKG, "VERSION.txt"); before = open(ver).read() if os.path.exists(ver) else None
+    p = subprocess.run([sys.executable, os.path.join(HERE, os.path.basename(RT.__file__)), "release", "99.99.99", "--dry-run"], capture_output=True, text=True)
+    check("5 release refused for a version with no changelog entry", p.returncode == 2 and "no entry" in p.stdout)
+    check("5 the refused dry run changed nothing", (open(ver).read() if os.path.exists(ver) else None) == before)
+    with tempfile.TemporaryDirectory() as dk:
+        w = lambda n, t: open(os.path.join(dk, n), "w").write(t)
+        check("13 no kind probe beside the tool, nothing to ask", RT.kind_probe_failures(dk, dk) == [])
+        w("backlog_kind_category_probe_v1_0_0.py", "print('FAIL  stale')\nraise SystemExit(1)\n")
+        w("backlog_kind_category_probe_v1_2_0.py", "print('PASS  a')\nprint('FAIL  2 a category the kinds do not fit')\nprint('FAILED: x')\nraise SystemExit(1)\n")
+        f = RT.kind_probe_failures(dk, dk)
+        check("13 a failing newest probe stops the preflight with its own FAIL line", len(f) == 1 and "2 a category the kinds do not fit" in f[0] and "stale" not in f[0])
+        w("backlog_kind_category_probe_v1_3_0.py", "print('OK')\n")
+        check("13 a passing newest probe lets it go on", RT.kind_probe_failures(dk, dk) == [])
+    check("13 the preflight calls it", "bad += kind_probe_failures(HERE, PKG)" in open(RT.__file__).read())
+    print("VERDICT : " + ("ALL HOLD" if not FAILS else "FAILED -- " + "; ".join(FAILS)))
+    return 0 if not FAILS else 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())
